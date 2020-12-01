@@ -189,11 +189,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="12.129413"
-     inkscape:cx="895.87895"
-     inkscape:cy="168.52454"
+     inkscape:zoom="0.75808831"
+     inkscape:cx="801.55014"
+     inkscape:cy="279.50245"
      inkscape:document-units="mm"
-     inkscape:current-layer="g1164"
+     inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
      showgrid="false"
      units="px"
@@ -450,13 +450,13 @@
     <text
        xml:space="preserve"
        style="font-size:8.46667px;line-height:1.25;font-family:Rubik;-inkscape-font-specification:'Rubik, Normal';letter-spacing:0px;word-spacing:0px;fill:#008080;stroke-width:0.264583"
-       x="200.30809"
+       x="204.23199"
        y="17.026455"
        id="text965"><tspan
          sodipodi:role="line"
          id="tspan963"
-         x="200.30809"
+         x="204.23199"
          y="17.026455"
-         style="fill:#008080;stroke-width:0.264583">Find Doctor</tspan></text>
+         style="fill:#008080;stroke-width:0.264583">Find Notes</tspan></text>
   </g>
 </svg>
