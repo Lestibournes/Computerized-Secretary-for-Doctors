@@ -1,0 +1,170 @@
+[debug] [2020-12-15T19:39:52.752Z] ----------------------------------------------------------------------
+[debug] [2020-12-15T19:39:52.754Z] Command:       /snap/firebase/1/bin/node /snap/firebase/1/bin/firebase list
+[debug] [2020-12-15T19:39:52.754Z] CLI Version:   3.16.0
+[debug] [2020-12-15T19:39:52.755Z] Platform:      linux
+[debug] [2020-12-15T19:39:52.755Z] Node Version:  v6.11.4
+[debug] [2020-12-15T19:39:52.755Z] Time:          Tue Dec 15 2020 21:39:52 GMT+0200 (IST)
+[debug] [2020-12-15T19:39:52.755Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2020-12-15T19:39:52.762Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2020-12-15T19:39:52.762Z] > authorizing via signed-in user
+[debug] [2020-12-15T19:39:52.764Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2020-12-15T19:39:52.764Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ { refresh_token: '1//09T6JkSVdnRAMCgYIARAAGAkSNwF-L9IrLpwCjvKJw4FufImvyp-Led4NQDJjXO_2kL7VqH-i-WPeBnmIM7b-VVHhDHnwMf0jfIM',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Tue Dec 15 2020 21:39:52 GMT+0200 (IST)
+[debug] [2020-12-15T19:39:56.038Z] <<< HTTP RESPONSE 200
+[debug] [2020-12-15T19:39:56.045Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Tue Dec 15 2020 21:39:56 GMT+0200 (IST)
+[debug] [2020-12-15T19:42:07.485Z] Error: connect ETIMEDOUT 104.197.85.31:443
+    at Object.exports._errnoException (util.js:1020:11)
+    at exports._exceptionWithHostPort (util.js:1043:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 104.197.85.31:443
+[debug] [2020-12-15T19:46:43.176Z] ----------------------------------------------------------------------
+[debug] [2020-12-15T19:46:43.179Z] Command:       /snap/firebase/1/bin/node /snap/firebase/1/bin/firebase list
+[debug] [2020-12-15T19:46:43.180Z] CLI Version:   3.16.0
+[debug] [2020-12-15T19:46:43.180Z] Platform:      linux
+[debug] [2020-12-15T19:46:43.180Z] Node Version:  v6.11.4
+[debug] [2020-12-15T19:46:43.180Z] Time:          Tue Dec 15 2020 21:46:43 GMT+0200 (IST)
+[debug] [2020-12-15T19:46:43.180Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2020-12-15T19:46:43.189Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2020-12-15T19:46:43.189Z] > authorizing via signed-in user
+[debug] [2020-12-15T19:46:43.192Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Tue Dec 15 2020 21:46:43 GMT+0200 (IST)
+[debug] [2020-12-15T19:48:52.990Z] Error: connect ETIMEDOUT 104.197.85.31:443
+    at Object.exports._errnoException (util.js:1020:11)
+    at exports._exceptionWithHostPort (util.js:1043:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 104.197.85.31:443
+[debug] [2020-12-15T20:07:20.004Z] ----------------------------------------------------------------------
+[debug] [2020-12-15T20:07:20.007Z] Command:       /snap/firebase/1/bin/node /snap/firebase/1/bin/firebase list
+[debug] [2020-12-15T20:07:20.007Z] CLI Version:   3.16.0
+[debug] [2020-12-15T20:07:20.007Z] Platform:      linux
+[debug] [2020-12-15T20:07:20.007Z] Node Version:  v6.11.4
+[debug] [2020-12-15T20:07:20.007Z] Time:          Tue Dec 15 2020 22:07:20 GMT+0200 (IST)
+[debug] [2020-12-15T20:07:20.007Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2020-12-15T20:07:20.015Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2020-12-15T20:07:20.015Z] > authorizing via signed-in user
+[debug] [2020-12-15T20:07:20.018Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Tue Dec 15 2020 22:07:20 GMT+0200 (IST)
+[debug] [2020-12-15T20:09:29.983Z] Error: connect ETIMEDOUT 104.197.85.31:443
+    at Object.exports._errnoException (util.js:1020:11)
+    at exports._exceptionWithHostPort (util.js:1043:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 104.197.85.31:443
+[debug] [2020-12-15T20:15:17.264Z] ----------------------------------------------------------------------
+[debug] [2020-12-15T20:15:17.267Z] Command:       /snap/firebase/1/bin/node /snap/firebase/1/bin/firebase list
+[debug] [2020-12-15T20:15:17.268Z] CLI Version:   3.16.0
+[debug] [2020-12-15T20:15:17.268Z] Platform:      linux
+[debug] [2020-12-15T20:15:17.268Z] Node Version:  v6.11.4
+[debug] [2020-12-15T20:15:17.268Z] Time:          Tue Dec 15 2020 22:15:17 GMT+0200 (IST)
+[debug] [2020-12-15T20:15:17.268Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2020-12-15T20:15:17.282Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2020-12-15T20:15:17.282Z] > authorizing via signed-in user
+[debug] [2020-12-15T20:15:17.286Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Tue Dec 15 2020 22:15:17 GMT+0200 (IST)
+[debug] [2020-12-15T20:17:27.157Z] Error: connect ETIMEDOUT 104.197.85.31:443
+    at Object.exports._errnoException (util.js:1020:11)
+    at exports._exceptionWithHostPort (util.js:1043:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 104.197.85.31:443
+[debug] [2020-12-15T21:27:26.067Z] ----------------------------------------------------------------------
+[debug] [2020-12-15T21:27:26.069Z] Command:       /snap/firebase/1/bin/node /snap/firebase/1/bin/firebase list
+[debug] [2020-12-15T21:27:26.070Z] CLI Version:   3.16.0
+[debug] [2020-12-15T21:27:26.070Z] Platform:      linux
+[debug] [2020-12-15T21:27:26.070Z] Node Version:  v6.11.4
+[debug] [2020-12-15T21:27:26.072Z] Time:          Tue Dec 15 2020 23:27:26 GMT+0200 (IST)
+[debug] [2020-12-15T21:27:26.072Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2020-12-15T21:27:26.082Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2020-12-15T21:27:26.083Z] > authorizing via signed-in user
+[debug] [2020-12-15T21:27:26.085Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2020-12-15T21:27:26.085Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ { refresh_token: '1//09T6JkSVdnRAMCgYIARAAGAkSNwF-L9IrLpwCjvKJw4FufImvyp-Led4NQDJjXO_2kL7VqH-i-WPeBnmIM7b-VVHhDHnwMf0jfIM',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Tue Dec 15 2020 23:27:26 GMT+0200 (IST)
+[debug] [2020-12-15T21:27:26.672Z] <<< HTTP RESPONSE 200
+[debug] [2020-12-15T21:27:26.682Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Tue Dec 15 2020 23:27:26 GMT+0200 (IST)
+[debug] [2020-12-15T21:29:36.636Z] Error: connect ETIMEDOUT 104.197.85.31:443
+    at Object.exports._errnoException (util.js:1020:11)
+    at exports._exceptionWithHostPort (util.js:1043:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 104.197.85.31:443
+[debug] [2020-12-15T21:37:10.545Z] ----------------------------------------------------------------------
+[debug] [2020-12-15T21:37:10.548Z] Command:       /snap/firebase/1/bin/node /snap/firebase/1/bin/firebase list
+[debug] [2020-12-15T21:37:10.548Z] CLI Version:   3.16.0
+[debug] [2020-12-15T21:37:10.548Z] Platform:      linux
+[debug] [2020-12-15T21:37:10.548Z] Node Version:  v6.11.4
+[debug] [2020-12-15T21:37:10.550Z] Time:          Tue Dec 15 2020 23:37:10 GMT+0200 (IST)
+[debug] [2020-12-15T21:37:10.550Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2020-12-15T21:37:10.562Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2020-12-15T21:37:10.563Z] > authorizing via signed-in user
+[debug] [2020-12-15T21:37:10.566Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Tue Dec 15 2020 23:37:10 GMT+0200 (IST)
+[debug] [2020-12-15T21:39:20.317Z] Error: connect ETIMEDOUT 104.197.85.31:443
+    at Object.exports._errnoException (util.js:1020:11)
+    at exports._exceptionWithHostPort (util.js:1043:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 104.197.85.31:443
+[debug] [2020-12-15T21:49:49.615Z] ----------------------------------------------------------------------
+[debug] [2020-12-15T21:49:49.617Z] Command:       /snap/firebase/1/bin/node /snap/firebase/1/bin/firebase list
+[debug] [2020-12-15T21:49:49.618Z] CLI Version:   3.16.0
+[debug] [2020-12-15T21:49:49.618Z] Platform:      linux
+[debug] [2020-12-15T21:49:49.618Z] Node Version:  v6.11.4
+[debug] [2020-12-15T21:49:49.621Z] Time:          Tue Dec 15 2020 23:49:49 GMT+0200 (IST)
+[debug] [2020-12-15T21:49:49.621Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2020-12-15T21:49:49.632Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2020-12-15T21:49:49.632Z] > authorizing via signed-in user
+[debug] [2020-12-15T21:49:49.635Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Tue Dec 15 2020 23:49:49 GMT+0200 (IST)
+[debug] [2020-12-15T21:52:00.121Z] Error: connect ETIMEDOUT 104.197.85.31:443
+    at Object.exports._errnoException (util.js:1020:11)
+    at exports._exceptionWithHostPort (util.js:1043:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 104.197.85.31:443
+[debug] [2020-12-15T21:53:17.439Z] ----------------------------------------------------------------------
+[debug] [2020-12-15T21:53:17.442Z] Command:       /snap/firebase/1/bin/node /snap/firebase/1/bin/firebase list
+[debug] [2020-12-15T21:53:17.442Z] CLI Version:   3.16.0
+[debug] [2020-12-15T21:53:17.442Z] Platform:      linux
+[debug] [2020-12-15T21:53:17.442Z] Node Version:  v6.11.4
+[debug] [2020-12-15T21:53:17.442Z] Time:          Tue Dec 15 2020 23:53:17 GMT+0200 (IST)
+[debug] [2020-12-15T21:53:17.442Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2020-12-15T21:53:17.451Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase"]
+[debug] [2020-12-15T21:53:17.451Z] > authorizing via signed-in user
+[debug] [2020-12-15T21:53:17.454Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects  
+  
+ Tue Dec 15 2020 23:53:17 GMT+0200 (IST)
+[debug] [2020-12-15T21:55:26.969Z] Error: connect ETIMEDOUT 104.197.85.31:443
+    at Object.exports._errnoException (util.js:1020:11)
+    at exports._exceptionWithHostPort (util.js:1043:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1090:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 104.197.85.31:443
