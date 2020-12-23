@@ -1,7 +1,9 @@
 :root{
 	--color: black;
 	--alt-color: white;
-	--warning-color: palevioletred;
+	--warning-color: rgb(219, 112, 147);
+	--warning-color-hover: #e28da9;
+	--warning-color-pressed: #af5a76;
 	--radius: 5px;
 	--margin: 15px;
 	--highlight: rgb(0, 128, 128);;
@@ -41,7 +43,7 @@ code {
 	padding: var(--margin);
 	display: grid;
   height: 100%;
-	grid-template-rows: auto 1fr;
+	grid-template-rows: auto auto 1fr;
 	box-sizing: border-box;
 }
 
@@ -49,7 +51,8 @@ code {
 	color: var(--highlight);
 	margin-bottom: var(--margin);
 	display: grid;
-	grid-template-columns: auto auto;
+	grid-template-columns: 0fr 1fr auto;
+	column-gap: var(--margin);
 }
 
 .mainHeader .title {
@@ -62,6 +65,33 @@ code {
 	font-size: var(--font-size-c);
 	display: grid;
 	place-items: center end;
+}
+
+.mainMenu {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	height: max-content;
+	box-sizing: border-box;
+}
+
+.mainHeader nav {
+	display: flex;
+	place-items: center start;
+	column-gap: var(--margin);
+}
+
+.mainHeader div:last-child {
+	place-self: center end;
+	display: flex;
+	place-items: center end;
+	column-gap: var(--margin);
+}
+
+.mainHeader .button {
+	border: none;
+	border-radius: var(--radius);
+	font-size: var(--font-size-e);
+	padding: var(--control-padding);
 }
 
 .content {
@@ -82,27 +112,6 @@ form label, form input {
 	place-items: center start;
 }
 
-form input, form button {
-	background-color: var(--control-background);
-	border: none;
-	padding: var(--control-padding);
-	border-radius: var(--radius);
-}
-
-form button, .panel input {
-	margin-left: var(--margin);
-}
-
-form button:hover, form button:focus, form input:focus, .panel input:hover {
-	background-color: var(--control-background-hover);
-	color: var(--color);
-}
-
-form button:active, form input:active, .panel input:active {
-	background-color: var(--control-background-pressed);
-	color: var(--alt-color);
-}
-
 form .panel {
 	justify-content: flex-end;
 	display: flex;
@@ -110,18 +119,57 @@ form .panel {
 	grid-column: 1/3;
 }
 
-button.okay, input.okay {
+input, button, .button {
+	text-decoration: none;
+	background-color: var(--control-background);
+	color: var(--color);
+	border: none;
+	font-size: var(--font-size-e);
+	padding: var(--control-padding);
+	border-radius: var(--radius);
+}
+
+form button, form .button, .panel input {
+	margin-left: var(--margin);
+}
+
+button:hover, .button:hover, input:focus {
+	background-color: var(--control-background-hover);
+	color: var(--color);
+}
+
+button:active, .button:active, input:active {
+	background-color: var(--control-background-pressed);
+	color: var(--alt-color);
+}
+
+button.okay, .button.okay, input.okay {
 	background-color: var(--highlight);
 	color: var(--alt-color);
 }
 
-button.okay:hover, input.okay:hover, button.okay:focus, input.okay:focus {
+button.okay:hover, .button.okay:hover, input.okay:hover {
 	background-color: var(--highlight-pale);
 	color: var(--alt-color);
 }
 
-button.okay:active, input.okay:active {
+button.okay:active, .button.okay:active, input.okay:active {
 	background-color: var(--highlight-dark);
+	color: var(--alt-color);
+}
+
+.button.warning {
+	background-color: var(--warning-color);
+	color: var(--alt-color);
+}
+
+.button.warning:hover {
+	background-color: var(--warning-color-hover);
+	color: var(--alt-color);
+}
+
+.button.warning:active {
+	background-color: var(--warning-color-pressed);
 	color: var(--alt-color);
 }
 

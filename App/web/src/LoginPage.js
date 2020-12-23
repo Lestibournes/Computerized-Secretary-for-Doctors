@@ -2,8 +2,9 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { TextInput, MainHeader } from "./CommonComponents";
-import { fb, db } from "./init";
+import { TextInput, MainHeader, MainMenu } from "./CommonComponents";
+import { fb } from "./init";
+import { Link } from 'react-router-dom';
 
 fb.auth().signOut();
 
@@ -32,7 +33,7 @@ export class LoginPage extends React.Component {
 								setSubmitting(true);
 
 								fb.auth().signInWithEmailAndPassword(values.email, values.password)
-									.then((user) => {
+									.then(() => {
 										console.log("email: " + fb.auth().currentUser.email);
 										console.log("email verification: " + fb.auth().currentUser.emailVerified);
 										//redirect to main page
@@ -58,7 +59,7 @@ export class LoginPage extends React.Component {
 									type="password"
 								/>
 								<div className="panel">
-									<button>Register</button>
+									<Link className="button" to="/register">Register</Link>
 									<button className="okay" type="submit">Login</button>
 								</div>
 							</Form>

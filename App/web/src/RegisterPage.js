@@ -2,8 +2,9 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { TextInput, MainHeader } from "./CommonComponents";
+import { TextInput, MainHeader, MainMenu } from "./CommonComponents";
 import { fb, db } from "./init";
+import { Link } from 'react-router-dom';
 
 export class RegisterPage extends React.Component {
 	render() {
@@ -43,12 +44,11 @@ export class RegisterPage extends React.Component {
 
 								fb.auth().createUserWithEmailAndPassword(values.email, values.password)
 									.then((user) => {
-										db.collection("users").add({
+										db.collection("users").doc(user.user.uid).set({
 											first: values.fname,
-											last: values.lname,
-											uid: user.user.uid
+											last: values.lname
 										})
-										.then(function(docRef) {
+										.then(function() {
 											user.user.sendEmailVerification();
 										})
 										.catch(function(error) {
@@ -95,7 +95,7 @@ export class RegisterPage extends React.Component {
 									type="password"
 								/>
 								<div className="panel">
-									<button>Login</button>
+									<Link className="button" to="/login">Login</Link>
 									<button className="okay" type="submit">Register</button>
 								</div>
 							</Form>
