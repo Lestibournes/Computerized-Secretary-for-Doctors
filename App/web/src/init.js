@@ -5,6 +5,7 @@ import firebase from "firebase/app";
 // Add the Firebase services that you want to use
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/functions";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -23,3 +24,4 @@ firebase.initializeApp(firebaseConfig);
 
 export const fb = firebase;
 export const db = firebase.firestore();
+export const fn = firebase.functions();

@@ -2,71 +2,58 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { TextInput, MainHeader, MainMenu } from "./CommonComponents";
-import { fb } from "./init";
-import { Link } from 'react-router-dom';
+import { TextInput, MainHeader, useAuth } from "./CommonComponents";
+import { Link, Redirect } from 'react-router-dom';
 
-fb.auth().signOut();
-
-export class LoginPage extends React.Component {
-	render() {
-		return (
-			<div className="page">
-				<MainHeader section="Login"></MainHeader>
-				<div className="content">
-					<div className="form">
-						<Formik
-							initialValues={{
-								email: "",
-								password: ""
-							}}
-							validationSchema={Yup.object({
-								email: Yup.string()
-									.email("Invalid email addresss")
-									.required("Required"),
-								password: Yup.string()
-									.min(4, "Must be 4 characters or more")
-									.max(32, "Must be 32 characters or less")
-									.required("Required")
-							})}
-							onSubmit={async (values, { setSubmitting }) => {
-								setSubmitting(true);
-
-								fb.auth().signInWithEmailAndPassword(values.email, values.password)
-									.then(() => {
-										console.log("email: " + fb.auth().currentUser.email);
-										console.log("email verification: " + fb.auth().currentUser.emailVerified);
-										//redirect to main page
-									})
-									.catch((error) => {
-										var errorCode = error.code;
-										var errorMessage = error.message;
-										console.error(errorCode + " - " + errorMessage);
-										// ..
-									});
-							}}
-						>
-							<Form>
-								<TextInput
-									label="Email Address"
-									name="email"
-									type="email"
-									placeholder="john.doe@csfpd.com"
-								/>
-								<TextInput
-									label="Password"
-									name="password"
-									type="password"
-								/>
-								<div className="panel">
-									<Link className="button" to="/register">Register</Link>
-									<button className="okay" type="submit">Login</button>
-								</div>
-							</Form>
-						</Formik>
-					</div>
+export function LoginPage() {
+	const auth = useAuth();
+	
+	return (
+		<div className="page">
+			{auth.user ? <Redirect to="/" /> : null }
+			<MainHeader section="Login"></MainHeader>
+			<div className="center">
+				<div className="form">
+					<h1>Login</h1>
+					<Formik
+						initialValues={{
+							email: "",
+							password: ""
+						}}
+						validationSchema={Yup.object({
+							email: Yup.string()
+								.email("Invalid email addresss")
+								.required("Required"),
+							password: Yup.string()
+								.min(4, "Must be 4 characters or more")
+								.max(32, "Must be 32 characters or less")
+								.required("Required")
+						})}
+						onSubmit={async (values, { setSubmitting }) => {
+							setSubmitting(true);
+							auth.login(values.email, values.password);
+						}}
+					>
+						<Form>
+							<TextInput
+								label="Email Address"
+								name="email"
+								type="email"
+								placeholder="john.doe@csfpd.com"
+							/>
+							<TextInput
+								label="Password"
+								name="password"
+								type="password"
+							/>
+							<div className="panel">
+								<Link className="button" to="/register">Register</Link>
+								<button className="okay" type="submit">Login</button>
+							</div>
+						</Form>
+					</Formik>
 				</div>
 			</div>
-		);
-	}
+		</div>
+	);
 }
