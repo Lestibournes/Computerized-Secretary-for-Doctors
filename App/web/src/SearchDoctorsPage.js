@@ -36,18 +36,13 @@ export function SearchDoctorsPage() {
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
-							searchDoctors({firstName: values.name}).then((result) => {
-								let results = [];
-
-								result.data.matches.forEach(m => {
-									results.push(m);
-								});
-								
-								if (results.length == 0) {
-									results.push("No doctors found");
+							searchDoctors({name: values.name}).then((result) => {
+								if (result.data.length == 0) {
+									setDoctors(["No doctors found"]);
 								}
-
-								setDoctors(results);
+								else {
+									setDoctors(result.data);
+								}
 							});
 						}}
 					>

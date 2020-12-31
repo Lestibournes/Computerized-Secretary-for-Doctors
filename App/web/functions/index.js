@@ -3,6 +3,7 @@ const functions = require('firebase-functions');
 
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
+
 admin.initializeApp();
 db = admin.firestore();
 
@@ -28,17 +29,24 @@ const contains = (str1, str2) => {
 }
 
 exports.searchDoctors = functions.https.onCall((data, context) => {
-	return db.collection("users").orderBy("firstName").get().then((doctors) => {
+	return db.collection("doctors").get().then((doctors) => {
+		let promises = [];
 		let matches = [];
 
 		doctors.forEach(doctor => {
-			let name = doctor.data().firstName + " " + doctor.data().lastName;
-			if (contains(name, data.firstName)) {
-				matches.push(name);
-			}
+			promises.push(doctor.data().user.get());
 		});
 
-		return {matches: matches};
+		return Promise.all(promises).then((users) => {
+			users.forEach((user) => {
+				let name = user.data().firstName + " " + user.data().lastName;
+				if (contains(name, data.name)) {
+					matches.push(name);
+				}
+			});
+
+			return matches;
+		});
 	});
 });
 
