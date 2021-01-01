@@ -10,6 +10,19 @@ fn.useEmulator("localhost", 5001);
 
 const searchDoctors = fn.httpsCallable("searchDoctors");
 
+export function DoctorCard(props) {
+	let name = props.doctor.user.firstName + " " + props.doctor.user.lastName;
+	let fields = props.doctor.doctor.fields;
+	let clinics = props.doctor.clinics;
+
+	return (<div className="searchCard">
+		<img src="" />
+		<div><big>{name}</big></div>
+		<div><small>{fields.map((field, index) => {return field + (index < fields.length - 1 ? " " : "")})}</small></div>
+		<div><small>{clinics.map((clinic, index) => {return clinic.name + (index < clinics.length - 1 ? " " : "")})}</small></div>
+	</div>)
+}
+
 export function SearchDoctorsPage() {
 	const grep = "o"
 
@@ -59,8 +72,8 @@ export function SearchDoctorsPage() {
 				</div>
 				<div className="searchresults">
 					{
-						doctors.map((name, index) => {
-							return <div key={index}>{name}</div>
+						doctors.map((doctor, index) => {
+							return <DoctorCard key={index} doctor={doctor}></DoctorCard>
 						})
 					}
 				</div>

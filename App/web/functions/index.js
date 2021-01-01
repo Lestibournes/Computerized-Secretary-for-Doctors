@@ -30,22 +30,42 @@ const contains = (str1, str2) => {
 
 exports.searchDoctors = functions.https.onCall((data, context) => {
 	return db.collection("doctors").get().then((doctors) => {
-		let promises = [];
-		let matches = [];
+		let promises = []; //holds the promises so that it will be possible to wait for them all to finish.
+		let candidates = []; //holds all the doctors.
+		let results = []; //holds the doctors who match the search term.
 
 		doctors.forEach(doctor => {
-			promises.push(doctor.data().user.get());
-		});
+			// Create an object to hold the doctor data, the doctor's user data, and the promise (although the promise may be unnecessary).
+			let details = {
+				doctor: doctor.data(),
+				clinics: [],
+				user: null
+			}
 
-		return Promise.all(promises).then((users) => {
-			users.forEach((user) => {
+			// Get the promise to update the search result object with the user data and add it to the promises array
+			// To wait for completion.
+			promises.push(doctor.data().user.get().then((user) => {
+				details.user = user.data();
+
 				let name = user.data().firstName + " " + user.data().lastName;
 				if (contains(name, data.name)) {
-					matches.push(name);
+					results.push(details);
 				}
-			});
+			}));
 
-			return matches;
+			// For every one of the doctor's clinics,
+			// Get the promise to update the search result object with the user data and add it to the promises array
+			// To wait for completion.
+			doctor.data().clinics.forEach((clinicRef) => {
+				promises.push(clinicRef.get().then((clinic) => {
+					details.clinics.push(clinic.data());
+				}));
+			});
+		});
+
+		return Promise.all(promises).then(() => {
+			console.log(results);
+			return results;
 		});
 	});
 });

@@ -19,20 +19,21 @@
 	--control-background-pressed: gray;
 	--control-background-hover: rgb(229.5, 229.5, 229.5);
 	--control-padding: 1em;
+	--border-width: 5px;
 }
 
 body {
 	margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+		'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+		sans-serif;
+	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+		monospace;
 }
 
 #root {
@@ -46,7 +47,7 @@ h1 {
 .page {
 	padding: var(--margin);
 	display: grid;
-  height: 100%;
+	height: 100%;
 	grid-template-rows: auto 1fr;
 	box-sizing: border-box;
 }
@@ -108,7 +109,31 @@ h1 {
 }
 
 .searchresults {
+	display: flex;
+	flex-direction: column;
+	row-gap: var(--margin);
+}
 
+.searchCard {
+	display: grid;
+	grid-template-areas:
+		'pic ...'
+		'pic ...'
+		'pic ...';
+	grid-template-columns: auto 1fr;
+	gap: var(--margin);
+	border: var(--border-width) solid var(--control-background);
+	border-radius: var(--radius);
+	padding: var(--control-padding);
+}
+
+.searchCard img {
+	grid-area: pic;
+	width: 128px;
+	height: 128px;
+	border-radius: var(--radius);
+	background-color: var(--control-background);
+	border: none;
 }
 
 .form form {
