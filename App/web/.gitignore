@@ -23,3 +23,6 @@ yarn-debug.log*
 yarn-error.log*
 
 src/firebase_config.js
+.eslintcache
+.firebase
+ui-debug.log
