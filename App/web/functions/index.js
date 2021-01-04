@@ -31,21 +31,23 @@ const contains = (str1, str2) => {
 exports.searchDoctors = functions.https.onCall((data, context) => {
 	return db.collection("doctors").get().then((doctors) => {
 		let promises = []; //holds the promises so that it will be possible to wait for them all to finish.
-		let candidates = []; //holds all the doctors.
 		let results = []; //holds the doctors who match the search term.
 
 		doctors.forEach(doctor => {
 			// Create an object to hold the doctor data, the doctor's user data, and the promise (although the promise may be unnecessary).
 			let details = {
+				id: null,
 				doctor: doctor.data(),
 				clinics: [],
-				user: null
+				user: null,
+				profile: null
 			}
 
 			// Get the promise to update the search result object with the user data and add it to the promises array
 			// To wait for completion.
 			promises.push(doctor.data().user.get().then((user) => {
 				details.user = user.data();
+				details.id = user.id;
 
 				let name = user.data().firstName + " " + user.data().lastName;
 				if (contains(name, data.name)) {

@@ -6,9 +6,11 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 import "firebase/functions";
+import "firebase/storage";
 
 import "./firebase_config";
 
 export const fb = firebase;
 export const db = firebase.firestore();
 export const fn = firebase.functions();
+export const st = firebase.storage();

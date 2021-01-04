@@ -4,19 +4,26 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput, MainHeader, useAuth } from "./CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
-import { fn } from './init';
+import { fn, st } from './init';
 
 fn.useEmulator("localhost", 5001);
 
 const searchDoctors = fn.httpsCallable("searchDoctors");
+const storageRef = st.ref();
 
 export function DoctorCard(props) {
+	const [profile, setProfile] = useState(null);
+
+	storageRef.child("users/" + props.doctor.id + "/profile.png").getDownloadURL().then(url => {
+		setProfile(url);
+	});
+
 	let name = props.doctor.user.firstName + " " + props.doctor.user.lastName;
 	let fields = props.doctor.doctor.fields;
 	let clinics = props.doctor.clinics;
 
 	return (<div className="searchCard">
-		<img src="" />
+		<img src={profile} />
 		<div><big>{name}</big></div>
 		<div><small>{fields.map((field, index) => {return field + (index < fields.length - 1 ? " " : "")})}</small></div>
 		<div><small>{clinics.map((clinic, index) => {return clinic.name + (index < clinics.length - 1 ? " " : "")})}</small></div>
