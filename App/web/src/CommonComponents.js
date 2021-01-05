@@ -17,8 +17,28 @@ export const TextInput = ({ label, ...props }) => {
 	
 	return (
 		<>
-		<label htmlFor={props.id}>{label}</label>
+		<label htmlFor={props.id}>{label}:</label>
 			<input className={error} {...field} {...props} />
+			{meta.touched && meta.error ? (
+				<div className="error">{meta.error}</div>
+			) : null}
+		</>
+	);
+};
+
+export const Select = ({ label, ...props }) => {
+	const [field, meta] = useField(props);
+	return (
+		<>
+			<label htmlFor={props.id || props.name}>{label}:</label>
+			<select {...field} {...props}>
+				<option disabled selected value> Select an Option </option>
+				{
+					props.options.map(option => {
+						return <option key={option.id} value={option.id}>{option.label}</option>
+					})
+				}
+			</select>
 			{meta.touched && meta.error ? (
 				<div className="error">{meta.error}</div>
 			) : null}
