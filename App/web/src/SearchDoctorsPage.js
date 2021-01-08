@@ -19,7 +19,7 @@ function DoctorCard(props) {
 	});
 
 	let name = props.doctor.user.firstName + " " + props.doctor.user.lastName;
-	let fields = props.doctor.doctor.fields;
+	let fields = props.doctor.fields;
 	let clinics = props.doctor.clinics;
 
 	return (<div className="searchCard">
@@ -60,6 +60,36 @@ function SelectCity() {
 	);
 }
 
+function SelectField() {
+	const [fields, setFields] = useState(["Neurology", "Cardiology"]);
+
+	useEffect(() => {
+		let mounted = true;
+		db.collection("fields").get().then(snapshots => {
+			if (mounted) {
+				let results = [];
+		
+				snapshots.forEach(snapshot => {
+					results.push({
+						id: snapshot.id,
+						label: String(snapshot.id).split(" ").map(word => {
+							return String(word)[0].toLocaleUpperCase() + String(word).slice(1) + " ";
+						})
+					});
+				});
+				
+				setFields(results);
+			}
+		});
+
+		return () => {mounted = false};
+	}, []);
+	
+	return (
+		<Select label="Specialization" name="field" options={fields}/>
+	);
+}
+
 export function SearchDoctorsPage() {
 	const auth = useAuth();
 	const [doctors, setDoctors] = useState([]);
@@ -75,24 +105,13 @@ export function SearchDoctorsPage() {
 					<Formik
 						initialValues={{}}
 						validationSchema={Yup.object({
-							name: Yup.string()
-								.min(1)
-								.required(""),
-							city: Yup.string()
+							name: Yup.string(),
+							city: Yup.string(),
+							field: Yup.string(),
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
-							searchDoctors({name: values.name}).then((result) => {
-								// let matches = []
-								
-								// result.data.forEach(r => {
-								// 	r.clinics.forEach(clinic => {
-								// 		if (clinic.city === values.city) {
-								// 			matches.push(r);
-								// 		}
-								// 	});
-								// });
-
+							searchDoctors({name: values.name, city: values.city, field: values.field}).then((result) => {
 								setDoctors(result.data);
 							});
 						}}
@@ -105,6 +124,7 @@ export function SearchDoctorsPage() {
 								placeholder="Yoni Robinson"
 							/>
 							<SelectCity/>
+							<SelectField/>
 							<button className="okay" type="submit">Search</button>
 						</Form>
 					</Formik>
