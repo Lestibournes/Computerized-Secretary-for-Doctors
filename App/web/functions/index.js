@@ -5,7 +5,8 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
 admin.initializeApp();
-db = admin.firestore();
+const db = admin.firestore();
+const st = admin.storage().bucket("csfpd-da7e7.appspot.com");
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -15,9 +16,9 @@ db = admin.firestore();
 //   response.send("Hello from Firebase!");
 // });
 
-const contains = (str1, str2) => {
-	let src = (String) (str1);
-	let term = (String) (str2);
+const stringContains = (text, search) => {
+	let src = (String) (text);
+	let term = (String) (search);
 
 	for (let i = 0; i < src.length; i++) {
 		if (src.substr(i, term.length).toLowerCase() === term.toLowerCase()) {
@@ -28,47 +29,58 @@ const contains = (str1, str2) => {
 	return false;
 }
 
-exports.searchDoctors = functions.https.onCall((data, context) => {
-	return db.collection("doctors").get().then((doctors) => {
-		let promises = []; //holds the promises so that it will be possible to wait for them all to finish.
-		let results = []; //holds the doctors who match the search term.
+const stringArrayContains = (arr, str) => {
+	for (let i = 0; i < arr.length; i++) {
+		if (stringContains(arr[i], str)) {
+			return true;
+		}
+	}
 
-		doctors.forEach(doctor => {
+	return false;
+}
+
+async function getDoctors(name, field, city) {
+	const doctors = [];
+	await db.collection("doctors").get().then(snapshots => {
+		snapshots.forEach(snapshot => {
 			// Create an object to hold the doctor data, the doctor's user data, and the promise (although the promise may be unnecessary).
-			let details = {
+			doctors.push({
 				id: null,
-				doctor: doctor.data(),
+				doctor: snapshot.data(),
 				clinics: [],
 				user: null,
 				profile: null
-			}
-
-			// Get the promise to update the search result object with the user data and add it to the promises array
-			// To wait for completion.
-			promises.push(doctor.data().user.get().then((user) => {
-				details.user = user.data();
-				details.id = user.id;
-
-				let name = user.data().firstName + " " + user.data().lastName;
-				if (contains(name, data.name)) {
-					results.push(details);
-				}
-			}));
-
-			// For every one of the doctor's clinics,
-			// Get the promise to update the search result object with the user data and add it to the promises array
-			// To wait for completion.
-			doctor.data().clinics.forEach((clinicRef) => {
-				promises.push(clinicRef.get().then((clinic) => {
-					details.clinics.push(clinic.data());
-				}));
 			});
 		});
-
-		return Promise.all(promises).then(() => {
-			console.log(results);
-			return results;
-		});
 	});
+	
+	for (const doctor of doctors) {
+		if ((field && stringArrayContains(doctor.doctor.fields, field)) || !field) {
+			await doctor.doctor.user.get().then(user => {
+				doctor.id = user.id;
+				doctor.user = user.data();
+			});
+
+			let fullName = doctor.user.firstName + " " + doctor.user.lastName;
+
+			if ((fullName && stringContains(fullName, name)) || !fullName) {
+				doctor.profile = st.file("users/" + doctor.id + "/profile.png").publicUrl();
+				
+				for (i in doctor.doctor.clinics) {
+					await doctor.doctor.clinics[i].get().then(clinic => {
+						if ((city && stringContains(clinic.data().city, city)) || !city) {
+							doctor.clinics.push(clinic.data());
+						}
+					});
+				};
+			}
+		}
+	}
+
+	return doctors;
+}
+
+exports.searchDoctors = functions.https.onCall((data, context) => {
+	return getDoctors(data.name, data.field, data.city);
 });
 

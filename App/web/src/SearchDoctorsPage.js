@@ -6,7 +6,7 @@ import { TextInput, Select, MainHeader, useAuth } from "./CommonComponents";
 import { Redirect } from 'react-router-dom';
 import { db, fn, st } from './init';
 
-fn.useEmulator("localhost", 5001);
+// fn.useEmulator("localhost", 5001);
 
 const searchDoctors = fn.httpsCallable("searchDoctors");
 const storageRef = st.ref();
@@ -83,17 +83,17 @@ export function SearchDoctorsPage() {
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
 							searchDoctors({name: values.name}).then((result) => {
-								let matches = []
+								// let matches = []
+								
+								// result.data.forEach(r => {
+								// 	r.clinics.forEach(clinic => {
+								// 		if (clinic.city === values.city) {
+								// 			matches.push(r);
+								// 		}
+								// 	});
+								// });
 
-								result.data.forEach(r => {
-									r.clinics.forEach(clinic => {
-										if (clinic.city === values.city) {
-											matches.push(r);
-										}
-									});
-								});
-
-								setDoctors(matches);
+								setDoctors(result.data);
 							});
 						}}
 					>
