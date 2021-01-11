@@ -6,6 +6,7 @@ import { LoginPage } from './LoginPage';
 import { RegisterPage } from "./RegisterPage";
 import { ProvideAuth } from "./CommonComponents";
 import { SearchDoctorsPage } from "./SearchDoctorsPage"
+import { MakeAppointmentPage } from "./MakeAppointmentPage"
 
 import {
 	BrowserRouter as Router,
@@ -25,6 +26,9 @@ ReactDOM.render(
 				</Route>
 				<Route path="/register">
 					<RegisterPage />
+				</Route>
+				<Route path="/create/:id">
+					<MakeAppointmentPage />
 				</Route>
 			</Switch>
 		</Router>

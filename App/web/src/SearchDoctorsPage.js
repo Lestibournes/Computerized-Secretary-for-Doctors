@@ -3,10 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput, Select, MainHeader, useAuth } from "./CommonComponents";
-import { Redirect } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { db, fn, st } from './init';
-
-// fn.useEmulator("localhost", 5001);
 
 const searchDoctors = fn.httpsCallable("searchDoctors");
 const storageRef = st.ref();
@@ -22,12 +20,12 @@ function DoctorCard(props) {
 	let fields = props.doctor.fields;
 	let clinics = props.doctor.clinics;
 
-	return (<div className="searchCard">
+	return (<Link to={"/create/" + props.doctor.id} className="searchCard">
 		<img src={profile} />
 		<div className="name"><big>{name}</big></div>
 		<div className="fields"><small>{fields.map((field, index) => {return field + (index < fields.length - 1 ? " " : "")})}</small></div>
 		<div className="location"><small>{clinics.map((clinic, index) => {return clinic.name + (index < clinics.length - 1 ? " " : "")})}</small></div>
-	</div>)
+		</Link>)
 }
 
 function SelectCity() {
@@ -135,7 +133,7 @@ export function SearchDoctorsPage() {
 					}
 					{
 						doctors.map((doctor, index) => {
-							return <DoctorCard key={index} doctor={doctor}></DoctorCard>
+							return <DoctorCard key={index} doctor={doctor}></DoctorCard>;
 						})
 					}
 				</div>

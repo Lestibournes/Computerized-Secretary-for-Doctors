@@ -14,3 +14,5 @@ export const fb = firebase;
 export const db = firebase.firestore();
 export const fn = firebase.functions();
 export const st = firebase.storage();
+
+// fn.useEmulator("localhost", 5001);
