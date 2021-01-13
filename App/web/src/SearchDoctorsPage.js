@@ -16,15 +16,17 @@ function DoctorCard(props) {
 		setProfile(url);
 	});
 
-	let name = props.doctor.user.firstName + " " + props.doctor.user.lastName;
-	let fields = props.doctor.fields;
-	let clinics = props.doctor.clinics;
+	const name = props.doctor.user.firstName + " " + props.doctor.user.lastName;
+	const fields = props.doctor.fields;
+	const clinics = props.doctor.clinics;
+	const clinic = props.clinic;
 
-	return (<Link to={"/create/" + props.doctor.id} className="searchCard">
+	return (<Link to={"/create/" + props.doctor.id + "/" + clinic.id} className="searchCard">
 		<img src={profile} />
 		<div className="name"><big>{name}</big></div>
 		<div className="fields"><small>{fields.map((field, index) => {return field + (index < fields.length - 1 ? " " : "")})}</small></div>
-		<div className="location"><small>{clinics.map((clinic, index) => {return clinic.name + (index < clinics.length - 1 ? " " : "")})}</small></div>
+		{/* <div className="location"><small>{clinics.map((clinic, index) => {return clinic.name + (index < clinics.length - 1 ? " " : "")})}</small></div> */}
+		<div className="location"><small>{clinic.name}</small></div>
 		</Link>)
 }
 
@@ -118,7 +120,7 @@ export function SearchDoctorsPage() {
 							<TextInput
 								label="Name"
 								name="name"
-								type="text"
+								type="search"
 								placeholder="Yoni Robinson"
 							/>
 							<SelectCity/>
@@ -132,8 +134,10 @@ export function SearchDoctorsPage() {
 						(doctors.length === 0 ? "No doctors found" : "")
 					}
 					{
-						doctors.map((doctor, index) => {
-							return <DoctorCard key={index} doctor={doctor}></DoctorCard>;
+						doctors.map(doctor => {
+							return doctor.clinics.map((clinic, j) => {
+								return <DoctorCard key={doctor.id + ", " + clinic.id} doctor={doctor} clinic={clinic}></DoctorCard>;
+							})
 						})
 					}
 				</div>

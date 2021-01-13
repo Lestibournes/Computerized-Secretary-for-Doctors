@@ -6,6 +6,7 @@
 	--warning-color-pressed: #af5a76;
 	--radius: 5px;
 	--margin: 15px;
+	--margin-small: 5px;
 	--highlight: rgb(0, 128, 128);;
 	--highlight-pale: rgb(0, 166.4, 166.4);
 	--highlight-dark: rgb(0, 100, 100);
@@ -19,6 +20,7 @@
 	--control-background-pressed: gray;
 	--control-background-hover: rgb(229.5, 229.5, 229.5);
 	--control-padding: 1em;
+	--padding: 5px;
 	--border-width: 5px;
 }
 
@@ -115,6 +117,8 @@ h1 {
 }
 
 .searchCard {
+	text-decoration: none;
+	color: var(--color);
 	display: grid;
 	grid-template-areas:
 		'pic ...'
@@ -124,7 +128,7 @@ h1 {
 	gap: var(--margin);
 	border: var(--border-width) solid var(--control-background);
 	border-radius: var(--radius);
-	padding: var(--control-padding);
+	padding: var(--padding);
 }
 
 .searchCard img {
@@ -233,3 +237,71 @@ div.error {
 .row {
 	margin-bottom: var(--margin);
 }
+
+.picker {
+	display: grid;
+	grid-template-rows: auto 1fr;
+	gap: var(--margin-small);
+}
+
+.picker .header {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: var(--margin-small);
+	place-items: center;
+}
+
+.picker .body {
+	background-color: var(--control-background);
+	padding: var(--padding);
+	border-radius: var(--radius);
+	display: grid;
+	grid-template-columns: auto auto auto auto auto auto auto;
+	gap: var(--margin-small);
+}
+
+.picker .body .list {
+	background-color: var(--alt-color);
+	display: flex;
+	flex-flow: column;
+	gap: var(--margin-small);
+	width: 100%;
+}
+
+.selectitem {
+	padding: var(--padding);
+	border: thin dashed black;
+	border-radius: var(--radius);
+	text-transform: capitalize;
+	width: 100%;
+}
+
+.day {
+	display: grid;
+	border: none;
+	place-items: center;
+	gap: var(--margin-small);
+	background-color: var(--alt-color);
+	padding: var(--padding);
+	border-radius: var(--radius);
+	text-transform: capitalize;
+}
+
+.selectitem.selected, .day.selected {
+	color: white;
+	background-color: var(--highlight);
+}
+
+.faded {
+	color: var(--control-background-pressed);
+	background-color: var(--control-background-hover);
+}
+
+
+/* .selectitem:first-child {
+	border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.selectitem:last-child {
+	border-radius: 0 0 var(--radius) var(--radius);
+} */

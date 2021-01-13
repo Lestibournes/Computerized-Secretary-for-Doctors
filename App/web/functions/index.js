@@ -52,7 +52,9 @@ async function getDoctors(name, field, city) {
 				});
 				await doctor.doctor.clinics[i].get().then(clinic_snapshot => {
 					if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
-						doctor.clinics.push(clinic_snapshot.data());
+						let temp = clinic_snapshot.data();
+						temp.id = clinic_snapshot.id;
+						doctor.clinics.push(temp);
 					}
 				});
 			};

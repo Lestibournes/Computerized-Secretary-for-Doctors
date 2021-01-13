@@ -27,7 +27,7 @@ ReactDOM.render(
 				<Route path="/register">
 					<RegisterPage />
 				</Route>
-				<Route path="/create/:id">
+				<Route path="/create/:doctor/:clinic">
 					<MakeAppointmentPage />
 				</Route>
 			</Switch>
