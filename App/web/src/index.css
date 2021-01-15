@@ -117,6 +117,7 @@ h1 {
 }
 
 .searchCard {
+	cursor: pointer;
 	text-decoration: none;
 	color: var(--color);
 	display: grid;
@@ -251,13 +252,38 @@ div.error {
 	place-items: center;
 }
 
+.picker.list .header {
+	grid-template-columns: 1fr;
+	padding: var(--control-padding);
+	place-items: start;
+}
+
+.picker.date .header .label {
+	background-color: var(--control-background);
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	border: none;
+	border-radius: var(--radius);
+	display: grid;
+	grid-template-columns: auto;
+	place-content: center;
+}
+
 .picker .body {
 	background-color: var(--control-background);
 	padding: var(--padding);
 	border-radius: var(--radius);
 	display: grid;
-	grid-template-columns: auto auto auto auto auto auto auto;
 	gap: var(--margin-small);
+}
+
+.picker.list .body {
+	grid-template-columns: auto;
+}
+
+.picker.date .body {
+	grid-template-columns: auto auto auto auto auto auto auto;
 }
 
 .picker .body .list {
@@ -265,18 +291,23 @@ div.error {
 	display: flex;
 	flex-flow: column;
 	gap: var(--margin-small);
-	width: 100%;
+	padding: var(--padding);
+	min-width: 12.5em;
+	overflow: scroll;
+	height: 500px;
 }
 
 .selectitem {
+	cursor: pointer;
 	padding: var(--padding);
 	border: thin dashed black;
 	border-radius: var(--radius);
 	text-transform: capitalize;
-	width: 100%;
+	/* width: 100%; */
 }
 
 .day {
+	cursor: pointer;
 	display: grid;
 	border: none;
 	place-items: center;

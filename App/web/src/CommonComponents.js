@@ -61,9 +61,9 @@ export const SelectList = ({ label, options, selected, ...props}) => {
 	}
 	
 	return (
-		<div className="picker">
+		<div className="picker list">
 			<div className="header">
-				<label htmlFor={props.id}>{label}:</label>
+				<div className="label"><label htmlFor={props.id}>{label}:</label></div>
 				<input type="hidden" className={error} {...field} {...props} />
 			</div>
 			<div className="body">
@@ -189,12 +189,24 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 	}
 
 	return (
-		<div className="picker">
+		<div className="picker date">
 			<div className="header">
-				<button>{"<"}</button>
-				{month_names[month] + " " + year}
+				<button onClick={
+					() => {
+						let date = getPreviousMonth(month, year);
+						// date.day = null;
+						props.onClick(date);
+					}
+					}>{"<"}</button>
+				<div className="label">{month_names[month] + " " + year}</div>
 				<input type="hidden" className={error} {...field} {...props} />
-				<button>{">"}</button>
+				<button onClick={
+					() => {
+						let date = getNextMonth(month, year);
+						// date.day = null;
+						props.onClick(date);
+					}
+					}>{">"}</button>
 			</div>
 			<div className="body">
 				{

@@ -6,6 +6,8 @@ import { TextInput, SelectList, Select, MainHeader, useAuth, SelectDate } from "
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn, st } from './init';
 
+const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
+
 /*
 TODO
 I want to have the appointment set for the doctor and the clinic together,
@@ -24,12 +26,14 @@ export function MakeAppointmentPage(props) {
 	const auth = useAuth();
 	const { doctor, clinic } = useParams(); //The ID of the doctor and clinic.
 	const [type, setType] = useState(null);
-	const [day, setDay] = useState(1);
+	const [day, setDay] = useState(null);
 	const [month, setMonth] = useState(0);
 	const [year, setYear] = useState(2021);
+	const [time, setTime] = useState(null);
+	const [times, setTimes] = useState([]);
 
-	const types = ["new patient", "regular", "follow up"];
-
+	const types = ["new patient", "regular", "follow up"];//Temporary. Should be read from the doctor's configuration on the server.
+	
 	return (
 		<div className="page">
 			{!auth.user ? <Redirect to="/login" /> : null }
@@ -53,7 +57,7 @@ export function MakeAppointmentPage(props) {
 						<Form>
 							{/* Put appointment-making widgets here. */}
 							<SelectList
-								label="Type"
+								label="Appointment Type"
 								id="type"
 								options={types}
 								selected={type}
@@ -68,7 +72,35 @@ export function MakeAppointmentPage(props) {
 									setDay(date.day);
 									setMonth(date.month);
 									setYear(date.year);
+
+									if (day != null && month != null && year != null) {
+										getAvailableAppointments({
+											doctor: "RLwoRslmYWvIr3kW4edP",
+											clinic: "zCrg0onqcqNEmQPimqg2",
+											date: {
+												year: year,
+												month: month,
+												day: day
+											},
+											type: null
+										}).then(results => {
+												const times = [];
+								
+												results.data.forEach(result => {
+													times.push(result.start.hours + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
+												});
+								
+												setTimes(times);
+											});
+									}
 								}}
+							/>
+							<SelectList
+								label="Time Slot"
+								id="time"
+								options={times}
+								selected={time}
+								onClick={(time) => setTime(time)}
 							/>
 						</Form>
 					</Formik>
