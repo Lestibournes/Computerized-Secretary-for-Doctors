@@ -5,9 +5,12 @@ const functions = require('firebase-functions');
 
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
+const { ArraySchema } = require("yup");
 
 admin.initializeApp();
 const db = admin.firestore();
+
+const day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 // Public interface:
 exports.searchDoctors = functions.https.onCall((data, context) => {
@@ -16,6 +19,10 @@ exports.searchDoctors = functions.https.onCall((data, context) => {
 
 exports.getAvailableAppointments = functions.https.onCall((data, context) => {
 	return getAvailableAppointments(data.doctor, data.clinic, data.date, data.type);
+});
+
+exports.makeAppointment = functions.https.onCall((data, context) => {
+	return makeAppointment(data.doctor, data.clinic, data.date, data.time, data.type);
 });
 
 // Helper methods:
@@ -30,6 +37,122 @@ const stringContains = (text, search) => {
 	}
 
 	return false;
+}
+
+const compare_time = (now, then) => {
+	if (now.hours > then.hours || (now.hours == then.hours && now.minutes > then.minutes)) return 1;
+	else if (now.hours == then.hours && now.minutes == then.minutes) return 0;
+	else return -1;
+};
+
+const increment_time = (now, minutes) => {
+	now.minutes += minutes;
+	now.hours += Math.floor(now.minutes / 60);
+	now.minutes %= 60;
+};
+
+/**
+Get all occupied time slots for a specified date.
+
+@param doctor is the id of the doctor
+@param clinic is the id of the clinic
+@param date is an object with the following numerical fields: day, month, year
+**/
+async function getAppointments(doctor, clinic, date) {
+	// The time from the server is in UTC with no timezone offset data.
+
+	// Set the time range for the appointments to be exactly the day in question:
+	const start_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day));
+	const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
+	const week_day = new Date(date.year, date.month, date.day).getDay();
+
+	// First get all of the booked time ranges:
+	const appointments = [];
+
+	await db.collection("appointments")
+	.where("clinic", "==", clinic)
+	.where("doctor", "==", doctor)
+	.where("start", ">=", start_day)
+	.where("start", "<", end_day)
+	.get().then(snapshots => {
+		snapshots.forEach(snapshot => {
+			const start_time = {
+				hours: snapshot.data().start.toDate().getHours(),
+				minutes: snapshot.data().start.toDate().getMinutes()
+			};
+
+			let end_time = {
+				hours: start_time.hours,
+				minutes: start_time.minutes
+			}
+
+			increment_time(end_time, snapshot.data().duration);
+
+			appointments.push({
+				start: start_time,
+				end: end_time
+			});
+		});
+	});
+
+	return appointments;
+}
+
+// Check if the speciefied time slot is available.
+// Return 1 if there is a collision, 1 if there isn't.
+const appointmentCollides = (appointments, start, end) => {
+	let collides = 0;
+	
+	if (appointments.length > 0) {
+		appointments.forEach(appointment => {
+			if ((compare_time(start, appointment.start) >= 0 && compare_time(start, appointment.end) < 0) ||
+					(compare_time(end, appointment.start) >= 0 && compare_time(end, appointment.end) < 0)) {
+				collides = 1;
+				return;
+			}
+		});
+	}
+
+	return collides;
+}
+
+async function isAvailable(doctor, clinic, date, time, type) {
+	const appointments = getAppointments(doctor, clinic, date);
+	let okay = 0;
+	let slots = [];
+	
+	await db.collection("slots")
+	.where("clinic", "==", clinic)
+	.where("doctor", "==", doctor)
+	.get().then(snapshots => {
+		snapshots.forEach(snapshot => {
+			const weekly = new Map(Object.entries(snapshot.data().weekly));
+			
+			if (weekly.has(day_names[week_day])) {
+				const schedule = weekly.get(day_names[week_day]);
+
+				schedule.forEach(slot => {
+					const now = {
+						hours: slot.start.toDate().getHours(),
+						minutes: slot.start.toDate().getMinutes()
+					}
+	
+					const end = {
+						hours: slot.end.toDate().getHours(),
+						minutes: slot.end.toDate().getMinutes()
+					}
+
+					if (compare_time(time.start, now) >= 0 && compare_time(time.end, end) <= 0 && appointmentCollides(appointments, time.start, time.end) == 0) {
+						okay = 1;
+						return;
+					}
+				});
+			}
+		});
+	});
+
+	// Return the available time slots:
+	return slots;
 }
 
 // API implementation code:
@@ -116,46 +239,8 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
 	const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
 	const week_day = new Date(date.year, date.month, date.day).getDay();
 
-	const compare_time = (now, then) => {
-		if (now.hours > then.hours || (now.hours == then.hours && now.minutes > then.minutes)) return 1;
-		else if (now.hours == then.hours && now.minutes == then.minutes) return 0;
-		else return -1;
-	};
-
-	const increment_time = (now, minutes) => {
-		now.minutes += minutes;
-		now.hours += Math.floor(now.minutes / 60);
-		now.minutes %= 60;
-	};
-
 	// First get all of the booked time ranges:
-	const appointments = [];
-
-	await db.collection("appointments")
-	.where("clinic", "==", clinic)
-	.where("doctor", "==", doctor)
-	.where("start", ">=", start_day)
-	.where("start", "<", end_day)
-	.get().then(snapshots => {
-		snapshots.forEach(snapshot => {
-			const start_time = {
-				hours: snapshot.data().start.toDate().getHours(),
-				minutes: snapshot.data().start.toDate().getMinutes()
-			};
-
-			const end_time = {
-				hours: start_time.hours,
-				minutes: start_time.minutes
-			}
-
-			increment_time(end_time, snapshot.data().duration);
-
-			appointments.push({
-				start: start_time,
-				end: end_time
-			});
-		});
-	});
+	let appointments = await getAppointments(doctor, clinic, date);
 
 	// Then get all of the time slots while leaving out the ones that are already booked:
 	let slots = [];
@@ -166,56 +251,64 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
 	.get().then(snapshots => {
 		snapshots.forEach(snapshot => {
 			const weekly = new Map(Object.entries(snapshot.data().weekly));
-			const schedule = weekly.get(day_names[week_day]);
 			
-			schedule.forEach(slot => {
-				const now = {
-					hours: slot.start.toDate().getHours(),
-					minutes: slot.start.toDate().getMinutes()
-				}
+			if (weekly.has(day_names[week_day])) {
+				const schedule = weekly.get(day_names[week_day]);
 
-				const end = {
-					hours: slot.end.toDate().getHours(),
-					minutes: slot.end.toDate().getMinutes()
-				}
-
-				while (compare_time(now, end) < 0) {
-					const end_time = {
-						hours: now.hours,
-						minutes: now.minutes
+				schedule.forEach(slot => {
+					let now = {
+						hours: slot.start.toDate().getHours(),
+						minutes: slot.start.toDate().getMinutes()
 					}
-
-					increment_time(end_time, slot.size);
-					
-					let okay = 1;
-
-					appointments.forEach(appointment => {
-						if ((compare_time(now, appointment.start) >= 0 && compare_time(now, appointment.end) < 0) || (compare_time(end_time, appointment.start) >= 0 && compare_time(end_time, appointment.end) < 0)) {
-							okay = 0;
-							return;
+	
+					const end = {
+						hours: slot.end.toDate().getHours(),
+						minutes: slot.end.toDate().getMinutes()
+					}
+	
+					while (compare_time(now, end) < 0) {
+						let end_time = {
+							hours: now.hours,
+							minutes: now.minutes
 						}
-					});
-
-					if (okay) {
-						slots.push({
-							start: {
-								hours: now.hours,
-								minutes: now.minutes
-							},
-							end: {
-								hours: end_time.hours,
-								minutes: end_time.minutes
-							}
-						});
+	
+						increment_time(end_time, slot.size);
+	
+						if (appointmentCollides(appointments, now, end_time) == 0) {
+							slots.push({
+								start: {
+									hours: now.hours,
+									minutes: now.minutes
+								},
+								end: {
+									hours: end_time.hours,
+									minutes: end_time.minutes
+								}
+							});
+						}
+	
+						increment_time(now, slot.size);
 					}
-
-					increment_time(now, slot.size);
-				}
-			});
+				});
+			}
 		});
 	});
 
-	console.log(slots);
 	// Return the available time slots:
 	return slots;
+}
+
+function makeAppointment(doctor, clinic, date, time, type) {
+	const appointments = getAppointments(doctor, clinic, date);
+
+	if (isAvailable(doctor, clinic, date, time, type)) {
+		return db.collection("appointments").add({
+			clinic: clinic,
+			doctor: doctor,
+			type: type,
+			start: new Date(date.year, date.month, date.day, time.hours, time.minutes, 0),
+			patient: null,
+			duration: 15
+		})
+	}
 }

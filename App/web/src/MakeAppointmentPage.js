@@ -5,9 +5,10 @@ import * as Yup from 'yup';
 import { TextInput, SelectList, Select, MainHeader, useAuth, SelectDate } from "./CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn, st } from './init';
+import { string } from 'yup/lib/locale';
 
 const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
-
+const makeAppointment = fn.httpsCallable("makeAppointment");
 /*
 TODO
 I want to have the appointment set for the doctor and the clinic together,
@@ -26,14 +27,20 @@ export function MakeAppointmentPage(props) {
 	const auth = useAuth();
 	const { doctor, clinic } = useParams(); //The ID of the doctor and clinic.
 	const [type, setType] = useState(null);
-	const [day, setDay] = useState(null);
-	const [month, setMonth] = useState(0);
-	const [year, setYear] = useState(2021);
+	// const [day, setDay] = useState(null);
+	// const [month, setMonth] = useState(0);
+	// const [year, setYear] = useState(2021);
 	const [time, setTime] = useState(null);
 	const [times, setTimes] = useState([]);
+	const [date, setDate] = useState({
+		year: 2021,
+		month: 0,
+		day: null
+	});
 
 	const types = ["new patient", "regular", "follow up"];//Temporary. Should be read from the doctor's configuration on the server.
-	
+	const tzos = (new Date()).getTimezoneOffset() / 60;
+
 	return (
 		<div className="page">
 			{!auth.user ? <Redirect to="/login" /> : null }
@@ -51,7 +58,18 @@ export function MakeAppointmentPage(props) {
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
-							// Set the appointment on the server.
+							// Set the appointment on the server:
+							makeAppointment({
+								doctor: doctor,
+								clinic: clinic,
+								date: date,
+								time: {
+									hours: ("" + times[time]).split(":")[0],
+									minutes: ("" + times[time]).split(":")[1]
+								},
+								type: values.type}).then(() => {
+								alert("success!");
+							});
 						}}
 					>
 						<Form>
@@ -65,29 +83,26 @@ export function MakeAppointmentPage(props) {
 							/>
 							<SelectDate
 								id="date"
-								day={day}
-								month={month}
-								year={year}
+								day={date.day}
+								month={date.month}
+								year={date.year}
 								onClick={(date) => {
-									setDay(date.day);
-									setMonth(date.month);
-									setYear(date.year);
+									// setDay(date.day);
+									// setMonth(date.month);
+									// setYear(date.year);
+									setDate(date);
 
-									if (day != null && month != null && year != null) {
+									if (date.day != null && date.month != null && date.year != null) {
 										getAvailableAppointments({
 											doctor: "RLwoRslmYWvIr3kW4edP",
 											clinic: "zCrg0onqcqNEmQPimqg2",
-											date: {
-												year: year,
-												month: month,
-												day: day
-											},
-											type: null
+											date: date,
+											type: type
 										}).then(results => {
 												const times = [];
-								
+
 												results.data.forEach(result => {
-													times.push(result.start.hours + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
+													times.push((result.start.hours - tzos) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
 												});
 								
 												setTimes(times);
@@ -102,6 +117,7 @@ export function MakeAppointmentPage(props) {
 								selected={time}
 								onClick={(time) => setTime(time)}
 							/>
+							<button className="okay" type="submit">Submit</button>
 						</Form>
 					</Formik>
 							<h3>
