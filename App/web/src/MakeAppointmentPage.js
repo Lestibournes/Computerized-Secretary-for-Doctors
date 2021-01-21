@@ -4,7 +4,7 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput, SelectList, Select, MainHeader, useAuth, SelectDate } from "./CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
-import { db, fn, st } from './init';
+import { db, fb, fn, st } from './init';
 import { string } from 'yup/lib/locale';
 
 const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
@@ -22,7 +22,6 @@ The server side should make the determination in order to protect patient
 privacy, and also the server side should handle the setting of the
 appointment, making sure that it's valid.
  */
-
 export function MakeAppointmentPage(props) {
 	const auth = useAuth();
 	const { doctor, clinic } = useParams(); //The ID of the doctor and clinic.
@@ -47,7 +46,7 @@ export function MakeAppointmentPage(props) {
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 
-				<div className="searchbar">
+				<div className="appointment_picker">
 					<h1>Set Appointment</h1>
 					<Formik
 						initialValues={{}}
@@ -58,16 +57,18 @@ export function MakeAppointmentPage(props) {
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
+
 							// Set the appointment on the server:
 							makeAppointment({
 								doctor: doctor,
 								clinic: clinic,
+								patient: auth.user.uid,
 								date: date,
 								time: {
 									hours: ("" + times[time]).split(":")[0],
 									minutes: ("" + times[time]).split(":")[1]
 								},
-								type: values.type}).then(() => {
+								type: types[type]}).then(() => {
 								alert("success!");
 							});
 						}}
@@ -117,15 +118,11 @@ export function MakeAppointmentPage(props) {
 								selected={time}
 								onClick={(time) => setTime(time)}
 							/>
-							<button className="okay" type="submit">Submit</button>
+							<div className="panel">
+								<button className="okay" type="submit">Submit</button>
+							</div>
 						</Form>
 					</Formik>
-							<h3>
-							{doctor}
-							</h3>
-							<h3>
-							{clinic}
-							</h3>
 				</div>
 			</div>
 		</div>

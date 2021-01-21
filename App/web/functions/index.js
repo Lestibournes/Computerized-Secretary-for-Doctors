@@ -172,7 +172,7 @@ exports.getAvailableAppointments = functions.https.onCall((data, context) => {
 });
 
 exports.makeAppointment = functions.https.onCall((data, context) => {
-	return makeAppointment(data.doctor, data.clinic, data.date, data.time, data.type);
+	return makeAppointment(data.doctor, data.clinic, data.patient, data.date, data.time, data.type);
 });
 
 // Helper methods:
@@ -522,24 +522,28 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
 
 /**
  * Make and appointment, if the time slot that is requested is available.
+ * @todo use session tokens to verify that the user making the appointment
+ * is the user for which the appointment is being made.
+ * @todo set appointment duration based on rules set by the doctor/clinic.
  * @param {string} doctor The id of the doctor
  * @param {string} clinic The id of the clinic
+ * @param {string} patient The id of the patient
  * @param {SimpleDate} date The date of the appointment
  * @param {Time} time The time of the appointment
  * @param {string} type The type of appointment
  * @returns A promise that will complete once the appointment has been added to the database.
  */
-function makeAppointment(doctor, clinic, date, time, type) {
+function makeAppointment(doctor, clinic, patient, date, time, type) {
 	const appointments = getAppointments(doctor, clinic, date);
 
 	if (isAvailable(doctor, clinic, date, time, type)) {
 		return db.collection("appointments").add({
 			clinic: clinic,
 			doctor: doctor,
-			type: type,
+			patient: patient,
 			start: new Date(date.year, date.month, date.day, time.hours, time.minutes, 0),
-			patient: null,
-			duration: 15
+			duration: 15,
+			type: type
 		})
 	}
 }

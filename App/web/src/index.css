@@ -110,6 +110,19 @@ h1 {
 	column-gap: var(--margin);
 }
 
+.appointment_picker form {
+	display: grid;
+	gap: var(--margin);
+	grid-template-areas:
+	'... ... ...'
+	'... ... panel';
+}
+
+.appointment_picker form .panel {
+	grid-area: panel;
+	gap: var(--margin);
+}
+
 .searchresults {
 	display: flex;
 	flex-direction: column;
