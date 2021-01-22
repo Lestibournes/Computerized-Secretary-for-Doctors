@@ -162,6 +162,7 @@ class SimpleDate {
 		return this.day;
 	}
 }
+
 // Public interface of server functions:
 exports.searchDoctors = functions.https.onCall((data, context) => {
 	return searchDoctors(data.name, data.field, data.city);
