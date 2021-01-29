@@ -60,7 +60,7 @@ class Time {
 	 * @returns {Time} A new instance of Time where the values have been incremented by the specified number of
 	 * minutes relative to the current time.
 	 */
-	incrementTime(minutes) {
+	incrementMinutes(minutes) {
 		let tmp_minutes = this.minutes;
 		let tmp_hours = this.hours;
 
@@ -123,6 +123,15 @@ class Slot {
 			 (this.end.compareTime(that.start) >= 0 && this.end(that.end) < 0))
 		);
 	}
+
+	/**
+	 * Check if this time slot contains that other time slot in its entirety.
+	 * @param {Slot} that Another time slot.
+	 * @returns {boolean} True if it's completely contained. False if not.
+	 */
+	contains(that) {
+		return that.start.compareTime(this.start) >= 0 && that.end.compareTime(this.end) <= 0;
+	}
 }
 
 /**
@@ -133,7 +142,7 @@ class SimpleDate {
 	 * Create a new SimpleDate object.
 	 * @param {number} year Can be any value. 
 	 * @param {number} month valid values: 0...11
-	 * @param {number} day valid values: 0...6 and null.
+	 * @param {number} day valid values: 0...31 (depends on the month) and null.
 	 */
 	constructor(year, month, day) {
 		this.year = year;
@@ -156,10 +165,44 @@ class SimpleDate {
 	}
 
 	/**
-	 * @returns {number} The day. Values 0...6 and null.
+	 * @returns {number} The day of the month. Values 0...31 and null.
 	 */
 	get day() {
 		return this.day;
+	}
+
+	/**
+	 * @returns {number} The day of the week. Values 0...6.
+	 */
+	get weekday() {
+		return new Date(date.year, date.month, date.day).getDay();
+	}
+
+	/**
+	 * Get the next month on the calendar.
+	 * @returns {SimpleDate} A new date representing the next month on the calendar.
+	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
+	 */
+	getNextMonth() {
+		if (this.month == 11) {
+			return new SimpleDate(this.year + 1, 0, this.day);
+		}
+		else {
+			return new SimpleDate(this.year, this.month + 1, this.day);
+		}
+	}
+	/**
+	 * Get the previous month on the calendar.
+	 * @returns {SimpleDate} A new date representing the previous month on the calendar.
+	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
+	 */
+	getPreviousMonth() {
+		if (this.month == 0) {
+			return new SimpleDate(this.year - 1, 11, this.day);
+		}
+		else {
+			return new SimpleDate(this.year, this.month - 1, this.day);
+		}
 	}
 }
 
@@ -224,14 +267,10 @@ const increment_time = (now, minutes) => {
 
 /**
  * Get all occupied time slots for a specified date.
- * @todo Switch to using SimpleDate, Time, and Slot objects instead of ad-hoc objects.
  * @param {string} doctor The id of the doctor
  * @param {string} clinic The id of the clinic
  * @param {SimpleDate} date The day in question
- * @returns {Slot[]} Array of occupied time slots, each an object in the format of:
- * {start: time, end: time}
- * where time is an object in the format of:
- * {hours: number, minutes: number}
+ * @returns {Slot[]} Array of occupied time slots.
  */
 async function getAppointments(doctor, clinic, date) {
 	// The time from the server is in UTC with no timezone offset data.
@@ -240,7 +279,6 @@ async function getAppointments(doctor, clinic, date) {
 	// Set the time range for the appointments to be exactly the day in question:
 	const start_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day));
 	const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
-	const week_day = new Date(date.year, date.month, date.day).getDay();
 
 	// First get all of the booked time ranges:
 	const appointments = [];
@@ -252,22 +290,12 @@ async function getAppointments(doctor, clinic, date) {
 	.where("start", "<", end_day)
 	.get().then(snapshots => {
 		snapshots.forEach(snapshot => {
-			const start_time = {
-				hours: snapshot.data().start.toDate().getHours(),
-				minutes: snapshot.data().start.toDate().getMinutes()
-			};
+			const start_time = new Time(snapshot.data().start.toDate().getHours(), snapshot.data().start.toDate().getMinutes());
+			const end_time = new Time(snapshot.data().start.toDate().getHours(), snapshot.data().start.toDate().getMinutes());
 
-			let end_time = {
-				hours: start_time.hours,
-				minutes: start_time.minutes
-			}
+			end_time.incrementMinutes(snapshot.data().duration);
 
-			increment_time(end_time, snapshot.data().duration);
-
-			appointments.push({
-				start: start_time,
-				end: end_time
-			});
+			appointments.push(new Slot(start_time, end_time));
 		});
 	});
 
@@ -276,29 +304,24 @@ async function getAppointments(doctor, clinic, date) {
 
 /**
  * Check if the speciefied time slot is available.
- * @todo use a single Slot object to represent the start and end times.
- * @todo use a boolean for the return value.
- * @todo Switch to using SimpleDate, Time, and Slot objects instead of ad-hoc objects.
  * @param {Slot[]} appointments An array of time slots that have already been booked.
- * @param {Time} start The start of the time slot to be checked for availability.
- * @param {Time} end The end of the time slot to be checked for availability.
- * @returns {number} Return true if there is a collision, false if there isn't. (Temporarily returning 0,1)
+ * @param {Slot} slot
+ * @returns {boolean} Return true if there is a collision, false if there isn't. (Temporarily returning 0,1)
  */
-const appointmentCollides = (appointments, start, end) => {
+const appointmentCollides = (appointments, slot) => {
 	let collides = false;
 	
 	if (appointments.length > 0) {
 		appointments.forEach(appointment => {
 			// TODO use Slot.collides(other):
-			if ((compare_time(start, appointment.start) >= 0 && compare_time(start, appointment.end) < 0) ||
-					(compare_time(end, appointment.start) >= 0 && compare_time(end, appointment.end) < 0)) {
+			if (slot.collides(appointment)) {
 				collides = true;
 				return;
 			}
 		});
 	}
 
-	return (collides ? 1 : 0);
+	return collides;
 }
 
 /**
@@ -308,11 +331,11 @@ const appointmentCollides = (appointments, start, end) => {
  * @param {string} doctor The id of the doctor for which the appointment is being requested.
  * @param {string} clinic The id of the clinic for which the appointment is being requested.
  * @param {SimpleDate} date The requested date of the appointment.
- * @param {Time} time The requested time of the appointment.
+ * @param {Slot} slot The requested time of the appointment.
  * @param {string} type The type of appointment.
  * @returns {boolean} true if available, false if unavailable (temporarily returning 0,1)
  */
-async function isAvailable(doctor, clinic, date, time, type) {
+async function isAvailable(doctor, clinic, date, slot, type) {
 	// Get all the unavailable time slots:
 	const appointments = getAppointments(doctor, clinic, date);
 
@@ -337,20 +360,12 @@ async function isAvailable(doctor, clinic, date, time, type) {
 
 				// The schedule can consist of multiple shifts. Check each of them:
 				schedule.forEach(slot => {
-					// TODO use Slot objects:
-					const start = {
-						hours: slot.start.toDate().getHours(),
-						minutes: slot.start.toDate().getMinutes()
-					}
-	
-					const end = {
-						hours: slot.end.toDate().getHours(),
-						minutes: slot.end.toDate().getMinutes()
-					}
+					const shift = new Slot(new Time(slot.start.toDate().getHours(), slot.start.toDate().getMinutes()),
+																 new Time(slot.end.toDate().getHours(), slot.end.toDate().getMinutes()));
 
 					// Check if the requested slot for the appointment is both within the time
 					// limit of the shift and doesn't collide with an existing appointment:
-					if (compare_time(time.start, start) >= 0 && compare_time(time.end, end) <= 0 && appointmentCollides(appointments, time.start, time.end) == 0) {
+					if (shift.contains(slot) && !appointmentCollides(appointments, slot)) {
 						okay = true;
 						return;
 					}
@@ -360,7 +375,7 @@ async function isAvailable(doctor, clinic, date, time, type) {
 	});
 
 	// Return the available time slots:
-	return (okay ? 1 : 0);
+	return okay;
 }
 
 // API implementation code:
@@ -372,7 +387,7 @@ async function isAvailable(doctor, clinic, date, time, type) {
  * @param {string} name The name of the doctor.
  * @param {string} field The doctor's specialization.
  * @param {string} city The city in which service is being sought.
- * @returns {{id: string, user: object, doctor: object, clinics: object[], fields: string[]}[]} An array of the data of matching doctors.
+ * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}[]} An array of the data of matching doctors.
  */
 async function searchDoctors(name, field, city) {
 	// Fetch the data of all the doctor documents:
@@ -380,10 +395,12 @@ async function searchDoctors(name, field, city) {
 
 	await db.collection("doctors").get().then(snapshots => {
 		snapshots.forEach(snapshot => {
+			let doctor = snapshot.data();
+			doctor.id = snapshot.id;
+
 			doctors.push({
-				id: null, // The user id of the user associated with this doctor profile.
+				doctor: doctor, // The doctor data.
 				user: null, // The user data.
-				doctor: snapshot.data(), // The doctor data.
 				clinics: [], // An array of the data of all the matching clinics associated with this doctor.
 				fields: [], // An array of the ids of all the matching specializations of this doctor.
 			});
@@ -393,8 +410,8 @@ async function searchDoctors(name, field, city) {
 	for (const doctor of doctors) {
 		// Get the user data from refs:
 		await doctor.doctor.user.get().then(user_snapshot => {
-			doctor.id = user_snapshot.id;
 			doctor.user = user_snapshot.data();
+			doctor.user.id = user_snapshot.id;
 		});
 
 		// Check if the name is unspecified or is a match:
@@ -407,7 +424,9 @@ async function searchDoctors(name, field, city) {
 				await doctor.doctor.fields[i].get().then(field_snapshot => {
 					// Check if the field is unspecified or is a match:
 					if ((field && stringContains(field_snapshot.id, field)) || !field) {
-						doctor.fields.push(field_snapshot.id);
+						let field_data = field_snapshot;
+						field_data.id = field_snapshot.id;
+						doctor.fields.push(field_data);
 					}
 				});
 			}
@@ -417,9 +436,9 @@ async function searchDoctors(name, field, city) {
 				await doctor.doctor.clinics[i].get().then(clinic_snapshot => {
 					// Check if the field is unspecified or is a match:
 					if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
-						let temp = clinic_snapshot.data();
-						temp.id = clinic_snapshot.id;
-						doctor.clinics.push(temp);
+						let city_data = clinic_snapshot.data();
+						city_data.id = clinic_snapshot.id;
+						doctor.clinics.push(city_data);
 					}
 				});
 			};
@@ -449,12 +468,10 @@ async function searchDoctors(name, field, city) {
  */
 async function getAvailableAppointments(doctor, clinic, date, type) {
 	// The time from the server is in UTC with no timezone offset data.
-	const day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 	//Set the time range for the appointments to be exactly the day in question:
 	const start_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day));
 	const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
-	const week_day = new Date(date.year, date.month, date.day).getDay();
 
 	// First get all of the booked time ranges:
 	let appointments = await getAppointments(doctor, clinic, date);
@@ -471,8 +488,8 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
 			const weekly = new Map(Object.entries(snapshot.data().weekly));
 			
 			// Get the schedule for the requested day of the week, if it exists:
-			if (weekly.has(day_names[week_day])) {
-				const schedule = weekly.get(day_names[week_day]);
+			if (weekly.has(day_names[date.weekday])) {
+				const schedule = weekly.get(day_names[date.weekday]);
 
 				// The schedule can consist of multiple shifts. Go over each of them:
 				schedule.forEach(slot => {

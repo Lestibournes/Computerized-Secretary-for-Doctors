@@ -143,6 +143,7 @@ class SimpleDate {
 	/**
 	 * Get the next month on the calendar.
 	 * @returns {SimpleDate} A new date representing the next month on the calendar.
+	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getNextMonth() {
 		if (this.month == 11) {
@@ -155,9 +156,10 @@ class SimpleDate {
 	/**
 	 * Get the previous month on the calendar.
 	 * @returns {SimpleDate} A new date representing the previous month on the calendar.
+	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
-	getPreviousMonth(month, year) {
-		if (month == 0) {
+	getPreviousMonth() {
+		if (this.month == 0) {
 			return new SimpleDate(this.year - 1, 11, this.day);
 		}
 		else {

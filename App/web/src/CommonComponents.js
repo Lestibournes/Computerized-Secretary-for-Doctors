@@ -176,8 +176,18 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 	 */
 	const previous_length = (new Date(previous_month.year, previous_month.month, 0)).getDate();
 
+	/**
+	 * The next month relative to the currently selected month.
+	 */
 	const next_month = getNextMonth(month, year);
 	
+	/**
+	 * Holds all the components representing the days that will appear on the calendar.
+	 * It should hold 42 components, which include the ending of the previous month,
+	 * all of the current month, and the beginning of next month.
+	 * @todo If the month starts on a Sunday, add the last 7 days of the previous month
+	 * so that the current month will start on the 2nd Sunday that is being displayed.
+	 */
 	const days = [];
 
 	for (let i = 1; i <= 42; i++) {
@@ -185,6 +195,7 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 		let className;
 
 		if (i <= startday) {
+			// Set the values and display style for the last days of the previous month before adding the current month:
 			date = {
 				day: i + previous_length - startday,
 				month: previous_month.month,
@@ -193,6 +204,7 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 			className = "faded";
 		}
 		else if (i > current_length) {
+			// Set the values and display style for the first days of the next month after adding the current month:
 			date = {
 				day: i - current_length,
 				month: next_month.month,
@@ -202,6 +214,7 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 			className = "faded";
 		}
 		else {
+			// Set the values and display style for the days of the current month:
 			date = {
 				day: i - startday,
 				month: month,
@@ -211,6 +224,7 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 			className = (day == date.day ? "selected" : "")
 		}
 
+		// Create the component and add it to the array to be displayed:
 		days.push(<div
 			key={date}
 			className={"day " + className}
