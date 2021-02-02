@@ -1,11 +1,10 @@
 //Reactjs:
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { TextInput, SelectList, Select, MainHeader, useAuth, SelectDate } from "./CommonComponents";
+import { SelectList, MainHeader, useAuth, SelectDate } from "./CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
-import { db, fb, fn, st } from './init';
-import { string } from 'yup/lib/locale';
+import { fn } from './init';
 
 const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
 const makeAppointment = fn.httpsCallable("makeAppointment");
@@ -65,11 +64,25 @@ export function MakeAppointmentPage(props) {
 								patient: auth.user.uid,
 								date: date,
 								time: {
-									hours: ("" + times[time]).split(":")[0],
-									minutes: ("" + times[time]).split(":")[1]
+									hours: Number(("" + times[time]).split(":")[0]) + tzos,
+									minutes: Number(("" + times[time]).split(":")[1])
 								},
-								type: types[type]}).then(() => {
-								alert("success!");
+								type: types[type]
+							})
+							.then(value => {
+								if (value.data.messages.length > 0) {
+									for (let i = 0; i < value.data.messages.length; i++) {
+										console.log(value.data.messages[i]);
+									}
+								}
+								else {
+									console.log(value.data.id);
+								}
+								// alert("success! " + value.data);
+							})
+							.catch(reason => {
+								console.log(reason);
+								// alert("failure! " + reason);
 							});
 						}}
 					>

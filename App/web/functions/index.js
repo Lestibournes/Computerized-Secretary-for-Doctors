@@ -13,18 +13,15 @@ admin.initializeApp();
  */
 const db = admin.firestore();
 
-/**
- * The names of the days of the week as used in the database, for easy conversion between how
- * it's stored in the database and how it's represented by the JS Date object.
- */
-const day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-
 // Custom data types:
 /**
  * Represents an time in terms of hours and minutes.
  * Is supposed to be immutable.
  */
 class Time {
+	hours;
+	minutes;
+
 	/**
 	 * Creates a new Time object with the specified number of hours and minutes.
 	 * Only meant for use with non-negative values.
@@ -82,12 +79,19 @@ class Time {
 		else if (this.hours == that.hours && this.minutes == that.minutes) return 0;
 		else return -1;
 	};
+
+	toString() {
+		return (this.hours < 10 ? "0" : "") + this.hours + ":" + (this.minutes < 10 ? "0" : "") + this.minutes;
+	}
 }
 
 /**
  * Represent a segment of time.
  */
-class Slot {
+class TimeRange {
+	start;
+	end;
+
 	/**
 	 * Create a new time slot with the specified start and end times.
 	 * @param {Time} start The beginning of the time slot. Should be a value smaller than end.
@@ -114,23 +118,27 @@ class Slot {
 
 	/**
 	 * Check if this time slot collides with that time slot.
-	 * @param {Slot} that Another time slot.
+	 * @param {TimeRange} that Another time slot.
 	 * @returns {boolean} true if there is a collision, false if there isn't.
 	 */
 	collides(that) {
 		return (
 			((this.start.compareTime(that.start) >= 0 && this.start.compareTime(that.end) < 0) ||
-			 (this.end.compareTime(that.start) >= 0 && this.end(that.end) < 0))
+			 (this.end.compareTime(that.start) > 0 && this.end.compareTime(that.end) <= 0))
 		);
 	}
 
 	/**
 	 * Check if this time slot contains that other time slot in its entirety.
-	 * @param {Slot} that Another time slot.
+	 * @param {TimeRange} that Another time slot.
 	 * @returns {boolean} True if it's completely contained. False if not.
 	 */
 	contains(that) {
 		return that.start.compareTime(this.start) >= 0 && that.end.compareTime(this.end) <= 0;
+	}
+	
+	toString() {
+		return this.start.toString() + "-" + this.end.toString();
 	}
 }
 
@@ -138,6 +146,17 @@ class Slot {
  * A simple and immutable representation of a calendar date.
  */
 class SimpleDate {
+
+	/**
+	 * The names of the days of the week as used in the database, for easy conversion between how
+	 * it's stored in the database and how it's represented by the JS Date object.
+	 */
+	static day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+	year;
+	month;
+	day;
+	
 	/**
 	 * Create a new SimpleDate object.
 	 * @param {number} year Can be any value. 
@@ -175,7 +194,14 @@ class SimpleDate {
 	 * @returns {number} The day of the week. Values 0...6.
 	 */
 	get weekday() {
-		return new Date(date.year, date.month, date.day).getDay();
+		return new Date(this.year, this.month, this.day).getDay();
+	}
+
+	/**
+	 * @returns {string} The name of the day of the week, in lowercase.
+	 */
+	get dayname() {
+		return SimpleDate.day_names[this.weekday];
 	}
 
 	/**
@@ -240,37 +266,11 @@ const stringContains = (text, search) => {
 }
 
 /**
- * Compares between two custom objects that represent time in hourse and minutes.
- * @param {{hours:number, minutes:number}} now One point in time
- * @param {{hours:number, minutes:number}} then Another point in time
- * @returns {number} 1 if now > then, 0 if now == then, -1 if now < then.
- * @deprecated in favor of the use of Time.compareTime(Time)
- */
-const compare_time = (now, then) => {
-	if (now.hours > then.hours || (now.hours == then.hours && now.minutes > then.minutes)) return 1;
-	else if (now.hours == then.hours && now.minutes == then.minutes) return 0;
-	else return -1;
-};
-
-/**
- * Increments the given time object by the given number of minutes. This function will mutate the now parameter.
- * Not tested for anything other than a positive number of minutes.
- * @param {{hours:number, minutes:number}} now The time object that is to be modified.
- * @param {number} minutes The amount of minutes that the now parameter is to be incremented by.
- * @deprecated in favor of the use of Time.incrementTime(number)
- */
-const increment_time = (now, minutes) => {
-	now.minutes += minutes;
-	now.hours += Math.floor(now.minutes / 60);
-	now.minutes %= 60;
-};
-
-/**
  * Get all occupied time slots for a specified date.
  * @param {string} doctor The id of the doctor
  * @param {string} clinic The id of the clinic
  * @param {SimpleDate} date The day in question
- * @returns {Slot[]} Array of occupied time slots.
+ * @returns {TimeRange[]} Array of occupied time slots.
  */
 async function getAppointments(doctor, clinic, date) {
 	// The time from the server is in UTC with no timezone offset data.
@@ -291,11 +291,9 @@ async function getAppointments(doctor, clinic, date) {
 	.get().then(snapshots => {
 		snapshots.forEach(snapshot => {
 			const start_time = new Time(snapshot.data().start.toDate().getHours(), snapshot.data().start.toDate().getMinutes());
-			const end_time = new Time(snapshot.data().start.toDate().getHours(), snapshot.data().start.toDate().getMinutes());
+			const end_time = start_time.incrementMinutes(snapshot.data().duration);
 
-			end_time.incrementMinutes(snapshot.data().duration);
-
-			appointments.push(new Slot(start_time, end_time));
+			appointments.push(new TimeRange(start_time, end_time));
 		});
 	});
 
@@ -304,13 +302,13 @@ async function getAppointments(doctor, clinic, date) {
 
 /**
  * Check if the speciefied time slot is available.
- * @param {Slot[]} appointments An array of time slots that have already been booked.
- * @param {Slot} slot
+ * @param {TimeRange[]} appointments An array of time slots that have already been booked.
+ * @param {TimeRange} slot
  * @returns {boolean} Return true if there is a collision, false if there isn't. (Temporarily returning 0,1)
  */
 const appointmentCollides = (appointments, slot) => {
 	let collides = false;
-	
+
 	if (appointments.length > 0) {
 		appointments.forEach(appointment => {
 			// TODO use Slot.collides(other):
@@ -331,13 +329,13 @@ const appointmentCollides = (appointments, slot) => {
  * @param {string} doctor The id of the doctor for which the appointment is being requested.
  * @param {string} clinic The id of the clinic for which the appointment is being requested.
  * @param {SimpleDate} date The requested date of the appointment.
- * @param {Slot} slot The requested time of the appointment.
+ * @param {TimeRange} slot The requested time of the appointment.
  * @param {string} type The type of appointment.
  * @returns {boolean} true if available, false if unavailable (temporarily returning 0,1)
  */
 async function isAvailable(doctor, clinic, date, slot, type) {
 	// Get all the unavailable time slots:
-	const appointments = getAppointments(doctor, clinic, date);
+	const appointments = await getAppointments(doctor, clinic, date);
 
 	/**
 	 * Store wether of not the requested time slot is available. By default, no.
@@ -355,17 +353,17 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 			const weekly = new Map(Object.entries(snapshot.data().weekly));
 
 			// Get the schedule for the requested day of the week, if it exists:
-			if (weekly.has(day_names[week_day])) {
-				const schedule = weekly.get(day_names[week_day]);
-
+			if (weekly.has(date.dayname)) {
+				const schedule = weekly.get(date.dayname);
+				
 				// The schedule can consist of multiple shifts. Check each of them:
-				schedule.forEach(slot => {
-					const shift = new Slot(new Time(slot.start.toDate().getHours(), slot.start.toDate().getMinutes()),
-																 new Time(slot.end.toDate().getHours(), slot.end.toDate().getMinutes()));
-
+				schedule.forEach(shift => {
+					const timeRange = new TimeRange(new Time(shift.start.toDate().getHours(), shift.start.toDate().getMinutes()),
+																					new Time(shift.end.toDate().getHours(), shift.end.toDate().getMinutes()));
+					
 					// Check if the requested slot for the appointment is both within the time
 					// limit of the shift and doesn't collide with an existing appointment:
-					if (shift.contains(slot) && !appointmentCollides(appointments, slot)) {
+					if (timeRange.contains(slot) && !appointmentCollides(appointments, slot)) {
 						okay = true;
 						return;
 					}
@@ -424,7 +422,7 @@ async function searchDoctors(name, field, city) {
 				await doctor.doctor.fields[i].get().then(field_snapshot => {
 					// Check if the field is unspecified or is a match:
 					if ((field && stringContains(field_snapshot.id, field)) || !field) {
-						let field_data = field_snapshot;
+						let field_data = field_snapshot.data();
 						field_data.id = field_snapshot.id;
 						doctor.fields.push(field_data);
 					}
@@ -464,14 +462,11 @@ async function searchDoctors(name, field, city) {
  * @param {string} clinic The id of the clinic.
  * @param {SimpleDate} date The date for which available appointments are being queried.
  * @param {string} type The type of appointment.
- * @return {Slot[]} An array of available time slots.
+ * @return {TimeRange[]} An array of available time slots.
  */
 async function getAvailableAppointments(doctor, clinic, date, type) {
+	date = new SimpleDate(date.year, date.month, date.day);
 	// The time from the server is in UTC with no timezone offset data.
-
-	//Set the time range for the appointments to be exactly the day in question:
-	const start_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day));
-	const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
 
 	// First get all of the booked time ranges:
 	let appointments = await getAppointments(doctor, clinic, date);
@@ -488,46 +483,25 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
 			const weekly = new Map(Object.entries(snapshot.data().weekly));
 			
 			// Get the schedule for the requested day of the week, if it exists:
-			if (weekly.has(day_names[date.weekday])) {
-				const schedule = weekly.get(day_names[date.weekday]);
-
+			if (weekly.has(date.dayname)) {
+				const schedule = weekly.get(date.dayname);
+				
 				// The schedule can consist of multiple shifts. Go over each of them:
-				schedule.forEach(slot => {
+				schedule.forEach(shift => {
 					// TODO use Slot object:
-					let now = {
-						hours: slot.start.toDate().getHours(),
-						minutes: slot.start.toDate().getMinutes()
-					}
-	
-					const end = {
-						hours: slot.end.toDate().getHours(),
-						minutes: slot.end.toDate().getMinutes()
-					}
-
+					let now = new Time(shift.start.toDate().getHours(), shift.start.toDate().getMinutes());
+					const end = new Time(shift.end.toDate().getHours(), shift.end.toDate().getMinutes());
+					
 					// For each shift, add all of the time slots that don't
 					// collide with existing appointments To the slots array:
-					while (compare_time(now, end) < 0) {
-						let end_time = {
-							hours: now.hours,
-							minutes: now.minutes
+					while (now.compareTime(end) < 0) {
+						const slot = new TimeRange(now, now.incrementMinutes(shift.size));
+						
+						if (!appointmentCollides(appointments, slot)) {
+							slots.push(slot);
 						}
 	
-						increment_time(end_time, slot.size);
-	
-						if (appointmentCollides(appointments, now, end_time) == 0) {
-							slots.push({
-								start: {
-									hours: now.hours,
-									minutes: now.minutes
-								},
-								end: {
-									hours: end_time.hours,
-									minutes: end_time.minutes
-								}
-							});
-						}
-	
-						increment_time(now, slot.size);
+						now = now.incrementMinutes(shift.size);
 					}
 				});
 			}
@@ -543,6 +517,7 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
  * @todo use session tokens to verify that the user making the appointment
  * is the user for which the appointment is being made.
  * @todo set appointment duration based on rules set by the doctor/clinic.
+ * @todo more refined return value.
  * @param {string} doctor The id of the doctor
  * @param {string} clinic The id of the clinic
  * @param {string} patient The id of the patient
@@ -551,17 +526,65 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
  * @param {string} type The type of appointment
  * @returns A promise that will complete once the appointment has been added to the database.
  */
-function makeAppointment(doctor, clinic, patient, date, time, type) {
-	const appointments = getAppointments(doctor, clinic, date);
-
-	if (isAvailable(doctor, clinic, date, time, type)) {
-		return db.collection("appointments").add({
-			clinic: clinic,
-			doctor: doctor,
-			patient: patient,
-			start: new Date(date.year, date.month, date.day, time.hours, time.minutes, 0),
-			duration: 15,
-			type: type
-		})
+async function makeAppointment(doctor, clinic, patient, date, time, type) {
+	let response = {
+		id: null,
+		messages: []
 	}
+
+	if (!doctor) {
+		response.messages.push("missing doctor");
+	}
+	
+	if (!clinic) {
+		response.messages.push("missing clinic");
+	}
+	
+	if (!patient) {
+		response.messages.push("missing patient");
+	}
+	
+	if (!date) {
+		response.messages.push("missing date");
+	}
+	
+	if (!time) {
+		response.messages.push("missing time");
+	}
+	
+	if (!type) {
+		response.messages.push("missing type");
+	}
+	
+	if (response.messages.length == 0) {
+		const start = new Date(date.year, date.month, date.day, time.hours, time.minutes);
+		date = new SimpleDate(date.year, date.month, date.day);
+
+		const start_time = new Time(start.getHours(), start.getMinutes());
+		const end_time = start_time.incrementMinutes(15);
+		const slot = new TimeRange(start_time, end_time);
+
+		if (await isAvailable(doctor, clinic, date, slot, type)) {
+			await db.collection("appointments").add({
+				clinic: clinic,
+				doctor: doctor,
+				patient: patient,
+				start: start,
+				duration: 15,
+				type: type
+			})
+			.then(value => {
+				response.id = value.id;
+			})
+			.catch(reason => {
+				console.error(reason);
+				response.messages.push("Adding the appointment failed");
+			});
+		}
+		else {
+			response.messages.push("The appointment is unavailable");
+		}
+	}
+
+	return response;
 }

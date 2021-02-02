@@ -12,26 +12,24 @@ const storageRef = st.ref();
 function DoctorCard(props) {
 	const [profile, setProfile] = useState(null);
 
-	storageRef.child("users/" + props.doctor.id + "/profile.png").getDownloadURL().then(url => {
+	storageRef.child("users/" + props.doctor.user.id + "/profile.png").getDownloadURL().then(url => {
 		setProfile(url);
 	});
 
 	const name = props.doctor.user.firstName + " " + props.doctor.user.lastName;
-	const fields = props.doctor.fields;
-	const clinics = props.doctor.clinics;
-	const clinic = props.clinic;
+	// const clinics = props.doctor.clinics;
 
-	return (<Link to={"/create/" + props.doctor.id + "/" + clinic.id} className="searchCard">
-		<img src={profile} />
+	return (<Link to={"/create/" + props.doctor.doctor.id + "/" + props.clinic.id} className="searchCard">
+		<img alt="doctor's face" src={profile} />
 		<div className="name"><big>{name}</big></div>
-		<div className="fields"><small>{fields.map((field, index) => {return field + (index < fields.length - 1 ? " " : "")})}</small></div>
+		<div className="fields"><small>{props.doctor.fields.map((field, index) => {return field.id + (index < props.doctor.fields.length - 1 ? " " : "")})}</small></div>
 		{/* <div className="location"><small>{clinics.map((clinic, index) => {return clinic.name + (index < clinics.length - 1 ? " " : "")})}</small></div> */}
-		<div className="location"><small>{clinic.name}</small></div>
+		<div className="location"><small>{props.clinic.name}</small></div>
 		</Link>)
 }
 
 function SelectCity() {
-	const [cities, setCities] = useState(["Jaffa", "Hebron"]);
+	const [cities, setCities] = useState([]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -61,7 +59,7 @@ function SelectCity() {
 }
 
 function SelectField() {
-	const [fields, setFields] = useState(["Neurology", "Cardiology"]);
+	const [fields, setFields] = useState([]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -136,7 +134,7 @@ export function SearchDoctorsPage() {
 					{
 						doctors.map(doctor => {
 							return doctor.clinics.map((clinic, j) => {
-								return <DoctorCard key={doctor.id + ", " + clinic.id} doctor={doctor} clinic={clinic}></DoctorCard>;
+								return <DoctorCard key={doctor.doctor.id + ", " + clinic.id} doctor={doctor} clinic={clinic}></DoctorCard>;
 							})
 						})
 					}

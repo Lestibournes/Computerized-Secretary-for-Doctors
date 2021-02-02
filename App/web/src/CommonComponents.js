@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Formik, useField } from 'formik';
-import { Link, NavLink, Redirect } from 'react-router-dom';
+import { useField } from 'formik';
+import { Link, NavLink } from 'react-router-dom';
 import { db, fb } from "./init";
 
 /**
@@ -36,11 +36,12 @@ export const TextInput = ({ label, ...props }) => {
  */
 export const Select = ({ label, ...props }) => {
 	const [field, meta] = useField(props);
+
 	return (
 		<>
 			<label htmlFor={props.id || props.name}>{label}:</label>
-			<select {...field} {...props}>
-				<option disabled selected value> Select an Option </option>
+			<select {...field} {...props} value>
+				<option key={label} disabled value>Select an Option</option>
 				{
 					props.options.map(option => {
 						return <option key={option.id} value={option.id}>{option.label}</option>
@@ -58,11 +59,6 @@ export const Select = ({ label, ...props }) => {
  * Uses Formik to present a scrolling list version of an HTML select element.
  */
 export const SelectList = ({ label, options, selected, ...props}) => {
-	const [field, meta] = useField(props);
-	const error = meta.touched && meta.error ? "error" : null;
-	
-	field.value = options[selected]; // The index of the currently selected option.
-
 	// Make sure that if either id or name is not specified, that it will have the correct value:
 	if (!props.id) {
 		props.id = props.name;
@@ -70,7 +66,12 @@ export const SelectList = ({ label, options, selected, ...props}) => {
 	else if (!props.name) {
 		props.name = props.id;
 	}
+
+	const [field, meta] = useField(props);
+	const error = meta.touched && meta.error ? "error" : null;
 	
+	// field.value = options[selected]; // The index of the currently selected option.
+
 	return (
 		<div className="picker list">
 			<div className="header">
@@ -82,8 +83,9 @@ export const SelectList = ({ label, options, selected, ...props}) => {
 					{options.map((option, index) => {
 						return <div
 							key={option}
-							className={"selectitem " + (selected == index ? "selected" : "")}
-							onClick={() => props.onClick(index)}>
+							className={"selectitem " + (selected === index ? "selected" : "")}
+							onClick={() => props.onClick(index)}
+							>
 								{option}
 							</div>
 					})}
@@ -102,14 +104,21 @@ export const SelectList = ({ label, options, selected, ...props}) => {
  * @todo Switch to using the Time and SimpleDate objects.
  */
 export const SelectDate = ({ day, month, year, ...props}) => {
+	// Make sure that if either id or name is not specified, that it will have the correct value:
+	if (!props.id) {
+		props.id = props.name;
+	}
+	else if (!props.name) {
+		props.name = props.id;
+	}
+
 	const [field, meta] = useField(props);
 	const error = meta.touched && meta.error ? "error" : null;
 	const month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-	const day_names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 	// Helper functions for changing the month being displayed:
 	const getNextMonth = (month, year) => {
-		if (month == 11) {
+		if (month === 11) {
 			return {
 				month: 0,
 				year: year + 1
@@ -124,7 +133,7 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 	}
 
 	const getPreviousMonth = (month, year) => {
-		if (month == 0) {
+		if (month === 0) {
 			return {
 				month: 11,
 				year: year - 1
@@ -148,15 +157,7 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 		year++;
 	}
 
-	field.value = new Date(year, month, day);
-
-	// Make sure that if either id or name is not specified, that it will have the correct value:
-	if (!props.id) {
-		props.id = props.name;
-	}
-	else if (!props.name) {
-		props.name = props.id;
-	}
+	// field.value = new Date(year, month, day);
 	
 	/**
 	 * The first day of the week for the currently displayed month.
@@ -203,10 +204,10 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 			};
 			className = "faded";
 		}
-		else if (i > current_length) {
+		else if (i > current_length + startday) {
 			// Set the values and display style for the first days of the next month after adding the current month:
 			date = {
-				day: i - current_length,
+				day: i - (current_length + startday),
 				month: next_month.month,
 				year: next_month.year
 			};
@@ -221,14 +222,15 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 				year: year
 			};
 			
-			className = (day == date.day ? "selected" : "")
+			className = (day === date.day ? "selected" : "")
 		}
 
 		// Create the component and add it to the array to be displayed:
 		days.push(<div
-			key={date}
+			key={i}
 			className={"day " + className}
-			onClick={() => props.onClick(date)}>
+			onClick={() => props.onClick(date)}
+			>
 				{date.day}
 			</div>)
 	}
