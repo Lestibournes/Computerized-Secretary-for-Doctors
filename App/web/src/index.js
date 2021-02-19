@@ -13,12 +13,16 @@ import {
 	Switch,
 	Route
 } from "react-router-dom";
+import { HomePage } from './HomePage';
 
 ReactDOM.render(
 	<ProvideAuth>
 		<Router>
 			<Switch>
 				<Route exact path="/">
+					<HomePage />
+				</Route>
+				<Route exact path="/searchDoctors">
 					<SearchDoctorsPage />
 				</Route>
 				<Route path="/login">

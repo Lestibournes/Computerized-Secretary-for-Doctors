@@ -99,7 +99,8 @@ export function SearchDoctorsPage() {
 			<div className="content">
 
 				<div className="searchbar">
-					<h1>Search Doctors</h1>
+					<h1>Make an Appointment</h1>
+					<h2>Search Doctors</h2>
 					<Formik
 						initialValues={{}}
 						validationSchema={Yup.object({
