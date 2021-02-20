@@ -233,6 +233,11 @@ class SimpleDate {
 }
 
 // Public interface of server functions:
+
+exports.getDoctor = functions.https.onCall((data, context) => {
+	return getDoctor(data.id, data.field, data.city);
+});
+
 exports.searchDoctors = functions.https.onCall((data, context) => {
 	return searchDoctors(data.name, data.field, data.city);
 });
@@ -377,6 +382,62 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 }
 
 // API implementation code:
+
+/**
+ * Get the requested doctor and then filter the results field of specialization and the city where the clinic is.
+ * Except for id, all params are optional. If no parameters are specified (or if the value is falsy), then it will return all the data.
+ * @todo Be more picky about which data is being returned.
+ * @param {string} id The id of the doctor.
+ * @param {string} field The doctor's specialization.
+ * @param {string} city The city in which service is being sought.
+ * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}} The data of the requested doctor.
+ */
+async function getDoctor(id, field, city) {
+	// Fetch the data of all the doctor documents:
+	const result = {
+		doctor: null, // The doctor data.
+		user: null, // The user data.
+		clinics: [], // An array of the data of all the matching clinics associated with this doctor.
+		fields: [], // An array of the ids of all the matching specializations of this doctor.
+	};
+
+	await db.collection("doctors").doc(id).get().then(doctor_snapshot => {
+		result.doctor = doctor_snapshot.data();
+		result.doctor.id = doctor_snapshot.id;
+	});
+	
+	// Get the user data from refs:
+	await result.doctor.user.get().then(user_snapshot => {
+		result.user = user_snapshot.data();
+		result.user.id = user_snapshot.id;
+	});
+
+	// Get the field data for the given doctor:
+	for (i in result.doctor.fields) {
+		await result.doctor.fields[i].get().then(field_snapshot => {
+			// Check if the field is unspecified or is a match:
+			if ((field && stringContains(field_snapshot.id, field)) || !field) {
+				let field_data = field_snapshot.data();
+				field_data.id = field_snapshot.id;
+				result.fields.push(field_data);
+			}
+		});
+	}
+
+	// Get the clinic data for the given doctor:
+	for (i in result.doctor.clinics) {
+		await result.doctor.clinics[i].get().then(clinic_snapshot => {
+			// Check if the field is unspecified or is a match:
+			if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
+				let city_data = clinic_snapshot.data();
+				city_data.id = clinic_snapshot.id;
+				result.clinics.push(city_data);
+			}
+		});
+	};
+	
+	return result;
+}
 
 /**
  * Get all doctors and then filter the results by name, field of specialization, and the city where their clinic is.
