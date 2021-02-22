@@ -24,6 +24,7 @@ privacy, and also the server side should handle the setting of the
 appointment, making sure that it's valid.
  */
 export function MakeAppointmentPage(props) {
+	const currentDate = new Date();
 	const auth = useAuth();
 	const { doctor, clinic } = useParams(); //The ID of the doctor and clinic.
 	const [type, setType] = useState(null);
@@ -33,10 +34,12 @@ export function MakeAppointmentPage(props) {
 	const [time, setTime] = useState(null);
 	const [times, setTimes] = useState([]);
 	const [date, setDate] = useState({
-		year: 2021,
-		month: 0,
+		year: currentDate.getUTCFullYear(),
+		month: currentDate.getUTCMonth(),
 		day: null
 	});
+
+	const [success, setSuccess] = useState(null);
 
 	const [doctor_data, setDoctor] = useState(null);
 	const [clinic_data, setClinic] = useState(null);
@@ -99,6 +102,7 @@ export function MakeAppointmentPage(props) {
 									console.log(value.data.id);
 								}
 								// alert("success! " + value.data);
+								setSuccess(value.data.id);
 							})
 							.catch(reason => {
 								console.log(reason);
@@ -156,6 +160,7 @@ export function MakeAppointmentPage(props) {
 							</div>
 						</Form>
 					</Formik>
+					{(success ? <Redirect to={"/create/" + success} /> : null)}
 				</div>
 			</div>
 		</div>

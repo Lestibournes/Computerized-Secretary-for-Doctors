@@ -2,12 +2,12 @@
  * Represents an time in terms of hours and minutes.
  * Is supposed to be immutable.
  */
-class Time {
+export class Time {
 	/**
 	 * Creates a new Time object with the specified number of hours and minutes.
 	 * Only meant for use with non-negative values.
 	 * @param {number} hours The number of hours.
-	 * @param {number} minutes Then number of minutes.
+	 * @param {number} minutes The number of minutes.
 	 */
 	constructor(hours, minutes) {
 		this.hours = hours;
@@ -65,7 +65,7 @@ class Time {
 /**
  * Represent a segment of time.
  */
-class Slot {
+export class Slot {
 	/**
 	 * Create a new time slot with the specified start and end times.
 	 * @param {Time} start The beginning of the time slot. Should be a value smaller than end.
@@ -106,7 +106,7 @@ class Slot {
 /**
  * A simple and immutable representation of a calendar date.
  */
-class SimpleDate {
+export class SimpleDate {
 	/**
 	 * Create a new SimpleDate object.
 	 * @param {number} year Can be any value. 

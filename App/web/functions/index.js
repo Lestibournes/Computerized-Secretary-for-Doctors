@@ -585,7 +585,7 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
  * @param {SimpleDate} date The date of the appointment
  * @param {Time} time The time of the appointment
  * @param {string} type The type of appointment
- * @returns A promise that will complete once the appointment has been added to the database.
+ * @returns {{id: string, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
  */
 async function makeAppointment(doctor, clinic, patient, date, time, type) {
 	let response = {

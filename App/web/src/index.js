@@ -14,6 +14,7 @@ import {
 	Route
 } from "react-router-dom";
 import { HomePage } from './HomePage';
+import { AppointmentSuccessPage } from './AppointmentSuccessPage';
 
 ReactDOM.render(
 	<ProvideAuth>
@@ -33,6 +34,9 @@ ReactDOM.render(
 				</Route>
 				<Route path="/create/:doctor/:clinic">
 					<MakeAppointmentPage />
+				</Route>
+				<Route path="/create/:appointment">
+					<AppointmentSuccessPage />
 				</Route>
 			</Switch>
 		</Router>
