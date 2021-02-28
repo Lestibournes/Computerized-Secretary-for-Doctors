@@ -3,29 +3,32 @@
  * Is supposed to be immutable.
  */
 export class Time {
+	#hours;
+	#minutes
+
 	/**
 	 * Creates a new Time object with the specified number of hours and minutes.
 	 * Only meant for use with non-negative values.
 	 * @param {number} hours The number of hours.
-	 * @param {number} minutes The number of minutes.
+	 * @param {number} minutes Then number of minutes.
 	 */
 	constructor(hours, minutes) {
-		this.hours = hours;
-		this.minutes = minutes;
+		this.#hours = hours;
+		this.#minutes = minutes;
 	}
 
 	/**
 	 * @returns {number} The number of hours.
 	 */
 	get hours() {
-		return this.hours;
+		return this.#hours;
 	}
 
 	/**
 	 * @returns {number} The number of minutes.
 	 */
 	get minutes() {
-		return this.minutes;
+		return this.#minutes;
 	}
 
 	/**
@@ -39,8 +42,8 @@ export class Time {
 	 * minutes relative to the current time.
 	 */
 	incrementMinutes(minutes) {
-		let tmp_minutes = this.minutes;
-		let tmp_hours = this.hours;
+		let tmp_minutes = this.#minutes;
+		let tmp_hours = this.#hours;
 
 		tmp_minutes += minutes;
 		tmp_hours += Math.floor(tmp_minutes / 60);
@@ -56,10 +59,14 @@ export class Time {
 	 * @returns {number} 1 if this > that, 0 if this == that, -1 if this < that.
 	 */
 	compareTime(that) {
-		if (this.hours > that.hours || (this.hours == that.hours && this.minutes > that.minutes)) return 1;
-		else if (this.hours == that.hours && this.minutes == that.minutes) return 0;
+		if (this.#hours > that.#hours || (this.#hours === that.#hours && this.#minutes > that.#minutes)) return 1;
+		else if (this.#hours === that.#hours && this.#minutes === that.#minutes) return 0;
 		else return -1;
 	};
+
+	toString() {
+		return (this.#hours < 10 ? "0" : "") + this.#hours + ":" + (this.#minutes < 10 ? "0" : "") + this.#minutes;
+	}
 }
 
 /**
@@ -146,7 +153,7 @@ export class SimpleDate {
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getNextMonth() {
-		if (this.month == 11) {
+		if (this.month === 11) {
 			return new SimpleDate(this.year + 1, 0, this.day);
 		}
 		else {
@@ -159,7 +166,7 @@ export class SimpleDate {
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getPreviousMonth() {
-		if (this.month == 0) {
+		if (this.month === 0) {
 			return new SimpleDate(this.year - 1, 11, this.day);
 		}
 		else {

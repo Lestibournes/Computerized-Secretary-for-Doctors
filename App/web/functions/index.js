@@ -626,15 +626,17 @@ async function makeAppointment(doctor, clinic, patient, date, time, type) {
 		const slot = new TimeRange(start_time, end_time);
 
 		if (await isAvailable(doctor, clinic, date, slot, type)) {
-			await db.collection("appointments").add({
+			const appointment = {
 				clinic: clinic,
 				doctor: doctor,
 				patient: patient,
 				start: start,
 				duration: 15,
 				type: type
-			})
+			};
+			await db.collection("appointments").add(appointment)
 			.then(value => {
+				db.collection("users").doc(patient).collection("appointments").doc(value.id).set(appointment);
 				response.id = value.id;
 			})
 			.catch(reason => {

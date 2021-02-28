@@ -10,7 +10,7 @@ const searchDoctors = fn.httpsCallable("searchDoctors");
 const storageRef = st.ref();
 
 function DoctorCard(props) {
-	const [profile, setProfile] = useState(null);
+	const [profile, setProfile] = useState(null); //Profile Picture
 
 	storageRef.child("users/" + props.doctor.user.id + "/profile.png").getDownloadURL().then(url => {
 		setProfile(url);
@@ -23,8 +23,7 @@ function DoctorCard(props) {
 		<img alt="doctor's face" src={profile} />
 		<div className="name"><big>{name}</big></div>
 		<div className="fields"><small>{props.doctor.fields.map((field, index) => {return field.id + (index < props.doctor.fields.length - 1 ? " " : "")})}</small></div>
-		{/* <div className="location"><small>{clinics.map((clinic, index) => {return clinic.name + (index < clinics.length - 1 ? " " : "")})}</small></div> */}
-		<div className="location"><small>{props.clinic.name}</small></div>
+		<div className="location"><small>{props.clinic.name}, {props.clinic.city}</small></div>
 		</Link>)
 }
 

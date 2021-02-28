@@ -55,7 +55,7 @@ export function MakeAppointmentPage(props) {
 		db.collection("clinics").doc(clinic).get().then(result => {
 			setClinic(result.data());
 		});
-  }, []);
+  }, [clinic, doctor]);
 	
 
 	const types = ["new patient", "regular", "follow up"];//Temporary. Should be read from the doctor's configuration on the server.
@@ -98,10 +98,7 @@ export function MakeAppointmentPage(props) {
 										console.log(value.data.messages[i]);
 									}
 								}
-								else {
-									console.log(value.data.id);
-								}
-								// alert("success! " + value.data);
+								
 								setSuccess(value.data.id);
 							})
 							.catch(reason => {
