@@ -1,7 +1,7 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
 import { MainHeader, useAuth } from "./CommonComponents";
-import { Redirect } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { db, fn, storage } from './init';
 import { Time } from "./classes";
 
@@ -34,11 +34,18 @@ function AppointmentCard(props) {
 
 	const time = new Time(date.getUTCHours(), date.getUTCMinutes()).incrementMinutes(-tzos);
 
-	return (<div className="searchCard">
+	return (<div className="entryCard">
 		<img alt="doctor's face" src={profile} />
-		<div className="name"><big>{date.getUTCFullYear()}/{date.getUTCMonth() + 1}/{date.getUTCDate()} {time.toString()} - {doctor ? doctor.user.firstName + " " + doctor.user.lastName : null}</big></div>
-		<div className="fields"><small>{doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}</small></div>
-		<div className="location"><small>{clinic ? clinic.name + ", " + clinic.city : null}</small></div>
+		<div className="cardTop">
+			<big>{date.getUTCFullYear()}/{date.getUTCMonth() + 1}/{date.getUTCDate()} {time.toString()} - {doctor ? doctor.user.firstName + " " + doctor.user.lastName : null}</big>
+			<div className="buttonBar">
+				<Link className="button okay">Chat</Link>
+				<Link className="button okay">Details</Link>
+				<Link className="button okay">Edit</Link>
+			</div>
+		</div>
+		<div className="cardCenter"><small>{doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}</small></div>
+		<div className="cardBottom"><small>{clinic ? clinic.name + ", " + clinic.city : null}</small></div>
 		</div>)
 }
 

@@ -16,4 +16,4 @@ export const fn = firebase.functions();
 export const st = firebase.storage();
 export const storage = firebase.storage().ref();
 
-fn.useEmulator("localhost", 5001);
+// fn.useEmulator("localhost", 5001);

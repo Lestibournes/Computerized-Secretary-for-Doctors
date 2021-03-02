@@ -19,11 +19,11 @@ function DoctorCard(props) {
 	const name = props.doctor.user.firstName + " " + props.doctor.user.lastName;
 	// const clinics = props.doctor.clinics;
 
-	return (<Link to={"/create/" + props.doctor.doctor.id + "/" + props.clinic.id} className="searchCard">
+	return (<Link to={"/create/" + props.doctor.doctor.id + "/" + props.clinic.id} className="entryCard">
 		<img alt="doctor's face" src={profile} />
-		<div className="name"><big>{name}</big></div>
-		<div className="fields"><small>{props.doctor.fields.map((field, index) => {return field.id + (index < props.doctor.fields.length - 1 ? " " : "")})}</small></div>
-		<div className="location"><small>{props.clinic.name}, {props.clinic.city}</small></div>
+		<div className="cardTop"><big>{name}</big></div>
+		<div className="cardCenter"><small>{props.doctor.fields.map((field, index) => {return field.id + (index < props.doctor.fields.length - 1 ? " " : "")})}</small></div>
+		<div className="cardBottom"><small>{props.clinic.name}, {props.clinic.city}</small></div>
 		</Link>)
 }
 

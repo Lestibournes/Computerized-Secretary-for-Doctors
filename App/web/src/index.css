@@ -129,23 +129,27 @@ h1 {
 	row-gap: var(--margin);
 }
 
-.searchCard {
-	cursor: pointer;
+.entryCard {
+	cursor: default;
 	text-decoration: none;
 	color: var(--color);
 	display: grid;
 	grid-template-areas:
-		'pic ...'
-		'pic ...'
-		'pic ...';
+		'pic cardTop'
+		'pic cardCenter'
+		'pic cardBottom';
 	grid-template-columns: auto 1fr;
-	gap: var(--margin);
+	column-gap: var(--margin);
 	border: var(--border-width) solid var(--control-background);
 	border-radius: var(--radius);
 	padding: var(--padding);
 }
 
-.searchCard img {
+Link.entryCard {
+	cursor: pointer;
+}
+
+.entryCard img {
 	grid-area: pic;
 	width: 128px;
 	height: 128px;
@@ -154,7 +158,19 @@ h1 {
 	border: none;
 }
 
-.fields {
+.cardTop {
+	display: grid;
+	grid-template-areas: '... buttonBar';
+	grid-template-columns: 1fr auto;
+	place-items: center left;
+}
+
+.buttonBar {
+	display: flex;
+	gap: var(--margin-small);
+}
+
+.cardCenter {
 	text-transform: capitalize;
 }
 

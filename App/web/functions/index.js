@@ -341,7 +341,7 @@ const appointmentCollides = (appointments, slot) => {
 async function isAvailable(doctor, clinic, date, slot, type) {
 	// Get all the unavailable time slots:
 	const appointments = await getAppointments(doctor, clinic, date);
-
+	
 	/**
 	 * Store wether of not the requested time slot is available. By default, no.
 	 */
