@@ -13,8 +13,10 @@ export function HomePage(props) {
 
 				<div className="appointment_picker">
 					<h1>Welcome</h1>
-					<Link className="button" to="searchDoctors">Make an Appointment</Link>
-					<Link className="button" to="user/appointments">My Future Appointments</Link>
+					<div className="buttonBar">
+						<Link className="button" to="searchDoctors">Make an Appointment</Link>
+						<Link className="button" to="user/appointments">My Future Appointments</Link>
+					</div>
 				</div>
 			</div>
 		</div>
