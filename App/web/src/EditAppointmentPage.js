@@ -72,23 +72,27 @@ export function EditAppointmentPage(props) {
 	useEffect(() => {
 		if (auth.user) {
 			db.collection("users").doc(auth.user.uid).collection("appointments").doc(appointment).get().then(appointment => {
-				console.log(appointment.data());
+				const data = appointment.data();
+				
+				const date = new Date(appointment.data().start.toDate());
+				data.date = {
+					year: date.getUTCFullYear(),
+					month: date.getUTCMonth(),
+					day: date.getUTCDate()
+				};
+				data.time = new Time(date.getUTCHours(), date.getMinutes()).incrementMinutes(-date.getTimezoneOffset());
 
-				setData(appointment.data());
+				console.log(data);
+
+				setData(data);
 
 				types.forEach((type, index) => {
 					if (type.toLowerCase() === appointment.data().type.toLowerCase()) {
 						setType(index);
 					}
 				});
-				
-				const date = new Date(appointment.data().start.toDate());
-				
-				selectDate({
-					year: date.getUTCFullYear(),
-					month: date.getUTCMonth(),
-					day: date.getUTCDate()
-				});
+
+				selectDate(data.date);
 
 				getDoctor({
 					id: appointment.data().doctor,
@@ -113,6 +117,8 @@ export function EditAppointmentPage(props) {
 				<div className="appointment_picker">
 					<h1>Change Your Appointment</h1>
 					<h2>Appointment Details{(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null)}{(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)}</h2>
+					<p>Currently the appointment is a <b>{data ? data.type : null}</b> appointment on <b>{data ? data.date.day + "/" + data.date.month + "/" + data.date.year : null}</b> at <b>{data ? data.time.toString() : null}</b>.</p>
+					<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
 					<Formik
 						initialValues={{}}
 						validationSchema={Yup.object({
@@ -174,6 +180,7 @@ export function EditAppointmentPage(props) {
 								onClick={(time) => setTime(time)}
 							/>
 							<div className="panel">
+								<button className="button warning">Delete</button>
 								<button className="okay" type="submit">Submit</button>
 							</div>
 						</Form>
