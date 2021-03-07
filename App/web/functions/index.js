@@ -74,7 +74,7 @@ class Time {
 	 * @param {Time} that Another point in time
 	 * @returns {number} 1 if this > that, 0 if this == that, -1 if this < that.
 	 */
-	compareTime(that) {
+	compare(that) {
 		if (this.hours > that.hours || (this.hours == that.hours && this.minutes > that.minutes)) return 1;
 		else if (this.hours == that.hours && this.minutes == that.minutes) return 0;
 		else return -1;
@@ -123,8 +123,8 @@ class TimeRange {
 	 */
 	collides(that) {
 		return (
-			((this.start.compareTime(that.start) >= 0 && this.start.compareTime(that.end) < 0) ||
-			 (this.end.compareTime(that.start) > 0 && this.end.compareTime(that.end) <= 0))
+			((this.start.compare(that.start) >= 0 && this.start.compare(that.end) < 0) ||
+			 (this.end.compare(that.start) > 0 && this.end.compare(that.end) <= 0))
 		);
 	}
 
@@ -134,7 +134,7 @@ class TimeRange {
 	 * @returns {boolean} True if it's completely contained. False if not.
 	 */
 	contains(that) {
-		return that.start.compareTime(this.start) >= 0 && that.end.compareTime(this.end) <= 0;
+		return that.start.compare(this.start) >= 0 && that.end.compare(this.end) <= 0;
 	}
 	
 	toString() {
@@ -230,6 +230,24 @@ class SimpleDate {
 			return new SimpleDate(this.year, this.month - 1, this.day);
 		}
 	}
+
+	/**
+	 * Compares the current date to the specified time.
+	 * @param {SimpleDate} that Another date
+	 * @returns {number} 1 if this > that, 0 if this == that, -1 if this < that.
+	 */
+	compare(that) {
+		if (this.year > that.year) return 1;
+		if (this.year == that.year) {
+			if (this.month > that.month) return 1;
+			if (this.month == that.month) {
+				if (this.day > that.day) return 1;
+				if (this.day == that.day) return 0;
+			}
+		}
+
+		return -1;
+	}
 }
 
 // Public interface of server functions:
@@ -248,6 +266,10 @@ exports.getAvailableAppointments = functions.https.onCall((data, context) => {
 
 exports.makeAppointment = functions.https.onCall((data, context) => {
 	return makeAppointment(data.doctor, data.clinic, data.patient, data.date, data.time, data.type);
+});
+
+exports.editAppointment = functions.https.onCall((data, context) => {
+	return editAppointment(data.appointment, data.date, data.time, data.type);
 });
 
 // Helper methods:
@@ -288,14 +310,14 @@ async function getAppointments(doctor, clinic, date) {
 	// First get all of the booked time ranges:
 	const appointments = [];
 
-	await db.collection("appointments")
-	.where("clinic", "==", clinic)
-	.where("doctor", "==", doctor)
+	await db.collection("appointments").orderBy("start")
 	.where("start", ">=", start_day)
 	.where("start", "<", end_day)
+	.where("clinic", "==", clinic)
+	.where("doctor", "==", doctor)
 	.get().then(snapshots => {
 		snapshots.forEach(snapshot => {
-			const start_time = new Time(snapshot.data().start.toDate().getHours(), snapshot.data().start.toDate().getMinutes());
+			const start_time = new Time(snapshot.data().start.toDate().getUTCHours(), snapshot.data().start.toDate().getUTCMinutes());
 			const end_time = start_time.incrementMinutes(snapshot.data().duration);
 
 			appointments.push(new TimeRange(start_time, end_time));
@@ -316,7 +338,6 @@ const appointmentCollides = (appointments, slot) => {
 
 	if (appointments.length > 0) {
 		appointments.forEach(appointment => {
-			// TODO use Slot.collides(other):
 			if (slot.collides(appointment)) {
 				collides = true;
 				return;
@@ -550,12 +571,12 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
 				// The schedule can consist of multiple shifts. Go over each of them:
 				schedule.forEach(shift => {
 					// TODO use Slot object:
-					let now = new Time(shift.start.toDate().getHours(), shift.start.toDate().getMinutes());
-					const end = new Time(shift.end.toDate().getHours(), shift.end.toDate().getMinutes());
+					let now = new Time(shift.start.toDate().getUTCHours(), shift.start.toDate().getUTCMinutes());
+					const end = new Time(shift.end.toDate().getUTCHours(), shift.end.toDate().getUTCMinutes());
 					
 					// For each shift, add all of the time slots that don't
 					// collide with existing appointments To the slots array:
-					while (now.compareTime(end) < 0) {
+					while (now.compare(end) < 0) {
 						const slot = new TimeRange(now, now.incrementMinutes(shift.size));
 						
 						if (!appointmentCollides(appointments, slot)) {
@@ -569,12 +590,11 @@ async function getAvailableAppointments(doctor, clinic, date, type) {
 		});
 	});
 
-	// Return the available time slots:
 	return slots;
 }
 
 /**
- * Make and appointment, if the time slot that is requested is available.
+ * Make an appointment, if the time slot that is requested is available.
  * @todo use session tokens to verify that the user making the appointment
  * is the user for which the appointment is being made.
  * @todo set appointment duration based on rules set by the doctor/clinic.
@@ -591,7 +611,7 @@ async function makeAppointment(doctor, clinic, patient, date, time, type) {
 	let response = {
 		id: null,
 		messages: []
-	}
+	};
 
 	if (!doctor) {
 		response.messages.push("missing doctor");
@@ -646,6 +666,94 @@ async function makeAppointment(doctor, clinic, patient, date, time, type) {
 		}
 		else {
 			response.messages.push("The appointment is unavailable");
+		}
+	}
+
+	return response;
+}
+
+/**
+ * Edit an appointment, if the time slot that is requested is available.
+ * @todo use session tokens to verify that the user making the appointment
+ * is the user for which the appointment is being made.
+ * @todo set appointment duration based on rules set by the doctor/clinic.
+ * @todo more refined return value.
+ * @param {string} appointment The id of the appointment
+ * @param {SimpleDate} date The date of the appointment
+ * @param {Time} time The time of the appointment
+ * @param {string} type The type of appointment
+ * @returns {{id: string, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
+ */
+ async function editAppointment(appointment, date, time, type) {
+	let response = {
+		id: null,
+		messages: []
+	};
+
+	if (!appointment) {
+		response.messages.push("missing appointment");
+	}
+	
+	if (!date && !time && !type) {
+		response.messages.push("no change requested");
+	}
+	
+	if (response.messages.length == 0) {
+		// Use existing data as default value. Override with new data:
+		const old_data = await db.collection("appointments").doc(appointment).get().then(snapshot => {return snapshot.data()});
+		const old_date = new Date(old_data.start.toDate());
+		const old_time = new Time(old_date.getUTCHours(), old_date.getUTCMinutes());
+
+		let new_date = new SimpleDate(old_date.getUTCFullYear(), old_date.getUTCMonth(), old_date.getUTCDate());
+		let new_time = new Time(old_time.hours, old_time.minutes);
+		let new_type = old_data.type;
+
+		if (date) {
+			new_date = new SimpleDate(date.year, date.month, date.day);
+		}
+
+		console.log("old time: " + old_time.toString());	
+		if (time) {
+			new_time = new Time(time.hours, time.minutes);
+			console.log("time: " + new_time.toString());
+		}
+
+		if (type) {
+			new_type = type;
+		}
+
+		const new_data = {
+			start: new Date(new_date.year, new_date.month, new_date.day, new_time.hours, new_time.minutes),
+			type: new_type
+		}
+
+		// Create the slot object for checking the availability of the new time:
+		// What if the new time is the same as the old time?
+
+		const start_time = new Time(new_time.hours, new_time.minutes);
+		const end_time = start_time.incrementMinutes(old_data.duration);
+		const slot = new TimeRange(start_time, end_time);
+
+		/**
+		 * @todo Instead, check if the new time is available under the assumption that the current time is not taken, since there are appointments of various lengths
+		 * and so the time slots can overlap, so if an appointment is 30 minutes and you want to move it 15 minutes earlier you'll get that it's unvailable.
+		 *  */
+		const unchanged = (new_date.compare(new SimpleDate(old_date.getUTCFullYear(), old_date.getUTCMonth(), old_date.getUTCDate())) === 0 && new_time.compare(old_time) === 0);
+		const available = await isAvailable(old_data.doctor, old_data.clinic, new_date, slot, new_type);
+
+		if (unchanged || available) {
+			await db.collection("appointments").doc(appointment).update(new_data)
+			.then(value => {
+				db.collection("users").doc(old_data.patient).collection("appointments").doc(appointment).update(new_data);
+				response.id = appointment;
+			})
+			.catch(reason => {
+				console.error(reason);
+				response.messages.push("Updating the appointment failed");
+			});
+		}
+		else {
+			response.messages.push("The new requested time is unavailable");
 		}
 	}
 

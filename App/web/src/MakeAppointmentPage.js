@@ -10,18 +10,18 @@ const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
 const makeAppointment = fn.httpsCallable("makeAppointment");
 const getDoctor = fn.httpsCallable("getDoctor");
 
-/*
-TODO
-I want to have the appointment set for the doctor and the clinic together,
-so the search page should perhaps show a separate result for every doctor+
-clinic combination.
-Show the information about the doctor so that the user can see that the
-appointment is being set for the correct doctor.
-Show widgets for selecting appoingment type, date, and time. They should
-only show what's available. What isn't available should be greyed out.
-The server side should make the determination in order to protect patient
-privacy, and also the server side should handle the setting of the
-appointment, making sure that it's valid.
+/**
+ * @todo
+ * I want to have the appointment set for the doctor and the clinic together,
+ * so the search page should perhaps show a separate result for every doctor+
+ * clinic combination.
+ * Show the information about the doctor so that the user can see that the
+ * appointment is being set for the correct doctor.
+ * Show widgets for selecting appoingment type, date, and time. They should
+ * only show what's available. What isn't available should be greyed out.
+ * The server side should make the determination in order to protect patient
+ * privacy, and also the server side should handle the setting of the
+ * appointment, making sure that it's valid.
  */
 export function MakeAppointmentPage(props) {
 	const currentDate = new Date();
@@ -129,8 +129,8 @@ export function MakeAppointmentPage(props) {
 
 									if (date.day != null && date.month != null && date.year != null) {
 										getAvailableAppointments({
-											doctor: "RLwoRslmYWvIr3kW4edP",
-											clinic: "zCrg0onqcqNEmQPimqg2",
+											doctor: doctor,
+											clinic: clinic,
 											date: date,
 											type: type
 										}).then(results => {

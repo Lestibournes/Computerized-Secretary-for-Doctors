@@ -8,21 +8,22 @@ import { db, fn } from './init';
 import { SimpleDate, Time } from './classes';
 
 const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
-const makeAppointment = fn.httpsCallable("makeAppointment");
+const editAppointment = fn.httpsCallable("editAppointment");
 const getDoctor = fn.httpsCallable("getDoctor");
 
-/*
-TODO
-I want to have the appointment set for the doctor and the clinic together,
-so the search page should perhaps show a separate result for every doctor+
-clinic combination.
-Show the information about the doctor so that the user can see that the
-appointment is being set for the correct doctor.
-Show widgets for selecting appoingment type, date, and time. They should
-only show what's available. What isn't available should be greyed out.
-The server side should make the determination in order to protect patient
-privacy, and also the server side should handle the setting of the
-appointment, making sure that it's valid.
+
+/**
+ * @todo
+ * I want to have the appointment set for the doctor and the clinic together,
+ * so the search page should perhaps show a separate result for every doctor+
+ * clinic combination.
+ * Show the information about the doctor so that the user can see that the
+ * appointment is being set for the correct doctor.
+ * Show widgets for selecting appoingment type, date, and time. They should
+ * only show what's available. What isn't available should be greyed out.
+ * The server side should make the determination in order to protect patient
+ * privacy, and also the server side should handle the setting of the
+ * appointment, making sure that it's valid.
  */
 export function EditAppointmentPage(props) {
 	const selectDate = (date) => {
@@ -30,8 +31,8 @@ export function EditAppointmentPage(props) {
 
 		if (date.day != null && date.month != null && date.year != null) {
 			getAvailableAppointments({
-				doctor: "RLwoRslmYWvIr3kW4edP",
-				clinic: "zCrg0onqcqNEmQPimqg2",
+				doctor: data.doctor,
+				clinic: data.clinic,
 				date: date,
 				type: type
 			}).then(results => {
@@ -73,7 +74,6 @@ export function EditAppointmentPage(props) {
 		if (auth.user) {
 			db.collection("users").doc(auth.user.uid).collection("appointments").doc(appointment).get().then(appointment => {
 				const data = appointment.data();
-				
 				const date = new Date(appointment.data().start.toDate());
 				data.date = {
 					year: date.getUTCFullYear(),
@@ -81,8 +81,6 @@ export function EditAppointmentPage(props) {
 					day: date.getUTCDate()
 				};
 				data.time = new Time(date.getUTCHours(), date.getMinutes()).incrementMinutes(-date.getTimezoneOffset());
-
-				console.log(data);
 
 				setData(data);
 
@@ -92,22 +90,24 @@ export function EditAppointmentPage(props) {
 					}
 				});
 
-				selectDate(data.date);
-
 				getDoctor({
 					id: appointment.data().doctor,
 					clinic: appointment.data().clinic
-				}).then(result => {
-					setDoctor(result.data);
+				}).then(doctor_snapshot => {
+					setDoctor(doctor_snapshot.data);	
+				});
+
+				db.collection("clinics").doc(appointment.data().clinic).get().then(clinic_snapshot => {
+					setClinic(clinic_snapshot.data());
 				});
 			
-				db.collection("clinics").doc(appointment.data().clinic).get().then(result => {
-					setClinic(result.data());
-				});
 			});
 		}
   }, [auth.user, appointment]);
 
+	if (data && date != data.date) {
+		selectDate(data.date);
+	}
 	return (
 		<div className="page">
 			{!auth.user ? <Redirect to="/login" /> : null }
@@ -117,7 +117,7 @@ export function EditAppointmentPage(props) {
 				<div className="appointment_picker">
 					<h1>Change Your Appointment</h1>
 					<h2>Appointment Details{(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null)}{(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)}</h2>
-					<p>Currently the appointment is a <b>{data ? data.type : null}</b> appointment on <b>{data ? data.date.day + "/" + data.date.month + "/" + data.date.year : null}</b> at <b>{data ? data.time.toString() : null}</b>.</p>
+					<p>Currently the appointment is a <b>{data ? data.type : null}</b> appointment on <b>{data ? data.date.day + "/" + (data.date.month + 1) + "/" + data.date.year : null}</b> at <b>{data ? data.time.toString() : null}</b>.</p>
 					<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
 					<Formik
 						initialValues={{}}
@@ -128,31 +128,37 @@ export function EditAppointmentPage(props) {
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
+							let new_data = {
+								appointment: appointment
+							};
 
-							// Set the appointment on the server:
-							makeAppointment({
-								doctor: data.doctor,
-								clinic: data.clinic,
-								patient: auth.user.uid,
-								date: date,
-								time: {
+							if (time) {
+								new_data.time = {
 									hours: Number(("" + times[time]).split(":")[0]) + tzos,
 									minutes: Number(("" + times[time]).split(":")[1])
-								},
-								type: types[type]
-							})
+								};
+							}
+							
+							if (date) {
+								new_data.date = date;
+							}
+
+							if (type) {
+								new_data.type = types[type];
+							}
+							
+							editAppointment(new_data)
 							.then(value => {
 								if (value.data.messages.length > 0) {
 									for (let i = 0; i < value.data.messages.length; i++) {
 										console.log(value.data.messages[i]);
 									}
 								}
-								
+
 								setSuccess(value.data.id);
 							})
 							.catch(reason => {
 								console.log(reason);
-								// alert("failure! " + reason);
 							});
 						}}
 					>
@@ -180,7 +186,7 @@ export function EditAppointmentPage(props) {
 								onClick={(time) => setTime(time)}
 							/>
 							<div className="panel">
-								<button className="button warning">Delete</button>
+								<button className="button warning" type="button">Delete</button>
 								<button className="okay" type="submit">Submit</button>
 							</div>
 						</Form>
