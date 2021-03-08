@@ -272,6 +272,10 @@ exports.editAppointment = functions.https.onCall((data, context) => {
 	return editAppointment(data.appointment, data.date, data.time, data.type);
 });
 
+exports.cancelAppointment = functions.https.onCall((data, context) => {
+	return cancelAppointment(data.appointment);
+});
+
 // Helper methods:
 /**
  * Check if the text containst the exact search term anywhere
@@ -759,3 +763,39 @@ async function makeAppointment(doctor, clinic, patient, date, time, type) {
 
 	return response;
 }
+
+/**
+ * Cancel an existing appointment.
+ * @todo use session tokens to verify that the user canceling the appointment
+ * is the user for which the appointment has been made.
+ * @param {string} appointment The id of the appointment
+ * @returns {{success: boolean, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
+ */
+ async function cancelAppointment(appointment) {
+	const response = {
+		success: false,
+		messages: []
+	};
+
+	let user_appointment;
+	let general_appointment = db.collection("appointments").doc(appointment);
+
+	await general_appointment.get().then(snapshot => {
+		if (snapshot.exists) {
+			user_appointment = db.collection("users").doc(snapshot.data().patient).collection("appointments").doc(appointment);
+		}
+	});
+
+	if (user_appointment) {
+		await general_appointment.delete();
+		await user_appointment.delete();
+
+		response.success = true;
+	}
+	else {
+		response.messages.push("appointment doesn't exist");
+	}
+
+
+	return response;
+ }

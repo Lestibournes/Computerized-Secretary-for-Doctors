@@ -17,6 +17,7 @@ import { HomePage } from './HomePage';
 import { AppointmentSuccessPage } from './AppointmentSuccessPage';
 import { AppointmentListPage } from './AppointmentListPage';
 import { EditAppointmentPage } from './EditAppointmentPage';
+import { AppointmentDeletedPage } from './AppointmentDeletedPage';
 
 ReactDOM.render(
 	<ProvideAuth>
@@ -39,6 +40,9 @@ ReactDOM.render(
 				</Route>
 				<Route path="/create/:appointment">
 					<AppointmentSuccessPage />
+				</Route>
+				<Route path="/deleted">
+					<AppointmentDeletedPage />
 				</Route>
 				<Route path="/edit/:appointment">
 					<EditAppointmentPage />

@@ -9,6 +9,7 @@ import { SimpleDate, Time } from './classes';
 
 const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
 const editAppointment = fn.httpsCallable("editAppointment");
+const cancelAppointment = fn.httpsCallable("cancelAppointment");
 const getDoctor = fn.httpsCallable("getDoctor");
 
 
@@ -63,6 +64,7 @@ export function EditAppointmentPage(props) {
 	});
 
 	const [success, setSuccess] = useState(null);
+	const [deleted, setDeleted] = useState(null);
 
 	const [doctor_data, setDoctor] = useState(null);
 	const [clinic_data, setClinic] = useState(null);
@@ -148,14 +150,14 @@ export function EditAppointmentPage(props) {
 							}
 							
 							editAppointment(new_data)
-							.then(value => {
-								if (value.data.messages.length > 0) {
-									for (let i = 0; i < value.data.messages.length; i++) {
-										console.log(value.data.messages[i]);
+							.then(response => {
+								if (response.data.messages.length > 0) {
+									for (let i = 0; i < response.data.messages.length; i++) {
+										console.log(response.data.messages[i]);
 									}
 								}
 
-								setSuccess(value.data.id);
+								setSuccess(response.data.id);
 							})
 							.catch(reason => {
 								console.log(reason);
@@ -186,12 +188,24 @@ export function EditAppointmentPage(props) {
 								onClick={(time) => setTime(time)}
 							/>
 							<div className="panel">
-								<button className="button warning" type="button">Delete</button>
+								<button className="button warning" type="button" onClick={() => {
+									cancelAppointment({appointment: appointment}).then(response => {
+										if (response.data.success) {
+											setDeleted(true);
+										}
+										else {
+											response.data.messages.forEach(message => {
+												console.log(message)
+											});
+										}
+									});
+									}}>Delete</button>
 								<button className="okay" type="submit">Submit</button>
 							</div>
 						</Form>
 					</Formik>
 					{(success ? <Redirect to={"/create/" + success} /> : null)}
+					{(deleted ? <Redirect to={"/deleted"} /> : null)}
 				</div>
 			</div>
 		</div>
