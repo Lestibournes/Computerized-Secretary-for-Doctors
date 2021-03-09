@@ -55,7 +55,8 @@ export function AppointmentListPage(props) {
 	
 	useEffect(() => {
 		if (auth.user) {
-			db.collection("users").doc(auth.user.uid).collection("appointments").orderBy("start").get().then(querySnapshot => {
+			db.collection("users").doc(auth.user.uid).collection("appointments").orderBy("start").where("start", ">=", new Date())
+			.get().then(querySnapshot => {
 				let results = [];
 				let count = 0;
 				
