@@ -16,6 +16,7 @@ export function HomePage(props) {
 					<div className="buttonBar">
 						<Link className="button" to="searchDoctors">Make an Appointment</Link>
 						<Link className="button" to="user/appointments">My Future Appointments</Link>
+						<Link className="button" to="calendar">Work calendar</Link>
 					</div>
 				</div>
 			</div>
