@@ -370,11 +370,27 @@ div.error {
 } */
 
 .calendarItem {
-	position: relative;
+	position: absolute;
+	display: block;
 	border-radius: var(--radius);
 	padding: var(--padding);
 	font-size: xx-small;
 	cursor: pointer;
 	text-decoration: none;
+}
+
+.calendarDay {
+	position: absolute;
 	display: block;
+	font-size: xx-small;
+	border-left: 1px solid var(--control-background);
+}
+
+.calendarLine {
+	position: absolute;
+	display: grid;
+	place-content: center left;
+	height: 1px;
+	background-color: var(--control-background);
+	font-size: xx-small;
 }

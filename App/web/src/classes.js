@@ -4,7 +4,7 @@
  */
 export class Time {
 	#hours;
-	#minutes
+	#minutes;
 
 	/**
 	 * Creates a new Time object with the specified number of hours and minutes.
@@ -114,6 +114,10 @@ export class Slot {
  * A simple and immutable representation of a calendar date.
  */
 export class SimpleDate {
+	#year;
+	#month;
+	#day;
+	
 	/**
 	 * Create a new SimpleDate object.
 	 * @param {number} year Can be any value. 
@@ -121,30 +125,30 @@ export class SimpleDate {
 	 * @param {number} day valid values: 0...6 and null.
 	 */
 	constructor(year, month, day) {
-		this.year = year;
-		this.month = month;
-		this.day = day;
+		this.#year = year;
+		this.#month = month;
+		this.#day = day;
 	}
 
 	/**
 	 * @returns {number} The year. Can be any value.
 	 */
 	get year() {
-		return this.year;
+		return this.#year;
 	}
 
 	/**
 	 * @returns {number} The month. Values 0...11.
 	 */
 	get month() {
-		return this.month;
+		return this.#month;
 	}
 
 	/**
 	 * @returns {number} The day. Values 0...6 and null.
 	 */
 	get day() {
-		return this.day;
+		return this.#day;
 	}
 
 	/**
@@ -153,11 +157,11 @@ export class SimpleDate {
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getNextMonth() {
-		if (this.month === 11) {
-			return new SimpleDate(this.year + 1, 0, this.day);
+		if (this.#month === 11) {
+			return new SimpleDate(this.#year + 1, 0, this.#day);
 		}
 		else {
-			return new SimpleDate(this.year, this.month + 1, this.day);
+			return new SimpleDate(this.#year, this.#month + 1, this.#day);
 		}
 	}
 	/**
@@ -166,11 +170,11 @@ export class SimpleDate {
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getPreviousMonth() {
-		if (this.month === 0) {
-			return new SimpleDate(this.year - 1, 11, this.day);
+		if (this.#month === 0) {
+			return new SimpleDate(this.#year - 1, 11, this.#day);
 		}
 		else {
-			return new SimpleDate(this.year, this.month - 1, this.day);
+			return new SimpleDate(this.#year, this.#month - 1, this.#day);
 		}
 	}
 }

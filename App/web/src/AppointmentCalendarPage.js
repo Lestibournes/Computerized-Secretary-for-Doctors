@@ -3,7 +3,7 @@ import { React, useEffect, useState } from 'react';
 import { MainHeader, useAuth } from "./CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
 import { db, fn, storage } from './init';
-import { Time } from "./classes";
+import { SimpleDate, Time } from "./classes";
 
 const getDoctor = fn.httpsCallable("getDoctor");
 
@@ -39,35 +39,220 @@ function CalendarItem(props) {
 				top: props.display.top
 			}}
 		>
-			{props.data.start} <b>{props.data.name}</b>
+			{(props.data.start.hours < 10 ? "0" : "") + props.data.start.hours + ":" + (props.data.start.minutes < 10 ? "0" : "") + props.data.start.minutes} <b>{props.data.name}</b>
 		</Link>
 	)
 }
 
 function CalendarDay(props) {
-	const appintments = [];
-	const items = [];
+	const day_start = props.global.start.hours * 60 + props.global.start.minutes;
+	const day_end = props.global.end.hours * 60 + props.global.end.minutes;
+	const unit = props.global.height / (((day_end - day_start) / props.global.minimum) + 1);
+	const lines = [];
+	let index = 0;
 
-	appintments.forEach(appointment => {
-		items.push(<CalendarItem
-			display={{
-				color: appointment.color,
-				background: appointment.color,
-				height: ((appointment.duration * props.unit) / props.minimum) + "px",
-				width: props.width + "px",
-				top: ((((appointment.start.hours - props.start.hours) * 60) + appintments.start.minutes) * props.unit) + "px"
+	for (let time = new Time(props.global.start.hours, props.global.start.minutes); index < props.global.height / unit; index++, time = time.incrementMinutes(props.global.minimum)) {
+		lines.push(<div className="calendarLine" style={{top: unit * index, width: props.global.width}}></div>);
+	}
+
+	console.log(index);
+
+	return (
+		<div className="calendarDay"
+			style={{
+				width: props.global.width,
+				height: props.global.height,
+				left: props.global.day * props.global.width
 			}}
-			data={{
-				appointment: appointment.id,
-				name: appointment.name,
-				start: appointment.start
+		>
+			{lines}
+			{
+				props.appointments.map(appointment => {
+					const app_start = appointment.start.hours * 60 + appointment.start.minutes;
+					
+					return (
+					<CalendarItem
+						display={{
+							color: appointment.color,
+							background: appointment.background,
+							height: ((appointment.duration * unit) / props.global.minimum) + "px",
+							width: props.global.width + "px",
+							top: (((app_start - day_start) * unit) / props.global.minimum) + "px"
+						}}
+						data={{
+							appointment: appointment.id,
+							name: appointment.name,
+							start: appointment.start
+						}}
+					/>
+				)})
+			}
+		</div>
+	);
+}
+
+function CalendarWeek(props) {
+	return (<div className="calendarWeek">
+		<CalendarDay
+			global={{
+				start: {hours: 8, minutes: 30},
+				end: {hours: 16, minutes: 30},
+				minimum: 15,
+				width: 200,
+				height: 960,
+				day: 0
 			}}
-		/>);
-	});
+
+			appointments={
+				[{
+					color: "white",
+					background: "blue",
+					duration: 15,
+					start: {hours: 15, minutes: 0},
+					id: "blah",
+					name: "Yo"
+				}]
+			}
+		/>
+		<CalendarDay
+			global={{
+				start: {hours: 8, minutes: 30},
+				end: {hours: 16, minutes: 30},
+				minimum: 15,
+				width: 200,
+				height: 960,
+				day: 1
+			}}
+
+			appointments={
+				[{
+					color: "white",
+					background: "green",
+					duration: 45,
+					start: {hours: 12, minutes: 15},
+					id: "goob",
+					name: "meh"
+				}]
+			}
+		/>
+		<CalendarDay
+			global={{
+				start: {hours: 8, minutes: 30},
+				end: {hours: 16, minutes: 30},
+				minimum: 15,
+				width: 200,
+				height: 960,
+				day: 2
+			}}
+
+			appointments={
+				[{
+					color: "white",
+					background: "green",
+					duration: 45,
+					start: {hours: 12, minutes: 15},
+					id: "goob",
+					name: "meh"
+				}]
+			}
+		/>
+		<CalendarDay
+			global={{
+				start: {hours: 8, minutes: 30},
+				end: {hours: 16, minutes: 30},
+				minimum: 15,
+				width: 200,
+				height: 960,
+				day: 3
+			}}
+
+			appointments={
+				[{
+					color: "white",
+					background: "green",
+					duration: 45,
+					start: {hours: 12, minutes: 15},
+					id: "goob",
+					name: "meh"
+				}]
+			}
+		/>
+		<CalendarDay
+			global={{
+				start: {hours: 8, minutes: 30},
+				end: {hours: 16, minutes: 30},
+				minimum: 15,
+				width: 200,
+				height: 960,
+				day: 4
+			}}
+
+			appointments={
+				[{
+					color: "white",
+					background: "green",
+					duration: 45,
+					start: {hours: 12, minutes: 15},
+					id: "goob",
+					name: "meh"
+				}]
+			}
+		/>
+		<CalendarDay
+			global={{
+				start: {hours: 8, minutes: 30},
+				end: {hours: 16, minutes: 30},
+				minimum: 15,
+				width: 200,
+				height: 960,
+				day: 5
+			}}
+
+			appointments={
+				[{
+					color: "white",
+					background: "green",
+					duration: 45,
+					start: {hours: 12, minutes: 15},
+					id: "goob",
+					name: "meh"
+				}]
+			}
+		/>
+		<CalendarDay
+			global={{
+				start: {hours: 8, minutes: 30},
+				end: {hours: 16, minutes: 30},
+				minimum: 15,
+				width: 200,
+				height: 960,
+				day: 6
+			}}
+
+			appointments={
+				[{
+					color: "white",
+					background: "green",
+					duration: 45,
+					start: {hours: 12, minutes: 15},
+					id: "goob",
+					name: "meh"
+				}]
+			}
+		/>
+	</div>);
 }
 
 export function AppointmentCalendarPage(props) {
 	const auth = useAuth();
+	const [startDate, setStartDate] = useState(null);
+	const [endDate, setEndDate] = useState(null);
+
+	useEffect(() => {
+		const now = new Date();
+		setStartDate(now.getDate() - now.getDay());
+		setEndDate(now.getDate() + (6 - now.getDay()));
+	})
 
 	return (
 		<div className="page">
@@ -77,7 +262,8 @@ export function AppointmentCalendarPage(props) {
 
 				<div className="appointment_picker">
 					<h1>Work Calendar</h1>
-					<CalendarItem
+					<CalendarWeek date={new SimpleDate(2021, 2, 14)} />
+					{/* <CalendarItem
 						display={{
 							color: "white",
 							background: "red",
@@ -94,7 +280,7 @@ export function AppointmentCalendarPage(props) {
 							// duration: 45,
 							// type: "New Patient"
 						}}
-					/>
+					/> */}
 				</div>
 			</div>
 		</div>
