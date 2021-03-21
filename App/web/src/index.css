@@ -386,11 +386,19 @@ div.error {
 	border-left: 1px solid var(--control-background);
 }
 
-.calendarLine {
+.calendarLine, .calendarTimeLabel {
 	position: absolute;
 	display: grid;
 	place-content: center left;
 	height: 1px;
 	background-color: var(--control-background);
 	font-size: xx-small;
+	text-align: right;
+}
+
+.calendarTimeLabel {
+	width: 50px;
+	display: block;
+	background: none;
+	text-align: center;
 }
