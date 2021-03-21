@@ -248,6 +248,10 @@ class SimpleDate {
 
 		return -1;
 	}
+
+	toString() {
+		return this.day + "/" + this.month + "/" + this.year;
+	}
 }
 
 // Public interface of server functions:

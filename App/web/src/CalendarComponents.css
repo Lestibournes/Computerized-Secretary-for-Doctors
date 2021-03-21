@@ -1,0 +1,52 @@
+/* Calendar */
+.calendarHeader, .calendarBody {
+	position: relative;
+	display: block;
+	width: calc(200px * 7 + 50px);
+}
+
+.calendarHeader {
+	left: 50px;
+}
+
+.calendarDayHeader {
+	position: relative;
+	display: inline-block;
+	width: 200px;
+	text-align: center;
+	text-transform: capitalize;
+}
+
+.calendarDay {
+	position: absolute;
+	display: block;
+	font-size: xx-small;
+	border: 1px solid var(--control-background);
+}
+
+.calendarItem {
+	position: absolute;
+	display: block;
+	border-radius: var(--radius);
+	padding: var(--padding);
+	font-size: xx-small;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.calendarLine, .calendarTimeLabel {
+	position: absolute;
+	display: grid;
+	place-content: center left;
+	height: 1px;
+	background-color: var(--control-background);
+	font-size: xx-small;
+	text-align: right;
+}
+
+.calendarTimeLabel {
+	width: 50px;
+	display: block;
+	background: none;
+	text-align: center;
+}
