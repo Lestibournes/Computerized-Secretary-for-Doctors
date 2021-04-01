@@ -1,9 +1,9 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { MainHeader, useAuth } from "./CommonComponents";
+import { MainHeader, useAuth } from "../Common/CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
-import { db, fn, storage } from './init';
-import { Time } from "./classes";
+import { db, fn, storage } from '../init';
+import { Time } from "../Common/classes";
 
 const getDoctor = fn.httpsCallable("getDoctor");
 

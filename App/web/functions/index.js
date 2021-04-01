@@ -413,7 +413,7 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 // API implementation code:
 
 /**
- * Get the requested doctor and then filter the results field of specialization and the city where the clinic is.
+ * Get the requested doctor and then filter the results by field of specialization and the city where the clinic is.
  * Except for id, all params are optional. If no parameters are specified (or if the value is falsy), then it will return all the data.
  * @todo Be more picky about which data is being returned.
  * @param {string} id The id of the doctor.
@@ -436,14 +436,14 @@ async function getDoctor(id, field, city) {
 	});
 	
 	// Get the user data from refs:
-	await result.doctor.user.get().then(user_snapshot => {
+	await db.collection("users").doc(result.doctor.user).get().then(user_snapshot => {
 		result.user = user_snapshot.data();
 		result.user.id = user_snapshot.id;
 	});
 
 	// Get the field data for the given doctor:
 	for (i in result.doctor.fields) {
-		await result.doctor.fields[i].get().then(field_snapshot => {
+		await db.collection("fields").doc(result.doctor.fields[i]).get().then(field_snapshot => {
 			// Check if the field is unspecified or is a match:
 			if ((field && stringContains(field_snapshot.id, field)) || !field) {
 				let field_data = field_snapshot.data();
@@ -455,7 +455,7 @@ async function getDoctor(id, field, city) {
 
 	// Get the clinic data for the given doctor:
 	for (i in result.doctor.clinics) {
-		await result.doctor.clinics[i].get().then(clinic_snapshot => {
+		await db.collection("clinics").doc(result.doctor.clinics[i]).get().then(clinic_snapshot => {
 			// Check if the field is unspecified or is a match:
 			if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
 				let city_data = clinic_snapshot.data();
@@ -497,7 +497,7 @@ async function searchDoctors(name, field, city) {
 	
 	for (const doctor of doctors) {
 		// Get the user data from refs:
-		await doctor.doctor.user.get().then(user_snapshot => {
+		await db.collection("users").doc(doctor.doctor.user).get().then(user_snapshot => {
 			doctor.user = user_snapshot.data();
 			doctor.user.id = user_snapshot.id;
 		});
@@ -509,7 +509,7 @@ async function searchDoctors(name, field, city) {
 		if ((name && stringContains(fullName, name)) || !name) {
 			// Get the field data for the given doctor:
 			for (i in doctor.doctor.fields) {
-				await doctor.doctor.fields[i].get().then(field_snapshot => {
+				await db.collection("fields").doc(doctor.doctor.fields[i]).get().then(field_snapshot => {
 					// Check if the field is unspecified or is a match:
 					if ((field && stringContains(field_snapshot.id, field)) || !field) {
 						let field_data = field_snapshot.data();
@@ -521,7 +521,7 @@ async function searchDoctors(name, field, city) {
 
 			// Get the clinic data for the given doctor:
 			for (i in doctor.doctor.clinics) {
-				await doctor.doctor.clinics[i].get().then(clinic_snapshot => {
+				await db.collection("clinics").doc(doctor.doctor.clinics[i]).get().then(clinic_snapshot => {
 					// Check if the field is unspecified or is a match:
 					if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
 						let city_data = clinic_snapshot.data();

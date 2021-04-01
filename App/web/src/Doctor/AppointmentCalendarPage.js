@@ -1,10 +1,10 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { MainHeader, useAuth } from "./CommonComponents";
+import { MainHeader, useAuth } from "../Common/CommonComponents";
 import { Redirect } from 'react-router-dom';
-import { db } from './init';
-import { Slot, Time } from "./classes";
-import { CalendarWeek } from "./CalendarComponents";
+import { db } from '../init';
+import { Slot, Time } from "../Common/classes";
+import { CalendarWeek } from "../Common/CalendarComponents";
 
 export function AppointmentCalendarPage(props) {
 	const auth = useAuth();

@@ -2,23 +2,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import { LoginPage } from './LoginPage';
-import { RegisterPage } from "./RegisterPage";
-import { ProvideAuth } from "./CommonComponents";
-import { SearchDoctorsPage } from "./SearchDoctorsPage"
-import { MakeAppointmentPage } from "./MakeAppointmentPage"
+import { LoginPage } from './Common/LoginPage';
+import { RegisterPage } from "./Common/RegisterPage";
+import { ProvideAuth } from "./Common/CommonComponents";
+import { SearchDoctorsPage } from "./Patient/SearchDoctorsPage"
+import { MakeAppointmentPage } from "./Patient/MakeAppointmentPage"
 
 import {
 	BrowserRouter as Router,
 	Switch,
 	Route
 } from "react-router-dom";
-import { HomePage } from './HomePage';
-import { AppointmentSuccessPage } from './AppointmentSuccessPage';
-import { AppointmentListPage } from './AppointmentListPage';
-import { EditAppointmentPage } from './EditAppointmentPage';
-import { AppointmentDeletedPage } from './AppointmentDeletedPage';
-import { AppointmentCalendarPage } from './AppointmentCalendarPage';
+import { HomePage } from './Common/HomePage';
+import { AppointmentSuccessPage } from './Patient/AppointmentSuccessPage';
+import { AppointmentListPage } from './Patient/AppointmentListPage';
+import { EditAppointmentPage } from './Patient/EditAppointmentPage';
+import { AppointmentDeletedPage } from './Patient/AppointmentDeletedPage';
+import { AppointmentCalendarPage } from './Doctor/AppointmentCalendarPage';
+import { DoctorEditor } from './Doctor/Profile/DoctorEditor'
+import { ClinicEditor } from './Doctor/Profile/ClinicEditor';
 
 ReactDOM.render(
 	<ProvideAuth>
@@ -53,6 +55,12 @@ ReactDOM.render(
 				</Route>
 				<Route path="/calendar">
 					<AppointmentCalendarPage />
+				</Route>
+				<Route path="/profile">
+					<DoctorEditor />
+				</Route>
+				<Route path="/clinic/create">
+					<ClinicEditor />
 				</Route>
 			</Switch>
 		</Router>

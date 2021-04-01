@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { TextInput, Select, MainHeader, useAuth } from "./CommonComponents";
+import { TextInput, Select, MainHeader, useAuth } from "../Common/CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
-import { db, fn, st } from './init';
+import { db, fn, st } from '../init';
 
 const searchDoctors = fn.httpsCallable("searchDoctors");
 const storageRef = st.ref();

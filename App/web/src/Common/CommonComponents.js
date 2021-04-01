@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useField } from 'formik';
 import { Link, NavLink } from 'react-router-dom';
-import { db, fb } from "./init";
+import { db, fb } from "../init";
 
 /**
  * A Formik text input component.

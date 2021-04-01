@@ -193,12 +193,14 @@ form label, form input {
 
 form .panel {
 	justify-content: flex-end;
-	display: flex;
-	height: fit-content;
 	grid-column: 1/3;
-	column-gap: var(--margin);
 }
 
+.panel {
+	display: flex;
+	height: fit-content;
+	gap: var(--margin);
+}
 
 input, select, button, .button {
 	text-decoration: none;
@@ -243,17 +245,17 @@ button.okay:active, .button.okay:active, input.okay:active {
 	color: var(--alt-color);
 }
 
-.button.warning {
+.button.warning, button.warning {
 	background-color: var(--warning-color);
 	color: var(--alt-color);
 }
 
-.button.warning:hover {
+.button.warning:hover, button.warning:hover {
 	background-color: var(--warning-color-hover);
 	color: var(--alt-color);
 }
 
-.button.warning:active {
+.button.warning:active, button.warning:active {
 	background-color: var(--warning-color-pressed);
 	color: var(--alt-color);
 }

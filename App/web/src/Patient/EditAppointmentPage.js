@@ -2,10 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { SelectList, MainHeader, useAuth, SelectDate } from "./CommonComponents";
+import { SelectList, MainHeader, useAuth, SelectDate } from "../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
-import { db, fn } from './init';
-import { SimpleDate, Time } from './classes';
+import { db, fn } from '../init';
+import { SimpleDate, Time } from '../Common/classes';
 
 const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
 const editAppointment = fn.httpsCallable("editAppointment");
