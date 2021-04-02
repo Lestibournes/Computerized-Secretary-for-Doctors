@@ -260,6 +260,10 @@ exports.getDoctor = functions.https.onCall((data, context) => {
 	return getDoctor(data.id, data.field, data.city);
 });
 
+exports.createDoctor = functions.https.onCall((data, context) => {
+	return createDoctor(data.user);
+});
+
 exports.searchDoctors = functions.https.onCall((data, context) => {
 	return searchDoctors(data.name, data.field, data.city);
 });
@@ -465,6 +469,44 @@ async function getDoctor(id, field, city) {
 		});
 	};
 	
+	return result;
+}
+
+
+/**
+ * Create a new doctor profile for the given user, on the condition that he doesn't already have one.
+ * @param {string} id The id of the user.
+ * @returns {{doctor: string, success: boolean}} The id of the user's current doctor profile and whether a new doctor profile was created.
+ */
+async function createDoctor(id) {
+	let result = {
+		doctor: null,
+		success: false
+	};
+
+	let doctor_id = null;
+	
+	await db.collection("users").doc(id).get().then(user_snap => {
+		doctor_id = user_snap.data().doctor;
+	});
+
+	if (!doctor_id) {
+		await db.collection("doctors").add({
+			user: id,
+			approved: false
+		}).then(doctor_ref => {
+			doctor_id = doctor_ref.id;
+		});
+
+		await db.collection("users").doc(id).update({
+			doctor: doctor_id
+		}).then(user_snap => {
+			result.success = true;
+		});
+	}
+
+	result.doctor = doctor_id;
+
 	return result;
 }
 
