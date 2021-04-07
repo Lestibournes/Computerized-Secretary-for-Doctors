@@ -41,7 +41,7 @@ function AppointmentCard(props) {
 			<div className="buttonBar">
 				<Link className="button">Chat</Link>
 				<Link className="button">Details</Link>
-				<Link to={"/edit/" + props.data.id} className="button">Edit</Link>
+				<Link to={"/specific/user/appointments/edit/" + props.data.id} className="button">Edit</Link>
 			</div>
 		</div>
 		<div className="cardCenter"><small>{doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}</small></div>
@@ -83,7 +83,7 @@ export function AppointmentListPage(props) {
 
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/login" /> : null }
+			{!auth.user ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 

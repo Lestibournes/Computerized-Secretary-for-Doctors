@@ -112,7 +112,7 @@ export function EditAppointmentPage(props) {
 	}
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/login" /> : null }
+			{!auth.user ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 
@@ -204,8 +204,8 @@ export function EditAppointmentPage(props) {
 							</div>
 						</Form>
 					</Formik>
-					{(success ? <Redirect to={"/create/" + success} /> : null)}
-					{(deleted ? <Redirect to={"/deleted"} /> : null)}
+					{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
+					{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
 				</div>
 			</div>
 		</div>

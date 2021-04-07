@@ -277,12 +277,12 @@ export function MainHeader(props) {
 	return (
 		<>
 			<div className="mainHeader">
-				<div className="title">CSFPD</div>
-				<nav>
-					<NavLink className="button" activeClassName="okay" exact to="/">Home</NavLink>
-					<NavLink className="button" activeClassName="okay" to="/login">Login</NavLink>
-					<NavLink className="button" activeClassName="okay" to="/register">Register</NavLink>
-				</nav>
+				<Link to="/general/" className="title">CSFPD</Link>
+				{/* <nav>
+					<NavLink className="button" activeClassName="okay" exact to="/general/">Home</NavLink>
+					<NavLink className="button" activeClassName="okay" to="/general/login">Login</NavLink>
+					<NavLink className="button" activeClassName="okay" to="/general/register">Register</NavLink>
+				</nav> */}
 				<div>
 					{auth.user ? 
 					<>

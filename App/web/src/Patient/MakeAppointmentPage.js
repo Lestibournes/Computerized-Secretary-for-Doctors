@@ -63,7 +63,7 @@ export function MakeAppointmentPage(props) {
 
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/login" /> : null }
+			{!auth.user ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 
@@ -157,7 +157,7 @@ export function MakeAppointmentPage(props) {
 							</div>
 						</Form>
 					</Formik>
-					{(success ? <Redirect to={"/create/" + success} /> : null)}
+					{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
 				</div>
 			</div>
 		</div>

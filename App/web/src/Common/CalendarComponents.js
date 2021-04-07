@@ -25,7 +25,7 @@ It will display all the days in a row. The row will start with a marking of the 
 
 export function CalendarItem(props) {
 	return (
-		<Link className="calendarItem" to={"details/" + props.data.appointment}
+		<Link className="calendarItem" to={"/specific/doctor/appointments/details/" + props.data.appointment}
 			style={{
 				color: props.display.color,
 				backgroundColor: props.display.background,

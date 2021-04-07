@@ -1,16 +1,38 @@
 //Reactjs:
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput, MainHeader, useAuth } from "../../Common/CommonComponents";
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, useParams } from 'react-router-dom';
+import { db } from '../../init';
+
+/**
+@todo
+Edit clinic page:
+Can either be used to create a new clinic or edit an existing one. For an existing clinic it will show:
+* Options to modify the name and location.
+* A list of current members with the option to boot them.
+* A list of pending membership requests with the option to accept or reject them.
+* A button to go to a search page to find existing doctors and invite them to join the clinic.
+*/
 
 export function ClinicEditor() {
 	const auth = useAuth();
+	const { clinic } = useParams(); //The ID of clinic.
+	const [data, setData] = useState(null);
+
+	useEffect(() => {
+		if (clinic) {
+			db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+				setData(clinic_snap.data());
+				console.log(data);
+			});
+		}
+	}, [clinic]);
 	
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/login" /> : null }
+			{!auth.user ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Register"></MainHeader>
 			<div className="center">
 				<div className="form">
@@ -77,7 +99,7 @@ export function ClinicEditor() {
 								type="password"
 							/>
 							<div className="panel">
-								<Link className="button" to="/login">Login</Link>
+								<Link className="button" to="/general/login">Login</Link>
 								<button className="okay" type="submit">Register</button>
 							</div>
 						</Form>

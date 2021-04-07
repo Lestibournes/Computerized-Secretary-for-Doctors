@@ -10,7 +10,7 @@ export function LoginPage() {
 	
 	return (
 		<div className="page">
-			{auth.user ? <Redirect to="/" /> : null }
+			{auth.user ? <Redirect to="/general/" /> : null }
 			<MainHeader section="Login"></MainHeader>
 			<div className="center">
 				<div className="form">
@@ -47,7 +47,7 @@ export function LoginPage() {
 								type="password"
 							/>
 							<div className="panel">
-								<Link className="button" to="/register">Register</Link>
+								<Link className="button" to="/general/register">Register</Link>
 								<button className="okay" type="submit">Login</button>
 							</div>
 						</Form>

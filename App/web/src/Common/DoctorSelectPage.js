@@ -86,8 +86,10 @@ function SelectField() {
 		<Select label="Specialization" name="field" options={fields}/>
 	);
 }
-
-export function SearchDoctorsPage() {
+/**
+ * @todo use this to select a doctor by searching for one. Once a doctor is selected all other interactions will be with that doctor.
+ */
+export function DoctorSelectPage() {
 	const auth = useAuth();
 	const [doctors, setDoctors] = useState([]);
 

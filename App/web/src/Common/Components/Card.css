@@ -1,0 +1,37 @@
+@import '../../globals.css';
+
+.fancyCard, .plainCard {
+	width: 100%;
+	cursor: pointer;
+	text-decoration: none;
+	color: var(--color);
+	display: grid;
+	border: var(--border-width) solid var(--control-background);
+	border-radius: var(--radius);
+	padding: var(--padding);
+}
+
+.fancyCard {
+	grid-template-areas:
+		'pic cardTop'
+		'pic cardCenter'
+		'pic cardBottom';
+	grid-template-columns: auto 1fr;
+	column-gap: var(--margin);
+}
+
+.fancyCard img {
+	grid-area: pic;
+	width: 128px;
+	height: 128px;
+	border-radius: var(--radius);
+	background-color: var(--control-background);
+	border: none;
+}
+
+.plainCard {
+	grid-template-areas:
+		'cardTop'
+		'cardCenter'
+		'cardBottom';
+}

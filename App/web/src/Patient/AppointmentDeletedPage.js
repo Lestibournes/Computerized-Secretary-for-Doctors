@@ -11,7 +11,7 @@ export function AppointmentDeletedPage() {
 	
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/login" /> : null }
+			{!auth.user ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 
