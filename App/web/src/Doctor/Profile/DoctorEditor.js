@@ -1,4 +1,4 @@
-//Reactjs:
+import "./DoctorEditor.css";
 import { MainHeader, useAuth } from "../../Common/CommonComponents";
 import { Redirect } from 'react-router-dom';
 import { useEffect, useState } from "react";
@@ -9,7 +9,8 @@ import * as Yup from 'yup';
 import { TextInput } from "../../Common/CommonComponents";
 import { Link } from 'react-router-dom';
 
-import { Card } from "../../Common/Components/Card"
+import { Card } from "../../Common/Components/Card";
+import { Button } from "../../Common/Components/Button";
 
 /**
 @todo
@@ -52,20 +53,8 @@ const getDoctor = fn.httpsCallable("getDoctor");
 const createDoctor = fn.httpsCallable("createDoctor");
 
 /**
- * 
- * @param {string} id the id of the requested clinic.
- * @returns the data of the requested clinic.
+ * @todo These helper functions should be moved to the server side:
  */
-async function getClinic(id) {
-	let clinic;
-
-	await db.collection("clinics").doc(id).get().then(snap => {
-		clinic = snap.data();
-		clinic.id = snap.id;
-	});
-
-	return clinic;
-}
 
 /**
  * 
@@ -73,11 +62,14 @@ async function getClinic(id) {
  * @returns {object[]} an array of the data of all the clinics the doctor works in.
  */
 async function getClinics(id) {
+	console.log(id);
 	const clinic_data = [];
 
 	let clinic_ids = [];
 	await db.collection("doctors").doc(id).get().then(doctor_snap => {
-		clinic_ids = doctor_snap.data().clinics;
+		if (doctor_snap.data().clinics) {
+			clinic_ids = doctor_snap.data().clinics;
+		}
 	});
 
 	for (let clinic_id of clinic_ids) {
@@ -197,186 +189,67 @@ async function leaveClinic(clinic, doctor) {
 	}
 }
 
+function ClinicList({doctor, clinics = []}) {
+	const clinics_list = [];
+	
+	for (let clinic_data of clinics) {
+		clinics_list.push(
+			<Card
+				title={clinic_data.name}
+				body={clinic_data.city}
+				footer={clinic_data.address}
+				link={(
+					clinic_data.owner === doctor ?
+					"/specific/doctor/clinics/edit/" + clinic_data.id
+					:
+					"/specific/doctor/clinics/view/" + clinic_data.id
+				)}
+			/>
+		);
+	}
+	
+	return (
+		<div>
+			<div className="headerbar">
+				<h2>Clinics</h2> <Button label="+" link="/specific/doctor/clinics/create" />
+			</div>
+			{clinics_list}
+		</div>
+	);
+}
+
+function CreateProfile({user, setDoctor}) {
+	return (
+		<div className="center">
+			<h2>Would you like to register as a doctor?</h2>
+			<div className="panel">
+				<Button action={() => {window.history.back()}} label="No" />
+				<Button type="okay" action={() => {
+					createDoctor({user: user}).then(response => {
+						if (response.data.doctor) {
+							getDoctor({id: response.data.doctor}).then(results => {
+								setDoctor(results.data);
+							});
+						}
+					});
+				}} label="Yes" />
+			</div>
+		</div>
+	);
+}
+
+function Loading() {
+	return (
+		<h2>Loading...</h2>
+	);
+}
+
 export function DoctorEditor() {
 	const auth = useAuth();
 	const [mode, setMode] = useState("loading");
 	const [doctor, setDoctor] = useState(null);
 	const [clinics, setClinics] = useState([]);
-	const [clinic, setClinic] = useState(null);
-	const [message, setMessage] = useState("");
 
-	function Create() {
-		return (
-			<div className="center">
-				<h2>Would you like to create a doctor profile?</h2>
-				<div className="panel">
-					<button className="warning" onClick={() => {window.history.back()}}>No</button>
-					<button className="okay" onClick={() => {
-						createDoctor({user: auth.user.uid}).then(response => {
-							if (response.data.doctor) {
-								getDoctor({id: response.data.doctor}).then(results => {
-									setDoctor(results.data);
-									setMode("edit");
-								});
-							}
-							else {
-								setMessage("Failed to create/load doctor profile.");
-								setMode("error");
-							}
-						});
-					}}>Yes</button>
-				</div>
-			</div>
-		);
-	}
-
-	function Leave() {
-		return (
-			<div className="center">
-				<h2>Are you sure you wish to leave {clinic.name + " (" + clinic.city + ")"}?</h2>
-				<div className="panel">
-					<button className="warning" onClick={() => {window.history.back()}}>No</button>
-					<button className="okay" onClick={() => {
-						leaveClinic(clinic.id, doctor.doctor.id);
-						getClinics(doctor.doctor.id).then(clinics => setClinics(clinics));
-						setMode("edit");
-					}}>Yes</button>
-				</div>
-			</div>
-		);
-	}
-
-	function Edit() {
-		const clinics_list = [];
-		
-		for (let clinic_data of clinics) {
-			clinics_list.push(
-				<Card
-					title={clinic_data.name}
-					body={clinic_data.city}
-					footer={clinic_data.address}
-					link={(
-						clinic_data.owner === doctor.doctor.id ?
-						"/specific/doctor/clinics/edit/" + clinic_data.id
-						:
-						"/specific/doctor/clinics/view/" + clinic_data.id
-					)}
-				/>
-			);
-			// clinics_list.push(
-			// 	<li>
-			// 		{clinic_data.name + " (" + clinic_data.city + ")"}
-			// 		{(clinic_data.owner === doctor.doctor.id ?
-			// 			<button onClick={() => {
-			// 				setClinic(clinic_data);
-			// 				setMode("edit clinic")
-			// 			}}>Edit</button>
-			// 			:
-			// 			<button onClick={() => {
-			// 					setClinic(clinic_data);
-			// 					setMode("leave clinic")
-			// 			}}>Leave</button>
-			// 		)}
-			// 	</li>
-			// )
-		}
-
-
-		
-		return (
-			<div className="center">
-				{doctor ? doctor.user.firstName : null}
-				<h3>Clinics <button onClick={() => setMode("add clinic")}>+</button></h3>
-				{clinics_list}
-			</div>
-		);
-	}
-
-	function EditClinic(props) {
-		const operation = props.id ? "edit" : "create";
-		
-		return (
-			<div className="center">
-				<div className="form">
-					<h2>{operation === "edit" ? "Edit Clinic" : "Add Clinic"}</h2>
-					<Formik
-						initialValues={{
-							name: props.name,
-							city: props.city,
-							address: props.address
-						}}
-						validationSchema={Yup.object({
-							name: Yup.string()
-								.required("Required"),
-							city: Yup.string()
-								.required("Required"),
-							address: Yup.string()
-								.required("Required")
-						})}
-						onSubmit={async (values, { setSubmitting }) => {
-							setSubmitting(true);
-
-							if (operation === "create") {
-								addClinic(doctor.doctor.id, values.name, values.city, values.address).then(() => {
-									getClinics(doctor.doctor.id).then(clinics => setClinics(clinics));
-									setMode("edit");
-								});
-							}
-							else {
-								editClinic(props.id, doctor.doctor.id, values.name, values.city, values.address).then(response => {
-									if (response.success) {
-										getClinics(doctor.doctor.id).then(clinics => setClinics(clinics));
-										setMode("edit");
-									}
-									else {
-										setMessage(response.message);
-										setMode("error");
-									}
-								})
-							}
-						}}
-					>
-						<Form>
-							<TextInput
-								label="Name"
-								name="name"
-								type="text"
-								placeholder="Edena"
-							/>
-							<TextInput
-								label="City"
-								name="city"
-								type="text"
-								placeholder="Jerusalem"
-							/>
-							<TextInput
-								label="Address"
-								name="address"
-								type="text"
-								placeholder="13 Main St."
-							/>
-							<div className="panel">
-								<button className="warning" onClick={() => setMode("edit")}>Cancel</button>
-								<button className="okay" type="submit">Save</button>
-							</div>
-						</Form>
-					</Formik>
-				</div>
-			</div>
-		);
-	}
-	
-	function Loading() {
-		return (
-			<div>Loading...</div>
-		);
-	}
-
-	function Error() {
-		return (
-			<div>{message}</div>
-		);
-	}
 
 	useEffect(() => {
 		if (auth.user) {
@@ -403,23 +276,14 @@ export function DoctorEditor() {
 	let display;
 
 	switch (mode) {
-		case "error":
-			display = <Error />;
-			break;
 		case "create":
-			display = <Create />;
+			display = <CreateProfile user={auth.user.uid} setDoctor={doctor => {
+				setDoctor(doctor);
+				setMode("edit");
+			}} />;
 			break;
 		case "edit":
-			display = <Edit />;
-			break;
-		case "add clinic":
-			display = <EditClinic />;
-			break;
-		case "edit clinic":
-			display = <EditClinic {...clinic} />;
-			break;
-		case "leave clinic":
-			display = <Leave />;
+			display = <ClinicList doctor={doctor ? doctor.doctor.id : null} clinics={clinics} />;
 			break;
 		default:
 			display = <Loading />;
@@ -431,7 +295,6 @@ export function DoctorEditor() {
 			{!auth.user ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
-
 				<div>
 					<h1>Doctor Profile</h1>
 					{display}

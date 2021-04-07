@@ -11,6 +11,17 @@
 	padding: var(--padding);
 }
 
+.fancyCard:hover, .plainCard:hover {
+	border-color: var(--control-background-hover);
+	background-color: var(--control-background-hover);
+}
+
+.fancyCard:active, .plainCard:active {
+	border-color: var(--control-background-pressed);
+	background-color: var(--control-background-pressed);
+	color: var(--alt-color);
+}
+
 .fancyCard {
 	grid-template-areas:
 		'pic cardTop'

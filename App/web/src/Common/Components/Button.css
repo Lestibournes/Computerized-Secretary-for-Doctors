@@ -1,0 +1,56 @@
+@import '../../globals.css';
+
+.Button {
+	text-decoration: none;
+	background-color: var(--control-background);
+	color: var(--color);
+	border: none;
+	border-radius: var(--radius);
+	
+	display: grid;
+	place-content: center;
+
+	padding: 1em;
+	height: min-content;
+	width: min-content;
+	box-sizing: border-box;
+}
+
+.Button:hover {
+	background-color: var(--control-background-hover);
+}
+
+.Button:active {
+	background-color: var(--control-background-pressed);
+	color: var(--alt-color);
+}
+
+.okay {
+	background-color: var(--highlight);
+	color: var(--alt-color);
+}
+
+.okay:hover {
+	background-color: var(--highlight-pale);
+	color: var(--alt-color);
+}
+
+.okay:active {
+	background-color: var(--highlight-dark);
+	color: var(--alt-color);
+}
+
+.cancel {
+	background-color: var(--warning-color);
+	color: var(--alt-color);
+}
+
+.cancel:hover {
+	background-color: var(--warning-color-hover);
+	color: var(--alt-color);
+}
+
+.cancel:active {
+	background-color: var(--warning-color-pressed);
+	color: var(--alt-color);
+}

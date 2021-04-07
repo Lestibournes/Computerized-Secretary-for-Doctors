@@ -1,0 +1,9 @@
+@import "../../globals.css";
+
+.headerbar {
+	display: grid;
+	height: min-content;
+	box-sizing: border-box;
+	grid-template-columns: 1fr auto;
+	place-items: center start;
+}
