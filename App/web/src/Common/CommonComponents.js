@@ -348,13 +348,13 @@ function useProvideAuth() {
 		}
 	};
 
-	const isLoggedIn = async () => {
+	const isLoggedIn = async function(listener) {
 		await fb.auth().onAuthStateChanged((user) => {
 			if (user) {
-				return true;
+				listener(true);
 			}
 			else {
-				return false;
+				listener(false);
 			}
 		});
 	};

@@ -249,8 +249,8 @@ export function DoctorEditor() {
 	const [redirect, setRedirect] = useState(false);
 
 	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn().then(status => {
-			if (status) setRedirect(true);
+		const unsubscribe = auth.isLoggedIn(status => {
+			if (!status) setRedirect(true);
 		});
 
 		return unsubscribe;

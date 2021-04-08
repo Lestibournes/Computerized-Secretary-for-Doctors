@@ -76,8 +76,9 @@ export function ClinicEditor() {
 	const [redirect, setRedirect] = useState(false);
 	
 	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn().then(status => {
-			if (status) setRedirect(true);
+		const unsubscribe = auth.isLoggedIn(status => {
+			console.log(status);
+			if (!status) setRedirect(true);
 		});
 
 		return unsubscribe;
