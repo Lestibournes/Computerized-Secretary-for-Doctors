@@ -49,8 +49,8 @@ For each shift, select start and end time or remove the shift.
 It would be good to add some kind of notification widget to easily show new membership requests, private messages from clients, or whatever else.
 */
 
-const getDoctor = fn.httpsCallable("getDoctor");
-const createDoctor = fn.httpsCallable("createDoctor");
+const getDoctor = fn.httpsCallable("doctors-get");
+const createDoctor = fn.httpsCallable("doctors-create");
 
 /**
  * @todo These helper functions should be moved to the server side:

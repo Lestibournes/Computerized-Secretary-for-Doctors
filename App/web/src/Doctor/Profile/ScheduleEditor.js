@@ -6,9 +6,9 @@ import { SelectList, MainHeader, useAuth, SelectDate } from "../Common/CommonCom
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
 
-const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
-const makeAppointment = fn.httpsCallable("makeAppointment");
-const getDoctor = fn.httpsCallable("getDoctor");
+const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
+const makeAppointment = fn.httpsCallable("appointments-add");
+const getDoctor = fn.httpsCallable("doctors-get");
 
 /**
  * @todo

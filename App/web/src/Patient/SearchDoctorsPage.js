@@ -6,7 +6,7 @@ import { TextInput, Select, MainHeader, useAuth } from "../Common/CommonComponen
 import { Link, Redirect } from 'react-router-dom';
 import { db, fn, st } from '../init';
 
-const searchDoctors = fn.httpsCallable("searchDoctors");
+const searchDoctors = fn.httpsCallable("doctors-search");
 const storageRef = st.ref();
 
 function DoctorCard(props) {

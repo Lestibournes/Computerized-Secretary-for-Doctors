@@ -4,7 +4,7 @@ import { MainHeader, useAuth } from "../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
 
-const getDoctor = fn.httpsCallable("getDoctor");
+const getDoctor = fn.httpsCallable("doctors-get");
 
 export function AppointmentDeletedPage() {
 	const auth = useAuth();

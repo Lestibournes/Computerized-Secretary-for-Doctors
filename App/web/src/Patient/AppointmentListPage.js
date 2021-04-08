@@ -5,7 +5,7 @@ import { Link, Redirect } from 'react-router-dom';
 import { db, fn, storage } from '../init';
 import { Time } from "../Common/classes";
 
-const getDoctor = fn.httpsCallable("getDoctor");
+const getDoctor = fn.httpsCallable("doctors-get");
 
 function AppointmentCard(props) {
 	const [profile, setProfile] = useState(null);

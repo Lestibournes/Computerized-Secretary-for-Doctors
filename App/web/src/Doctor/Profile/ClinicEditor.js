@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { TextInput, MainHeader, useAuth } from "../../Common/CommonComponents";
 import { Link, Redirect, useParams } from 'react-router-dom';
 import { db } from '../../init';
+import { Button } from "../../Common/Components/Button";
 
 /**
 @todo
@@ -99,8 +100,8 @@ export function ClinicEditor() {
 								type="password"
 							/>
 							<div className="panel">
-								<Link className="button" to="/general/login">Login</Link>
-								<button className="okay" type="submit">Register</button>
+								<Button link="/general/login" label="Login" />
+								<Button type="submit" label="Register" />
 							</div>
 						</Form>
 					</Formik>

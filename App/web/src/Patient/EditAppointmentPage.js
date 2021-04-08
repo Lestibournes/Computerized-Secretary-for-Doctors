@@ -7,10 +7,10 @@ import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
 import { SimpleDate, Time } from '../Common/classes';
 
-const getAvailableAppointments = fn.httpsCallable("getAvailableAppointments");
-const editAppointment = fn.httpsCallable("editAppointment");
-const cancelAppointment = fn.httpsCallable("cancelAppointment");
-const getDoctor = fn.httpsCallable("getDoctor");
+const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
+const editAppointment = fn.httpsCallable("appointments-edit");
+const cancelAppointment = fn.httpsCallable("appointments-cancel");
+const getDoctor = fn.httpsCallable("doctors-get");
 
 
 /**
