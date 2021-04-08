@@ -1,0 +1,35 @@
+label, input {
+	display: grid;
+	place-items: center start;
+}
+
+input {
+	text-decoration: none;
+	background-color: var(--control-background);
+	color: var(--color);
+	border: none;
+	font-size: var(--font-size-e);
+	padding: var(--control-padding);
+	border-radius: var(--radius);
+}
+
+input:focus {
+	background-color: var(--control-background-hover);
+	color: var(--color);
+}
+
+input:active {
+	background-color: var(--control-background-pressed);
+	color: var(--alt-color);
+}
+
+
+input.error {
+	background-color: var(--warning-color);
+}
+
+div.error {
+	font-size: var(--font-size-f);
+	color: var(--warning-color);
+	grid-column: 2/3;
+}

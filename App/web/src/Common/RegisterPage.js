@@ -2,8 +2,9 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { TextInput, MainHeader, useAuth } from "./CommonComponents";
+import { MainHeader, useAuth } from "./CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
+import { TextInput } from './Components/TextInput';
 
 export function RegisterPage() {
 	const auth = useAuth();

@@ -11,6 +11,10 @@ const admin = require('firebase-admin');
  */
 const db = admin.firestore();
 
+exports.get = functions.https.onCall((data, context) => {
+	return get(data.id);
+});
+
 exports.getAll = functions.https.onCall((data, context) => {
 	return getAll(data.doctor);
 });
@@ -28,7 +32,25 @@ exports.leave = functions.https.onCall((data, context) => {
 });
 
 /**
- * 
+ * Get the data of a specific clinic.
+ * @param {string} id the id of the requested clinic.
+ * @returns the data of the requested clinic.
+ */
+ async function get(id) {
+	let clinic;
+
+	console.log(id);
+
+	await db.collection("clinics").doc(id).get().then(snap => {
+		clinic = snap.data();
+		clinic.id = snap.id;
+	});
+
+	return clinic;
+}
+
+/**
+ * Get the data of all the clinics of the specified doctor.
  * @param {string} doctor the id of the doctor
  * @returns {object[]} an array of the data of all the clinics that the doctor works in.
  */
@@ -55,6 +77,13 @@ exports.leave = functions.https.onCall((data, context) => {
 	return clinic_data;
 }
 
+/**
+ * Create a new clinic.
+ * @param {string} doctor The id of the doctor that the clinic will belong to.
+ * @param {string} name The name of the clinic.
+ * @param {string} city The city where the clinic is located.
+ * @param {string} address The street and building number where the clinic is located.
+ */
 async function add(doctor, name, city, address) {
 	let clinics = [];
 	
@@ -79,6 +108,15 @@ async function add(doctor, name, city, address) {
 	});
 }
 
+/**
+ * Edit the details of an existing clinic.
+ * @param {string} id The id of the clinic.
+ * @param {string} doctor The doctor who is requesting the change.
+ * @param {string} name The new name of the clinic.
+ * @param {string} city The new city where the clinic is located.
+ * @param {string} address The new street name and building number where the clinic is located.
+ * @returns 
+ */
 async function edit(id, doctor, name, city, address) {
 	const response = {
 		success: false,
@@ -107,6 +145,11 @@ async function edit(id, doctor, name, city, address) {
 	return response;
 }
 
+/**
+ * Have a doctor leave a clinic in which he works (does not change ownership of the clinic).
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ */
 async function leave(clinic, doctor) {
 	
 	// Remove the doctor from the clinic:

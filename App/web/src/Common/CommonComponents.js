@@ -4,34 +4,6 @@ import { Link, NavLink } from 'react-router-dom';
 import { db, fb } from "../init";
 
 /**
- * A Formik text input component.
- */
-export const TextInput = ({ label, ...props }) => {
-	// useField() returns [formik.getFieldProps(), formik.getFieldMeta()]
-	// which we can spread on <input> and alse replace ErrorMessage entirely.
-	const [field, meta] = useField(props);
-	const error = meta.touched && meta.error ? "error" : null; // Whether or not an error message should be displayed.
-
-	// Make sure that if either id or name is not specified, that it will have the correct value:
-	if (!props.id) {
-		props.id = props.name;
-	}
-	else if (!props.name) {
-		props.name = props.id;
-	}
-	
-	return (
-		<>
-		<label htmlFor={props.id}>{label}:</label>
-			<input className={error} {...field} {...props} />
-			{meta.touched && meta.error ? (
-				<div className="error">{meta.error}</div>
-			) : null}
-		</>
-	);
-};
-
-/**
  * A Formik select input component.
  */
 export const Select = ({ label, ...props }) => {
@@ -376,6 +348,17 @@ function useProvideAuth() {
 		}
 	};
 
+	const isLoggedIn = async () => {
+		await fb.auth().onAuthStateChanged((user) => {
+			if (user) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		});
+	};
+
 	// Listen to changes in user login status and update the user and name states accordingly:
 	useEffect(() => {
 		const unsubscribe = fb.auth().onAuthStateChanged((user) => {
@@ -411,6 +394,7 @@ function useProvideAuth() {
 		login,
 		logout,
 		register,
-		verifyEmail
+		verifyEmail,
+		isLoggedIn
 	};
 }

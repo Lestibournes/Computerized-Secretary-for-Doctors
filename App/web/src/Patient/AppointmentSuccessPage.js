@@ -8,6 +8,16 @@ const getDoctor = fn.httpsCallable("doctors-get");
 
 export function AppointmentSuccessPage() {
 	const auth = useAuth();
+	const [redirect, setRedirect] = useState(false);
+	
+	useEffect(() => {
+		const unsubscribe = auth.isLoggedIn().then(status => {
+			if (status) setRedirect(true);
+		});
+
+		return unsubscribe;
+	}, [auth.user]);
+	
 	const { appointment } = useParams(); //The ID of the doctor and clinic.
 	
 	const [doctor_data, setDoctor] = useState(null);
@@ -36,7 +46,7 @@ export function AppointmentSuccessPage() {
 
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/general/login" /> : null }
+			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 

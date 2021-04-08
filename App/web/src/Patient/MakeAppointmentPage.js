@@ -24,8 +24,18 @@ const getDoctor = fn.httpsCallable("doctors-get");
  * appointment, making sure that it's valid.
  */
 export function MakeAppointmentPage(props) {
-	const currentDate = new Date();
 	const auth = useAuth();
+	const [redirect, setRedirect] = useState(false);
+	
+	useEffect(() => {
+		const unsubscribe = auth.isLoggedIn().then(status => {
+			if (status) setRedirect(true);
+		});
+
+		return unsubscribe;
+	}, [auth.user]);
+	
+	const currentDate = new Date();
 	const { doctor, clinic } = useParams(); //The ID of the doctor and clinic.
 	const [type, setType] = useState(null);
 	// const [day, setDay] = useState(null);
@@ -63,7 +73,7 @@ export function MakeAppointmentPage(props) {
 
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/general/login" /> : null }
+			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 

@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { TextInput, Select, MainHeader, useAuth } from "../Common/CommonComponents";
+import { Select, MainHeader, useAuth } from "../Common/CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
 import { db, fn, st } from '../init';
+import { TextInput } from '../Common/Components/TextInput';
 
 const searchDoctors = fn.httpsCallable("doctors-search");
 const storageRef = st.ref();
@@ -89,11 +90,21 @@ function SelectField() {
 
 export function SearchDoctorsPage() {
 	const auth = useAuth();
+	const [redirect, setRedirect] = useState(false);
+	
+	useEffect(() => {
+		const unsubscribe = auth.isLoggedIn().then(status => {
+			if (status) setRedirect(true);
+		});
+
+		return unsubscribe;
+	}, [auth.user]);
+	
 	const [doctors, setDoctors] = useState([]);
 
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/general/login" /> : null }
+			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 

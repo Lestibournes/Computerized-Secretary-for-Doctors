@@ -246,6 +246,16 @@ function Loading() {
 
 export function DoctorEditor() {
 	const auth = useAuth();
+	const [redirect, setRedirect] = useState(false);
+
+	useEffect(() => {
+		const unsubscribe = auth.isLoggedIn().then(status => {
+			if (status) setRedirect(true);
+		});
+
+		return unsubscribe;
+	}, [auth.user]);
+
 	const [mode, setMode] = useState("loading");
 	const [doctor, setDoctor] = useState(null);
 	const [clinics, setClinics] = useState([]);
@@ -292,7 +302,7 @@ export function DoctorEditor() {
 
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/general/login" /> : null }
+			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 				<div>

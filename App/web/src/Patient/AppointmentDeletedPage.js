@@ -8,10 +8,19 @@ const getDoctor = fn.httpsCallable("doctors-get");
 
 export function AppointmentDeletedPage() {
 	const auth = useAuth();
+	const [redirect, setRedirect] = useState(false);
+	
+	useEffect(() => {
+		const unsubscribe = auth.isLoggedIn().then(status => {
+			if (status) setRedirect(true);
+		});
+
+		return unsubscribe;
+	}, [auth.user]);
 	
 	return (
 		<div className="page">
-			{!auth.user ? <Redirect to="/general/login" /> : null }
+			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="content">
 

@@ -1,5 +1,3 @@
-@import '../../globals.css';
-
 .fancyCard, .plainCard {
 	width: 100%;
 	cursor: pointer;
