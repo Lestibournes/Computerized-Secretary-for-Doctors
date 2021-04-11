@@ -181,7 +181,7 @@ export class Slot {
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getNextMonth() {
-		if (this.#month == 11) {
+		if (this.#month === 11) {
 			return new SimpleDate(this.#year + 1, 0, this.#day);
 		}
 		else {
@@ -194,7 +194,7 @@ export class Slot {
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getPreviousMonth() {
-		if (this.#month == 0) {
+		if (this.#month === 0) {
 			return new SimpleDate(this.#year - 1, 11, this.#day);
 		}
 		else {
@@ -209,11 +209,11 @@ export class Slot {
 	 */
 	compare(that) {
 		if (this.#year > that.#year) return 1;
-		if (this.#year == that.#year) {
+		if (this.#year === that.#year) {
 			if (this.#month > that.#month) return 1;
-			if (this.#month == that.#month) {
+			if (this.#month === that.#month) {
 				if (this.#day > that.#day) return 1;
-				if (this.#day == that.#day) return 0;
+				if (this.#day === that.#day) return 0;
 			}
 		}
 
@@ -221,6 +221,6 @@ export class Slot {
 	}
 	
 	toString() {
-		return this.day + "/" + (this.month + 1) + "/" + this.year;
+		return (this.day < 10 ? "0" : "") + this.day + "/" + (this.month < 9 ? "0" : "") + (this.month + 1) + "/" + this.year;
 	}
 }

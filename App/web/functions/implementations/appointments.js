@@ -8,6 +8,9 @@ const admin = require('firebase-admin');
  */
 const db = admin.firestore();
 
+const doctors = require("./doctors");
+const clinics = require("./clinics");
+
 /**
  * @todo Make the 2 classes files identical and get rid of the redundancy:
  */
@@ -128,6 +131,43 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 }
 
 // API implementation code:
+
+/**
+ * Get all the data of the appointment.
+ * @param {string} id The id of the appointment.
+ * @returns {{appointment: object, doctor: object, clinic: object}} An object containing all the relevant data.
+ */
+async function get(id) {
+	let data = {
+		appointment: null,
+		doctor: null,
+		clinic: null,
+		extra: {
+			date: null,
+			time: null
+		}
+	};
+
+	await db.collection("appointments").doc(id).get().then(appointment_snap => {
+		data.appointment = appointment_snap.data();
+		data.appointment.id = id;
+	});
+
+	await doctors.get(data.appointment.doctor).then(doctor => {
+		data.doctor = doctor;
+	});
+
+	await clinics.get(data.appointment.clinic).then(clinic => {
+		data.clinic = clinic;
+	});
+
+	const date = new Date(data.appointment.start.toDate());
+	data.extra.date = new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+	data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
+	console.log(data.extra.time);
+
+	return data;
+}
 
 /**
  * Get all available time slots for a specified date.
@@ -391,7 +431,7 @@ async function getAvailable(doctor, clinic, date, type) {
 
 	return response;
  }
-
+exports.get = get;
 exports.getAvailable = getAvailable;
 exports.add = add;
 exports.edit = edit;

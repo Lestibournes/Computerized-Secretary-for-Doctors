@@ -6,8 +6,7 @@ const admin = require('firebase-admin');
  */
 const db = admin.firestore();
 
-const fn = require('./functions');
-const stringContains = fn.stringContains;
+const stringContains = require('./functions').stringContains;
 
 /**
  * Get the requested doctor and then filter the results by field of specialization and the city where the clinic is.
@@ -16,7 +15,7 @@ const stringContains = fn.stringContains;
  * @param {string} id The id of the doctor.
  * @param {string} field The doctor's specialization.
  * @param {string} city The city in which service is being sought.
- 
+ * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}} The data of the requested doctor.
  */
  async function get(id, field, city) {
 	 // Fetch the data of all the doctor documents:

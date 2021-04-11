@@ -3,6 +3,10 @@ const functions = require('firebase-functions');
 
 const appointments = require("../implementations/appointments");
 
+exports.get = functions.https.onCall((data, context) => {
+	return appointments.get(data.id);
+});
+
 exports.getAvailable = functions.https.onCall((data, context) => {
 	return appointments.getAvailable(data.doctor, data.clinic, data.date, data.type);
 });
