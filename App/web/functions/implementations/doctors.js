@@ -1,8 +1,3 @@
-const fs = require("@google-cloud/firestore");
-
-// The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
-const functions = require('firebase-functions');
-
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
 
@@ -13,18 +8,6 @@ const db = admin.firestore();
 
 const fn = require('./functions');
 const stringContains = fn.stringContains;
- 
-exports.get = functions.https.onCall((data, context) => {
-	return get(data.id, data.field, data.city);
-});
-
-exports.create = functions.https.onCall((data, context) => {
-	return create(data.user);
-});
-
-exports.search = functions.https.onCall((data, context) => {
-	return search(data.name, data.field, data.city);
-});
 
 /**
  * Get the requested doctor and then filter the results by field of specialization and the city where the clinic is.
@@ -80,6 +63,34 @@ exports.search = functions.https.onCall((data, context) => {
 	};
 	
 	return result;
+}
+
+
+/**
+ * Get the data of all the clinics of the specified doctor.
+ * @param {string} doctor the id of the doctor
+ * @returns {object[]} an array of the data of all the clinics that the doctor works in.
+ */
+ async function getAllClinics(doctor) {
+	const clinic_data = [];
+
+	let clinic_ids = [];
+	await db.collection("doctors").doc(doctor).get().then(doctor_snap => {
+		if (doctor_snap.data().clinics) {
+			clinic_ids = doctor_snap.data().clinics;
+		}
+	});
+
+	for (let clinic_id of clinic_ids) {
+		await db.collection("clinics").doc(clinic_id).get().then(clinic_snap => {
+			const clinic = clinic_snap.data();
+			clinic.id = clinic_snap.id;
+
+			clinic_data.push(clinic);
+		});
+	}
+
+	return clinic_data;
 }
 
 /**
@@ -194,3 +205,8 @@ async function search(name, field, city) {
 
 	return results;
 }
+
+exports.get = get;
+exports.getAllClinics = getAllClinics;
+exports.create = create;
+exports.search = search;

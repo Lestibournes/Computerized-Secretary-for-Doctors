@@ -1,8 +1,5 @@
 const fs = require("@google-cloud/firestore");
 
-// The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
-const functions = require('firebase-functions');
-
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
 
@@ -15,28 +12,11 @@ const db = admin.firestore();
  * @todo Make the 2 classes files identical and get rid of the redundancy:
  */
 
-const classes = require('./classes2');
-const Time = classes.Time;
-const TimeRange = classes.TimeRange;
-const SimpleDate = classes.SimpleDate;
+const Time = require("./Time").Time;
+const Slot = require("./Slot").Slot;
+const SimpleDate = require("./SimpleDate").SimpleDate;
 
-exports.getAvailable = functions.https.onCall((data, context) => {
-	return getAvailable(data.doctor, data.clinic, data.date, data.type);
-});
-
-exports.add = functions.https.onCall((data, context) => {
-	return add(data.doctor, data.clinic, data.patient, data.date, data.time, data.type);
-});
-
-exports.edit = functions.https.onCall((data, context) => {
-	return edit(data.appointment, data.date, data.time, data.type);
-});
-
-exports.cancel = functions.https.onCall((data, context) => {
-	return cancel(data.appointment);
-});
-
-
+// Helper functions
 /**
  * Get all occupied time slots for a specified date.
  * @param {string} doctor The id of the doctor
@@ -65,7 +45,7 @@ exports.cancel = functions.https.onCall((data, context) => {
 			const start_time = new Time(snapshot.data().start.toDate().getUTCHours(), snapshot.data().start.toDate().getUTCMinutes());
 			const end_time = start_time.incrementMinutes(snapshot.data().duration);
 
-			appointments.push(new TimeRange(start_time, end_time));
+			appointments.push(new Slot(start_time, end_time));
 		});
 	});
 
@@ -129,7 +109,7 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 				
 				// The schedule can consist of multiple shifts. Check each of them:
 				schedule.forEach(shift => {
-					const timeRange = new TimeRange(new Time(shift.start.toDate().getHours(), shift.start.toDate().getMinutes()),
+					const timeRange = new Slot(new Time(shift.start.toDate().getHours(), shift.start.toDate().getMinutes()),
 																					new Time(shift.end.toDate().getHours(), shift.end.toDate().getMinutes()));
 					
 					// Check if the requested slot for the appointment is both within the time
@@ -190,7 +170,7 @@ async function getAvailable(doctor, clinic, date, type) {
 					// For each shift, add all of the time slots that don't
 					// collide with existing appointments To the slots array:
 					while (now.compare(end) < 0) {
-						const slot = new TimeRange(now, now.incrementMinutes(shift.size));
+						const slot = new Slot(now, now.incrementMinutes(shift.size));
 						
 						if (!appointmentCollides(appointments, slot)) {
 							slots.push(slot);
@@ -220,7 +200,7 @@ async function getAvailable(doctor, clinic, date, type) {
  * @param {string} type The type of appointment
  * @returns {{id: string, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
  */
-async function add(doctor, clinic, patient, date, time, type) {
+ async function add(doctor, clinic, patient, date, time, type) {
 	let response = {
 		id: null,
 		messages: []
@@ -256,7 +236,7 @@ async function add(doctor, clinic, patient, date, time, type) {
 
 		const start_time = new Time(start.getHours(), start.getMinutes());
 		const end_time = start_time.incrementMinutes(15);
-		const slot = new TimeRange(start_time, end_time);
+		const slot = new Slot(start_time, end_time);
 
 		if (await isAvailable(doctor, clinic, date, slot, type)) {
 			const appointment = {
@@ -326,10 +306,8 @@ async function add(doctor, clinic, patient, date, time, type) {
 			new_date = new SimpleDate(date.year, date.month, date.day);
 		}
 
-		console.log("old time: " + old_time.toString());	
 		if (time) {
 			new_time = new Time(time.hours, time.minutes);
-			console.log("time: " + new_time.toString());
 		}
 
 		if (type) {
@@ -346,7 +324,7 @@ async function add(doctor, clinic, patient, date, time, type) {
 
 		const start_time = new Time(new_time.hours, new_time.minutes);
 		const end_time = start_time.incrementMinutes(old_data.duration);
-		const slot = new TimeRange(start_time, end_time);
+		const slot = new Slot(start_time, end_time);
 
 		/**
 		 * @todo Instead, check if the new time is available under the assumption that the current time is not taken, since there are appointments of various lengths
@@ -413,3 +391,8 @@ async function add(doctor, clinic, patient, date, time, type) {
 
 	return response;
  }
+
+exports.getAvailable = getAvailable;
+exports.add = add;
+exports.edit = edit;
+exports.cancel = cancel;

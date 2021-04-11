@@ -15,6 +15,6 @@ const db = admin.firestore();
 
 // Public interface of server functions:
 
-exports.clinics = require('./clinics');
-exports.doctors = require('./doctors');
-exports.appointments = require('./appointments');
+exports.clinics = require('./interfaces/clinics');
+exports.doctors = require('./interfaces/doctors');
+exports.appointments = require('./interfaces/appointments');

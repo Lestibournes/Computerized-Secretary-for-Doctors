@@ -62,7 +62,6 @@ const createDoctor = fn.httpsCallable("doctors-create");
  * @returns {object[]} an array of the data of all the clinics the doctor works in.
  */
 async function getClinics(id) {
-	console.log(id);
 	const clinic_data = [];
 
 	let clinic_ids = [];

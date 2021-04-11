@@ -62,8 +62,9 @@ function ClinicEditForm({name, city, address}) {
 						placeholder="13 Holy Square"
 					/>
 					<div className="panel">
-						<Button link="/general/login" label="Login" />
-						<Button type="submit" label="Register" />
+						<Button type="cancel" label="Delete" />
+						<Button label="Cancel" />
+						<Button type="submit" label="Save" />
 					</div>
 				</Form>
 			</Formik>
@@ -77,7 +78,6 @@ export function ClinicEditor() {
 	
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
-			console.log(status);
 			if (!status) setRedirect(true);
 		});
 

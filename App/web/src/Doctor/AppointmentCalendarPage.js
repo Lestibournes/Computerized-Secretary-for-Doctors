@@ -137,7 +137,6 @@ export function AppointmentCalendarPage(props) {
 				// Fetch the current doctor's appointments:
 				getAppointments();
 				getSchedule();
-				console.log("refreshing...");
 			}
 		}
 	}, [doctor, date]);

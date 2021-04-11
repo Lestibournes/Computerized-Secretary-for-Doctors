@@ -1,35 +1,12 @@
-const fs = require("@google-cloud/firestore");
-
-// The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
-const functions = require('firebase-functions');
-
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
+
+const doctors = require('./doctors');
 
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
 const db = admin.firestore();
-
-exports.get = functions.https.onCall((data, context) => {
-	return get(data.id);
-});
-
-exports.getAll = functions.https.onCall((data, context) => {
-	return getAll(data.doctor);
-});
-
-exports.add = functions.https.onCall((data, context) => {
-	return add(data.doctor, data.name, data.city, data.address);
-});
-
-exports.edit = functions.https.onCall((data, context) => {
-	return edit(data.id, data.doctor, data.name, data.city, data.address);
-});
-
-exports.leave = functions.https.onCall((data, context) => {
-	return leave(data.clinic, data.doctor);
-});
 
 /**
  * Get the data of a specific clinic.
@@ -38,8 +15,6 @@ exports.leave = functions.https.onCall((data, context) => {
  */
  async function get(id) {
 	let clinic;
-
-	console.log(id);
 
 	await db.collection("clinics").doc(id).get().then(snap => {
 		clinic = snap.data();
@@ -50,31 +25,23 @@ exports.leave = functions.https.onCall((data, context) => {
 }
 
 /**
- * Get the data of all the clinics of the specified doctor.
- * @param {string} doctor the id of the doctor
- * @returns {object[]} an array of the data of all the clinics that the doctor works in.
+ * Get all the doctors who work in the given clinic.
+ * @param {string} clinic The id of the clinic.
+ * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}[]} The data of the requested doctors.
  */
- async function getAll(doctor) {
-	console.log(doctor);
-	const clinic_data = [];
+async function getAllDoctors(clinic) {
+	const doctor_ids = [];
+	const doctor_data = [];
 
-	let clinic_ids = [];
-	await db.collection("doctors").doc(doctor).get().then(doctor_snap => {
-		if (doctor_snap.data().clinics) {
-			clinic_ids = doctor_snap.data().clinics;
-		}
+	await db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+		doctor_ids = clinic_snap.data().doctors;
+	});
+	
+	doctor_ids.forEach(doctor_id => {
+		doctor_data.push(doctors.get(doctor_id));
 	});
 
-	for (let clinic_id of clinic_ids) {
-		await db.collection("clinics").doc(clinic_id).get().then(clinic_snap => {
-			const clinic = clinic_snap.data();
-			clinic.id = clinic_snap.id;
-
-			clinic_data.push(clinic);
-		});
-	}
-
-	return clinic_data;
+	return doctor_data;
 }
 
 /**
@@ -202,3 +169,9 @@ async function leave(clinic, doctor) {
 		});
 	}
 }
+
+exports.get = get;
+exports.getAllDoctors = getAllDoctors;
+exports.add = add;
+exports.edit = edit;
+exports.leave = leave;
