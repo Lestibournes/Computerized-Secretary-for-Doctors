@@ -30,16 +30,18 @@ const db = admin.firestore();
  * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}[]} The data of the requested doctors.
  */
 async function getAllDoctors(clinic) {
-	const doctor_ids = [];
+	let doctor_ids = [];
 	const doctor_data = [];
 
 	await db.collection("clinics").doc(clinic).get().then(clinic_snap => {
 		doctor_ids = clinic_snap.data().doctors;
 	});
 	
-	doctor_ids.forEach(doctor_id => {
-		doctor_data.push(doctors.get(doctor_id));
-	});
+	for (doctor_id of doctor_ids) {
+		await doctors.get(doctor_id).then(result => {
+			doctor_data.push(result);
+		})
+	}
 
 	return doctor_data;
 }

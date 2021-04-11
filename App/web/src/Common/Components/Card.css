@@ -44,3 +44,20 @@
 		'cardCenter'
 		'cardBottom';
 }
+
+
+.cardTop {
+	display: grid;
+	grid-template-areas: '... buttonBar';
+	grid-template-columns: 1fr auto;
+	place-items: center left;
+}
+
+.buttonBar {
+	display: flex;
+	gap: var(--margin-small);
+}
+
+.cardCenter {
+	text-transform: capitalize;
+}

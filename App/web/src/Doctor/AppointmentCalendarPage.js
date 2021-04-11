@@ -16,7 +16,7 @@ export function AppointmentCalendarPage(props) {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 
 	const [doctor, setDoctor] = useState(null);
 	const [date, setDate] = useState(new Date());

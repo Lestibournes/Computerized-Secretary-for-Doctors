@@ -58,7 +58,7 @@ export function EditAppointmentPage(props) {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 	
 	const { appointment } = useParams(); //The ID of the appointment.
 	

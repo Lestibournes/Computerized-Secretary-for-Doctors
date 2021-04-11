@@ -13,7 +13,7 @@ export function HomePage(props) {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 
 	return (
 		<div className="page">

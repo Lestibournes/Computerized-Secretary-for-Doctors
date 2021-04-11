@@ -6,27 +6,10 @@ import { Select, MainHeader, useAuth } from "../Common/CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
 import { db, fn, st } from '../init';
 import { TextInput } from '../Common/Components/TextInput';
+import { Card } from '../Common/Components/Card';
 
 const searchDoctors = fn.httpsCallable("doctors-search");
 const storageRef = st.ref();
-
-function DoctorCard(props) {
-	const [profile, setProfile] = useState(null); //Profile Picture
-
-	storageRef.child("users/" + props.doctor.user.id + "/profile.png").getDownloadURL().then(url => {
-		setProfile(url);
-	});
-
-	const name = props.doctor.user.firstName + " " + props.doctor.user.lastName;
-	// const clinics = props.doctor.clinics;
-
-	return (<Link to={"/specific/" + props.doctor.doctor.id + "/user/appointments/create/" + props.clinic.id} className="entryCard">
-		<img alt="doctor's face" src={profile} />
-		<div className="cardTop"><big>{name}</big></div>
-		<div className="cardCenter"><small>{props.doctor.fields.map((field, index) => {return field.id + (index < props.doctor.fields.length - 1 ? " " : "")})}</small></div>
-		<div className="cardBottom"><small>{props.clinic.name}, {props.clinic.city}</small></div>
-		</Link>)
-}
 
 function SelectCity() {
 	const [cities, setCities] = useState([]);
@@ -98,9 +81,39 @@ export function SearchDoctorsPage() {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 	
 	const [doctors, setDoctors] = useState([]);
+	const [results, setResults] = useState([]);
+
+	useEffect(() => {
+		const cards = [];
+		if (doctors) {
+			for (let doctor of doctors) {
+				for (let clinic of doctor.clinics) {
+					storageRef.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+						doctor.image = url;
+						cards.push(
+							<Card
+								key={doctor.doctor.id + ", " + clinic.id}
+								link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
+								title={doctor.user.firstName + " " + doctor.user.lastName}
+								body=
+									{doctor.fields.length > 0 ?
+										doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
+										: ""))
+									: null}
+								footer={clinic.name + ", " + clinic.city}
+								image={doctor.image} />
+						);
+						if (cards.length === doctors.length) {
+							setResults(cards);
+						}
+					});
+				}
+			}
+		}
+	}, [doctors]);
 
 	return (
 		<div className="page">
@@ -143,11 +156,7 @@ export function SearchDoctorsPage() {
 						(doctors.length === 0 ? "No doctors found" : "")
 					}
 					{
-						doctors.map(doctor => {
-							return doctor.clinics.map((clinic, j) => {
-								return <DoctorCard key={doctor.doctor.id + ", " + clinic.id} doctor={doctor} clinic={clinic}></DoctorCard>;
-							})
-						})
+						results
 					}
 				</div>
 			</div>

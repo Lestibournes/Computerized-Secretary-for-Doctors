@@ -59,7 +59,7 @@ export function AppointmentListPage(props) {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 
 	const [appointments, setAppointments] = useState([]);
 	
@@ -83,7 +83,13 @@ export function AppointmentListPage(props) {
 				});
 			});
 		}
-  }, [auth.user]);
+  }, [auth]);
+
+	useEffect(() => {
+		if (appointments) {
+			// load the data and create the cards.
+		}
+	}, [appointments]);
 	
 	let elements = [];
 

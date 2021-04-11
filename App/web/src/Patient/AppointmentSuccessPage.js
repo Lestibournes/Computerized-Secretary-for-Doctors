@@ -16,7 +16,7 @@ export function AppointmentSuccessPage() {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 	
 	const { appointment } = useParams(); //The ID of the doctor and clinic.
 	

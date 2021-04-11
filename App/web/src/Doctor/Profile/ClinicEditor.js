@@ -1,14 +1,16 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
-import { Formik, Form, useField } from 'formik';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { MainHeader, useAuth } from "../../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
-import { db, fn } from '../../init';
-import { Card, Button } from "../../Common/Components/Button";
+import { fn } from '../../init';
+import { Button } from "../../Common/Components/Button";
+import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
 
 const getClinic = fn.httpsCallable("clinics-get");
+const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
 
 /**
 @todo
@@ -82,15 +84,21 @@ export function ClinicEditor() {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
+	const [doctors, setDoctors] = useState(null);
 
 	useEffect(() => {
 		if (clinic) {
-			getClinic({id: clinic}).then(response => {
-				setData(response.data);
+			getClinic({id: clinic}).then(clinic_data => {
+				setData(clinic_data.data);
+
+				getAllDoctors({clinic: clinic}).then(doctors_data => {
+					setDoctors(doctors_data.data);
+					console.log(doctors_data.data);
+				})
 			});
 		}
 	}, [clinic]);
@@ -101,6 +109,13 @@ export function ClinicEditor() {
 			<MainHeader section="Register"></MainHeader>
 			<div className="center">
 				{data ? <ClinicEditForm name={data.name} city={data.city} address={data.address} /> : "Loading..."}
+				{doctors ? doctors.map(doctor =>
+					<Card
+						key={doctor.doctor.id}
+						link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic}
+						title={doctor.user.firstName + " " + doctor.user.lastName}
+						body={doctor.fields.length > 0 ? doctor.fields.map(field => field + ", ") : null}
+					/>) : null}
 			</div>
 		</div>
 	);

@@ -16,7 +16,7 @@ export function AppointmentDeletedPage() {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 	
 	return (
 		<div className="page">

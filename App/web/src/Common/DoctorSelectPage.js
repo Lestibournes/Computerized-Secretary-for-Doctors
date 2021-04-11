@@ -94,15 +94,14 @@ export function DoctorSelectPage() {
 	const auth = useAuth();
 	const [doctors, setDoctors] = useState([]);
 	const [redirect, setRedirect] = useState(false);
-
-
+	
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (!status) setRedirect(true);
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 
 	return (
 		<div className="page">

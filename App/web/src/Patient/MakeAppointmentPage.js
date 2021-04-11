@@ -33,7 +33,7 @@ export function MakeAppointmentPage(props) {
 		});
 
 		return unsubscribe;
-	}, [auth.user]);
+	}, [auth]);
 	
 	const currentDate = new Date();
 	const { doctor, clinic } = useParams(); //The ID of the doctor and clinic.
