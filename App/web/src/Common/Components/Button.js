@@ -17,7 +17,7 @@ export function Button({label, action, link, type}) {
 
 	if (!link) {
 		return (
-			<button onClick={action} className="Button okay">{label}</button>
+			<button onClick={action} className={"Button" + (type ? " " + type : "")}>{label}</button>
 		);
 	}
 

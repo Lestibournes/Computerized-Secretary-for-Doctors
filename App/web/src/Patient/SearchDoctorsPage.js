@@ -9,7 +9,7 @@ import { TextInput } from '../Common/Components/TextInput';
 import { Card } from '../Common/Components/Card';
 
 const searchDoctors = fn.httpsCallable("doctors-search");
-const storageRef = st.ref();
+const storage = st.ref();
 
 function SelectCity() {
 	const [cities, setCities] = useState([]);
@@ -91,7 +91,7 @@ export function SearchDoctorsPage() {
 		if (doctors) {
 			for (let doctor of doctors) {
 				for (let clinic of doctor.clinics) {
-					storageRef.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+					storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
 						doctor.image = url;
 						cards.push(
 							<Card
@@ -153,10 +153,7 @@ export function SearchDoctorsPage() {
 				</div>
 				<div className="searchresults">
 					{
-						(doctors.length === 0 ? "No doctors found" : "")
-					}
-					{
-						results
+						(doctors.length === 0 ? "No doctors found" : results)
 					}
 				</div>
 			</div>

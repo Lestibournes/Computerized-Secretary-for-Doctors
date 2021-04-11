@@ -54,6 +54,7 @@ function ClinicList({doctor, clinics = []}) {
 	for (let clinic_data of clinics) {
 		clinics_list.push(
 			<Card
+				key={clinic_data.id}
 				title={clinic_data.name}
 				body={clinic_data.city}
 				footer={clinic_data.address}

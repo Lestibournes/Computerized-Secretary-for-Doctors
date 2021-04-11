@@ -4,13 +4,15 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { MainHeader, useAuth } from "../../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
-import { fn } from '../../init';
+import { fn, st } from '../../init';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
 
 const getClinic = fn.httpsCallable("clinics-get");
 const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
+
+const storage = st.ref();
 
 /**
 @todo
@@ -88,7 +90,8 @@ export function ClinicEditor() {
 
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
-	const [doctors, setDoctors] = useState(null);
+	const [doctors, setDoctors] = useState([]);
+	const [results, setResults] = useState([]);
 
 	useEffect(() => {
 		if (clinic) {
@@ -103,19 +106,43 @@ export function ClinicEditor() {
 		}
 	}, [clinic]);
 
+
+	useEffect(() => {
+		const cards = [];
+		if (doctors) {
+			for (let doctor of doctors) {
+				storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+					doctor.image = url;
+					cards.push(<Card
+						key={doctor.doctor.id + Math.random()}
+						link={"#"}
+						title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (owner)" : "")}
+						body=
+							{doctor.fields.length > 0 ?
+								doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
+								: ""))
+							: "No specializations specified"}
+						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
+						image={doctor.image} />);
+					
+					if (cards.length >= doctors.length) {
+						setResults(cards);
+					}
+				});
+			}
+		}
+	}, [doctors, data]);
+
+
 	return (
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Register"></MainHeader>
 			<div className="center">
 				{data ? <ClinicEditForm name={data.name} city={data.city} address={data.address} /> : "Loading..."}
-				{doctors ? doctors.map(doctor =>
-					<Card
-						key={doctor.doctor.id}
-						link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic}
-						title={doctor.user.firstName + " " + doctor.user.lastName}
-						body={doctor.fields.length > 0 ? doctor.fields.map(field => field + ", ") : null}
-					/>) : null}
+			</div>
+			<div className="searchresults">
+				{results}
 			</div>
 		</div>
 	);

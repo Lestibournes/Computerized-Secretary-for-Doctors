@@ -67,7 +67,7 @@
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getNextMonth() {
-		if (this.month == 11) {
+		if (this.month === 11) {
 			return new SimpleDate(this.year + 1, 0, this.day);
 		}
 		else {
@@ -80,7 +80,7 @@
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getPreviousMonth() {
-		if (this.month == 0) {
+		if (this.month === 0) {
 			return new SimpleDate(this.year - 1, 11, this.day);
 		}
 		else {
@@ -91,15 +91,15 @@
 	/**
 	 * Compares the current date to the specified time.
 	 * @param {SimpleDate} that Another date
-	 * @returns {number} 1 if this > that, 0 if this == that, -1 if this < that.
+	 * @returns {number} 1 if this > that, 0 if this === that, -1 if this < that.
 	 */
 	compare(that) {
 		if (this.year > that.year) return 1;
-		if (this.year == that.year) {
+		if (this.year === that.year) {
 			if (this.month > that.month) return 1;
-			if (this.month == that.month) {
+			if (this.month === that.month) {
 				if (this.day > that.day) return 1;
-				if (this.day == that.day) return 0;
+				if (this.day === that.day) return 0;
 			}
 		}
 
@@ -107,7 +107,7 @@
 	}
 
 	toString() {
-		return this.day + "/" + this.month + "/" + this.year;
+		return (this.day < 10 ? "0" : "") + this.day + "/" + (this.month < 9 ? "0" : "") + (this.month + 1) + "/" + this.year;
 	}
 }
 
