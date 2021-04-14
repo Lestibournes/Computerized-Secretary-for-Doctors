@@ -1,3 +1,4 @@
+import "./ClinicEditor.css"
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
@@ -8,6 +9,7 @@ import { fn, st } from '../../init';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
+import { Popup } from '../../Common/Components/Popup';
 
 const getClinic = fn.httpsCallable("clinics-get");
 const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
@@ -24,10 +26,12 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 * A button to go to a search page to find existing doctors and invite them to join the clinic.
 */
 
-function ClinicEditForm({name, city, address}) {
+function ClinicEditForm({clinic, name, city, address, close}) {
+	const [confirmDelete, setConfirmDelete] = useState(false);
+	
 	return (
 		<div className="form">
-			<h1>{name} Clinic</h1>
+			<h2>Edit Details</h2>
 			<Formik
 				initialValues={{
 					name: name,
@@ -66,14 +70,26 @@ function ClinicEditForm({name, city, address}) {
 						placeholder="13 Holy Square"
 					/>
 					<div className="panel">
-						<Button type="cancel" label="Delete" />
-						<Button label="Cancel" />
+						<Button type="cancel" label="Delete" action={() => setConfirmDelete(true)} />
+						<Button label="Cancel" action={close} />
 						<Button type="submit" label="Save" />
 					</div>
+					{confirmDelete ? <Popup display={<ConfirmDelete clinic={clinic} close={() => setConfirmDelete(false)} />} /> : ""}
 				</Form>
 			</Formik>
 		</div>
 	);
+}
+
+function ConfirmDelete({clinic, close}) {
+	return (<>
+		<h2>Are you sure you wish to delete this clinic?</h2>
+		<p>This action is permanent and cannot be undone.</p>
+		<div className="panel">
+						<Button type="cancel" label="Yes" />
+						<Button type="okay" label="Cancel" action={close} />
+					</div>
+	</>);
 }
 
 export function ClinicEditor() {
@@ -90,8 +106,10 @@ export function ClinicEditor() {
 
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
+	const [editData, setEditData] = useState(false);
 	const [doctors, setDoctors] = useState([]);
 	const [results, setResults] = useState([]);
+	const [addDoctor, setAddDoctor] = useState(false);
 
 	useEffect(() => {
 		if (clinic) {
@@ -133,17 +151,34 @@ export function ClinicEditor() {
 		}
 	}, [doctors, data]);
 
+	let display = <h2>Loading...</h2>;
+	if (data && results.length) {
+		display = (
+			<div>
+				<div className="headerbar">
+					<h2>Details</h2> <Button label="Edit" action={() => setEditData(true)} />
+				</div>
+				{data ? <div className="table">
+					<b>Name:</b> <span>{data.name}</span>
+					<b>Address:</b> <span>{data.city}, {data.address}</span>
+				</div> : "Loading..."}
+				{data && editData? <Popup display={<ClinicEditForm name={data.name} city={data.city} address={data.address} close={() => {setEditData(false)}} />} /> : ""}
+				<div className="headerbar">
+					<h2>Doctors</h2> <Button label="+" action={() => setAddDoctor(true)} />
+				</div>
+				<div className="searchresults">
+					{results}
+				</div>
+			</div>
+		);
+	}
 
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Register"></MainHeader>
-			<div className="center">
-				{data ? <ClinicEditForm name={data.name} city={data.city} address={data.address} /> : "Loading..."}
-			</div>
-			<div className="searchresults">
-				{results}
-			</div>
-		</div>
+			<h1>Edit Clinic</h1>
+			{display}
+		</>
 	);
 }

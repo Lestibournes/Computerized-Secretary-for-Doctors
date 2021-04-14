@@ -1,28 +1,4 @@
-:root{
-	--color: black;
-	--alt-color: white;
-	--warning-color: rgb(219, 112, 147);
-	--warning-color-hover: #e28da9;
-	--warning-color-pressed: #af5a76;
-	--radius: 5px;
-	--margin: 15px;
-	--margin-small: 5px;
-	--highlight: rgb(0, 128, 128);
-	--highlight-pale: rgb(0, 166.4, 166.4);
-	--highlight-dark: rgb(0, 100, 100);
-	--font-size-f: 12px;
-	--font-size-e: 16px;
-	--font-size-d: 20px;
-	--font-size-c: 24px;
-	--font-size-b: 36px;
-	--font-size-a: 48px;
-	--control-background: lightgray;
-	--control-background-pressed: gray;
-	--control-background-hover: rgb(229.5, 229.5, 229.5);
-	--control-padding: 1em;
-	--padding: 5px;
-	--border-width: 5px;
-}
+@import "./globals.css";
 
 * {
 	box-sizing: border-box;
@@ -30,6 +6,7 @@
 
 body {
 	margin: 0;
+	padding: var(--margin);
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
 		'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
 		sans-serif;

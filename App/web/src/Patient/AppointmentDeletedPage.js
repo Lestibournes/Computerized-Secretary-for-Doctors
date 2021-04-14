@@ -22,15 +22,12 @@ export function AppointmentDeletedPage() {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
-
-				<div className="searchbar">
-					<h1>Make an Appointment</h1>
-					<h2>Success!</h2>
-					<p>
-						Your appointment has been successfully deleted.
-					</p>
-				</div>
+			<div className="searchbar">
+				<h1>Make an Appointment</h1>
+				<h2>Success!</h2>
+				<p>
+					Your appointment has been successfully deleted.
+				</p>
 			</div>
 		</div>
 	);

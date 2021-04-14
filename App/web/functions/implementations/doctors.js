@@ -38,15 +38,17 @@ const stringContains = require('./functions').stringContains;
 		});
 		
 		// Get the field data for the given doctor:
-		for (i in result.doctor.fields) {
-			await db.collection("fields").doc(result.doctor.fields[i]).get().then(field_snapshot => {
-				// Check if the field is unspecified or is a match:
-				if ((field && stringContains(field_snapshot.id, field)) || !field) {
-					let field_data = field_snapshot.data();
-					field_data.id = field_snapshot.id;
-					result.fields.push(field_data);
-				}
-			});
+		for (let f of result.doctor.fields) {
+			if (f) {
+				await db.collection("fields").doc(f).get().then(field_snapshot => {
+					// Check if the field is unspecified or is a match:
+					if ((field && stringContains(field_snapshot.id, field)) || !field) {
+						let field_data = field_snapshot.data();
+						field_data.id = field_snapshot.id;
+						result.fields.push(field_data);
+					}
+				});
+			}
 		}
 		
 		// Get the clinic data for the given doctor:

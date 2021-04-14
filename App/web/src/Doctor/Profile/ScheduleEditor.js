@@ -75,100 +75,97 @@ export function ScheduleEditor(props) {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
+			<div className="appointment_picker">
+				<h1>Make an Appointment</h1>
+				<h2>Appointment Details{(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null)}{(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)}</h2>
+				<Formik
+					initialValues={{}}
+					validationSchema={Yup.object({
+						type: Yup.string(),
+						date: Yup.date(),
+						time: Yup.string(),
+					})}
+					onSubmit={async (values, { setSubmitting }) => {
+						setSubmitting(true);
 
-				<div className="appointment_picker">
-					<h1>Make an Appointment</h1>
-					<h2>Appointment Details{(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null)}{(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)}</h2>
-					<Formik
-						initialValues={{}}
-						validationSchema={Yup.object({
-							type: Yup.string(),
-							date: Yup.date(),
-							time: Yup.string(),
-						})}
-						onSubmit={async (values, { setSubmitting }) => {
-							setSubmitting(true);
-
-							// Set the appointment on the server:
-							makeAppointment({
-								doctor: doctor,
-								clinic: clinic,
-								patient: auth.user.uid,
-								date: date,
-								time: {
-									hours: Number(("" + times[time]).split(":")[0]) + tzos,
-									minutes: Number(("" + times[time]).split(":")[1])
-								},
-								type: types[type]
-							})
-							.then(value => {
-								if (value.data.messages.length > 0) {
-									for (let i = 0; i < value.data.messages.length; i++) {
-										console.log(value.data.messages[i]);
-									}
+						// Set the appointment on the server:
+						makeAppointment({
+							doctor: doctor,
+							clinic: clinic,
+							patient: auth.user.uid,
+							date: date,
+							time: {
+								hours: Number(("" + times[time]).split(":")[0]) + tzos,
+								minutes: Number(("" + times[time]).split(":")[1])
+							},
+							type: types[type]
+						})
+						.then(value => {
+							if (value.data.messages.length > 0) {
+								for (let i = 0; i < value.data.messages.length; i++) {
+									console.log(value.data.messages[i]);
 								}
-								
-								setSuccess(value.data.id);
-							})
-							.catch(reason => {
-								console.log(reason);
-								// alert("failure! " + reason);
-							});
-						}}
-					>
-						<Form>
-							{/* Put appointment-making widgets here. */}
-							<SelectList
-								label="Appointment Type"
-								id="type"
-								options={types}
-								selected={type}
-								onClick={(index) => setType(index)}
-							/>
-							<SelectDate
-								id="date"
-								day={date.day}
-								month={date.month}
-								year={date.year}
-								onClick={(date) => {
-									// setDay(date.day);
-									// setMonth(date.month);
-									// setYear(date.year);
-									setDate(date);
+							}
+							
+							setSuccess(value.data.id);
+						})
+						.catch(reason => {
+							console.log(reason);
+							// alert("failure! " + reason);
+						});
+					}}
+				>
+					<Form>
+						{/* Put appointment-making widgets here. */}
+						<SelectList
+							label="Appointment Type"
+							id="type"
+							options={types}
+							selected={type}
+							onClick={(index) => setType(index)}
+						/>
+						<SelectDate
+							id="date"
+							day={date.day}
+							month={date.month}
+							year={date.year}
+							onClick={(date) => {
+								// setDay(date.day);
+								// setMonth(date.month);
+								// setYear(date.year);
+								setDate(date);
 
-									if (date.day != null && date.month != null && date.year != null) {
-										getAvailableAppointments({
-											doctor: doctor,
-											clinic: clinic,
-											date: date,
-											type: type
-										}).then(results => {
-												const times = [];
+								if (date.day != null && date.month != null && date.year != null) {
+									getAvailableAppointments({
+										doctor: doctor,
+										clinic: clinic,
+										date: date,
+										type: type
+									}).then(results => {
+											const times = [];
 
-												results.data.forEach(result => {
-													times.push((result.start.hours - tzos) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
-												});
-								
-												setTimes(times);
+											results.data.forEach(result => {
+												times.push((result.start.hours - tzos) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
 											});
-									}
-								}}
-							/>
-							<SelectList
-								label="Time Slot"
-								id="time"
-								options={times}
-								selected={time}
-								onClick={(time) => setTime(time)}
-							/>
-							<div className="panel">
-								<button className="okay" type="submit">Submit</button>
-							</div>
-						</Form>
-					</Formik>
-					{(success ? <Redirect to={"/create/" + success} /> : null)}
-				</div>
+							
+											setTimes(times);
+										});
+								}
+							}}
+						/>
+						<SelectList
+							label="Time Slot"
+							id="time"
+							options={times}
+							selected={time}
+							onClick={(time) => setTime(time)}
+						/>
+						<div className="panel">
+							<button className="okay" type="submit">Submit</button>
+						</div>
+					</Form>
+				</Formik>
+				{(success ? <Redirect to={"/create/" + success} /> : null)}
 			</div>
 		</div>
 	);

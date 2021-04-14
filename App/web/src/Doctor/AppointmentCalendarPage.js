@@ -145,27 +145,24 @@ export function AppointmentCalendarPage(props) {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
-
-				<div className="appointment_picker">
-					<h1>Work Calendar</h1>
-					<div className="buttonBar">
-						<button type="button" onClick={() => {
-							setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - 7));
-							}}>{"<"}</button>
-						<button type="button" onClick={() => {
-							setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 7));
-							}}>{">"}</button>
-					</div>
-					<CalendarWeek
-						date={date}
-						appointments={appointments}
-						schedule={schedule}
-						minimum={minimum}
-						width={200}
-						height={960}
-				/>
+			<div className="appointment_picker">
+				<h1>Work Calendar</h1>
+				<div className="buttonBar">
+					<button type="button" onClick={() => {
+						setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - 7));
+						}}>{"<"}</button>
+					<button type="button" onClick={() => {
+						setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 7));
+						}}>{">"}</button>
 				</div>
+				<CalendarWeek
+					date={date}
+					appointments={appointments}
+					schedule={schedule}
+					minimum={minimum}
+					width={200}
+					height={960}
+				/>
 			</div>
 		</div>
 	);

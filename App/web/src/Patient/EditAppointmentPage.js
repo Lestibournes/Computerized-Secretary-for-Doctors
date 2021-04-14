@@ -124,99 +124,96 @@ export function EditAppointmentPage(props) {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
+			<div className="appointment_picker">
+				<h1>Change Your Appointment</h1>
+				<h2>Appointment Details{(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null)}{(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)}</h2>
+				<p>Currently the appointment is a <b>{data ? data.type : null}</b> appointment on <b>{data ? data.date.day + "/" + (data.date.month + 1) + "/" + data.date.year : null}</b> at <b>{data ? data.time.toString() : null}</b>.</p>
+				<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
+				<Formik
+					initialValues={{}}
+					validationSchema={Yup.object({
+						type: Yup.string(),
+						date: Yup.date(),
+						time: Yup.string(),
+					})}
+					onSubmit={async (values, { setSubmitting }) => {
+						setSubmitting(true);
+						let new_data = {
+							appointment: appointment
+						};
 
-				<div className="appointment_picker">
-					<h1>Change Your Appointment</h1>
-					<h2>Appointment Details{(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null)}{(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)}</h2>
-					<p>Currently the appointment is a <b>{data ? data.type : null}</b> appointment on <b>{data ? data.date.day + "/" + (data.date.month + 1) + "/" + data.date.year : null}</b> at <b>{data ? data.time.toString() : null}</b>.</p>
-					<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
-					<Formik
-						initialValues={{}}
-						validationSchema={Yup.object({
-							type: Yup.string(),
-							date: Yup.date(),
-							time: Yup.string(),
-						})}
-						onSubmit={async (values, { setSubmitting }) => {
-							setSubmitting(true);
-							let new_data = {
-								appointment: appointment
+						if (time) {
+							new_data.time = {
+								hours: Number(("" + times[time]).split(":")[0]) + tzos,
+								minutes: Number(("" + times[time]).split(":")[1])
 							};
+						}
+						
+						if (date) {
+							new_data.date = date;
+						}
 
-							if (time) {
-								new_data.time = {
-									hours: Number(("" + times[time]).split(":")[0]) + tzos,
-									minutes: Number(("" + times[time]).split(":")[1])
-								};
-							}
-							
-							if (date) {
-								new_data.date = date;
-							}
-
-							if (type) {
-								new_data.type = types[type];
-							}
-							
-							editAppointment(new_data)
-							.then(response => {
-								if (response.data.messages.length > 0) {
-									for (let i = 0; i < response.data.messages.length; i++) {
-										console.log(response.data.messages[i]);
-									}
+						if (type) {
+							new_data.type = types[type];
+						}
+						
+						editAppointment(new_data)
+						.then(response => {
+							if (response.data.messages.length > 0) {
+								for (let i = 0; i < response.data.messages.length; i++) {
+									console.log(response.data.messages[i]);
 								}
+							}
 
-								setSuccess(response.data.id);
-							})
-							.catch(reason => {
-								console.log(reason);
-							});
-						}}
-					>
-						<Form>
-							{/* Put appointment-making widgets here. */}
-							<SelectList
-								label="Appointment Type"
-								id="type"
-								options={types}
-								selected={type}
-								onClick={(index) => setType(index)}
-							/>
-							<SelectDate
-								id="date"
-								day={date.day}
-								month={date.month}
-								year={date.year}
-								onClick={selectDate}
-							/>
-							<SelectList
-								label="Time Slot"
-								id="time"
-								options={times}
-								selected={time}
-								onClick={(time) => setTime(time)}
-							/>
-							<div className="panel">
-								<button className="button warning" type="button" onClick={() => {
-									cancelAppointment({appointment: appointment}).then(response => {
-										if (response.data.success) {
-											setDeleted(true);
-										}
-										else {
-											response.data.messages.forEach(message => {
-												console.log(message)
-											});
-										}
-									});
-									}}>Delete</button>
-								<button className="okay" type="submit">Submit</button>
-							</div>
-						</Form>
-					</Formik>
-					{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
-					{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
-				</div>
+							setSuccess(response.data.id);
+						})
+						.catch(reason => {
+							console.log(reason);
+						});
+					}}
+				>
+					<Form>
+						{/* Put appointment-making widgets here. */}
+						<SelectList
+							label="Appointment Type"
+							id="type"
+							options={types}
+							selected={type}
+							onClick={(index) => setType(index)}
+						/>
+						<SelectDate
+							id="date"
+							day={date.day}
+							month={date.month}
+							year={date.year}
+							onClick={selectDate}
+						/>
+						<SelectList
+							label="Time Slot"
+							id="time"
+							options={times}
+							selected={time}
+							onClick={(time) => setTime(time)}
+						/>
+						<div className="panel">
+							<button className="button warning" type="button" onClick={() => {
+								cancelAppointment({appointment: appointment}).then(response => {
+									if (response.data.success) {
+										setDeleted(true);
+									}
+									else {
+										response.data.messages.forEach(message => {
+											console.log(message)
+										});
+									}
+								});
+								}}>Delete</button>
+							<button className="okay" type="submit">Submit</button>
+						</div>
+					</Form>
+				</Formik>
+				{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
+				{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
 			</div>
 		</div>
 	);

@@ -163,11 +163,9 @@ export function DoctorEditor() {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
-				<div>
-					<h1>Doctor Profile</h1>
-					{display}
-				</div>
+			<div>
+				<h1>Doctor Profile</h1>
+				{display}
 			</div>
 		</div>
 	);

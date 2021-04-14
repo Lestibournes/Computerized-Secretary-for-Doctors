@@ -19,16 +19,13 @@ export function HomePage(props) {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
-
-				<div className="appointment_picker">
-					<h1>Welcome</h1>
-					<div className="buttonBar">
-						<Link className="button" to="/general/searchDoctors">Make an Appointment</Link>
-						<Link className="button" to="/specific/user/appointments/list">My Future Appointments</Link>
-						<Link className="button" to="/specific/doctor/appointments/calendar">Work calendar</Link>
-						<Link className="button" to="/specific/doctor/profile">Doctor Profile</Link>
-					</div>
+			<div className="appointment_picker">
+				<h1>Welcome</h1>
+				<div className="buttonBar">
+					<Link className="button" to="/general/searchDoctors">Make an Appointment</Link>
+					<Link className="button" to="/specific/user/appointments/list">My Future Appointments</Link>
+					<Link className="button" to="/specific/doctor/appointments/calendar">Work calendar</Link>
+					<Link className="button" to="/specific/doctor/profile">Doctor Profile</Link>
 				</div>
 			</div>
 		</div>

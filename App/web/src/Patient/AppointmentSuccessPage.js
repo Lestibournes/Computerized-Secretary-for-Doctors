@@ -48,26 +48,23 @@ export function AppointmentSuccessPage() {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
-
-				<div className="searchbar">
-					<h1>Make an Appointment</h1>
-					<h2>Success!</h2>
-					<p>You have a <b>{(appointment_data ? appointment_data.type : null)}</b> appointment with
-						<b>
-							{(doctor_data ? " Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName: null)}
-						</b>
-						{" at "}
-						<b>
-							{(clinic_data ? clinic_data.name + ", " + clinic_data.city: null)}
-						</b>
-						{" on "}
-						<b>
-						{/* date.getFullYear() + "/" + date.getUTCMonth() + "/" + date.getUTCDate() + " " + date.getUTCHours() + ":" + date.getUTCMinutes() */}
-							{(date ? date.toLocaleString() : null)}.
-						</b>
-					</p>
-				</div>
+			<div className="searchbar">
+				<h1>Make an Appointment</h1>
+				<h2>Success!</h2>
+				<p>You have a <b>{(appointment_data ? appointment_data.type : null)}</b> appointment with
+					<b>
+						{(doctor_data ? " Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName: null)}
+					</b>
+					{" at "}
+					<b>
+						{(clinic_data ? clinic_data.name + ", " + clinic_data.city: null)}
+					</b>
+					{" on "}
+					<b>
+					{/* date.getFullYear() + "/" + date.getUTCMonth() + "/" + date.getUTCDate() + " " + date.getUTCHours() + ":" + date.getUTCMinutes() */}
+						{(date ? date.toLocaleString() : null)}.
+					</b>
+				</p>
 			</div>
 		</div>
 	);

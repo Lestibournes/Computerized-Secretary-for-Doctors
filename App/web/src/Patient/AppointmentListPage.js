@@ -92,13 +92,10 @@ export function AppointmentListPage(props) {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
-
-				<div className="appointment_picker">
-					<h1>My Future Appointments</h1>
-					<div className="searchresults">
-						{results}
-					</div>
+			<div className="appointment_picker">
+				<h1>My Future Appointments</h1>
+				<div className="searchresults">
+					{results}
 				</div>
 			</div>
 		</div>

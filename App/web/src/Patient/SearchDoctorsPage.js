@@ -126,43 +126,40 @@ export function SearchDoctorsPage() {
 		<div className="page">
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="content">
-
-				<div className="searchbar">
-					<h1>Make an Appointment</h1>
-					<h2>Find a Doctor</h2>
-					<Formik
-						initialValues={{}}
-						validationSchema={Yup.object({
-							name: Yup.string(),
-							city: Yup.string(),
-							field: Yup.string(),
-						})}
-						onSubmit={async (values, { setSubmitting }) => {
-							setSubmitting(true);
-							searchDoctors({name: values.name, city: values.city, field: values.field}).then((result) => {
-								setDoctors(result.data);
-							});
-						}}
-					>
-						<Form>
-							<TextInput
-								label="Name"
-								name="name"
-								type="search"
-								placeholder="Yoni Robinson"
-							/>
-							<SelectCity/>
-							<SelectField/>
-							<button className="okay" type="submit">Search</button>
-						</Form>
-					</Formik>
-				</div>
-				<div className="searchresults">
-					{
-						(doctors.length === 0 ? "No doctors found" : results)
-					}
-				</div>
+			<div className="searchbar">
+				<h1>Make an Appointment</h1>
+				<h2>Find a Doctor</h2>
+				<Formik
+					initialValues={{}}
+					validationSchema={Yup.object({
+						name: Yup.string(),
+						city: Yup.string(),
+						field: Yup.string(),
+					})}
+					onSubmit={async (values, { setSubmitting }) => {
+						setSubmitting(true);
+						searchDoctors({name: values.name, city: values.city, field: values.field}).then((result) => {
+							setDoctors(result.data);
+						});
+					}}
+				>
+					<Form>
+						<TextInput
+							label="Name"
+							name="name"
+							type="search"
+							placeholder="Yoni Robinson"
+						/>
+						<SelectCity/>
+						<SelectField/>
+						<button className="okay" type="submit">Search</button>
+					</Form>
+				</Formik>
+			</div>
+			<div className="searchresults">
+				{
+					(doctors.length === 0 ? "No doctors found" : results)
+				}
 			</div>
 		</div>
 	);

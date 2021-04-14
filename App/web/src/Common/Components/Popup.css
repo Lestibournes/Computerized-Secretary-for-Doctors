@@ -1,0 +1,14 @@
+@import "../../globals.css";
+
+.popup {
+	display: block;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	background-color: var(--alt-color);
+	border: var(--border-width) solid var(--control-background);
+	border-radius: var(--radius);
+	padding: var(--margin);
+	width: fit-content;
+}
