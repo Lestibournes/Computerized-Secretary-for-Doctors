@@ -52,11 +52,11 @@ const stringContains = require('./functions').stringContains;
 		// Get the clinic data for the given doctor:
 		for (i in result.doctor.clinics) {
 			await db.collection("clinics").doc(result.doctor.clinics[i]).get().then(clinic_snapshot => {
-				// Check if the field is unspecified or is a match:
+				// Check if the city is unspecified or is a match:
 				if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
-					let city_data = clinic_snapshot.data();
-					city_data.id = clinic_snapshot.id;
-					result.clinics.push(city_data);
+					let clinic_data = clinic_snapshot.data();
+					clinic_data.id = clinic_snapshot.id;
+					result.clinics.push(clinic_data);
 				}
 			});
 		};
@@ -112,7 +112,9 @@ async function create(id) {
 	if (!doctor_id) {
 		await db.collection("doctors").add({
 			user: id,
-			approved: false
+			approved: false,
+			fields: [],
+			clinics: []
 		}).then(doctor_ref => {
 			doctor_id = doctor_ref.id;
 		});
@@ -169,25 +171,27 @@ async function search(name, field, city) {
 		// Only consider doctors who's name is a match or not specified:
 		if ((name && stringContains(fullName, name)) || !name) {
 			// Get the field data for the given doctor:
-			for (i in doctor.doctor.fields) {
-				await db.collection("fields").doc(doctor.doctor.fields[i]).get().then(field_snapshot => {
-					// Check if the field is unspecified or is a match:
-					if ((field && stringContains(field_snapshot.id, field)) || !field) {
-						let field_data = field_snapshot.data();
-						field_data.id = field_snapshot.id;
-						doctor.fields.push(field_data);
-					}
-				});
+			for (let f of doctor.doctor.fields) {
+				if (f) {
+					await db.collection("fields").doc(f).get().then(field_snapshot => {
+						// Check if the field is unspecified or is a match:
+						if ((field && stringContains(field_snapshot.id, field)) || !field) {
+							let field_data = field_snapshot.data();
+							field_data.id = field_snapshot.id;
+							doctor.fields.push(field_data);
+						}
+					});
+				}
 			}
 
 			// Get the clinic data for the given doctor:
-			for (i in doctor.doctor.clinics) {
-				await db.collection("clinics").doc(doctor.doctor.clinics[i]).get().then(clinic_snapshot => {
-					// Check if the field is unspecified or is a match:
+			for (let c of doctor.doctor.clinics) {
+				await db.collection("clinics").doc(c).get().then(clinic_snapshot => {
+					// Check if the city is unspecified or is a match:
 					if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
-						let city_data = clinic_snapshot.data();
-						city_data.id = clinic_snapshot.id;
-						doctor.clinics.push(city_data);
+						let clinic_data = clinic_snapshot.data();
+						clinic_data.id = clinic_snapshot.id;
+						doctor.clinics.push(clinic_data);
 					}
 				});
 			};
