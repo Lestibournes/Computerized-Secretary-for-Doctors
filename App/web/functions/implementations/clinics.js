@@ -55,6 +55,7 @@ async function getAllDoctors(clinic) {
  */
 async function add(doctor, name, city, address) {
 	let clinics = [];
+	let clinic;
 	
 	await db.collection("doctors").doc(doctor).get().then(doctor_snap => {
 		if (doctor_snap.data().clinics) {
@@ -69,12 +70,15 @@ async function add(doctor, name, city, address) {
 		address: address,
 		owner: doctor
 	}).then(clinicRef => {
+		clinic = clinicRef.id;
 		clinics.push(clinicRef.id);
 	});
 
 	await db.collection("doctors").doc(doctor).update({
 		clinics: clinics
 	});
+
+	return clinic;
 }
 
 /**

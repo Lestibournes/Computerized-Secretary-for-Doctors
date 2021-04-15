@@ -6,6 +6,11 @@ import { db, fn } from "../../init";
 
 import { Card } from "../../Common/Components/Card";
 import { Button } from "../../Common/Components/Button";
+import { Popup } from "../../Common/Components/Popup";
+
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import { TextInput } from '../../Common/Components/TextInput';
 
 /**
 @todo
@@ -47,60 +52,78 @@ It would be good to add some kind of notification widget to easily show new memb
 const getDoctor = fn.httpsCallable("doctors-get");
 const createDoctor = fn.httpsCallable("doctors-create");
 const getAllClinics = fn.httpsCallable("doctors-getAllClinics");
+const addClinic = fn.httpsCallable("clinics-add");
 
-function ClinicList({doctor, clinics = []}) {
-	const clinics_list = [];
-	
-	for (let clinic_data of clinics) {
-		clinics_list.push(
-			<Card
-				key={clinic_data.id}
-				title={clinic_data.name}
-				body={clinic_data.city}
-				footer={clinic_data.address}
-				link={(
-					clinic_data.owner === doctor ?
-					"/specific/doctor/clinics/edit/" + clinic_data.id
-					:
-					"/specific/doctor/clinics/view/" + clinic_data.id
-				)}
-			/>
-		);
-	}
-	
+function ClinicCreateForm({doctor, close, success}) {
 	return (
-		<div>
-			<div className="headerbar">
-				<h2>Clinics</h2> <Button label="+" link="/specific/doctor/clinics/create" />
-			</div>
-			{clinics_list}
+		<div className="form">
+			<Formik
+				initialValues={{
+					name: "",
+					city: "",
+					address: ""
+				}}
+				validationSchema={Yup.object({
+					name: Yup.string()
+						.required("Required"),
+					city: Yup.string()
+						.required("Required"),
+					address: Yup.string()
+						.required("Required")
+				})}
+				onSubmit={async (values, { setSubmitting }) => {
+					setSubmitting(true);
+					console.log("attempting...")
+					addClinic({doctor: doctor, name: values.name, city: values.city, address: values.address})
+					.then(response => {
+							success(response);
+							close();
+					});
+				}}
+			>
+				<Form>
+					<TextInput
+						label="Clinic Name"
+						name="name"
+						type="text"
+						placeholder="Eden"
+					/>
+					<TextInput
+						label="City"
+						name="city"
+						type="text"
+						placeholder="Jerusalem"
+					/>
+					<TextInput
+						label="Address"
+						name="address"
+						type="text"
+						placeholder="13 Holy Square"
+					/>
+					<div className="panel">
+						<Button label="Cancel" action={close} />
+						<Button type="submit" label="Save" />
+					</div>
+				</Form>
+			</Formik>
 		</div>
 	);
 }
 
-function CreateProfile({user, setDoctor}) {
+function CreateProfile({user, success, failure, close}) {
 	return (
 		<div className="center">
 			<h2>Would you like to register as a doctor?</h2>
 			<div className="panel">
-				<Button action={() => {window.history.back()}} label="No" />
+				<Button action={close} label="No" />
 				<Button type="okay" action={() => {
 					createDoctor({user: user}).then(response => {
-						if (response.data.doctor) {
-							getDoctor({id: response.data.doctor}).then(results => {
-								setDoctor(results.data);
-							});
-						}
+						if (response.data.success) success(response.data.doctor);
+						else failure();
 					});
 				}} label="Yes" />
 			</div>
 		</div>
-	);
-}
-
-function Loading() {
-	return (
-		<h2>Loading...</h2>
 	);
 }
 
@@ -111,30 +134,28 @@ export function DoctorEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (!status) setRedirect(true);
+			else {
+				db.collection("users").doc(auth.user.uid).get().then(user_snap => {
+					if (user_snap.data().doctor) {
+						getDoctor({id: user_snap.data().doctor}).then(results => {
+							setDoctor(results.data);
+						});
+					}
+					else {
+						setCreateProfile(true);
+					}
+				});
+			}
 		});
 
 		return unsubscribe;
 	}, [auth]);
 
-	const [mode, setMode] = useState("loading");
 	const [doctor, setDoctor] = useState(null);
 	const [clinics, setClinics] = useState([]);
-
-	useEffect(() => {
-		if (auth.user) {
-			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
-				if (user_snap.data().doctor) {
-					getDoctor({id: user_snap.data().doctor}).then(results => {
-						setDoctor(results.data);
-						setMode("edit");
-					});
-				}
-				else {
-					setMode("create");
-				}
-			})
-		}
-	}, [auth]);
+	const [createProfile, setCreateProfile] = useState(false);
+	const [alreadyExists, setAlreadyExists] = useState(false);
+	const [createClinic, setCreateClinic] = useState(false);
 
 	useEffect(() => {
 		if (doctor) {
@@ -142,21 +163,36 @@ export function DoctorEditor() {
 		}
 	}, [doctor]);
 
-	let display;
+	let display = <h2>Loading...</h2>;
 
-	switch (mode) {
-		case "create":
-			display = <CreateProfile user={auth.user.uid} setDoctor={doctor => {
-				setDoctor(doctor);
-				setMode("edit");
-			}} />;
-			break;
-		case "edit":
-			display = <ClinicList doctor={doctor ? doctor.doctor.id : null} clinics={clinics} />;
-			break;
-		default:
-			display = <Loading />;
-			break;
+	if (doctor && clinics.length > 0) {
+		const clinics_list = [];
+	
+		for (let clinic_data of clinics) {
+			clinics_list.push(
+				<Card
+					key={clinic_data.id}
+					title={clinic_data.name}
+					body={clinic_data.city}
+					footer={clinic_data.address}
+					link={(
+						clinic_data.owner === doctor.doctor.id ?
+						"/specific/doctor/clinics/edit/" + clinic_data.id
+						:
+						"/specific/doctor/clinics/view/" + clinic_data.id
+					)}
+				/>
+			);
+		}
+		
+		display = (
+			<div>
+				<div className="headerbar">
+					<h2>Clinics</h2> <Button label="+" action={() => setCreateClinic(true)} />
+				</div>
+				{clinics_list}
+			</div>
+		);
 	}
 
 	return (
@@ -165,6 +201,46 @@ export function DoctorEditor() {
 			<MainHeader section="Home"></MainHeader>
 			<div>
 				<h1>Doctor Profile</h1>
+				{createProfile && auth.user ? <Popup
+					title="Create Profile"
+					display={
+					<CreateProfile
+						user={auth.user.uid}
+						success={doctor => {
+							setCreateProfile(false);
+							getDoctor({id: doctor}).then(results => {
+								setDoctor(doctor);
+							});
+						}}
+						failure={() => setAlreadyExists(true)}
+						close={() => {window.history.back()}}
+					/>}
+					close={() => {window.history.back()}}
+				/> : ""}
+				{alreadyExists ? <Popup
+					title="Info"
+					display={
+						<div>You already have a doctor profile</div>
+					}
+					close={() => {
+						setAlreadyExists(false);
+						setCreateProfile(false);
+					}}
+				/> : ""}
+				{createClinic ? 
+				<Popup 
+					title="Create New Clinic"
+					display={<ClinicCreateForm
+						doctor={doctor.doctor.id}
+						success={clinic => {
+							setCreateClinic(false);
+							getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
+						}}
+						close={() => setCreateClinic(false)}
+					/>}
+					close={() => setCreateClinic(false)}
+				/>
+				: ""}
 				{display}
 			</div>
 		</div>
