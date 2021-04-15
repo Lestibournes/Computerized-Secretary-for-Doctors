@@ -13,6 +13,7 @@ import { Popup } from '../../Common/Components/Popup';
 
 const getClinic = fn.httpsCallable("clinics-get");
 const editClinic = fn.httpsCallable("clinics-edit");
+const deleteClinic = fn.httpsCallable("clinics-delete");
 const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
 const getDoctor = fn.httpsCallable("doctors-get");
 
@@ -28,7 +29,7 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 * A button to go to a search page to find existing doctors and invite them to join the clinic.
 */
 
-function ClinicEditForm({clinic, doctor, name, city, address, close, success}) {
+function ClinicEditForm({clinic, doctor, name, city, address, close, success, deleted}) {
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [problem, setProblem] = useState(null);
 	return (
@@ -49,16 +50,10 @@ function ClinicEditForm({clinic, doctor, name, city, address, close, success}) {
 				})}
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
-					console.log("attempting...")
 					editClinic({id: clinic, doctor: doctor, name: values.name, city: values.city, address: values.address})
 					.then(response => {
-						if (!response.data.success) {
-							setProblem(response.data.message);
-						}
-						else {
-							success();
-							close();
-						}
+						if (!response.data.success) {setProblem(response.data.message)}
+						else {success()}
 					});
 				}}
 			>
@@ -87,7 +82,11 @@ function ClinicEditForm({clinic, doctor, name, city, address, close, success}) {
 						<Button type="submit" label="Save" />
 					</div>
 					{confirmDelete ? <Popup title="Confirm Deletion"
-						display={<ConfirmDelete clinic={clinic} close={() => setConfirmDelete(false)}/>}
+						display={<ConfirmDelete
+							clinic={clinic}
+							doctor={doctor}
+							close={() => setConfirmDelete(false)}
+							success={deleted} />}
 						close={() => setConfirmDelete(false)} /> : ""}
 					{problem ? <Popup title="Error" display={<div>{problem}</div>} close={() => setProblem(false)} /> : ""}
 				</Form>
@@ -96,14 +95,22 @@ function ClinicEditForm({clinic, doctor, name, city, address, close, success}) {
 	);
 }
 
-function ConfirmDelete({clinic, close}) {
+function ConfirmDelete({clinic, doctor, close, success}) {
+	const [problem, setProblem] = useState(null);
+
 	return (<>
 		<p>Are you sure you wish to delete this clinic?</p>
 		<p>This action is permanent and cannot be undone.</p>
 		<div className="panel">
-						<Button type="cancel" label="Yes" />
-						<Button type="okay" label="Cancel" action={close} />
-					</div>
+			<Button type="cancel" label="Yes" action={() => {
+				deleteClinic({id: clinic, doctor: doctor}).then(response => {
+					if (!response.data.success) {setProblem(response.data.message)}
+					else {success()}
+				});
+			}} />
+			<Button type="okay" label="Cancel" action={close} />
+			{problem ? <Popup title="Error" display={<div>{problem}</div>} close={() => setProblem(false)} /> : ""}
+		</div>
 	</>);
 }
 
@@ -113,8 +120,8 @@ export function ClinicEditor() {
 	
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect(true);
-			else {
+			if (!status) setRedirect("/general/login");
+			else if (auth.user) {
 				db.collection("users").doc(auth.user.uid).get().then(user_snap => {
 					getDoctor({id: user_snap.data().doctor}).then(doctor_data => {
 						setDoctor(doctor_data.data);
@@ -141,7 +148,6 @@ export function ClinicEditor() {
 
 				getAllDoctors({clinic: clinic}).then(doctors_data => {
 					setDoctors(doctors_data.data);
-					console.log(doctors_data.data);
 				})
 			});
 		}
@@ -196,8 +202,10 @@ export function ClinicEditor() {
 						success={() => {
 							getClinic({id: clinic}).then(clinic_data => {
 								setData(clinic_data.data);
+								setEditData(false);
 							});
 						}}
+						deleted={() => setRedirect("/specific/doctor/profile")}
 						/>}
 					close={() => {setEditData(false)}}
 					/> : ""}
@@ -213,7 +221,7 @@ export function ClinicEditor() {
 
 	return (
 		<>
-			{redirect ? <Redirect to="/general/login" /> : null }
+			{redirect ? <Redirect to={redirect} /> : null }
 			<MainHeader section="Register"></MainHeader>
 			<h1>Edit Clinic</h1>
 			{display}

@@ -134,7 +134,8 @@ export function DoctorEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (!status) setRedirect(true);
-			else {
+			else if (auth.user) {
+				console.log(auth);
 				db.collection("users").doc(auth.user.uid).get().then(user_snap => {
 					if (user_snap.data().doctor) {
 						getDoctor({id: user_snap.data().doctor}).then(results => {
@@ -152,7 +153,7 @@ export function DoctorEditor() {
 	}, [auth]);
 
 	const [doctor, setDoctor] = useState(null);
-	const [clinics, setClinics] = useState([]);
+	const [clinics, setClinics] = useState(null);
 	const [createProfile, setCreateProfile] = useState(false);
 	const [alreadyExists, setAlreadyExists] = useState(false);
 	const [createClinic, setCreateClinic] = useState(false);
@@ -165,7 +166,7 @@ export function DoctorEditor() {
 
 	let display = <h2>Loading...</h2>;
 
-	if (doctor && clinics.length > 0) {
+	if (clinics) {
 		const clinics_list = [];
 	
 		for (let clinic_data of clinics) {

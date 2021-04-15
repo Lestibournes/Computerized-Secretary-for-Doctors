@@ -23,6 +23,10 @@ exports.edit = functions.https.onCall((data, context) => {
 	return clinics.edit(data.id, data.doctor, data.name, data.city, data.address);
 });
 
+exports.delete = functions.https.onCall((data, context) => {
+	return clinics.delete(data.id, data.doctor);
+});
+
 exports.leave = functions.https.onCall((data, context) => {
 	return clinics.leave(data.clinic, data.doctor);
 });

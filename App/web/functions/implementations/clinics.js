@@ -17,6 +17,7 @@ const db = admin.firestore();
 	let clinic;
 
 	await db.collection("clinics").doc(id).get().then(snap => {
+		console.log(snap.id)
 		clinic = snap.data();
 		clinic.id = snap.id;
 	});
@@ -120,6 +121,54 @@ async function edit(id, doctor, name, city, address) {
 }
 
 /**
+ * Delete a clinic.
+ * @param {string} id The id of the clinic.
+ * @param {string} doctor The doctor who is requesting the change.
+ * @returns 
+ */
+async function eliminate(id, doctor) {
+	const response = {
+		success: false,
+		message: ""
+	};
+	let clinic_data;
+	let owner;
+
+	await db.collection("clinics").doc(id).get().then(clinic_snap => {
+		clinic_data = clinic_snap.data();
+		owner = clinic_snap.data().owner;
+	});
+
+	if (owner === doctor) {
+		// Go over all of the clnic's doctors and remove the clinic from their profile:
+		for (let d of clinic_data.doctors) {
+			let clinics = [];
+
+			await db.collection("doctors").doc(d).get().then(doctor_snap => {
+				for (let c of  doctor_snap.data().clinics) {
+					if (c !== id) {
+						clinics.push(c);
+					}
+				}
+			});
+
+			await db.collection("doctors").doc(d).update({clinics: clinics});
+		}
+		// Delete the clinic:
+		await db.collection("clinics").doc(id).delete().then(value => {
+			console.log("deleted", value);
+		});
+
+		response.success = true;
+	}
+	else {
+		response.message = "It's not your clinic.";
+	}
+
+	return response;
+}
+
+/**
  * Have a doctor leave a clinic in which he works (does not change ownership of the clinic).
  * @param {string} clinic The id of the clinic.
  * @param {string} doctor The id of the doctor.
@@ -181,4 +230,5 @@ exports.get = get;
 exports.getAllDoctors = getAllDoctors;
 exports.add = add;
 exports.edit = edit;
+exports.delete = eliminate;
 exports.leave = leave;
