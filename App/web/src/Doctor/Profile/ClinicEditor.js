@@ -5,14 +5,16 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { MainHeader, useAuth } from "../../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
-import { fn, st } from '../../init';
+import { db, fn, st } from '../../init';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
 import { Popup } from '../../Common/Components/Popup';
 
 const getClinic = fn.httpsCallable("clinics-get");
+const editClinic = fn.httpsCallable("clinics-edit");
 const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
+const getDoctor = fn.httpsCallable("doctors-get");
 
 const storage = st.ref();
 
@@ -26,12 +28,11 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 * A button to go to a search page to find existing doctors and invite them to join the clinic.
 */
 
-function ClinicEditForm({clinic, name, city, address, close}) {
+function ClinicEditForm({clinic, doctor, name, city, address, close, success}) {
 	const [confirmDelete, setConfirmDelete] = useState(false);
-	
+	const [problem, setProblem] = useState(null);
 	return (
 		<div className="form">
-			<h2>Edit Details</h2>
 			<Formik
 				initialValues={{
 					name: name,
@@ -48,6 +49,17 @@ function ClinicEditForm({clinic, name, city, address, close}) {
 				})}
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
+					console.log("attempting...")
+					editClinic({id: clinic, doctor: doctor, name: values.name, city: values.city, address: values.address})
+					.then(response => {
+						if (!response.data.success) {
+							setProblem(response.data.message);
+						}
+						else {
+							success();
+							close();
+						}
+					});
 				}}
 			>
 				<Form>
@@ -74,7 +86,10 @@ function ClinicEditForm({clinic, name, city, address, close}) {
 						<Button label="Cancel" action={close} />
 						<Button type="submit" label="Save" />
 					</div>
-					{confirmDelete ? <Popup display={<ConfirmDelete clinic={clinic} close={() => setConfirmDelete(false)} />} /> : ""}
+					{confirmDelete ? <Popup title="Confirm Deletion"
+						display={<ConfirmDelete clinic={clinic} close={() => setConfirmDelete(false)}/>}
+						close={() => setConfirmDelete(false)} /> : ""}
+					{problem ? <Popup title="Error" display={<div>{problem}</div>} close={() => setProblem(false)} /> : ""}
 				</Form>
 			</Formik>
 		</div>
@@ -83,7 +98,7 @@ function ClinicEditForm({clinic, name, city, address, close}) {
 
 function ConfirmDelete({clinic, close}) {
 	return (<>
-		<h2>Are you sure you wish to delete this clinic?</h2>
+		<p>Are you sure you wish to delete this clinic?</p>
 		<p>This action is permanent and cannot be undone.</p>
 		<div className="panel">
 						<Button type="cancel" label="Yes" />
@@ -99,6 +114,13 @@ export function ClinicEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (!status) setRedirect(true);
+			else {
+				db.collection("users").doc(auth.user.uid).get().then(user_snap => {
+					getDoctor({id: user_snap.data().doctor}).then(doctor_data => {
+						setDoctor(doctor_data.data);
+					});
+				});
+			}
 		});
 
 		return unsubscribe;
@@ -110,6 +132,7 @@ export function ClinicEditor() {
 	const [doctors, setDoctors] = useState([]);
 	const [results, setResults] = useState([]);
 	const [addDoctor, setAddDoctor] = useState(false);
+	const [doctor, setDoctor] = useState(null);
 
 	useEffect(() => {
 		if (clinic) {
@@ -162,7 +185,22 @@ export function ClinicEditor() {
 					<b>Name:</b> <span>{data.name}</span>
 					<b>Address:</b> <span>{data.city}, {data.address}</span>
 				</div> : "Loading..."}
-				{data && editData? <Popup display={<ClinicEditForm name={data.name} city={data.city} address={data.address} close={() => {setEditData(false)}} />} /> : ""}
+				{data && editData? <Popup title="Edit Details"
+					display={<ClinicEditForm
+						clinic={clinic}
+						doctor={doctor.doctor.id}
+						name={data.name}
+						city={data.city}
+						address={data.address}
+						close={() => {setEditData(false)}}
+						success={() => {
+							getClinic({id: clinic}).then(clinic_data => {
+								setData(clinic_data.data);
+							});
+						}}
+						/>}
+					close={() => {setEditData(false)}}
+					/> : ""}
 				<div className="headerbar">
 					<h2>Doctors</h2> <Button label="+" action={() => setAddDoctor(true)} />
 				</div>

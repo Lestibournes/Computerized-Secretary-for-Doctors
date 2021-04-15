@@ -87,6 +87,7 @@ async function add(doctor, name, city, address) {
  * @returns 
  */
 async function edit(id, doctor, name, city, address) {
+	console.log(id, doctor, name, city, address);
 	const response = {
 		success: false,
 		message: ""

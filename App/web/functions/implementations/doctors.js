@@ -9,7 +9,7 @@ const db = admin.firestore();
 const stringContains = require('./functions').stringContains;
 
 /**
- * Get the requested doctor and then filter the results by field of specialization and the city where the clinic is.
+ * Get the requested doctor and then filter his data by field of specialization and the city where the clinic is.
  * Except for id, all params are optional. If no parameters are specified (or if the value is falsy), then it will return all the data.
  * @todo Be more picky about which data is being returned.
  * @param {string} id The id of the doctor.
@@ -18,7 +18,6 @@ const stringContains = require('./functions').stringContains;
  * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}} The data of the requested doctor.
  */
  async function get(id, field, city) {
-	 // Fetch the data of all the doctor documents:
 	 const result = {
 		 doctor: null, // The doctor data.
 		 user: null, // The user data.

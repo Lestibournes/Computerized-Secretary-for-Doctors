@@ -1,14 +1,52 @@
 @import "../../globals.css";
 
 .popup {
-	display: block;
+	display: grid;
+	grid-template-areas:
+	'controls'
+	'display';
+
 	position: fixed;
 	left: 50%;
 	top: 50%;
 	transform: translate(-50%, -50%);
-	background-color: var(--alt-color);
-	border: var(--border-width) solid var(--control-background);
-	border-radius: var(--radius);
-	padding: var(--margin);
 	width: fit-content;
+
+	background-color: var(--control-background);
+	border: 0.1px solid var(--control-background);
+	border-radius: var(--radius);
+	box-shadow: 0px 0px 5px 5px gray;
+}
+
+.controls {
+	display: grid;
+	background-color: var(--control-background);
+	padding: var(--margin-small);
+	border-radius: inherit;
+	grid-template-areas: 'title buttons';
+}
+
+.title {
+	font-size: large;
+	font-weight: bold;
+}
+
+.buttons {
+	display: grid;
+	place-content: end;
+}
+
+.buttons .Button {
+	color: var(--color);
+	font-size: xx-small;
+	padding: 0.5em;
+	border: 1px solid var(--control-background-pressed);
+}
+
+.display {
+	padding: var(--margin);
+	background-color: var(--alt-color);
+	border-radius: inherit;
+	border-start-start-radius: 0;
+	border-start-end-radius: 0;
 }

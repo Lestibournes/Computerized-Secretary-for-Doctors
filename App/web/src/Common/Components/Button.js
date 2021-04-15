@@ -11,13 +11,13 @@ export function Button({label, action, link, type}) {
 
 	if (type === types.submit) {
 		return (
-			<button onClick={action} className="Button okay" type="submit">{label}</button>
+			<button onClick={action} type="submit" className="Button okay">{label}</button>
 		);
 	}
 
 	if (!link) {
 		return (
-			<button onClick={action} className={"Button" + (type ? " " + type : "")}>{label}</button>
+			<button onClick={action} type="button" className={"Button" + (type ? " " + type : "")}>{label}</button>
 		);
 	}
 
