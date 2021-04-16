@@ -73,7 +73,7 @@ function ClinicCreateForm({doctor, close, success}) {
 				})}
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
-					console.log("attempting...")
+
 					addClinic({doctor: doctor, name: values.name, city: values.city, address: values.address})
 					.then(response => {
 							success(response);
@@ -191,7 +191,9 @@ export function DoctorEditor() {
 				<div className="headerbar">
 					<h2>Clinics</h2> <Button label="+" action={() => setCreateClinic(true)} />
 				</div>
-				{clinics_list}
+				<div className="cardList">
+					{clinics_list}
+				</div>
 			</div>
 		);
 	}

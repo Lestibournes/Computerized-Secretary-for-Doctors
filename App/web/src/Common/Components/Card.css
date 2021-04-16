@@ -61,3 +61,9 @@
 .cardCenter {
 	text-transform: capitalize;
 }
+
+.cardList {
+	display: flex;
+	flex-direction: column;
+	gap: var(--margin);
+}

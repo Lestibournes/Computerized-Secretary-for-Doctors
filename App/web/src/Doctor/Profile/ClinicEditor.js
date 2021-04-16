@@ -14,8 +14,11 @@ import { Popup } from '../../Common/Components/Popup';
 const getClinic = fn.httpsCallable("clinics-get");
 const editClinic = fn.httpsCallable("clinics-edit");
 const deleteClinic = fn.httpsCallable("clinics-delete");
-const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
+const joinClinic = fn.httpsCallable("clinics-join");
+
 const getDoctor = fn.httpsCallable("doctors-get");
+const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
+const searchDoctors = fn.httpsCallable("doctors-search");
 
 const storage = st.ref();
 
@@ -114,6 +117,88 @@ function ConfirmDelete({clinic, doctor, close, success}) {
 	</>);
 }
 
+function SelectDoctor({close, success}) {
+	const [cards, setCards] = useState([]);
+	
+	return (
+		<div className="form">
+			<Formik
+				initialValues={{
+					name: "",
+					city: "",
+					specialization: ""
+				}}
+				validationSchema={Yup.object({
+					name: Yup.string(),
+					city: Yup.string(),
+					specialization: Yup.string()
+				})}
+				onSubmit={async (values, { setSubmitting }) => {
+					setSubmitting(true);
+
+					searchDoctors({name: values.name, city: values.city, specialization: values.specialization})
+					.then(response => {
+						const doctor_cards = [];
+
+						for (let doctor of response.data) {
+							storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+								doctor_cards.push(<Card
+									key={doctor.doctor.id}
+									title={doctor.user.firstName + " " + doctor.user.lastName}
+									body={doctor.fields.map((field, index) => {
+										return (index < doctor.fields.length - 1 ? field.id + "; " : field.id)
+									})}
+									footer={doctor.clinics.map((clinic, index) => {
+										return clinic.name + ", " + clinic.city +
+											(index < doctor.clinics.length - 1 ? "; " : "");
+									})}
+									image={url}
+									altText={doctor.user.firstName + " " + doctor.user.lastName + "'s portrait"}
+									action={() => success(doctor.doctor.id)}
+								/>);
+
+								if (doctor_cards.length === response.data.length) {
+									setCards(doctor_cards);
+								}
+							});
+						}
+
+					});
+				}}
+			>
+				<Form>
+					<TextInput
+						label="Name"
+						name="name"
+						type="text"
+						placeholder="Yoni Robinson"
+					/>
+					<TextInput
+						label="City"
+						name="city"
+						type="text"
+						placeholder="Jerusalem"
+					/>
+					<TextInput
+						label="Specialization"
+						name="specialization"
+						type="text"
+						placeholder="Pediatrician"
+					/>
+					<div className="panel">
+						<Button label="Cancel" action={close} />
+						<Button type="submit" label="Search" />
+					</div>
+				</Form>
+			</Formik>
+
+			<div className="cardList">
+				{cards}
+			</div>
+		</div>
+	);
+}
+
 export function ClinicEditor() {
 	const auth = useAuth();
 	const [redirect, setRedirect] = useState(false);
@@ -148,7 +233,7 @@ export function ClinicEditor() {
 
 				getAllDoctors({clinic: clinic}).then(doctors_data => {
 					setDoctors(doctors_data.data);
-				})
+				});
 			});
 		}
 	}, [clinic]);
@@ -161,7 +246,7 @@ export function ClinicEditor() {
 				storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
 					doctor.image = url;
 					cards.push(<Card
-						key={doctor.doctor.id + Math.random()}
+						key={doctor.doctor.id}
 						link={"#"}
 						title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (owner)" : "")}
 						body=
@@ -209,10 +294,36 @@ export function ClinicEditor() {
 						/>}
 					close={() => {setEditData(false)}}
 					/> : ""}
+
+				{addDoctor ? 
+					<Popup
+						title="Add Doctor"
+						display={
+							<SelectDoctor
+							close={() => setAddDoctor(false)}
+							success={selected => {
+								/**
+								 * @todo add doctor to clinic.
+								 */
+								joinClinic({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
+									getAllDoctors({clinic: clinic}).then(doctors_data => {
+										setDoctors(doctors_data.data);
+									});
+								});
+
+								setAddDoctor(false);
+							}}
+							/>
+						}
+						close={() => setAddDoctor(false)}
+					/>
+					: ""
+				}
+
 				<div className="headerbar">
 					<h2>Doctors</h2> <Button label="+" action={() => setAddDoctor(true)} />
 				</div>
-				<div className="searchresults">
+				<div className="cardList">
 					{results}
 				</div>
 			</div>

@@ -94,7 +94,7 @@ export function AppointmentListPage(props) {
 			<MainHeader section="Home"></MainHeader>
 			<div className="appointment_picker">
 				<h1>My Future Appointments</h1>
-				<div className="searchresults">
+				<div className="cardList">
 					{results}
 				</div>
 			</div>

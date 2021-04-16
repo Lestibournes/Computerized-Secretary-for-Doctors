@@ -226,9 +226,51 @@ async function leave(clinic, doctor) {
 	}
 }
 
+/**
+ * Add a doctor to a clinic.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} requester The doctor who is requesting the change.
+ * @param {string} doctor The doctor one wishes to add.
+ */
+async function join(clinic, requester, doctor) {
+	let owner;
+	let old_doctors = [];
+	
+	await db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+		owner = clinic_snap.data().owner;
+		old_doctors = clinic_snap.data().doctors;
+	});
+
+	if (requester === owner) {
+		if(old_doctors.indexOf(doctor) < 0) {
+			old_doctors.push(doctor);
+	
+			await db.collection("clinics").doc(clinic).update({
+				doctors: old_doctors
+			});
+		}
+	
+		// Add the clinic to the doctor:
+		let old_clinics = [];
+		
+		await db.collection("doctors").doc(doctor).get().then(doctor_snap => {
+			old_clinics = doctor_snap.data().clinics;
+		});
+
+		if (old_clinics.indexOf(clinic) < 0) {
+			old_clinics.push(clinic);
+	
+			await db.collection("doctors").doc(doctor).update({
+				clinics: old_clinics
+			});
+		}
+	}
+}
+
 exports.get = get;
 exports.getAllDoctors = getAllDoctors;
 exports.add = add;
 exports.edit = edit;
 exports.delete = eliminate;
 exports.leave = leave;
+exports.join = join;

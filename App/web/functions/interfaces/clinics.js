@@ -30,3 +30,7 @@ exports.delete = functions.https.onCall((data, context) => {
 exports.leave = functions.https.onCall((data, context) => {
 	return clinics.leave(data.clinic, data.doctor);
 });
+
+exports.join = functions.https.onCall((data, context) => {
+	return clinics.join(data.clinic, data.requester ,data.doctor);
+});

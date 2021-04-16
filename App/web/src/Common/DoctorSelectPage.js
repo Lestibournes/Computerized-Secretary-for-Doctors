@@ -137,7 +137,7 @@ export function DoctorSelectPage() {
 					</Form>
 				</Formik>
 			</div>
-			<div className="searchresults">
+			<div className="cardList">
 				{
 					(doctors.length === 0 ? "No doctors found" : "")
 				}

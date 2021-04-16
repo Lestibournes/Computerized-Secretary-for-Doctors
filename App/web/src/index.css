@@ -106,12 +106,6 @@ h1 {
 	gap: var(--margin);
 }
 
-.searchresults {
-	display: flex;
-	flex-direction: column;
-	row-gap: var(--margin);
-}
-
 .form form {
 	width: fit-content;
 	display: grid;
