@@ -17,7 +17,6 @@ const db = admin.firestore();
 	let clinic;
 
 	await db.collection("clinics").doc(id).get().then(snap => {
-		console.log(snap.id)
 		clinic = snap.data();
 		clinic.id = snap.id;
 	});
@@ -92,7 +91,6 @@ async function add(doctor, name, city, address) {
  * @returns 
  */
 async function edit(id, doctor, name, city, address) {
-	console.log(id, doctor, name, city, address);
 	const response = {
 		success: false,
 		message: ""

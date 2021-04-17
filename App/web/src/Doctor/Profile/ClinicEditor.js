@@ -241,24 +241,52 @@ export function ClinicEditor() {
 
 	useEffect(() => {
 		const cards = [];
+
 		if (doctors) {
-			for (let doctor of doctors) {
+			for (const doctor of doctors) {
 				storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
 					doctor.image = url;
-					cards.push(<Card
+					const card = (<Card
 						key={doctor.doctor.id}
-						link={"#"}
-						title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (owner)" : "")}
+						title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (♚ owner)" : "")}
 						body=
 							{doctor.fields.length > 0 ?
 								doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
 								: ""))
 							: "No specializations specified"}
 						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
-						image={doctor.image} />);
+						image={doctor.image}
+						action={() => alert(doctor.user.firstName + " " + doctor.user.lastName)}
+					/>);
+
+					cards.push({
+						name: doctor.user.lastName + doctor.user.firstName,
+						id: doctor.doctor.id,
+						component: card
+					});
 					
 					if (cards.length >= doctors.length) {
-						setResults(cards);
+						cards.sort((a, b) => {
+							if (a.id === data.owner) {
+								return -1;
+							};
+				
+							if (b.id === data.owner) {
+								return 1;
+							};
+			
+							if (a.name === b.name) {
+								return 0;
+							}
+							else if (a.name < b.name) {
+								return -1;
+							}
+							else {
+								return 1;
+							}
+						});
+						
+						setResults(cards.map(card => card.component));
 					}
 				});
 			}
