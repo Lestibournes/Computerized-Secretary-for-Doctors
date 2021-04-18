@@ -1,0 +1,43 @@
+
+.mainHeader {
+	color: var(--highlight);
+	margin-bottom: var(--margin);
+	display: grid;
+	grid-template-columns: 0fr 1fr auto;
+	column-gap: var(--margin);
+}
+
+.mainHeader .title {
+	font-size: var(--font-size-a);
+	display: grid;
+	place-items: center start;
+	text-decoration: none;
+	color: var(--highlight);
+	font-weight: bold;
+}
+
+.mainHeader .section {
+	font-size: var(--font-size-c);
+	display: grid;
+	place-items: center end;
+}
+
+.mainHeader nav {
+	display: flex;
+	place-items: center start;
+	column-gap: var(--margin);
+}
+
+.mainHeader div:last-child {
+	place-self: center end;
+	display: flex;
+	place-items: center end;
+	column-gap: var(--margin);
+}
+
+.mainHeader .button {
+	border: none;
+	border-radius: var(--radius);
+	font-size: var(--font-size-e);
+	padding: var(--control-padding);
+}

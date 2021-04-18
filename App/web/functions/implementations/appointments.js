@@ -164,7 +164,6 @@ async function get(id) {
 	const date = new Date(data.appointment.start.toDate());
 	data.extra.date = new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 	data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
-	console.log(data.extra.time);
 
 	return data;
 }

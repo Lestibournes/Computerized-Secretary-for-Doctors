@@ -296,7 +296,7 @@ export function ClinicEditor() {
 	let display = <h2>Loading...</h2>;
 	if (data && results.length) {
 		display = (
-			<div>
+			<>
 				<div className="headerbar">
 					<h2>Details</h2> <Button label="Edit" action={() => setEditData(true)} />
 				</div>
@@ -354,7 +354,7 @@ export function ClinicEditor() {
 				<div className="cardList">
 					{results}
 				</div>
-			</div>
+			</>
 		);
 	}
 

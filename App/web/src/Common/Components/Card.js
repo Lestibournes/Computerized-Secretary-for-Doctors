@@ -4,21 +4,25 @@ import './Card.css';
 export function Card({title, body, footer, link, action, image, altText}) {
 	if (link) {
 		return (
-			<Link to={link} className={image ? "fancyCard" : "plainCard"}>
+			<Link to={link} className="card">
 				{image ? <img alt={altText} src={image} /> : null}
-				<div className="cardTop"><big>{title}</big></div>
-				<div className="cardCenter"><small>{body}</small></div>
-				<div className="cardBottom"><small>{footer}</small></div>
+				<div className="body">
+					<div><big>{title}</big></div>
+					<div><small>{body}</small></div>
+					<div><small>{footer}</small></div>
+				</div>
 			</Link>
 		);
 	}
 
 	return (
-		<div onClick={action} className={image ? "fancyCard" : "plainCard"}>
+		<div onClick={action} className="card">
 			{image ? <img alt={altText} src={image} /> : null}
-			<div className="cardTop"><big>{title}</big></div>
-			<div className="cardCenter"><small>{body}</small></div>
-			<div className="cardBottom"><small>{footer}</small></div>
+			<div className="body">
+				<div><big>{title}</big></div>
+				<div><small>{body}</small></div>
+				<div><small>{footer}</small></div>
+			</div>
 		</div>
 	);
 }

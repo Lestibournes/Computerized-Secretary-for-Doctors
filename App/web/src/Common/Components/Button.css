@@ -52,3 +52,9 @@
 	background-color: var(--warning-color-pressed);
 	color: var(--alt-color);
 }
+
+.buttonBar {
+	display: flex;
+	flex-direction: row;
+	gap: var(--margin);
+}

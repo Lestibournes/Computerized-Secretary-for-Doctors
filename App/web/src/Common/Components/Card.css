@@ -1,65 +1,53 @@
-.fancyCard, .plainCard {
-	width: 100%;
+.card {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+
 	cursor: pointer;
 	text-decoration: none;
 	color: var(--color);
-	display: grid;
+
+	min-width: min-content;
+	width: 100%;
+	
+	padding: var(--padding);
+	gap: var(--margin);
+	
 	border: var(--border-width) solid var(--control-background);
 	border-radius: var(--radius);
-	padding: var(--padding);
 }
 
-.fancyCard:hover, .plainCard:hover {
+.card:hover {
 	border-color: var(--control-background-hover);
 	background-color: var(--control-background-hover);
 }
 
-.fancyCard:active, .plainCard:active {
+.card:active {
 	border-color: var(--control-background-pressed);
 	background-color: var(--control-background-pressed);
 	color: var(--alt-color);
 }
 
-.fancyCard {
-	grid-template-areas:
-		'pic cardTop'
-		'pic cardCenter'
-		'pic cardBottom';
-	grid-template-columns: auto 1fr;
-	column-gap: var(--margin);
-}
+.card img {
+	min-width: 128px;
+	aspect-ratio: 1/1;
+	height: min-content;
+	flex-grow: 1;
 
-.fancyCard img {
-	grid-area: pic;
-	width: 128px;
-	height: 128px;
 	border-radius: var(--radius);
-	background-color: var(--control-background);
 	border: none;
+
+	background-color: var(--control-background);
 }
 
-.plainCard {
-	grid-template-areas:
-		'cardTop'
-		'cardCenter'
-		'cardBottom';
-}
+.card .body {
+	min-width: 128px;
+	width: calc(100% - 128px - var(--margin));
+	min-height: 100%;
+	flex-grow: 1;
 
-
-.cardTop {
 	display: grid;
-	grid-template-areas: '... buttonBar';
-	grid-template-columns: 1fr auto;
-	place-items: center left;
-}
-
-.buttonBar {
-	display: flex;
-	gap: var(--margin-small);
-}
-
-.cardCenter {
-	text-transform: capitalize;
+	columns: repeat(3, 1fr);
 }
 
 .cardList {
