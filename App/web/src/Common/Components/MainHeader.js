@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { useAuth } from "../CommonComponents";
+import { Button } from "./Button";
 import "./MainHeader.css";
 
 /**
@@ -20,7 +23,8 @@ import "./MainHeader.css";
 					{auth.name.first ? auth.name.first + " " : null}
 					{auth.name.last ? auth.name.last + " " : null}
 					{auth.user ? "<" + auth.user.email + ">" : null}
-					<Link className="button warning" to="#" onClick={auth.logout}>Log out</Link>
+					<Button type="cancel" action={auth.logout} label="Log out" />
+					{/* <Link className="button warning" to="#" onClick={auth.logout}>Log out</Link> */}
 				</>
 				: null}
 			</div>

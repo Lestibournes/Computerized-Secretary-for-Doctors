@@ -2,15 +2,16 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { MainHeader, useAuth } from "./CommonComponents";
+import { useAuth } from "./CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
+import { MainHeader } from './Components/MainHeader';
 
 export function RegisterPage() {
 	const auth = useAuth();
 	
 	return (
-		<div className="page">
+		<>
 			{auth.user ? <Redirect to="/general/" /> : null }
 			<MainHeader section="Register"></MainHeader>
 			<div className="center">
@@ -85,6 +86,6 @@ export function RegisterPage() {
 					</Formik>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 }

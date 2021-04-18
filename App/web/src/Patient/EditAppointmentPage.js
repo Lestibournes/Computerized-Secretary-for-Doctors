@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { SelectList, MainHeader, useAuth, SelectDate } from "../Common/CommonComponents";
+import { SelectList, useAuth, SelectDate } from "../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
 import { SimpleDate, Time } from '../Common/classes';
+import { MainHeader } from '../Common/Components/MainHeader';
 
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
 const editAppointment = fn.httpsCallable("appointments-edit");
@@ -121,7 +122,7 @@ export function EditAppointmentPage(props) {
 		selectDate(data.date);
 	}
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="appointment_picker">
@@ -215,6 +216,6 @@ export function EditAppointmentPage(props) {
 				{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
 				{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
 			</div>
-		</div>
+		</>
 	);
 }

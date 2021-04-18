@@ -1,11 +1,12 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { MainHeader, useAuth } from "../Common/CommonComponents";
+import { useAuth } from "../Common/CommonComponents";
 import { Redirect } from 'react-router-dom';
 import { db, fn, st } from '../init';
 import { Time } from "../Common/classes";
 import { Card } from '../Common/Components/Card';
 import { SimpleDate } from "../Common/classes";
+import { MainHeader } from '../Common/Components/MainHeader';
 
 const storage = st.ref();
 
@@ -89,7 +90,7 @@ export function AppointmentListPage(props) {
 	}, [appointments]);
 
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="appointment_picker">
@@ -98,6 +99,6 @@ export function AppointmentListPage(props) {
 					{results}
 				</div>
 			</div>
-		</div>
+		</>
 	);
 }

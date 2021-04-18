@@ -3,13 +3,14 @@ import "./ClinicEditor.css"
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { MainHeader, useAuth } from "../../Common/CommonComponents";
+import { useAuth } from "../../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn, st } from '../../init';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
 import { Popup } from '../../Common/Components/Popup';
+import { MainHeader } from "../../Common/Components/MainHeader";
 
 const getClinic = fn.httpsCallable("clinics-get");
 const editClinic = fn.httpsCallable("clinics-edit");

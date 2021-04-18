@@ -27,67 +27,6 @@ h1 {
 	color: var(--highlight);
 }
 
-.page {
-	padding: var(--margin);
-	display: grid;
-	height: 100%;
-	grid-template-rows: auto 1fr;
-}
-
-.mainHeader {
-	color: var(--highlight);
-	margin-bottom: var(--margin);
-	display: grid;
-	grid-template-columns: 0fr 1fr auto;
-	column-gap: var(--margin);
-}
-
-.mainHeader .title {
-	font-size: var(--font-size-a);
-	display: grid;
-	place-items: center start;
-	text-decoration: none;
-	color: var(--highlight);
-	font-weight: bold;
-}
-
-.mainHeader .section {
-	font-size: var(--font-size-c);
-	display: grid;
-	place-items: center end;
-}
-
-.mainHeader nav {
-	display: flex;
-	place-items: center start;
-	column-gap: var(--margin);
-}
-
-.mainHeader div:last-child {
-	place-self: center end;
-	display: flex;
-	place-items: center end;
-	column-gap: var(--margin);
-}
-
-.mainHeader .button {
-	border: none;
-	border-radius: var(--radius);
-	font-size: var(--font-size-e);
-	padding: var(--control-padding);
-}
-
-.center {
-	display: grid;
-	place-items: center;
-}
-
-.content {
-	display: grid;
-	grid-template-rows: auto 1fr;
-	row-gap: var(--margin);
-}
-
 .searchbar form {
 	display: flex;
 	column-gap: var(--margin);

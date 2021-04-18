@@ -1,10 +1,11 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { MainHeader, useAuth } from "../Common/CommonComponents";
+import { useAuth } from "../Common/CommonComponents";
 import { Redirect } from 'react-router-dom';
 import { db } from '../init';
 import { Slot, Time } from "../Common/classes";
 import { CalendarWeek } from "../Common/CalendarComponents";
+import { MainHeader } from '../Common/Components/MainHeader';
 
 export function AppointmentCalendarPage(props) {
 	const auth = useAuth();
@@ -142,7 +143,7 @@ export function AppointmentCalendarPage(props) {
 	}, [doctor, date]);
 
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="appointment_picker">
@@ -164,6 +165,6 @@ export function AppointmentCalendarPage(props) {
 					height={960}
 				/>
 			</div>
-		</div>
+		</>
 	);
 }

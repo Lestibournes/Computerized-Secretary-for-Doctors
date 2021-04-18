@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { SelectList, MainHeader, useAuth, SelectDate } from "../Common/CommonComponents";
+import { SelectList, useAuth, SelectDate } from "../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
+import { MainHeader } from '../Common/Components/MainHeader';
 
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
 const makeAppointment = fn.httpsCallable("appointments-add");
@@ -72,7 +73,7 @@ export function MakeAppointmentPage(props) {
 	const tzos = (new Date()).getTimezoneOffset() / 60;
 
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="appointment_picker">
@@ -167,6 +168,6 @@ export function MakeAppointmentPage(props) {
 				</Formik>
 				{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
 			</div>
-		</div>
+		</>
 	);
 }

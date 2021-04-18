@@ -4,30 +4,6 @@ import { Link, NavLink } from 'react-router-dom';
 import { db, fb } from "../init";
 
 /**
- * A Formik select input component.
- */
-export const Select = ({ label, ...props }) => {
-	const [field, meta] = useField(props);
-
-	return (
-		<>
-			<label htmlFor={props.id || props.name}>{label}:</label>
-			<select {...field} {...props} value>
-				<option key={label} disabled value>Select an Option</option>
-				{
-					props.options.map(option => {
-						return <option key={option.id} value={option.id}>{option.label}</option>
-					})
-				}
-			</select>
-			{meta.touched && meta.error ? (
-				<div className="error">{meta.error}</div>
-			) : null}
-		</>
-	);
-};
-
-/**
  * Uses Formik to present a scrolling list version of an HTML select element.
  */
 export const SelectList = ({ label, options, selected, ...props}) => {
@@ -239,34 +215,6 @@ export const SelectDate = ({ day, month, year, ...props}) => {
 		</div>
 	);
 };
-
-/**
- * The header component for the site, which holds the logo, main navigation, and user menu that includes the logout option.
- */
-export function MainHeader(props) {
-	const auth = useAuth();
-
-	return (
-		<div className="mainHeader">
-			<Link to="/general/" className="title">CSFPD</Link>
-			{/* <nav>
-				<NavLink className="button" activeClassName="okay" exact to="/general/">Home</NavLink>
-				<NavLink className="button" activeClassName="okay" to="/general/login">Login</NavLink>
-				<NavLink className="button" activeClassName="okay" to="/general/register">Register</NavLink>
-			</nav> */}
-			<div>
-				{auth.user ? 
-				<>
-					{auth.name.first ? auth.name.first + " " : null}
-					{auth.name.last ? auth.name.last + " " : null}
-					{auth.user ? "<" + auth.user.email + ">" : null}
-					<Link className="button warning" to="#" onClick={auth.logout}>Log out</Link>
-				</>
-				: null}
-			</div>
-		</div>
-	);
-}
 
 // User authentication services:
 

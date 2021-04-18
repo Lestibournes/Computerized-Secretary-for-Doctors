@@ -1,6 +1,16 @@
-label, input {
+.Input {
+	display: flex;
+	flex-flow: row;
+	gap: var(--margin);
+	flex-grow: 1;
+	width: 1fr;
+}
+
+label, input, select {
 	display: grid;
 	place-items: center start;
+	flex-grow: 1;
+	width: 100%;
 }
 
 input {
@@ -33,3 +43,13 @@ div.error {
 	color: var(--warning-color);
 	grid-column: 2/3;
 }
+
+/* select {
+	text-decoration: none;
+	background-color: var(--control-background);
+	color: var(--color);
+	border: none;
+	font-size: var(--font-size-e);
+	padding: var(--control-padding);
+	border-radius: var(--radius);
+} */

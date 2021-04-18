@@ -1,4 +1,4 @@
-import './TextInput.css';
+import './Input.css';
 import { useField } from 'formik';
 
 /**
@@ -19,12 +19,12 @@ import { useField } from 'formik';
 	}
 	
 	return (
-		<>
-		<label htmlFor={props.id}>{label}:</label>
+		<div className="Input">
+			<label htmlFor={props.id}>{label}:</label>
 			<input className={error} {...field} {...props} />
 			{meta.touched && meta.error ? (
 				<div className="error">{meta.error}</div>
 			) : null}
-		</>
+		</div>
 	);
 };

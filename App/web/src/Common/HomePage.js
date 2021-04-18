@@ -1,7 +1,8 @@
 //Reactjs:
-import { MainHeader, useAuth } from "./CommonComponents";
+import { useAuth } from "./CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
 import { useEffect, useState } from "react";
+import { MainHeader } from "./Components/MainHeader";
 
 export function HomePage(props) {
 	const auth = useAuth();
@@ -16,7 +17,7 @@ export function HomePage(props) {
 	}, [auth]);
 
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="appointment_picker">
@@ -28,6 +29,6 @@ export function HomePage(props) {
 					<Link className="button" to="/specific/doctor/profile">Doctor Profile</Link>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 }

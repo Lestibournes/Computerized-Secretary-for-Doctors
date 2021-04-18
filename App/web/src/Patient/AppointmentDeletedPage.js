@@ -1,8 +1,9 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
-import { MainHeader, useAuth } from "../Common/CommonComponents";
+import { useAuth } from "../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
+import { MainHeader } from '../Common/Components/MainHeader';
 
 const getDoctor = fn.httpsCallable("doctors-get");
 
@@ -19,7 +20,7 @@ export function AppointmentDeletedPage() {
 	}, [auth]);
 	
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="searchbar">
@@ -29,6 +30,6 @@ export function AppointmentDeletedPage() {
 					Your appointment has been successfully deleted.
 				</p>
 			</div>
-		</div>
+		</>
 	);
 }

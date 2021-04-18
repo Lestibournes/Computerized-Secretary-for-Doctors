@@ -1,5 +1,5 @@
 import "./DoctorEditor.css";
-import { MainHeader, useAuth } from "../../Common/CommonComponents";
+import { useAuth } from "../../Common/CommonComponents";
 import { Redirect } from 'react-router-dom';
 import { useEffect, useState } from "react";
 import { db, fn } from "../../init";
@@ -11,6 +11,7 @@ import { Popup } from "../../Common/Components/Popup";
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput } from '../../Common/Components/TextInput';
+import { MainHeader } from "../../Common/Components/MainHeader";
 
 /**
 @todo

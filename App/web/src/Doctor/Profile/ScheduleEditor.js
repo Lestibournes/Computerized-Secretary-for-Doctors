@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { SelectList, MainHeader, useAuth, SelectDate } from "../Common/CommonComponents";
+import { SelectList, useAuth, SelectDate } from "../Common/CommonComponents";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
 
@@ -72,7 +72,7 @@ export function ScheduleEditor(props) {
 	const tzos = (new Date()).getTimezoneOffset() / 60;
 
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
 			<div className="appointment_picker">
@@ -167,6 +167,6 @@ export function ScheduleEditor(props) {
 				</Formik>
 				{(success ? <Redirect to={"/create/" + success} /> : null)}
 			</div>
-		</div>
+		</>
 	);
 }

@@ -5,7 +5,6 @@ import './index.css';
 import { LoginPage } from './Common/LoginPage';
 import { RegisterPage } from "./Common/RegisterPage";
 import { ProvideAuth } from "./Common/CommonComponents";
-import { DoctorSelectPage } from "./Common/DoctorSelectPage"
 import { SearchDoctorsPage } from "./Patient/SearchDoctorsPage"
 import { MakeAppointmentPage } from "./Patient/MakeAppointmentPage"
 
@@ -35,9 +34,6 @@ ReactDOM.render(
 		<Router>
 			<Switch>
 				<Redirect exact from="/" to="/general/" />
-				<Route exact path="/general/select/">
-					<DoctorSelectPage />
-				</Route>
 				<Route exact path="/general/">
 					<HomePage />
 				</Route>

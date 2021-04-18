@@ -1,12 +1,17 @@
+import "./SearchDoctorsPage.css";
+
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { Select, MainHeader, useAuth } from "../Common/CommonComponents";
+import { useAuth } from "../Common/CommonComponents";
 import { Link, Redirect } from 'react-router-dom';
 import { db, fn, st } from '../init';
 import { TextInput } from '../Common/Components/TextInput';
 import { Card } from '../Common/Components/Card';
+import { MainHeader } from '../Common/Components/MainHeader';
+import { Button } from '../Common/Components/Button';
+import { Select } from "../Common/Components/Select";
 
 const searchDoctors = fn.httpsCallable("doctors-search");
 const storage = st.ref();
@@ -123,12 +128,11 @@ export function SearchDoctorsPage() {
 	}, [doctors]);
 
 	return (
-		<div className="page">
+		<>
 			{redirect ? <Redirect to="/general/login" /> : null }
 			<MainHeader section="Home"></MainHeader>
-			<div className="searchbar">
-				<h1>Make an Appointment</h1>
-				<h2>Find a Doctor</h2>
+			<h1>Make an Appointment</h1>
+			<h2>Find a Doctor</h2>
 				<Formik
 					initialValues={{}}
 					validationSchema={Yup.object({
@@ -144,23 +148,26 @@ export function SearchDoctorsPage() {
 					}}
 				>
 					<Form>
-						<TextInput
-							label="Name"
-							name="name"
-							type="search"
-							placeholder="Yoni Robinson"
-						/>
-						<SelectCity/>
-						<SelectField/>
-						<button className="okay" type="submit">Search</button>
+						<div className="searchbar">
+							<TextInput
+								label="Name"
+								name="name"
+								type="search"
+								placeholder="Yoni Robinson"
+							/>
+							<SelectCity/>
+							<SelectField/>
+						</div>
+						<div className="buttonbar">
+							<Button type="submit" label="Search" />
+						</div>
 					</Form>
 				</Formik>
-			</div>
 			<div className="cardList">
 				{
 					(doctors.length === 0 ? "No doctors found" : results)
 				}
 			</div>
-		</div>
+		</>
 	);
 }
