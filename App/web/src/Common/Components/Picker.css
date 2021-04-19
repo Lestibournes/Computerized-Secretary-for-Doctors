@@ -1,0 +1,31 @@
+
+.picker {
+	display: grid;
+	grid-template-rows: auto 1fr;
+	gap: var(--margin-small);
+}
+
+.picker .header {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: var(--margin-small);
+	place-items: center;
+}
+
+.picker .body {
+	background-color: var(--control-background);
+	padding: var(--padding);
+	border-radius: var(--radius);
+	display: grid;
+	gap: var(--margin-small);
+}
+
+.item.selected {
+	color: white;
+	background-color: var(--highlight);
+}
+
+.item.faded {
+	color: var(--control-background-pressed);
+	background-color: var(--control-background-hover);
+}

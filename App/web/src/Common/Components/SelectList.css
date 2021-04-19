@@ -1,0 +1,52 @@
+.SelectList {
+	display: grid;
+	grid-template-rows: auto 1fr;
+
+	width: 100%;
+	height: 100%;
+	aspect-ratio: 1/1;
+
+	background-color: var(--control-background);
+	border-radius: var(--radius);
+
+	padding: var(--padding)
+}
+
+.SelectList .header {
+	display: grid;
+	gap: var(--margin-small);
+	place-items: center;
+	padding: var(--control-padding);
+}
+
+.SelectList .list {
+	display: flex;
+	flex-flow: column;
+	
+	gap: var(--margin-small);
+	padding: var(--padding);
+
+	background-color: var(--alt-color);
+	border-radius: var(--radius);
+
+	height: 100%;
+	overflow: auto;
+}
+
+.SelectList .item {
+	cursor: pointer;
+	padding: var(--padding);
+	border: thin dashed black;
+	border-radius: var(--radius);
+	text-transform: capitalize;
+}
+
+.SelectList .selected {
+	color: white;
+	background-color: var(--highlight);
+}
+
+.SelectList .faded {
+	color: var(--control-background-pressed);
+	background-color: var(--control-background-hover);
+}

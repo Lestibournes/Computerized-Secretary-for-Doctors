@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import { LoginPage } from './Common/LoginPage';
 import { RegisterPage } from "./Common/RegisterPage";
-import { ProvideAuth } from "./Common/CommonComponents";
+import { ProvideAuth } from "./Common/Auth";
 import { SearchDoctorsPage } from "./Patient/SearchDoctorsPage"
 import { MakeAppointmentPage } from "./Patient/MakeAppointmentPage"
 

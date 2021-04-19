@@ -1,23 +1,14 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { useAuth } from "../Common/CommonComponents";
-import { Redirect } from 'react-router-dom';
+import { useAuth } from "../Common/Auth";
 import { db } from '../init';
 import { Slot, Time } from "../Common/classes";
 import { CalendarWeek } from "../Common/CalendarComponents";
-import { MainHeader } from '../Common/Components/MainHeader';
+import { Button } from '../Common/Components/Button';
+import { Page } from '../Common/Components/Page';
 
 export function AppointmentCalendarPage(props) {
 	const auth = useAuth();
-	const [redirect, setRedirect] = useState(false);
-
-	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect(true);
-		});
-
-		return unsubscribe;
-	}, [auth]);
 
 	const [doctor, setDoctor] = useState(null);
 	const [date, setDate] = useState(new Date());
@@ -144,27 +135,29 @@ export function AppointmentCalendarPage(props) {
 
 	return (
 		<>
-			{redirect ? <Redirect to="/general/login" /> : null }
-			<MainHeader section="Home"></MainHeader>
-			<div className="appointment_picker">
-				<h1>Work Calendar</h1>
-				<div className="buttonBar">
-					<button type="button" onClick={() => {
-						setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - 7));
-						}}>{"<"}</button>
-					<button type="button" onClick={() => {
-						setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 7));
-						}}>{">"}</button>
-				</div>
-				<CalendarWeek
-					date={date}
-					appointments={appointments}
-					schedule={schedule}
-					minimum={minimum}
-					width={200}
-					height={960}
-				/>
-			</div>
+			<Page
+				title="Work Calendar"
+				content={
+					<>
+						<div className="buttonBar">
+							<Button action={() => {
+								setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - 7));
+								}} label="<" />
+							<Button action={() => {
+								setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 7));
+								}} label=">" />
+						</div>
+						<CalendarWeek
+							date={date}
+							appointments={appointments}
+							schedule={schedule}
+							minimum={minimum}
+							width={200}
+							height={960}
+						/>
+					</>
+				}
+			/>
 		</>
 	);
 }

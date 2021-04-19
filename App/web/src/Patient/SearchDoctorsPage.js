@@ -4,14 +4,12 @@ import "./SearchDoctorsPage.css";
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { useAuth } from "../Common/CommonComponents";
-import { Link, Redirect } from 'react-router-dom';
 import { db, fn, st } from '../init';
 import { TextInput } from '../Common/Components/TextInput';
 import { Card } from '../Common/Components/Card';
-import { MainHeader } from '../Common/Components/MainHeader';
 import { Button } from '../Common/Components/Button';
 import { Select } from "../Common/Components/Select";
+import { Page } from "../Common/Components/Page";
 
 const searchDoctors = fn.httpsCallable("doctors-search");
 const storage = st.ref();
@@ -77,17 +75,6 @@ function SelectField() {
 }
 
 export function SearchDoctorsPage() {
-	const auth = useAuth();
-	const [redirect, setRedirect] = useState(false);
-	
-	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect(true);
-		});
-
-		return unsubscribe;
-	}, [auth]);
-	
 	const [doctors, setDoctors] = useState([]);
 	const [results, setResults] = useState([]);
 
@@ -128,11 +115,10 @@ export function SearchDoctorsPage() {
 	}, [doctors]);
 
 	return (
-		<>
-			{redirect ? <Redirect to="/general/login" /> : null }
-			<MainHeader section="Home"></MainHeader>
-			<h1>Make an Appointment</h1>
-			<h2>Find a Doctor</h2>
+		<Page
+			title="Make an Appointment"
+			subtitle="Find a Doctor"
+			content={<>
 				<Formik
 					initialValues={{}}
 					validationSchema={Yup.object({
@@ -148,7 +134,7 @@ export function SearchDoctorsPage() {
 					}}
 				>
 					<Form>
-						<div className="searchbar">
+						<div className="widgets">
 							<TextInput
 								label="Name"
 								name="name"
@@ -156,18 +142,17 @@ export function SearchDoctorsPage() {
 								placeholder="Yoni Robinson"
 							/>
 							<SelectCity/>
-							<SelectField/>
+							<SelectField />
 						</div>
-						<div className="buttonbar">
+						<div className="buttonBar">
 							<Button type="submit" label="Search" />
 						</div>
 					</Form>
 				</Formik>
-			<div className="cardList">
-				{
-					(doctors.length === 0 ? "No doctors found" : results)
-				}
-			</div>
-		</>
+				<div className="cardList">
+					{(doctors.length === 0 ? "No doctors found" : results)}
+				</div>
+			</>}
+		/>
 	);
 }

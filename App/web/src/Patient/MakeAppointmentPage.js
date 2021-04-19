@@ -1,11 +1,16 @@
+import "./MakeAppointmentPage.css";
+
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { SelectList, useAuth, SelectDate } from "../Common/CommonComponents";
+import { useAuth } from "../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
-import { MainHeader } from '../Common/Components/MainHeader';
+import { Button } from "../Common/Components/Button";
+import { SelectList } from "../Common/Components/SelectList";
+import { SelectDate } from "../Common/Components/SelectDate";
+import { Page } from "../Common/Components/Page";
 
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
 const makeAppointment = fn.httpsCallable("appointments-add");
@@ -26,15 +31,6 @@ const getDoctor = fn.httpsCallable("doctors-get");
  */
 export function MakeAppointmentPage(props) {
 	const auth = useAuth();
-	const [redirect, setRedirect] = useState(false);
-	
-	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect(true);
-		});
-
-		return unsubscribe;
-	}, [auth]);
 	
 	const currentDate = new Date();
 	const { doctor, clinic } = useParams(); //The ID of the doctor and clinic.
@@ -73,12 +69,15 @@ export function MakeAppointmentPage(props) {
 	const tzos = (new Date()).getTimezoneOffset() / 60;
 
 	return (
-		<>
-			{redirect ? <Redirect to="/general/login" /> : null }
-			<MainHeader section="Home"></MainHeader>
-			<div className="appointment_picker">
-				<h1>Make an Appointment</h1>
-				<h2>Appointment Details{(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null)}{(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)}</h2>
+		<Page
+			name="MakeAppointment"
+			title="Make an Appointment"
+			subtitle={"Appointment Details" + 
+				(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null) + 
+				(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)
+			}
+			content={
+			<>
 				<Formik
 					initialValues={{}}
 					validationSchema={Yup.object({
@@ -118,56 +117,59 @@ export function MakeAppointmentPage(props) {
 				>
 					<Form>
 						{/* Put appointment-making widgets here. */}
-						<SelectList
-							label="Appointment Type"
-							id="type"
-							options={types}
-							selected={type}
-							onClick={(index) => setType(index)}
-						/>
-						<SelectDate
-							id="date"
-							day={date.day}
-							month={date.month}
-							year={date.year}
-							onClick={(date) => {
-								// setDay(date.day);
-								// setMonth(date.month);
-								// setYear(date.year);
-								setDate(date);
+						<div className="widgets">
+							<SelectList
+								label="Appointment Type"
+								id="type"
+								options={types}
+								selected={type}
+								onClick={(index) => setType(index)}
+							/>
+							<SelectDate
+								id="date"
+								day={date.day}
+								month={date.month}
+								year={date.year}
+								onClick={(date) => {
+									// setDay(date.day);
+									// setMonth(date.month);
+									// setYear(date.year);
+									setDate(date);
 
-								if (date.day != null && date.month != null && date.year != null) {
-									getAvailableAppointments({
-										doctor: doctor,
-										clinic: clinic,
-										date: date,
-										type: type
-									}).then(results => {
-											const times = [];
+									if (date.day != null && date.month != null && date.year != null) {
+										getAvailableAppointments({
+											doctor: doctor,
+											clinic: clinic,
+											date: date,
+											type: type
+										}).then(results => {
+												const times = [];
 
-											results.data.forEach(result => {
-												times.push((result.start.hours - tzos) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
+												results.data.forEach(result => {
+													times.push((result.start.hours - tzos) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
+												});
+								
+												setTimes(times);
 											});
-							
-											setTimes(times);
-										});
-								}
-							}}
-						/>
-						<SelectList
-							label="Time Slot"
-							id="time"
-							options={times}
-							selected={time}
-							onClick={(time) => setTime(time)}
-						/>
-						<div className="panel">
-							<button className="okay" type="submit">Submit</button>
+									}
+								}}
+							/>
+							<SelectList
+								label="Time Slot"
+								id="time"
+								options={times}
+								selected={time}
+								onClick={(time) => setTime(time)}
+							/>
+						</div>
+						<div className="buttonBar">
+							<Button type="submit" label="Submit" />
 						</div>
 					</Form>
 				</Formik>
 				{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
-			</div>
-		</>
+			</>
+			}
+		/>
 	);
 }

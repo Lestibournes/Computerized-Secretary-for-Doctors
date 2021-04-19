@@ -1,6 +1,5 @@
 import "./DoctorEditor.css";
-import { useAuth } from "../../Common/CommonComponents";
-import { Redirect } from 'react-router-dom';
+import { useAuth } from "../../Common/Auth";
 import { useEffect, useState } from "react";
 import { db, fn } from "../../init";
 
@@ -11,7 +10,7 @@ import { Popup } from "../../Common/Components/Popup";
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput } from '../../Common/Components/TextInput';
-import { MainHeader } from "../../Common/Components/MainHeader";
+import { Page } from "../../Common/Components/Page";
 
 /**
 @todo
@@ -83,25 +82,27 @@ function ClinicCreateForm({doctor, close, success}) {
 				}}
 			>
 				<Form>
-					<TextInput
-						label="Clinic Name"
-						name="name"
-						type="text"
-						placeholder="Eden"
-					/>
-					<TextInput
-						label="City"
-						name="city"
-						type="text"
-						placeholder="Jerusalem"
-					/>
-					<TextInput
-						label="Address"
-						name="address"
-						type="text"
-						placeholder="13 Holy Square"
-					/>
-					<div className="panel">
+					<div className="widgets">
+						<TextInput
+							label="Clinic Name"
+							name="name"
+							type="text"
+							placeholder="Eden"
+						/>
+						<TextInput
+							label="City"
+							name="city"
+							type="text"
+							placeholder="Jerusalem"
+						/>
+						<TextInput
+							label="Address"
+							name="address"
+							type="text"
+							placeholder="13 Holy Square"
+						/>
+					</div>
+					<div className="buttonBar">
 						<Button label="Cancel" action={close} />
 						<Button type="submit" label="Save" />
 					</div>
@@ -115,7 +116,7 @@ function CreateProfile({user, success, failure, close}) {
 	return (
 		<div className="center">
 			<h2>Would you like to register as a doctor?</h2>
-			<div className="panel">
+			<div className="buttonBar">
 				<Button action={close} label="No" />
 				<Button type="okay" action={() => {
 					createDoctor({user: user}).then(response => {
@@ -130,12 +131,10 @@ function CreateProfile({user, success, failure, close}) {
 
 export function DoctorEditor() {
 	const auth = useAuth();
-	const [redirect, setRedirect] = useState(false);
 
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect(true);
-			else if (auth.user) {
+			if (auth.user) {
 				db.collection("users").doc(auth.user.uid).get().then(user_snap => {
 					if (user_snap.data().doctor) {
 						getDoctor({id: user_snap.data().doctor}).then(results => {
@@ -199,51 +198,51 @@ export function DoctorEditor() {
 	}
 
 	return (
-		<>
-			{redirect ? <Redirect to="/general/login" /> : null }
-			<MainHeader section="Home"></MainHeader>
-			<h1>Doctor Profile</h1>
-			{createProfile && auth.user ? <Popup
-				title="Create Profile"
-				display={
-				<CreateProfile
-					user={auth.user.uid}
-					success={doctor => {
-						setCreateProfile(false);
-						getDoctor({id: doctor}).then(results => {
-							setDoctor(doctor);
-						});
-					}}
-					failure={() => setAlreadyExists(true)}
-					close={() => {window.history.back()}}
-				/>}
-				close={() => {window.history.back()}}
-			/> : ""}
-			{alreadyExists ? <Popup
-				title="Info"
-				display={
-					<div>You already have a doctor profile</div>
-				}
-				close={() => {
-					setAlreadyExists(false);
-					setCreateProfile(false);
-				}}
-			/> : ""}
-			{createClinic ? 
-			<Popup 
-				title="Create New Clinic"
-				display={<ClinicCreateForm
-					doctor={doctor.doctor.id}
-					success={clinic => {
-						setCreateClinic(false);
-						getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
-					}}
-					close={() => setCreateClinic(false)}
-				/>}
-				close={() => setCreateClinic(false)}
+			<Page
+				title="Doctor Profile"
+				content={<>
+					{createProfile && auth.user ? <Popup
+						title="Create Profile"
+						display={
+						<CreateProfile
+							user={auth.user.uid}
+							success={doctor => {
+								setCreateProfile(false);
+								getDoctor({id: doctor}).then(results => {
+									setDoctor(doctor);
+								});
+							}}
+							failure={() => setAlreadyExists(true)}
+							close={() => {window.history.back()}}
+						/>}
+						close={() => {window.history.back()}}
+					/> : ""}
+					{alreadyExists ? <Popup
+						title="Info"
+						display={
+							<div>You already have a doctor profile</div>
+						}
+						close={() => {
+							setAlreadyExists(false);
+							setCreateProfile(false);
+						}}
+					/> : ""}
+					{createClinic ? 
+					<Popup 
+						title="Create New Clinic"
+						display={<ClinicCreateForm
+							doctor={doctor.doctor.id}
+							success={clinic => {
+								setCreateClinic(false);
+								getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
+							}}
+							close={() => setCreateClinic(false)}
+						/>}
+						close={() => setCreateClinic(false)}
+					/>
+					: ""}
+					{display}
+					</>}
 			/>
-			: ""}
-			{display}
-		</>
 	);
 }

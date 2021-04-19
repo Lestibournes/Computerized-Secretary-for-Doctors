@@ -1,12 +1,17 @@
+import "./EditAppointmentPage.css";
+
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { SelectList, useAuth, SelectDate } from "../Common/CommonComponents";
+import { useAuth } from "../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { db, fn } from '../init';
-import { SimpleDate, Time } from '../Common/classes';
-import { MainHeader } from '../Common/Components/MainHeader';
+import { Time } from '../Common/classes';
+import { SelectList } from '../Common/Components/SelectList';
+import { SelectDate } from '../Common/Components/SelectDate';
+import { Button } from '../Common/Components/Button';
+import { Page } from '../Common/Components/Page';
 
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
 const editAppointment = fn.httpsCallable("appointments-edit");
@@ -51,15 +56,6 @@ export function EditAppointmentPage(props) {
 
 	const currentDate = new Date();
 	const auth = useAuth();
-	const [redirect, setRedirect] = useState(false);
-	
-	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect(true);
-		});
-
-		return unsubscribe;
-	}, [auth]);
 	
 	const { appointment } = useParams(); //The ID of the appointment.
 	
@@ -122,100 +118,108 @@ export function EditAppointmentPage(props) {
 		selectDate(data.date);
 	}
 	return (
-		<>
-			{redirect ? <Redirect to="/general/login" /> : null }
-			<MainHeader section="Home"></MainHeader>
-			<div className="appointment_picker">
-				<h1>Change Your Appointment</h1>
-				<h2>Appointment Details{(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null)}{(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)}</h2>
-				<p>Currently the appointment is a <b>{data ? data.type : null}</b> appointment on <b>{data ? data.date.day + "/" + (data.date.month + 1) + "/" + data.date.year : null}</b> at <b>{data ? data.time.toString() : null}</b>.</p>
-				<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
-				<Formik
-					initialValues={{}}
-					validationSchema={Yup.object({
-						type: Yup.string(),
-						date: Yup.date(),
-						time: Yup.string(),
-					})}
-					onSubmit={async (values, { setSubmitting }) => {
-						setSubmitting(true);
-						let new_data = {
-							appointment: appointment
-						};
-
-						if (time) {
-							new_data.time = {
-								hours: Number(("" + times[time]).split(":")[0]) + tzos,
-								minutes: Number(("" + times[time]).split(":")[1])
+		<Page
+			name="EditAppointment"
+			title="Change Your Appointment"
+			subtitle={
+				"Appointment Details" + 
+				(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null) + 
+				(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : null)
+			}
+			content={
+				<>
+					<p>Currently the appointment is a <b>{data ? data.type : null}</b> appointment on <b>{data ? data.date.day + "/" + (data.date.month + 1) + "/" + data.date.year : null}</b> at <b>{data ? data.time.toString() : null}</b>.</p>
+					<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
+					<Formik
+						initialValues={{}}
+						validationSchema={Yup.object({
+							type: Yup.string(),
+							date: Yup.date(),
+							time: Yup.string(),
+						})}
+						onSubmit={async (values, { setSubmitting }) => {
+							setSubmitting(true);
+							let new_data = {
+								appointment: appointment
 							};
-						}
-						
-						if (date) {
-							new_data.date = date;
-						}
 
-						if (type) {
-							new_data.type = types[type];
-						}
-						
-						editAppointment(new_data)
-						.then(response => {
-							if (response.data.messages.length > 0) {
-								for (let i = 0; i < response.data.messages.length; i++) {
-									console.log(response.data.messages[i]);
-								}
+							if (time) {
+								new_data.time = {
+									hours: Number(("" + times[time]).split(":")[0]) + tzos,
+									minutes: Number(("" + times[time]).split(":")[1])
+								};
+							}
+							
+							if (date) {
+								new_data.date = date;
 							}
 
-							setSuccess(response.data.id);
-						})
-						.catch(reason => {
-							console.log(reason);
-						});
-					}}
-				>
-					<Form>
-						{/* Put appointment-making widgets here. */}
-						<SelectList
-							label="Appointment Type"
-							id="type"
-							options={types}
-							selected={type}
-							onClick={(index) => setType(index)}
-						/>
-						<SelectDate
-							id="date"
-							day={date.day}
-							month={date.month}
-							year={date.year}
-							onClick={selectDate}
-						/>
-						<SelectList
-							label="Time Slot"
-							id="time"
-							options={times}
-							selected={time}
-							onClick={(time) => setTime(time)}
-						/>
-						<div className="panel">
-							<button className="button warning" type="button" onClick={() => {
-								cancelAppointment({appointment: appointment}).then(response => {
-									if (response.data.success) {
-										setDeleted(true);
+							if (type) {
+								new_data.type = types[type];
+							}
+							
+							editAppointment(new_data)
+							.then(response => {
+								if (response.data.messages.length > 0) {
+									for (let i = 0; i < response.data.messages.length; i++) {
+										console.log(response.data.messages[i]);
 									}
-									else {
-										response.data.messages.forEach(message => {
-											console.log(message)
-										});
-									}
-								});
-								}}>Delete</button>
-							<button className="okay" type="submit">Submit</button>
-						</div>
-					</Form>
-				</Formik>
-				{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
-				{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
-			</div>
-		</>
+								}
+
+								setSuccess(response.data.id);
+							})
+							.catch(reason => {
+								console.log(reason);
+							});
+						}}
+					>
+						<Form>
+							{/* Put appointment-making widgets here. */}
+							<div className="widgets">
+								<SelectList
+									label="Appointment Type"
+									id="type"
+									options={types}
+									selected={type}
+									onClick={(index) => setType(index)}
+								/>
+								<SelectDate
+									id="date"
+									day={date.day}
+									month={date.month}
+									year={date.year}
+									onClick={selectDate}
+								/>
+								<SelectList
+									label="Time Slot"
+									id="time"
+									options={times}
+									selected={time}
+									onClick={(time) => setTime(time)}
+								/>
+							</div>
+							<div className="buttonBar">
+								<Button type="cancel" action={() => {
+									cancelAppointment({appointment: appointment}).then(response => {
+										if (response.data.success) {
+											setDeleted(true);
+										}
+										else {
+											response.data.messages.forEach(message => {
+												console.log(message)
+											});
+										}
+									});
+									}}
+									label="Delete" />
+								<Button type="submit" label="Submit" />
+							</div>
+						</Form>
+					</Formik>
+					{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
+					{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
+				</>
+			}
+		/>
 	);
 }

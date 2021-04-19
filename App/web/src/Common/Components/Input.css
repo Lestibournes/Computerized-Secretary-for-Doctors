@@ -10,6 +10,7 @@ label, input, select {
 	display: grid;
 	place-items: center start;
 	flex-grow: 1;
+	min-width: max-content;
 	width: 100%;
 }
 
@@ -44,7 +45,7 @@ div.error {
 	grid-column: 2/3;
 }
 
-/* select {
+select {
 	text-decoration: none;
 	background-color: var(--control-background);
 	color: var(--color);
@@ -52,4 +53,22 @@ div.error {
 	font-size: var(--font-size-e);
 	padding: var(--control-padding);
 	border-radius: var(--radius);
-} */
+}
+
+Form {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	width: fit-content;
+	gap: var(--margin);
+}
+
+.widgets {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: var(--margin);
+
+	height: max-content;
+	max-width: fit-content;
+}

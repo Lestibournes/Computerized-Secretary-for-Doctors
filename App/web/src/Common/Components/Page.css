@@ -1,3 +1,8 @@
+.Page {
+	display: grid;
+	grid-auto-flow: row;
+	gap: var(--margin);
+}
 
 .mainHeader {
 	color: var(--highlight);

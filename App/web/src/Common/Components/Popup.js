@@ -3,13 +3,13 @@ import "./Popup.css";
 
 export function Popup({title, display, close}) {
 	return (
-		<div className="popup">
+		<div className="Popup">
 			<div className="controls">
 				<div className="title">
-					{title}
+					{title ? title : ""}
 				</div>
 				<div className="buttons">
-					<Button label="x" action={close} />
+					{close ? <Button label="x" action={close} /> : ""}
 				</div>
 			</div>
 			<div className="display">

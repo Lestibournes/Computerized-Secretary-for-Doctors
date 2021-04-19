@@ -3,14 +3,14 @@ import "./ClinicEditor.css"
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { useAuth } from "../../Common/CommonComponents";
-import { Redirect, useParams } from 'react-router-dom';
+import { useAuth } from "../../Common/Auth";
+import { useParams } from 'react-router-dom';
 import { db, fn, st } from '../../init';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
 import { Popup } from '../../Common/Components/Popup';
-import { MainHeader } from "../../Common/Components/MainHeader";
+import { Page } from "../../Common/Components/Page";
 
 const getClinic = fn.httpsCallable("clinics-get");
 const editClinic = fn.httpsCallable("clinics-edit");
@@ -62,25 +62,27 @@ function ClinicEditForm({clinic, doctor, name, city, address, close, success, de
 				}}
 			>
 				<Form>
-					<TextInput
-						label="Clinic Name"
-						name="name"
-						type="text"
-						placeholder="Eden"
-					/>
-					<TextInput
-						label="City"
-						name="city"
-						type="text"
-						placeholder="Jerusalem"
-					/>
-					<TextInput
-						label="Address"
-						name="address"
-						type="text"
-						placeholder="13 Holy Square"
-					/>
-					<div className="panel">
+					<div className="widgets">
+						<TextInput
+							label="Clinic Name"
+							name="name"
+							type="text"
+							placeholder="Eden"
+						/>
+						<TextInput
+							label="City"
+							name="city"
+							type="text"
+							placeholder="Jerusalem"
+						/>
+						<TextInput
+							label="Address"
+							name="address"
+							type="text"
+							placeholder="13 Holy Square"
+						/>
+					</div>
+					<div className="buttonBar">
 						<Button type="cancel" label="Delete" action={() => setConfirmDelete(true)} />
 						<Button label="Cancel" action={close} />
 						<Button type="submit" label="Save" />
@@ -105,7 +107,7 @@ function ConfirmDelete({clinic, doctor, close, success}) {
 	return (<>
 		<p>Are you sure you wish to delete this clinic?</p>
 		<p>This action is permanent and cannot be undone.</p>
-		<div className="panel">
+		<div className="buttonBar">
 			<Button type="cancel" label="Yes" action={() => {
 				deleteClinic({id: clinic, doctor: doctor}).then(response => {
 					if (!response.data.success) {setProblem(response.data.message)}
@@ -122,7 +124,7 @@ function SelectDoctor({close, success}) {
 	const [cards, setCards] = useState([]);
 	
 	return (
-		<div className="form">
+		<>
 			<Formik
 				initialValues={{
 					name: "",
@@ -168,25 +170,27 @@ function SelectDoctor({close, success}) {
 				}}
 			>
 				<Form>
-					<TextInput
-						label="Name"
-						name="name"
-						type="text"
-						placeholder="Yoni Robinson"
-					/>
-					<TextInput
-						label="City"
-						name="city"
-						type="text"
-						placeholder="Jerusalem"
-					/>
-					<TextInput
-						label="Specialization"
-						name="specialization"
-						type="text"
-						placeholder="Pediatrician"
-					/>
-					<div className="panel">
+					<div className="widgets">
+						<TextInput
+							label="Name"
+							name="name"
+							type="text"
+							placeholder="Yoni Robinson"
+						/>
+						<TextInput
+							label="City"
+							name="city"
+							type="text"
+							placeholder="Jerusalem"
+						/>
+						<TextInput
+							label="Specialization"
+							name="specialization"
+							type="text"
+							placeholder="Pediatrician"
+						/>
+					</div>
+					<div className="buttonBar">
 						<Button label="Cancel" action={close} />
 						<Button type="submit" label="Search" />
 					</div>
@@ -196,18 +200,16 @@ function SelectDoctor({close, success}) {
 			<div className="cardList">
 				{cards}
 			</div>
-		</div>
+		</>
 	);
 }
 
 export function ClinicEditor() {
 	const auth = useAuth();
-	const [redirect, setRedirect] = useState(false);
 	
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect("/general/login");
-			else if (auth.user) {
+			if (auth.user) {
 				db.collection("users").doc(auth.user.uid).get().then(user_snap => {
 					getDoctor({id: user_snap.data().doctor}).then(doctor_data => {
 						setDoctor(doctor_data.data);
@@ -226,6 +228,7 @@ export function ClinicEditor() {
 	const [results, setResults] = useState([]);
 	const [addDoctor, setAddDoctor] = useState(false);
 	const [doctor, setDoctor] = useState(null);
+	const [redirect, setRedirect] = useState(null);
 
 	useEffect(() => {
 		if (clinic) {
@@ -360,11 +363,9 @@ export function ClinicEditor() {
 	}
 
 	return (
-		<>
-			{redirect ? <Redirect to={redirect} /> : null }
-			<MainHeader section="Register"></MainHeader>
-			<h1>Edit Clinic</h1>
-			{display}
-		</>
+		<Page
+			title="Edit Clinic"
+			content={display}
+		/>
 	);
 }

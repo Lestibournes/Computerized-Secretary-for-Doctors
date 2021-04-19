@@ -1,12 +1,11 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { useAuth } from "../Common/CommonComponents";
-import { Redirect } from 'react-router-dom';
+import { useAuth } from "../Common/Auth";
 import { db, fn, st } from '../init';
 import { Time } from "../Common/classes";
 import { Card } from '../Common/Components/Card';
 import { SimpleDate } from "../Common/classes";
-import { MainHeader } from '../Common/Components/MainHeader';
+import { Page } from '../Common/Components/Page';
 
 const storage = st.ref();
 
@@ -14,16 +13,6 @@ const getAppointment = fn.httpsCallable("appointments-get");
 
 export function AppointmentListPage(props) {
 	const auth = useAuth();
-	const [redirect, setRedirect] = useState(false);
-	
-	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect(true);
-		});
-
-		return unsubscribe;
-	}, [auth]);
-
 	const [appointments, setAppointments] = useState([]);
 	const [results, setResults] = useState();
 	
@@ -90,15 +79,9 @@ export function AppointmentListPage(props) {
 	}, [appointments]);
 
 	return (
-		<>
-			{redirect ? <Redirect to="/general/login" /> : null }
-			<MainHeader section="Home"></MainHeader>
-			<div className="appointment_picker">
-				<h1>My Future Appointments</h1>
-				<div className="cardList">
-					{results}
-				</div>
-			</div>
-		</>
+		<Page
+			title="My Future Appointments"
+			content={<div className="cardList">{results}</div>}
+		/>
 	);
 }

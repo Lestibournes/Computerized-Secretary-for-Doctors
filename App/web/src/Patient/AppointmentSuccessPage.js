@@ -1,23 +1,12 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
-import { useAuth } from "../Common/CommonComponents";
-import { Redirect, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { db, fn } from '../init';
+import { Page } from '../Common/Components/Page';
 
 const getDoctor = fn.httpsCallable("doctors-get");
 
 export function AppointmentSuccessPage() {
-	const auth = useAuth();
-	const [redirect, setRedirect] = useState(false);
-	
-	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (!status) setRedirect(true);
-		});
-
-		return unsubscribe;
-	}, [auth]);
-	
 	const { appointment } = useParams(); //The ID of the doctor and clinic.
 	
 	const [doctor_data, setDoctor] = useState(null);
@@ -45,12 +34,10 @@ export function AppointmentSuccessPage() {
   }, []);
 
 	return (
-		<>
-			{redirect ? <Redirect to="/general/login" /> : null }
-			<MainHeader section="Home"></MainHeader>
-			<div className="searchbar">
-				<h1>Make an Appointment</h1>
-				<h2>Success!</h2>
+		<Page
+			title="Make an Appointment"
+			subtitle="Success!"
+			content={
 				<p>You have a <b>{(appointment_data ? appointment_data.type : null)}</b> appointment with
 					<b>
 						{(doctor_data ? " Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName: null)}
@@ -65,7 +52,7 @@ export function AppointmentSuccessPage() {
 						{(date ? date.toLocaleString() : null)}.
 					</b>
 				</p>
-			</div>
-		</>
+			}
+		/>
 	);
 }

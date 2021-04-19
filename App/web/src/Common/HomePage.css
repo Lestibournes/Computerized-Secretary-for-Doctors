@@ -1,0 +1,4 @@
+.home.buttonBar {
+	width: 100%;
+	place-content: flex-start;
+}

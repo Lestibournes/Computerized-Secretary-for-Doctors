@@ -1,0 +1,59 @@
+.SelectDate {
+	display: grid;
+	grid-template-rows: auto 1fr;
+	gap: var(--margin-small);
+	
+	height: 100%;
+	width: 100%;
+	aspect-ratio: 1/1;
+}
+
+.SelectDate .header {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: var(--margin-small);
+	place-items: center;
+}
+
+
+.SelectDate .label {
+	background-color: var(--control-background);
+	width: 100%;
+	height: 100%;
+	border: none;
+	border-radius: var(--radius);
+	display: grid;
+	grid-template-columns: auto;
+	place-content: center;
+}
+
+.SelectDate .body {
+	background-color: var(--control-background);
+	padding: var(--padding);
+	border-radius: var(--radius);
+	display: grid;
+	gap: var(--margin-small);
+	grid-template-columns: auto auto auto auto auto auto auto;
+}
+
+.SelectDate .item {
+	cursor: pointer;
+	display: grid;
+	border: none;
+	place-items: center;
+	gap: var(--margin-small);
+	background-color: var(--alt-color);
+	padding: var(--padding);
+	border-radius: var(--radius);
+	text-transform: capitalize;
+}
+
+.SelectDate .selected {
+	color: white;
+	background-color: var(--highlight);
+}
+
+.SelectDate .faded {
+	color: var(--control-background-pressed);
+	background-color: var(--control-background-hover);
+}

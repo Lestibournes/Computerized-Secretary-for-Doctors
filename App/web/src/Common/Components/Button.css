@@ -1,5 +1,6 @@
 .Button {
 	text-decoration: none;
+	font-size: medium;
 	background-color: var(--control-background);
 	color: var(--color);
 	border: none;
@@ -55,6 +56,13 @@
 
 .buttonBar {
 	display: flex;
-	flex-direction: row;
 	gap: var(--margin);
+	flex-wrap: wrap;
+	place-self: flex-end;
+	place-content: flex-end;
+	place-items: flex-end;
+	flex-grow: 1;
+	/* flex-grow: 1;
+	flex-flow: row-reverse;
+	flex-direction: row-reverse; */
 }
