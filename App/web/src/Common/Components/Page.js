@@ -5,7 +5,7 @@ import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
 
-export function Page({name, unprotected, title, subtitle, content}) {
+export function Page({unprotected, title, subtitle, content}) {
 	const auth = useAuth();
 	const [redirect, setRedirect] = useState(false);
 	
@@ -18,7 +18,7 @@ export function Page({name, unprotected, title, subtitle, content}) {
 	}, [auth, unprotected]);
 
 	return (
-		<div className={"Page" + (name ? " " + name : "")}>
+		<div className="Page">
 			{redirect ? <Redirect to={redirect} /> : null }
 			<div className="mainHeader">
 				<Link to="/general/" className="title">CSFPD</Link>

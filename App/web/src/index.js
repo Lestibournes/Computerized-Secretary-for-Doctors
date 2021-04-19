@@ -1,7 +1,8 @@
+import './index.css';
+
 //Reactjs:
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import { LoginPage } from './Common/LoginPage';
 import { RegisterPage } from "./Common/RegisterPage";
 import { ProvideAuth } from "./Common/Auth";

@@ -62,7 +62,4 @@
 	place-content: flex-end;
 	place-items: flex-end;
 	flex-grow: 1;
-	/* flex-grow: 1;
-	flex-flow: row-reverse;
-	flex-direction: row-reverse; */
 }

@@ -2,5 +2,5 @@
 	display: grid;
 	grid-template-columns: min-content max-content;
 
-	gap: 1em;
+	gap: var(--margin);
 }

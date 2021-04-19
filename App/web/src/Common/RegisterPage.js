@@ -19,7 +19,6 @@ export function RegisterPage() {
 				unprotected
 				content={
 					<Popup
-						name="Register"
 						title="Register"
 						display={
 							<Formik

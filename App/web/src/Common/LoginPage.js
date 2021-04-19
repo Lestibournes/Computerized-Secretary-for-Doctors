@@ -19,7 +19,6 @@ export function LoginPage() {
 				unprotected
 				content={
 					<Popup
-						name="Login"
 						title="Login"
 						display={
 							<Formik
@@ -41,7 +40,7 @@ export function LoginPage() {
 									auth.login(values.email, values.password);
 								}}
 							>
-								<Form>
+								<Form className="Login">
 									<div className="widgets">
 										<TextInput
 											label="Email Address"

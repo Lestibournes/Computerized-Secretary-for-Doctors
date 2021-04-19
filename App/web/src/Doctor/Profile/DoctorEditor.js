@@ -1,4 +1,3 @@
-import "./DoctorEditor.css";
 import { useAuth } from "../../Common/Auth";
 import { useEffect, useState } from "react";
 import { db, fn } from "../../init";

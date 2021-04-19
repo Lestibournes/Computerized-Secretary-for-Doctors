@@ -1,6 +1,6 @@
+import './CalendarComponents.css';
 import { Link } from "react-router-dom";
 import {Time, SimpleDate } from "./classes";
-import './CalendarComponents.css';
 
 /*
 The plan:

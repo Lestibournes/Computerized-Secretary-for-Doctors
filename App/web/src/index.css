@@ -30,3 +30,11 @@ h1 {
 option:disabled {
 	display: none;
 }
+
+.headerbar {
+	display: grid;
+	height: min-content;
+	box-sizing: border-box;
+	grid-template-columns: 1fr auto;
+	place-items: center start;
+}

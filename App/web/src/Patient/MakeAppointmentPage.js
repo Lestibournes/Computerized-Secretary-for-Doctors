@@ -1,4 +1,4 @@
-import "./MakeAppointmentPage.css";
+import "../Common/Components/Pickers.css";
 
 //Reactjs:
 import React, { useEffect, useState } from 'react';
@@ -70,7 +70,6 @@ export function MakeAppointmentPage(props) {
 
 	return (
 		<Page
-			name="MakeAppointment"
 			title="Make an Appointment"
 			subtitle={"Appointment Details" + 
 				(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : null) + 
@@ -117,7 +116,7 @@ export function MakeAppointmentPage(props) {
 				>
 					<Form>
 						{/* Put appointment-making widgets here. */}
-						<div className="widgets">
+						<div className="pickers">
 							<SelectList
 								label="Appointment Type"
 								id="type"

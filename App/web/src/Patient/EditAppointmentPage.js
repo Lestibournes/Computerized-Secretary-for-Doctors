@@ -1,4 +1,4 @@
-import "./EditAppointmentPage.css";
+import "../Common/Components/Pickers.css";
 
 //Reactjs:
 import React, { useEffect, useState } from 'react';
@@ -119,7 +119,6 @@ export function EditAppointmentPage(props) {
 	}
 	return (
 		<Page
-			name="EditAppointment"
 			title="Change Your Appointment"
 			subtitle={
 				"Appointment Details" + 
@@ -175,7 +174,7 @@ export function EditAppointmentPage(props) {
 					>
 						<Form>
 							{/* Put appointment-making widgets here. */}
-							<div className="widgets">
+							<div className="pickers">
 								<SelectList
 									label="Appointment Type"
 									id="type"

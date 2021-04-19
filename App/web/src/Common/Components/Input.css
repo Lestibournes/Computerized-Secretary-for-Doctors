@@ -56,10 +56,9 @@ select {
 }
 
 Form {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	width: fit-content;
+	display: grid;
+	grid-template-rows: 1fr auto;
+	width: 100%;
 	gap: var(--margin);
 }
 
