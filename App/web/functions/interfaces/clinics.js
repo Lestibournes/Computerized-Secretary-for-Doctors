@@ -34,3 +34,8 @@ exports.leave = functions.https.onCall((data, context) => {
 exports.join = functions.https.onCall((data, context) => {
 	return clinics.join(data.clinic, data.requester ,data.doctor);
 });
+
+exports.getAllCities = functions.https.onCall((data, context) => {
+	return clinics.getAllCities();
+});
+

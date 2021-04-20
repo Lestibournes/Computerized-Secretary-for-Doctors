@@ -1,22 +1,21 @@
-import "../Common/Components/Pickers.css";
-
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
-import { db, fn } from '../init';
-import { Time } from '../Common/classes';
+import { fn } from '../init';
+import { SimpleDate, Time } from '../Common/classes';
 import { SelectList } from '../Common/Components/SelectList';
 import { SelectDate } from '../Common/Components/SelectDate';
 import { Button } from '../Common/Components/Button';
 import { Page } from '../Common/Components/Page';
 
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
+const getAppointment = fn.httpsCallable("appointments-get");
 const editAppointment = fn.httpsCallable("appointments-edit");
 const cancelAppointment = fn.httpsCallable("appointments-cancel");
-const getDoctor = fn.httpsCallable("doctors-get");
+const getDoctor = fn.httpsCallable("doctors-getData");
 
 
 /**
@@ -34,13 +33,15 @@ const getDoctor = fn.httpsCallable("doctors-get");
  */
 export function EditAppointmentPage(props) {
 	const selectDate = (date) => {
+		date = SimpleDate.fromObject(date)
 		setDate(date);
 
-		if (date.day != null && date.month != null && date.year != null) {
+		if (date.day && date.month && date.year) {
+			console.log(data.doctor.doctor.id);
 			getAvailableAppointments({
-				doctor: data.doctor,
-				clinic: data.clinic,
-				date: date,
+				doctor: data.doctor.doctor.id,
+				clinic: data.clinic.id,
+				date: date.toObject(),
 				type: type
 			}).then(results => {
 					const times = [];
@@ -64,11 +65,7 @@ export function EditAppointmentPage(props) {
 	const [type, setType] = useState(null);
 	const [time, setTime] = useState(null);
 	const [times, setTimes] = useState([]);
-	const [date, setDate] = useState({
-		year: currentDate.getUTCFullYear(),
-		month: currentDate.getUTCMonth(),
-		day: null
-	});
+	const [date, setDate] = useState(SimpleDate.fromDate(new Date()));
 
 	const [success, setSuccess] = useState(null);
 	const [deleted, setDeleted] = useState(null);
@@ -80,43 +77,23 @@ export function EditAppointmentPage(props) {
 	const tzos = (new Date()).getTimezoneOffset() / 60;
 
 	useEffect(() => {
-		if (auth.user) {
-			db.collection("users").doc(auth.user.uid).collection("appointments").doc(appointment).get().then(appointment => {
-				const data = appointment.data();
-				const date = new Date(appointment.data().start.toDate());
-				data.date = {
-					year: date.getUTCFullYear(),
-					month: date.getUTCMonth(),
-					day: date.getUTCDate()
-				};
-				data.time = new Time(date.getUTCHours(), date.getMinutes()).incrementMinutes(-date.getTimezoneOffset());
+		getAppointment({id: appointment}).then(response => {
+			response.data.extra.time = Time.fromObject(response.data.extra.time);
+			response.data.extra.date = SimpleDate.fromObject(response.data.extra.date);
 
-				setData(data);
+			setData(response.data);
+			setDate(response.data.extra.date);
+			setDoctor(response.data.doctor);
+			setClinic(response.data.clinic);
+		});
+  }, []);
 
-				types.forEach((type, index) => {
-					if (type.toLowerCase() === appointment.data().type.toLowerCase()) {
-						setType(index);
-					}
-				});
-
-				getDoctor({
-					id: appointment.data().doctor,
-					clinic: appointment.data().clinic
-				}).then(doctor_snapshot => {
-					setDoctor(doctor_snapshot.data);	
-				});
-
-				db.collection("clinics").doc(appointment.data().clinic).get().then(clinic_snapshot => {
-					setClinic(clinic_snapshot.data());
-				});
-			
-			});
+	useEffect(() => {
+		if (data && date.compare(data.extra.date) != 0) {
+			selectDate(data.extra.date);
 		}
-  }, [auth.user, appointment]);
+	}, [data]);
 
-	if (data && date != data.date) {
-		selectDate(data.date);
-	}
 	return (
 		<Page
 			title="Change Your Appointment"
@@ -127,7 +104,7 @@ export function EditAppointmentPage(props) {
 			}
 			content={
 				<>
-					<p>Currently the appointment is a <b>{data ? data.type : null}</b> appointment on <b>{data ? data.date.day + "/" + (data.date.month + 1) + "/" + data.date.year : null}</b> at <b>{data ? data.time.toString() : null}</b>.</p>
+					<p>Currently the appointment is a <b>{data ? data.appointment.type : null}</b> appointment on <b>{data ? data.extra.date.day + "/" + (data.extra.date.month + 1) + "/" + data.extra.date.year : null}</b> at <b>{data ? data.extra.time.toString() : null}</b>.</p>
 					<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
 					<Formik
 						initialValues={{}}
@@ -138,6 +115,7 @@ export function EditAppointmentPage(props) {
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
+
 							let new_data = {
 								appointment: appointment
 							};
@@ -150,7 +128,7 @@ export function EditAppointmentPage(props) {
 							}
 							
 							if (date) {
-								new_data.date = date;
+								new_data.date = date.toObject();
 							}
 
 							if (type) {

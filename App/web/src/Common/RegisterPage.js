@@ -3,7 +3,7 @@ import React from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "./Auth";
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
 import { Button } from './Components/Button';
 import { Page } from './Components/Page';

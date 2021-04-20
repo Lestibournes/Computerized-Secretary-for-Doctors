@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useField } from 'formik';
-import { db, fb } from "../init";
+import { fb } from "../init";
+
+const db = fb.firestore();
 
 // User authentication services:
 

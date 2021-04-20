@@ -135,7 +135,7 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 /**
  * Get all the data of the appointment.
  * @param {string} id The id of the appointment.
- * @returns {{appointment: object, doctor: object, clinic: object}} An object containing all the relevant data.
+ * @returns {Promise<{appointment: object, doctor: object, clinic: object, extra: {date: SimpleDate, time: Time}}>} An object containing all the relevant data.
  */
 async function get(id) {
 	let data = {
@@ -153,7 +153,7 @@ async function get(id) {
 		data.appointment.id = id;
 	});
 
-	await doctors.get(data.appointment.doctor).then(doctor => {
+	await doctors.getData(data.appointment.doctor).then(doctor => {
 		data.doctor = doctor;
 	});
 
@@ -166,6 +166,34 @@ async function get(id) {
 	data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
 
 	return data;
+}
+
+/**
+ * Get all of the appointments of the specified user, with filters.
+ * @param {{user: string, start: Date, end: Date, doctor: string, clinic: string}} constrainst. end, doctor, and clinic are currently unimplemented. 
+ * @returns {Promise<object[]>} An array of appointment data.
+ */
+async function getAll({user, start, end, doctor, clinic}) {
+	let query = db.collection("users").doc(user).collection("appointments");
+
+	// if (start) {
+	// 	query = query.orderBy("start").where("start", ">=", start);
+	// }
+	
+	let results = [];
+	let snaps;
+	
+	await query.get().then(querySnapshot => {
+		snaps = querySnapshot.docs;
+	});
+	
+	for (let snap of snaps) {	
+		await get(snap.id).then(appointment => {
+			results.push(appointment);
+		});
+	}
+
+	return results;
 }
 
 /**
@@ -431,6 +459,7 @@ async function getAvailable(doctor, clinic, date, type) {
 	return response;
  }
 exports.get = get;
+exports.getAll = getAll;
 exports.getAvailable = getAvailable;
 exports.add = add;
 exports.edit = edit;

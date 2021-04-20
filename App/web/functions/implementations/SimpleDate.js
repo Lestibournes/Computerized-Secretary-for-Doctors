@@ -10,6 +10,15 @@
 	 */
 	static day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
+	/**
+	 * Convert a Date object to a SimpleDate object.
+	 * @param {Date} date 
+	 * @returns {SimpleDate}
+	 */
+	 static fromDate(date) {
+		return new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+	}
+	
 	year;
 	month;
 	day;

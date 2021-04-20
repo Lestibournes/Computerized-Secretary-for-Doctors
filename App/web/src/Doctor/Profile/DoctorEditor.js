@@ -1,6 +1,6 @@
 import { useAuth } from "../../Common/Auth";
 import { useEffect, useState } from "react";
-import { db, fn } from "../../init";
+import { fn } from "../../init";
 
 import { Card } from "../../Common/Components/Card";
 import { Button } from "../../Common/Components/Button";
@@ -48,7 +48,8 @@ For each shift, select start and end time or remove the shift.
 It would be good to add some kind of notification widget to easily show new membership requests, private messages from clients, or whatever else.
 */
 
-const getDoctor = fn.httpsCallable("doctors-get");
+const getDoctor = fn.httpsCallable("doctors-getData");
+const getDoctorID = fn.httpsCallable("doctors-getID");
 const createDoctor = fn.httpsCallable("doctors-create");
 const getAllClinics = fn.httpsCallable("doctors-getAllClinics");
 const addClinic = fn.httpsCallable("clinics-add");
@@ -134,9 +135,9 @@ export function DoctorEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) {
-				db.collection("users").doc(auth.user.uid).get().then(user_snap => {
-					if (user_snap.data().doctor) {
-						getDoctor({id: user_snap.data().doctor}).then(results => {
+				getDoctorID({user: auth.user.uid}).then(response => {
+					if (response.data) {
+						getDoctor({id: response.data}).then(results => {
 							setDoctor(results.data);
 						});
 					}

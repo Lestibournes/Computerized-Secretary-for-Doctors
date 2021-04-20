@@ -3,7 +3,7 @@ import { React, useEffect, useState } from 'react';
 import { useAuth } from "../Common/Auth";
 import { db } from '../init';
 import { Slot, Time } from "../Common/classes";
-import { CalendarWeek } from "../Common/CalendarComponents";
+import { CalendarWeek } from "../Common/Components/CalendarComponents";
 import { Button } from '../Common/Components/Button';
 import { Page } from '../Common/Components/Page';
 

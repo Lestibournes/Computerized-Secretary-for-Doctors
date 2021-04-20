@@ -17,7 +17,7 @@ const stringContains = require('./functions').stringContains;
  * @param {string} city The city in which service is being sought.
  * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}} The data of the requested doctor.
  */
- async function get(id, field, city) {
+ async function getData(id, field, city) {
 	 const result = {
 		 doctor: null, // The doctor data.
 		 user: null, // The user data.
@@ -210,7 +210,35 @@ async function search(name, field, city) {
 	return results;
 }
 
-exports.get = get;
+async function getID(user) {
+	let id = null;
+	await db.collection("users").doc(user).get().then(user_snap => {
+		if (user_snap.data().doctor) id = user_snap.data().doctor;
+	});
+
+	return id;
+}
+
+async function getAllSpecializations() {
+	let specializations = [];
+
+	await db.collection("fields").get().then(spec_snaps => {
+		spec_snaps.forEach(spec => {
+			specializations.push({
+				id: spec.id,
+				label: String(spec.id).split(" ").map(word => {
+					return String(word)[0].toLocaleUpperCase() + String(word).slice(1) + " ";
+				})
+			});
+		});
+	});
+
+	return specializations;
+}
+
+exports.getData = getData;
 exports.getAllClinics = getAllClinics;
 exports.create = create;
 exports.search = search;
+exports.getID = getID;
+exports.getAllSpecializations = getAllSpecializations;

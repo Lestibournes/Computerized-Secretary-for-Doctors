@@ -1,7 +1,7 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
 import { useAuth } from "../Common/Auth";
-import { db, fn, st } from '../init';
+import { fn, st } from '../init';
 import { Time } from "../Common/classes";
 import { Card } from '../Common/Components/Card';
 import { SimpleDate } from "../Common/classes";
@@ -9,31 +9,17 @@ import { Page } from '../Common/Components/Page';
 
 const storage = st.ref();
 
-const getAppointment = fn.httpsCallable("appointments-get");
+const getAllAppointment = fn.httpsCallable("appointments-getAll");
 
 export function AppointmentListPage(props) {
 	const auth = useAuth();
-	const [appointments, setAppointments] = useState([]);
+	const [appointments, setAppointments] = useState(null);
 	const [results, setResults] = useState();
 	
 	useEffect(() => {
 		if (auth.user) {
-			db.collection("users").doc(auth.user.uid).collection("appointments").orderBy("start").where("start", ">=", new Date())
-			.get().then(querySnapshot => {
-				let results = [];
-				let count = 0;
-				
-				querySnapshot.forEach(snapshot => {
-					db.collection("appointments").doc(snapshot.id).get().then(appointment => {
-						let result = appointment.data();
-						result.id = appointment.id;
-						results.push(result);
-						count++;
-						if (count === querySnapshot.size) {
-							setAppointments(results);
-						}
-					});
-				});
+			getAllAppointment({user: auth.user.uid, start: new Date()}).then(response => {
+				setAppointments(response.data);
 			});
 		}
   }, [auth]);
@@ -45,35 +31,31 @@ export function AppointmentListPage(props) {
 			const cards = [];
 
 			for (let appointment of appointments) {
-				getAppointment(appointment).then(results => {
-					const data = results.data;
+				storage.child("users/" + appointment.doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+					const date = new SimpleDate(appointment.extra.date.year, appointment.extra.date.month, appointment.extra.date.day);
+					const time = new Time(appointment.extra.time.hours, appointment.extra.time.minutes).incrementMinutes(-tzos);
+					const doctor = appointment.doctor;
+					const clinic = appointment.clinic;
 
-					storage.child("users/" + data.doctor.user.id + "/profile.png").getDownloadURL().then(url => {
-						const date = new SimpleDate(data.extra.date.year, data.extra.date.month, data.extra.date.day);
-						const time = new Time(data.extra.time.hours, data.extra.time.minutes).incrementMinutes(-tzos);
-						const doctor = data.doctor;
-						const clinic = data.clinic;
-	
-						/**
-						 * @todo sort by date and time.
-						 */
-						cards.push(
-							<Card
-								key={data.appointment.id}
-								link={"/specific/user/appointments/edit/" + data.appointment.id}
-								image={url}
-								altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
-								title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
-								body={doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}
-								footer={clinic ? clinic.name + ", " + clinic.city : null}
-							/>
-						);
-	
-						if (cards.length === appointments.length) {
-							setResults(cards);
-						}
-					});
-				})
+					/**
+					 * @todo sort by date and time.
+					 */
+					cards.push(
+						<Card
+							key={appointment.appointment.id}
+							link={"/specific/user/appointments/edit/" + appointment.appointment.id}
+							image={url}
+							altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
+							title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
+							body={doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}
+							footer={clinic ? clinic.name + ", " + clinic.city : null}
+						/>
+					);
+
+					if (cards.length === appointments.length) {
+						setResults(cards);
+					}
+				});
 			}
 		}
 	}, [appointments]);

@@ -1,8 +1,0 @@
-.pickers {
-	display: grid;
-	width: 100%;
-	grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
-	grid-auto-flow: row;
-	gap: var(--margin);
-	max-width: unset;
-}

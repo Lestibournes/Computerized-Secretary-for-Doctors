@@ -4,7 +4,7 @@ import "./SearchDoctorsPage.css";
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { db, fn, st } from '../init';
+import { fn, st } from '../init';
 import { TextInput } from '../Common/Components/TextInput';
 import { Card } from '../Common/Components/Card';
 import { Button } from '../Common/Components/Button';
@@ -12,76 +12,52 @@ import { Select } from "../Common/Components/Select";
 import { Page } from "../Common/Components/Page";
 
 const searchDoctors = fn.httpsCallable("doctors-search");
+const getAllCities = fn.httpsCallable("clinics-getAllCities");
+const getAllSpecializations = fn.httpsCallable("doctors-getAllSpecializations");
+
 const storage = st.ref();
 
-function SelectCity() {
+export function SearchDoctorsPage() {
 	const [cities, setCities] = useState([]);
-
-	useEffect(() => {
-		let mounted = true;
-		db.collection("cities").get().then(snap => {
-			if (mounted) {
-				let results = [];
-		
-				snap.forEach(a => {
-					results.push({
-						id: a.id,
-						label: String(a.id).split(" ").map(word => {
-							return String(word)[0].toLocaleUpperCase() + String(word).slice(1) + " ";
-						})
-					});
-				});
-				
-				setCities(results);
-			}
-		});
-
-		return () => {mounted = false};
-	}, []);
-	
-	return (
-		<Select label="City" name="city" options={cities}/>
-	);
-}
-
-function SelectField() {
 	const [fields, setFields] = useState([]);
 
-	useEffect(() => {
-		let mounted = true;
-		db.collection("fields").get().then(snapshots => {
-			if (mounted) {
-				let results = [];
-		
-				snapshots.forEach(snapshot => {
-					results.push({
-						id: snapshot.id,
-						label: String(snapshot.id).split(" ").map(word => {
-							return String(word)[0].toLocaleUpperCase() + String(word).slice(1) + " ";
-						})
-					});
-				});
-				
-				setFields(results);
-			}
-		});
+	/**
+	 * There are the following states:
+	 * No search has been conducted: show nothing.
+	 * A search has been conducted, waiting for the results: show a loading message.
+	 * The results have arrived, and they are empty: show nothing found message.
+	 * The results have arrived, and the are not empty: show the results.
+	 * 
+	 * Therefor I need to track whether a search is currently underway, whether a search has already completed,
+	 * and what the current results are.
+	 */
 
-		return () => {mounted = false};
-	}, []);
+	const [searching, setSearching] = useState(false);
+	const [searched, setSearched] = useState(false);
 	
-	return (
-		<Select label="Specialization" name="field" options={fields}/>
-	);
-}
-
-export function SearchDoctorsPage() {
 	const [doctors, setDoctors] = useState([]);
 	const [results, setResults] = useState([]);
 
 	useEffect(() => {
+		getAllCities().then(response => {
+			setCities(response.data);
+		});
+
+		getAllSpecializations().then(response => {
+			setFields(response.data);
+		});
+	}, []);
+
+	useEffect(() => {
 		const cards = [];
+
+		if (doctors.length === 0) {
+			setResults([]);
+			setSearching(false);
+			setSearched(true);
+		}
 		
-		if (doctors) {
+		else {
 			let total = 0;
 			
 			for (let doctor of doctors) {
@@ -107,6 +83,8 @@ export function SearchDoctorsPage() {
 
 						if (cards.length === total) {
 							setResults(cards);
+							setSearching(false);
+							setSearched(true);
 						}
 					});
 				}
@@ -114,45 +92,68 @@ export function SearchDoctorsPage() {
 		}
 	}, [doctors]);
 
+	let display = <h2>Loading...</h2>;
+	let searchResults;
+
+	if (searching) {
+		searchResults = <h2>Searching...</h2>;
+	}
+	else if (searched) {
+		if (results.length === 0) {
+			searchResults = <h2>No doctors found</h2>;
+		}
+		else {
+			searchResults =
+				<div className="cardList">
+					{results}
+				</div>;
+		}
+	}
+
+	if (cities.length > 0 && fields.length > 0) {
+		display = 
+		<>
+			<Formik
+				initialValues={{}}
+				validationSchema={Yup.object({
+					name: Yup.string(),
+					city: Yup.string(),
+					field: Yup.string(),
+				})}
+				onSubmit={async (values, { setSubmitting }) => {
+					setSubmitting(true);
+					setSearching(true);
+
+					searchDoctors({name: values.name, city: values.city, field: values.field}).then((result) => {
+						setDoctors(result.data);
+					});
+				}}
+			>
+				<Form>
+					<div className="widgets">
+						<TextInput
+							label="Name"
+							name="name"
+							type="search"
+							placeholder="Yoni Robinson"
+						/>
+						<Select label="City" name="city" options={cities}/>
+						<Select label="Specialization" name="field" options={fields}/>
+					</div>
+					<div className="buttonBar">
+						<Button type="submit" label="Search" />
+					</div>
+				</Form>
+			</Formik>
+			{searchResults}
+		</>;
+	}
+
 	return (
 		<Page
 			title="Make an Appointment"
 			subtitle="Find a Doctor"
-			content={<>
-				<Formik
-					initialValues={{}}
-					validationSchema={Yup.object({
-						name: Yup.string(),
-						city: Yup.string(),
-						field: Yup.string(),
-					})}
-					onSubmit={async (values, { setSubmitting }) => {
-						setSubmitting(true);
-						searchDoctors({name: values.name, city: values.city, field: values.field}).then((result) => {
-							setDoctors(result.data);
-						});
-					}}
-				>
-					<Form>
-						<div className="widgets">
-							<TextInput
-								label="Name"
-								name="name"
-								type="search"
-								placeholder="Yoni Robinson"
-							/>
-							<SelectCity/>
-							<SelectField />
-						</div>
-						<div className="buttonBar">
-							<Button type="submit" label="Search" />
-						</div>
-					</Form>
-				</Formik>
-				<div className="cardList">
-					{(doctors.length === 0 ? "No doctors found" : results)}
-				</div>
-			</>}
+			content={display}
 		/>
 	);
 }

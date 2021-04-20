@@ -3,6 +3,10 @@
  * Is supposed to be immutable.
  */
 export class Time {
+	static fromObject(time) {
+		return new Time(time.hours, time.minutes);
+	}
+	
 	#hours;
 	#minutes;
 
@@ -124,6 +128,32 @@ export class Slot {
 	 */
 	static day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
+	/**
+	 * Convert a Date object to a SimpleDate object.
+	 * @param {Date} date 
+	 * @returns {SimpleDate}
+	 */
+	static fromDate(date) {
+		return new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+	}
+
+	/**
+	 * Take a simple object representation of a date and return a SimpleDate.
+	 * @param {{year: number, month: number, day: number}} object 
+	 * @returns {SimpleDate}
+	 */
+	static fromObject(object) {
+		return new SimpleDate(object.year, object.month, object.day);
+	}
+
+	toObject() {
+		return {
+			year: this.year,
+			month: this.month,
+			day: this.day
+		};
+	}
+
 	#year;
 	#month;
 	#day;
@@ -208,12 +238,12 @@ export class Slot {
 	 * @returns {number} 1 if this > that, 0 if this == that, -1 if this < that.
 	 */
 	compare(that) {
-		if (this.#year > that.#year) return 1;
-		if (this.#year === that.#year) {
-			if (this.#month > that.#month) return 1;
-			if (this.#month === that.#month) {
-				if (this.#day > that.#day) return 1;
-				if (this.#day === that.#day) return 0;
+		if (this.year > that.year) return 1;
+		if (this.year === that.year) {
+			if (this.month > that.month) return 1;
+			if (this.month === that.month) {
+				if (this.day > that.day) return 1;
+				if (this.day === that.day) return 0;
 			}
 		}
 

@@ -38,7 +38,7 @@ async function getAllDoctors(clinic) {
 	});
 	
 	for (doctor_id of doctor_ids) {
-		await doctors.get(doctor_id).then(result => {
+		await doctors.getData(doctor_id).then(result => {
 			doctor_data.push(result);
 		})
 	}
@@ -265,6 +265,23 @@ async function join(clinic, requester, doctor) {
 	}
 }
 
+async function getAllCities() {
+	let cities = [];
+
+	await db.collection("cities").get().then(cities_snap => {
+		cities_snap.forEach(city => {
+			cities.push({
+				id: city.id,
+				label: String(city.id).split(" ").map(word => {
+					return String(word)[0].toLocaleUpperCase() + String(word).slice(1) + " ";
+				})
+			});
+		});
+	});
+
+	return cities;
+}
+
 exports.get = get;
 exports.getAllDoctors = getAllDoctors;
 exports.add = add;
@@ -272,3 +289,4 @@ exports.edit = edit;
 exports.delete = eliminate;
 exports.leave = leave;
 exports.join = join;
+exports.getAllCities = getAllCities;

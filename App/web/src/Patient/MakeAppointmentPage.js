@@ -1,12 +1,10 @@
-import "../Common/Components/Pickers.css";
-
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
-import { db, fn } from '../init';
+import { fn } from '../init';
 import { Button } from "../Common/Components/Button";
 import { SelectList } from "../Common/Components/SelectList";
 import { SelectDate } from "../Common/Components/SelectDate";
@@ -14,7 +12,8 @@ import { Page } from "../Common/Components/Page";
 
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
 const makeAppointment = fn.httpsCallable("appointments-add");
-const getDoctor = fn.httpsCallable("doctors-get");
+const getDoctor = fn.httpsCallable("doctors-getData");
+const getClinic = fn.httpsCallable("clinics-get");
 
 /**
  * @todo
@@ -52,15 +51,12 @@ export function MakeAppointmentPage(props) {
 	const [clinic_data, setClinic] = useState(null);
 
 	useEffect(() => {
-		getDoctor({
-			id: doctor,
-			clinic: clinic
-		}).then(result => {
+		getDoctor({id: doctor}).then(result => {
 			setDoctor(result.data);
 		});
-	
-		db.collection("clinics").doc(clinic).get().then(result => {
-			setClinic(result.data());
+
+		getClinic({id: clinic}).then(response => {
+			setClinic(response.data);
 		});
   }, [clinic, doctor]);
 	

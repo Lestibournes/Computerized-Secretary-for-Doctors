@@ -1,10 +1,12 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { db, fn } from '../init';
+import { fn } from '../init';
 import { Page } from '../Common/Components/Page';
+import { SimpleDate } from '../Common/classes';
 
-const getDoctor = fn.httpsCallable("doctors-get");
+const getDoctor = fn.httpsCallable("doctors-getData");
+const getAppointment = fn.httpsCallable("appointments-get");
 
 export function AppointmentSuccessPage() {
 	const { appointment } = useParams(); //The ID of the doctor and clinic.
@@ -12,24 +14,14 @@ export function AppointmentSuccessPage() {
 	const [doctor_data, setDoctor] = useState(null);
 	const [clinic_data, setClinic] = useState(null);
 	const [appointment_data, setAppointment] = useState(null);
-	const tzos = (new Date()).getTimezoneOffset() / 60;
 	const [date, setDate] = useState(new Date());
 
 	useEffect(() => {
-		db.collection("appointments").doc(appointment).get().then(result => {
-			setAppointment(result.data());
-			let date = result.data().start.toDate();
-			setDate(date);
-			getDoctor({
-				id: result.data().doctor,
-				clinic: result.data().clinic
-			}).then(result => {
-				setDoctor(result.data);
-			});
-		
-			db.collection("clinics").doc(result.data().clinic).get().then(result => {
-				setClinic(result.data());
-			});
+		getAppointment({id: appointment}).then(response => {
+			setAppointment(response.data.appointment);
+			setDate(SimpleDate.fromObject(response.data.extra.date));
+			setDoctor(response.data.doctor);
+			setClinic(response.data.clinic);
 		});
   }, []);
 

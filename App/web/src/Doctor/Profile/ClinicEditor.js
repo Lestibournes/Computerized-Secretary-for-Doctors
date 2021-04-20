@@ -5,7 +5,7 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "../../Common/Auth";
 import { useParams } from 'react-router-dom';
-import { db, fn, st } from '../../init';
+import { fn, st } from '../../init';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
@@ -17,7 +17,8 @@ const editClinic = fn.httpsCallable("clinics-edit");
 const deleteClinic = fn.httpsCallable("clinics-delete");
 const joinClinic = fn.httpsCallable("clinics-join");
 
-const getDoctor = fn.httpsCallable("doctors-get");
+const getDoctor = fn.httpsCallable("doctors-getData");
+const getDoctorID = fn.httpsCallable("doctors-getID");
 const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
 const searchDoctors = fn.httpsCallable("doctors-search");
 
@@ -210,8 +211,8 @@ export function ClinicEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) {
-				db.collection("users").doc(auth.user.uid).get().then(user_snap => {
-					getDoctor({id: user_snap.data().doctor}).then(doctor_data => {
+				getDoctorID({user: auth.user.uid}).then(response => {
+					getDoctor({id: response.data}).then(doctor_data => {
 						setDoctor(doctor_data.data);
 					});
 				});

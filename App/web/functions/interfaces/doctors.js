@@ -3,8 +3,8 @@ const functions = require('firebase-functions');
 
 const doctors = require("../implementations/doctors");
  
-exports.get = functions.https.onCall((data, context) => {
-	return doctors.get(data.id, data.field, data.city);
+exports.getData = functions.https.onCall((data, context) => {
+	return doctors.getData(data.id, data.field, data.city);
 });
 
 exports.getAllClinics = functions.https.onCall((data, context) => {
@@ -17,4 +17,12 @@ exports.create = functions.https.onCall((data, context) => {
 
 exports.search = functions.https.onCall((data, context) => {
 	return doctors.search(data.name, data.field, data.city);
+});
+
+exports.getID = functions.https.onCall((data, context) => {
+	return doctors.getID(data.user);
+});
+
+exports.getAllSpecializations = functions.https.onCall((data, context) => {
+	return doctors.getAllSpecializations();
 });
