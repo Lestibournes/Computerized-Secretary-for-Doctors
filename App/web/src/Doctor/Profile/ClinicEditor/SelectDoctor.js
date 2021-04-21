@@ -39,7 +39,7 @@ export function SelectDoctor({close, success}) {
 								const doctor_cards = [];
 
 								for (let doctor of response.data) {
-									storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+									storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
 										doctor_cards.push(<Card
 											key={doctor.doctor.id}
 											title={doctor.user.firstName + " " + doctor.user.lastName}

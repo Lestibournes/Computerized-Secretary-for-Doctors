@@ -75,7 +75,7 @@ export function ClinicEditor() {
 
 		if (doctors) {
 			for (const doctor of doctors) {
-				storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+				storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
 					doctor.image = url;
 					const card = (<Card
 						key={doctor.doctor.id}

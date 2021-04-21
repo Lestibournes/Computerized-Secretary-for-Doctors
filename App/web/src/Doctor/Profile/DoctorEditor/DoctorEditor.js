@@ -9,6 +9,7 @@ import { Popup } from "../../../Common/Components/Popup";
 import { Page } from "../../../Common/Components/Page";
 import { ClinicCreateForm } from "./ClinicCreateForm";
 import { CreateProfile } from "./CreateProfile";
+import { UserEditForm } from "./UserEditForm";
 
 const getDoctor = fn.httpsCallable("doctors-getData");
 const getDoctorID = fn.httpsCallable("doctors-getID");
@@ -86,11 +87,11 @@ export function DoctorEditor() {
 		if (doctor) {
 			getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
 
-			storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+			storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
 				setImage(url);
 			});
 		}
-	}, [doctor]);
+	}, [doctor, editData]);
 
 	let display = <h2>Loading...</h2>;
 
@@ -168,6 +169,13 @@ export function DoctorEditor() {
 							getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
 						}}
 						close={() => setCreateClinic(false)}
+					/>
+					: ""}
+					{editData ? 
+					<UserEditForm
+						user={doctor.user.id}
+						image={image}
+						close={() => setEditData(false)}
 					/>
 					: ""}
 					{display}

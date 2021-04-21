@@ -66,7 +66,7 @@ export function SearchDoctorsPage() {
 
 			for (let doctor of doctors) {
 				for (let clinic of doctor.clinics) {
-					storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+					storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
 						doctor.image = url;
 						const card = (<Card
 							key={doctor.doctor.id + ", " + clinic.id}

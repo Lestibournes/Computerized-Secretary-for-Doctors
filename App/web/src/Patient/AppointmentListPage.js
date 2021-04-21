@@ -31,7 +31,7 @@ export function AppointmentListPage(props) {
 			const cards = [];
 
 			for (let appointment of appointments) {
-				storage.child("users/" + appointment.doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+				storage.child("users/" + appointment.doctor.user.id + "/profile").getDownloadURL().then(url => {
 					const date = new SimpleDate(appointment.extra.date.year, appointment.extra.date.month, appointment.extra.date.day);
 					const time = new Time(appointment.extra.time.hours, appointment.extra.time.minutes).incrementMinutes(-tzos);
 					const doctor = appointment.doctor;

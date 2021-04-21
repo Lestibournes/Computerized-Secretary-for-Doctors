@@ -4,3 +4,8 @@
 	place-items: center start;
 	gap: var(--margin);
 }
+
+.table img {
+	max-width: 100%;
+	max-height: 100%;
+}

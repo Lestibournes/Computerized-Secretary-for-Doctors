@@ -82,3 +82,11 @@ Form {
 	gap: var(--margin);
 	max-width: unset;
 }
+
+.Input img {
+	max-width: 128px;
+	max-height: 128px;
+
+	width: auto;
+	height: auto;
+}
