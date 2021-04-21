@@ -2,7 +2,16 @@
  * Represents an time in terms of hours and minutes.
  * Is supposed to be immutable.
  */
- class Time {
+class Time {
+	/**
+	 * Convert a simple object into a Time object.
+	 * @param {{hours: number, minutes: number}} time 
+	 * @returns {Time}
+	 */
+	static fromObject(time) {
+		return new Time(time.hours, time.minutes);
+	}
+
 	hours;
 	minutes;
 

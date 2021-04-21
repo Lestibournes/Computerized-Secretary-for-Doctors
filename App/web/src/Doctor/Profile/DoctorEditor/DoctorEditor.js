@@ -1,15 +1,18 @@
-import { useAuth } from "../../Common/Auth";
+import { useAuth } from "../../../Common/Auth";
 import { useEffect, useState } from "react";
-import { fn } from "../../init";
+import { fn, storage } from "../../../init";
 
-import { Card } from "../../Common/Components/Card";
-import { Button } from "../../Common/Components/Button";
-import { Popup } from "../../Common/Components/Popup";
+import { Card } from "../../../Common/Components/Card";
+import { Button } from "../../../Common/Components/Button";
+import { Popup } from "../../../Common/Components/Popup";
 
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import { TextInput } from '../../Common/Components/TextInput';
-import { Page } from "../../Common/Components/Page";
+import { Page } from "../../../Common/Components/Page";
+import { ClinicCreateForm } from "./ClinicCreateForm";
+import { CreateProfile } from "./CreateProfile";
+
+const getDoctor = fn.httpsCallable("doctors-getData");
+const getDoctorID = fn.httpsCallable("doctors-getID");
+const getAllClinics = fn.httpsCallable("doctors-getAllClinics");
 
 /**
 @todo
@@ -48,87 +51,6 @@ For each shift, select start and end time or remove the shift.
 It would be good to add some kind of notification widget to easily show new membership requests, private messages from clients, or whatever else.
 */
 
-const getDoctor = fn.httpsCallable("doctors-getData");
-const getDoctorID = fn.httpsCallable("doctors-getID");
-const createDoctor = fn.httpsCallable("doctors-create");
-const getAllClinics = fn.httpsCallable("doctors-getAllClinics");
-const addClinic = fn.httpsCallable("clinics-add");
-
-function ClinicCreateForm({doctor, close, success}) {
-	return (
-		<div className="form">
-			<Formik
-				initialValues={{
-					name: "",
-					city: "",
-					address: ""
-				}}
-				validationSchema={Yup.object({
-					name: Yup.string()
-						.required("Required"),
-					city: Yup.string()
-						.required("Required"),
-					address: Yup.string()
-						.required("Required")
-				})}
-				onSubmit={async (values, { setSubmitting }) => {
-					setSubmitting(true);
-
-					addClinic({doctor: doctor, name: values.name, city: values.city, address: values.address})
-					.then(response => {
-							success(response);
-							close();
-					});
-				}}
-			>
-				<Form>
-					<div className="widgets">
-						<TextInput
-							label="Clinic Name"
-							name="name"
-							type="text"
-							placeholder="Eden"
-						/>
-						<TextInput
-							label="City"
-							name="city"
-							type="text"
-							placeholder="Jerusalem"
-						/>
-						<TextInput
-							label="Address"
-							name="address"
-							type="text"
-							placeholder="13 Holy Square"
-						/>
-					</div>
-					<div className="buttonBar">
-						<Button label="Cancel" action={close} />
-						<Button type="submit" label="Save" />
-					</div>
-				</Form>
-			</Formik>
-		</div>
-	);
-}
-
-function CreateProfile({user, success, failure, close}) {
-	return (
-		<div className="center">
-			<h2>Would you like to register as a doctor?</h2>
-			<div className="buttonBar">
-				<Button action={close} label="No" />
-				<Button type="okay" action={() => {
-					createDoctor({user: user}).then(response => {
-						if (response.data.success) success(response.data.doctor);
-						else failure();
-					});
-				}} label="Yes" />
-			</div>
-		</div>
-	);
-}
-
 export function DoctorEditor() {
 	const auth = useAuth();
 
@@ -151,15 +73,22 @@ export function DoctorEditor() {
 		return unsubscribe;
 	}, [auth]);
 
+	
 	const [doctor, setDoctor] = useState(null);
+	const [image, setImage] = useState(null);
 	const [clinics, setClinics] = useState(null);
 	const [createProfile, setCreateProfile] = useState(false);
 	const [alreadyExists, setAlreadyExists] = useState(false);
 	const [createClinic, setCreateClinic] = useState(false);
-
+	const [editData, setEditData] = useState(false);
+	
 	useEffect(() => {
 		if (doctor) {
 			getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
+
+			storage.child("users/" + doctor.user.id + "/profile.png").getDownloadURL().then(url => {
+				setImage(url);
+			});
 		}
 	}, [doctor]);
 
@@ -201,20 +130,24 @@ export function DoctorEditor() {
 			<Page
 				title="Doctor Profile"
 				content={<>
-					{createProfile && auth.user ? <Popup
-						title="Create Profile"
-						display={
-						<CreateProfile
-							user={auth.user.uid}
-							success={doctor => {
-								setCreateProfile(false);
-								getDoctor({id: doctor}).then(results => {
-									setDoctor(doctor);
-								});
-							}}
-							failure={() => setAlreadyExists(true)}
-							close={() => {window.history.back()}}
-						/>}
+					<div className="headerbar">
+						<h2>Details</h2> <Button label="Edit" action={() => setEditData(true)} />
+					</div>
+					{doctor ?
+						<div className="table">
+							<b>Photo</b> <img src={image} alt={doctor.user.firstName + " " + doctor.user.lastName} />
+							<b>Name:</b> <span>{doctor.user.firstName + " " + doctor.user.lastName}</span>
+						</div> : "Loading..."
+					}
+					{createProfile && auth.user ? <CreateProfile
+						user={auth.user.uid}
+						success={doctor => {
+							setCreateProfile(false);
+							getDoctor({id: doctor}).then(results => {
+								setDoctor(doctor);
+							});
+						}}
+						failure={() => setAlreadyExists(true)}
 						close={() => {window.history.back()}}
 					/> : ""}
 					{alreadyExists ? <Popup
@@ -228,16 +161,12 @@ export function DoctorEditor() {
 						}}
 					/> : ""}
 					{createClinic ? 
-					<Popup 
-						title="Create New Clinic"
-						display={<ClinicCreateForm
-							doctor={doctor.doctor.id}
-							success={clinic => {
-								setCreateClinic(false);
-								getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
-							}}
-							close={() => setCreateClinic(false)}
-						/>}
+					<ClinicCreateForm
+						doctor={doctor.doctor.id}
+						success={clinic => {
+							setCreateClinic(false);
+							getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
+						}}
 						close={() => setCreateClinic(false)}
 					/>
 					: ""}

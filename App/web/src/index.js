@@ -21,8 +21,8 @@ import { AppointmentListPage } from './Patient/AppointmentListPage';
 import { EditAppointmentPage } from './Patient/EditAppointmentPage';
 import { AppointmentDeletedPage } from './Patient/AppointmentDeletedPage';
 import { AppointmentCalendarPage } from './Doctor/AppointmentCalendarPage';
-import { DoctorEditor } from './Doctor/Profile/DoctorEditor'
-import { ClinicEditor } from './Doctor/Profile/ClinicEditor';
+import { DoctorEditor } from './Doctor/Profile/DoctorEditor/DoctorEditor'
+import { ClinicEditor } from './Doctor/Profile/ClinicEditor/ClinicEditor';
 
 /**
  * URL Scheme:

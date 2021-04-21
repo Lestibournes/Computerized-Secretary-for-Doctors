@@ -1,6 +1,6 @@
 .table {
 	display: grid;
 	grid-template-columns: min-content max-content;
-
+	place-items: center start;
 	gap: var(--margin);
 }

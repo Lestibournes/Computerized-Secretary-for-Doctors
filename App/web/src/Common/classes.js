@@ -2,10 +2,14 @@
  * Represents an time in terms of hours and minutes.
  * Is supposed to be immutable.
  */
-export class Time {
-	static fromObject(time) {
-		return new Time(time.hours, time.minutes);
-	}
+export class Time {	/**
+	* Convert a simple object into a Time object.
+	* @param {{hours: number, minutes: number}} time 
+	* @returns {Time}
+	*/
+ static fromObject(time) {
+	 return new Time(time.hours, time.minutes);
+ }
 	
 	#hours;
 	#minutes;
@@ -146,6 +150,10 @@ export class Slot {
 		return new SimpleDate(object.year, object.month, object.day);
 	}
 
+	/**
+	 * Convert this SimpleDate object into a simple object.
+	 * @returns {{year: number, month: number, day: number}}
+	 */
 	toObject() {
 		return {
 			year: this.year,

@@ -2,7 +2,7 @@
 /**
  * A simple and immutable representation of a calendar date.
  */
- class SimpleDate {
+class SimpleDate {
 
 	/**
 	 * The names of the days of the week as used in the database, for easy conversion between how
@@ -10,6 +10,7 @@
 	 */
 	static day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
+	
 	/**
 	 * Convert a Date object to a SimpleDate object.
 	 * @param {Date} date 
@@ -17,6 +18,27 @@
 	 */
 	 static fromDate(date) {
 		return new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+	}
+
+	/**
+	 * Take a simple object representation of a date and return a SimpleDate.
+	 * @param {{year: number, month: number, day: number}} object 
+	 * @returns {SimpleDate}
+	 */
+	static fromObject(object) {
+		return new SimpleDate(object.year, object.month, object.day);
+	}
+
+	/**
+	 * Convert this SimpleDate object into a simple object.
+	 * @returns {{year: number, month: number, day: number}}
+	 */
+	toObject() {
+		return {
+			year: this.year,
+			month: this.month,
+			day: this.day
+		};
 	}
 	
 	year;
