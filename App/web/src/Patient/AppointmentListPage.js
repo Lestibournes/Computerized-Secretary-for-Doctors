@@ -29,14 +29,22 @@ export function AppointmentListPage(props) {
 			// load the data and create the cards:
 			const tzos = new Date().getTimezoneOffset();
 			const cards = [];
-
-			for (let appointment of appointments) {
-				storage.child("users/" + appointment.doctor.user.id + "/profile").getDownloadURL().then(url => {
+			
+			const list = async () => {
+				for (let appointment of appointments) {
+					let image;
+					await storage.child("users/" + appointment.doctor.user.id + "/profile").getDownloadURL().then(url => {
+						image = url;
+					}).catch(reason => {
+						console.log(reason);
+						image = null;
+					});
+	
 					const date = new SimpleDate(appointment.extra.date.year, appointment.extra.date.month, appointment.extra.date.day);
 					const time = new Time(appointment.extra.time.hours, appointment.extra.time.minutes).incrementMinutes(-tzos);
 					const doctor = appointment.doctor;
 					const clinic = appointment.clinic;
-
+	
 					/**
 					 * @todo sort by date and time.
 					 */
@@ -44,19 +52,19 @@ export function AppointmentListPage(props) {
 						<Card
 							key={appointment.appointment.id}
 							link={"/specific/user/appointments/edit/" + appointment.appointment.id}
-							image={url}
+							image={image}
 							altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
 							title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
 							body={doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}
 							footer={clinic ? clinic.name + ", " + clinic.city : null}
 						/>
 					);
-
-					if (cards.length === appointments.length) {
-						setResults(cards);
-					}
-				});
+				}
+	
+				setResults(cards);
 			}
+
+			list();
 		}
 	}, [appointments]);
 

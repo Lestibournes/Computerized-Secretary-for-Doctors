@@ -35,32 +35,33 @@ export function SelectDoctor({close, success}) {
 							setSubmitting(true);
 
 							searchDoctors({name: values.name, city: values.city, specialization: values.specialization})
-							.then(response => {
+							.then(async response => {
 								const doctor_cards = [];
 
 								for (let doctor of response.data) {
-									storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
-										doctor_cards.push(<Card
-											key={doctor.doctor.id}
-											title={doctor.user.firstName + " " + doctor.user.lastName}
-											body={doctor.fields.map((field, index) => {
-												return (index < doctor.fields.length - 1 ? field.id + "; " : field.id)
-											})}
-											footer={doctor.clinics.map((clinic, index) => {
-												return clinic.name + ", " + clinic.city +
-													(index < doctor.clinics.length - 1 ? "; " : "");
-											})}
-											image={url}
-											altText={doctor.user.firstName + " " + doctor.user.lastName + "'s portrait"}
-											action={() => success(doctor.doctor.id)}
-										/>);
-
-										if (doctor_cards.length === response.data.length) {
-											setCards(doctor_cards);
-										}
+									await storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
+										doctor.image = url;
+									}).catch(reason => {
+										doctor.image = null;
 									});
-								}
 
+									doctor_cards.push(<Card
+										key={doctor.doctor.id}
+										title={doctor.user.firstName + " " + doctor.user.lastName}
+										body={doctor.fields.map((field, index) => {
+											return (index < doctor.fields.length - 1 ? field.id + "; " : field.id)
+										})}
+										footer={doctor.clinics.map((clinic, index) => {
+											return clinic.name + ", " + clinic.city +
+												(index < doctor.clinics.length - 1 ? "; " : "");
+										})}
+										image={doctor.image}
+										altText={doctor.user.firstName + " " + doctor.user.lastName + "'s portrait"}
+										action={() => success(doctor.doctor.id)}
+									/>);
+								}
+								
+								setCards(doctor_cards);
 							});
 						}}
 					>

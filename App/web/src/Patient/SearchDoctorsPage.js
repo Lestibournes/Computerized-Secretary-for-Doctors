@@ -50,6 +50,32 @@ export function SearchDoctorsPage() {
 
 	useEffect(() => {
 		const cards = [];
+		const build = async (doctor, clinic, cards, total) => {
+			await storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
+				doctor.image = url;
+			}).catch(reason => {
+				doctor.image = null;
+			});
+
+			const card = (<Card
+				key={doctor.doctor.id + ", " + clinic.id}
+				link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
+				title={doctor.user.firstName + " " + doctor.user.lastName}
+				body=
+					{doctor.fields.length > 0 ?
+						doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
+						: ""))
+					: null}
+				footer={clinic.name + ", " + clinic.city}
+				image={doctor.image} />);
+			cards.push(card);
+
+			if (cards.length === total) {
+				setResults(cards);
+				setSearching(false);
+				setSearched(true);
+			}
+		}
 
 		if (doctors.length === 0) {
 			setResults([]);
@@ -66,27 +92,7 @@ export function SearchDoctorsPage() {
 
 			for (let doctor of doctors) {
 				for (let clinic of doctor.clinics) {
-					storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
-						doctor.image = url;
-						const card = (<Card
-							key={doctor.doctor.id + ", " + clinic.id}
-							link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
-							title={doctor.user.firstName + " " + doctor.user.lastName}
-							body=
-								{doctor.fields.length > 0 ?
-									doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-									: ""))
-								: null}
-							footer={clinic.name + ", " + clinic.city}
-							image={doctor.image} />);
-						cards.push(card);
-
-						if (cards.length === total) {
-							setResults(cards);
-							setSearching(false);
-							setSearched(true);
-						}
-					});
+					build(doctor, clinic, cards, total);
 				}
 			}
 		}

@@ -29,9 +29,9 @@
 }
 
 .card img {
-	min-width: 128px;
+	max-width: 128px;
+	max-height: 128px;
 	aspect-ratio: 1/1;
-	height: min-content;
 	flex-grow: 1;
 
 	border-radius: var(--radius);

@@ -89,6 +89,8 @@ export function DoctorEditor() {
 
 			storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
 				setImage(url);
+			}).catch(reason => {
+				setImage(null);
 			});
 		}
 	}, [doctor, editData]);
