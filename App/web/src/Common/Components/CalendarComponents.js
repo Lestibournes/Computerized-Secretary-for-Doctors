@@ -125,21 +125,23 @@ export function CalendarWeek(props) {
 		/>)
 	});
 
-	return (<div className="calendarWeek">
-		<div className="calendarHeader">
-			{headers}
-		</div>
-		<div className="calendarBody">
-			<div className="calendarTimeLabel"
-				style={{
-					width: 50,
-					height: props.height,
-					left: 0,
-				}}
-			>
-				{lines}
+	return (
+		<div className="calendarWeek">
+			<div className="calendarHeader">
+				{headers}
 			</div>
-			{days}
+			<div className="calendarBody">
+				<div className="calendarTimeLabel"
+					style={{
+						width: 50,
+						height: props.height,
+						left: 0,
+					}}
+				>
+					{lines}
+				</div>
+				{days}
+			</div>
 		</div>
-	</div>);
+	);
 }

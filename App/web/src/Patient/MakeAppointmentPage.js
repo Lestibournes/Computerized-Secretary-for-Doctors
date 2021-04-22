@@ -106,7 +106,6 @@ export function MakeAppointmentPage(props) {
 						})
 						.catch(reason => {
 							console.log(reason);
-							// alert("failure! " + reason);
 						});
 					}}
 				>

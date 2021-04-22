@@ -2,15 +2,14 @@
 import React, { useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { fn, st } from '../../../init';
+import { fn } from '../../../init';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
 import { TextInput } from '../../../Common/Components/TextInput';
 import { Popup } from '../../../Common/Components/Popup';
+import { getPictureURL } from '../../../Common/functions';
 
 const searchDoctors = fn.httpsCallable("doctors-search");
-
-const storage = st.ref();
 
 export function SelectDoctor({close, success}) {
 	const [cards, setCards] = useState([]);
@@ -39,10 +38,8 @@ export function SelectDoctor({close, success}) {
 								const doctor_cards = [];
 
 								for (let doctor of response.data) {
-									await storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
+									await getPictureURL(doctor.user.id).then(url => {
 										doctor.image = url;
-									}).catch(reason => {
-										doctor.image = null;
 									});
 
 									doctor_cards.push(<Card

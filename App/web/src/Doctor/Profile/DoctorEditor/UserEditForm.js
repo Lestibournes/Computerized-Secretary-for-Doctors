@@ -9,6 +9,8 @@ import { PictureSelector } from "./PictureSelector";
 
 // const editClinic = fn.httpsCallable("clinics-edit");
 
+const updatePicture = fn.httpsCallable("users-updatePicture");
+
 export function UserEditForm({user, firstName, lastName, image, close, success, deleted}) {
 	const [selectedImage, setSelectedImage] = useState(image);
 	const [file, setFile] = useState(null);
@@ -33,8 +35,10 @@ export function UserEditForm({user, firstName, lastName, image, close, success, 
 							setSubmitting(true);
 							
 							if (file) {
-								storage.child("users/" + user + "/profile").put(file).then(() => {
-									close();
+								updatePicture({id: user.id}).then(response => {
+									storage.child(response.data).put(file).then(() => {
+										close();
+									});
 								});
 							}
 
@@ -69,7 +73,7 @@ export function UserEditForm({user, firstName, lastName, image, close, success, 
 									callback={file => {
 										setFile(file);
 
-										var temp = storage.child("users/" + user + "/temp");
+										var temp = storage.child("users/" + user.id + "/pictures/temp");
 										temp.put(file).then(() => {
 											temp.getDownloadURL().then(url => {
 												setSelectedImage(url);

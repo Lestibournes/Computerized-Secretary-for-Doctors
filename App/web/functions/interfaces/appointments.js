@@ -2,10 +2,8 @@
 const functions = require('firebase-functions');
 
 const appointments = require("../implementations/appointments");
-const { SimpleDate } = require('../implementations/SimpleDate');
 
 exports.get = functions.https.onCall((data, context) => {
-	console.log(data);
 	return appointments.get(data.id);
 });
 

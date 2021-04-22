@@ -1,6 +1,6 @@
 import { useAuth } from "../../../Common/Auth";
 import { useEffect, useState } from "react";
-import { fn, storage } from "../../../init";
+import { fn } from "../../../init";
 
 import { Card } from "../../../Common/Components/Card";
 import { Button } from "../../../Common/Components/Button";
@@ -10,6 +10,7 @@ import { Page } from "../../../Common/Components/Page";
 import { ClinicCreateForm } from "./ClinicCreateForm";
 import { CreateProfile } from "./CreateProfile";
 import { UserEditForm } from "./UserEditForm";
+import { getPictureURL } from "../../../Common/functions";
 
 const getDoctor = fn.httpsCallable("doctors-getData");
 const getDoctorID = fn.httpsCallable("doctors-getID");
@@ -87,10 +88,8 @@ export function DoctorEditor() {
 		if (doctor) {
 			getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
 
-			storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
+			getPictureURL(doctor.user.id).then(url => {
 				setImage(url);
-			}).catch(reason => {
-				setImage(null);
 			});
 		}
 	}, [doctor, editData]);
@@ -175,7 +174,7 @@ export function DoctorEditor() {
 					: ""}
 					{editData ? 
 					<UserEditForm
-						user={doctor.user.id}
+						user={doctor.user}
 						image={image}
 						close={() => setEditData(false)}
 					/>

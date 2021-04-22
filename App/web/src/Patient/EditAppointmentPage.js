@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { useAuth } from "../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { fn } from '../init';
 import { SimpleDate, Time } from '../Common/classes';
@@ -15,8 +14,6 @@ const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
 const getAppointment = fn.httpsCallable("appointments-get");
 const editAppointment = fn.httpsCallable("appointments-edit");
 const cancelAppointment = fn.httpsCallable("appointments-cancel");
-const getDoctor = fn.httpsCallable("doctors-getData");
-
 
 /**
  * @todo
@@ -31,32 +28,29 @@ const getDoctor = fn.httpsCallable("doctors-getData");
  * privacy, and also the server side should handle the setting of the
  * appointment, making sure that it's valid.
  */
-export function EditAppointmentPage(props) {
-	const selectDate = (date) => {
+export function EditAppointmentPage() {
+	function selectDate(date) {
 		date = SimpleDate.fromObject(date)
 		setDate(date);
 
 		if (date.day && date.month && date.year) {
-			console.log(data.doctor.doctor.id);
 			getAvailableAppointments({
 				doctor: data.doctor.doctor.id,
 				clinic: data.clinic.id,
 				date: date.toObject(),
 				type: type
-			}).then(results => {
-					const times = [];
+			})
+			.then(results => {
+				const times = [];
 
-					results.data.forEach(result => {
-						times.push((result.start.hours - tzos) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
-					});
-
-					setTimes(times);
+				results.data.forEach(result => {
+					times.push((result.start.hours - tzos) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
 				});
+
+				setTimes(times);
+			});
 		}
 	}
-
-	const currentDate = new Date();
-	const auth = useAuth();
 	
 	const { appointment } = useParams(); //The ID of the appointment.
 	
@@ -86,13 +80,13 @@ export function EditAppointmentPage(props) {
 			setDoctor(response.data.doctor);
 			setClinic(response.data.clinic);
 		});
-  }, []);
+  }, [appointment]);
 
 	useEffect(() => {
-		if (data && date.compare(data.extra.date) != 0) {
+		if (data && date.compare(data.extra.date) !== 0) {
 			selectDate(data.extra.date);
 		}
-	}, [data]);
+	}, [data, date]);
 
 	return (
 		<Page

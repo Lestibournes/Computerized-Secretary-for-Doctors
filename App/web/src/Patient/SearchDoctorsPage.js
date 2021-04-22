@@ -4,18 +4,17 @@ import "./SearchDoctorsPage.css";
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { fn, st } from '../init';
+import { fn } from '../init';
 import { TextInput } from '../Common/Components/TextInput';
 import { Card } from '../Common/Components/Card';
 import { Button } from '../Common/Components/Button';
 import { Select } from "../Common/Components/Select";
 import { Page } from "../Common/Components/Page";
+import { getPictureURL } from "../Common/functions";
 
 const searchDoctors = fn.httpsCallable("doctors-search");
 const getAllCities = fn.httpsCallable("clinics-getAllCities");
 const getAllSpecializations = fn.httpsCallable("doctors-getAllSpecializations");
-
-const storage = st.ref();
 
 export function SearchDoctorsPage() {
 	const [cities, setCities] = useState([]);
@@ -51,10 +50,8 @@ export function SearchDoctorsPage() {
 	useEffect(() => {
 		const cards = [];
 		const build = async (doctor, clinic, cards, total) => {
-			await storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
+			await getPictureURL(doctor.user.id).then(url => {
 				doctor.image = url;
-			}).catch(reason => {
-				doctor.image = null;
 			});
 
 			const card = (<Card
@@ -80,7 +77,6 @@ export function SearchDoctorsPage() {
 		if (doctors.length === 0) {
 			setResults([]);
 			setSearching(false);
-			setSearched(true);
 		}
 		
 		else {

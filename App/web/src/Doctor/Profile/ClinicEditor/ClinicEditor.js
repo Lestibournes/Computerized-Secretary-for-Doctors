@@ -3,13 +3,13 @@ import "./ClinicEditor.css"
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
-import { fn, st } from '../../../init';
+import { fn } from '../../../init';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
-import { Popup } from '../../../Common/Components/Popup';
 import { Page } from "../../../Common/Components/Page";
 import { ClinicEditForm } from "./ClinicEditForm";
 import { SelectDoctor } from "./SelectDoctor";
+import { getPictureURL } from "../../../Common/functions";
 
 const getClinic = fn.httpsCallable("clinics-get");
 const joinClinic = fn.httpsCallable("clinics-join");
@@ -17,9 +17,6 @@ const joinClinic = fn.httpsCallable("clinics-join");
 const getDoctor = fn.httpsCallable("doctors-getData");
 const getDoctorID = fn.httpsCallable("doctors-getID");
 const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
-const searchDoctors = fn.httpsCallable("doctors-search");
-
-const storage = st.ref();
 
 /**
 @todo
@@ -69,62 +66,60 @@ export function ClinicEditor() {
 		}
 	}, [clinic]);
 
-	/**
-	 * @todo move the async. Race conditions.
-	 */
-	useEffect(async () => {
+
+	useEffect(() => {
 		const cards = [];
+		const build = async (doctors) => {
+			if (doctors) {
+				for (const doctor of doctors) {
+					await getPictureURL(doctor.user.id).then(url => {
+						doctor.image = url;
+					});
 
-		if (doctors) {
-			for (const doctor of doctors) {
-				await storage.child("users/" + doctor.user.id + "/profile").getDownloadURL().then(url => {
-					doctor.image = url;
-				}).catch(reason => {
-					doctor.image = null;
-				});
-
-				const card = (<Card
-					key={doctor.doctor.id}
-					title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (♚ owner)" : "")}
-					body=
-						{doctor.fields.length > 0 ?
-							doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-							: ""))
-						: "No specializations specified"}
-					footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
-					image={doctor.image ? doctor.image : null}
-					action={() => alert(doctor.user.firstName + " " + doctor.user.lastName)}
-				/>);
-
-				cards.push({
-					name: doctor.user.lastName + doctor.user.firstName,
-					id: doctor.doctor.id,
-					component: card
-				});
-			}
-
-			cards.sort((a, b) => {
-				if (a.id === data.owner) {
-					return -1;
-				};
+					const card = (<Card
+						key={doctor.doctor.id}
+						title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (♚ owner)" : "")}
+						body=
+							{doctor.fields.length > 0 ?
+								doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
+								: ""))
+							: "No specializations specified"}
+						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
+						image={doctor.image}
+					/>);
 	
-				if (b.id === data.owner) {
-					return 1;
-				};
-
-				if (a.name === b.name) {
-					return 0;
+					cards.push({
+						name: doctor.user.lastName + doctor.user.firstName,
+						id: doctor.doctor.id,
+						component: card
+					});
 				}
-				else if (a.name < b.name) {
-					return -1;
-				}
-				else {
-					return 1;
-				}
-			});
-			
-			setResults(cards.map(card => card.component));
+				
+				cards.sort((a, b) => {
+					if (a.id === data.owner) {
+						return -1;
+					};
+		
+					if (b.id === data.owner) {
+						return 1;
+					};
+	
+					if (a.name === b.name) {
+						return 0;
+					}
+					else if (a.name < b.name) {
+						return -1;
+					}
+					else {
+						return 1;
+					}
+				});
+				
+				setResults(cards.map(card => card.component));
+			}
 		}
+		
+		build(doctors);
 	}, [doctors, data]);
 
 	let display = <h2>Loading...</h2>;

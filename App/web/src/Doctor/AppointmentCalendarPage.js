@@ -7,7 +7,7 @@ import { CalendarWeek } from "../Common/Components/CalendarComponents";
 import { Button } from '../Common/Components/Button';
 import { Page } from '../Common/Components/Page';
 
-export function AppointmentCalendarPage(props) {
+export function AppointmentCalendarPage() {
 	const auth = useAuth();
 
 	const [doctor, setDoctor] = useState(null);
