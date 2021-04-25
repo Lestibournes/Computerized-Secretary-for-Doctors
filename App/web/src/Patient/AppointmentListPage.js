@@ -28,35 +28,39 @@ export function AppointmentListPage(props) {
 			if (appointments) {
 				// load the data and create the cards:
 				const tzos = new Date().getTimezoneOffset();
-				const cards = [];
+				let promises = [];
 
 				for (let appointment of appointments) {
-					await getPictureURL(appointment.doctor.user.id).then(url => {
+					let promise = getPictureURL(appointment.doctor.user.id).then(url => {
 						appointment.image = url;
-					});
 
-					const date = new SimpleDate(appointment.extra.date.year, appointment.extra.date.month, appointment.extra.date.day);
-					const time = new Time(appointment.extra.time.hours, appointment.extra.time.minutes).incrementMinutes(-tzos);
-					const doctor = appointment.doctor;
-					const clinic = appointment.clinic;
-	
-					/**
-					 * @todo sort by date and time.
-					 */
-					cards.push(
-						<Card
-							key={appointment.appointment.id}
-							link={"/specific/user/appointments/edit/" + appointment.appointment.id}
-							image={appointment.image}
-							altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
-							title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
-							body={doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}
-							footer={clinic ? clinic.name + ", " + clinic.city : null}
-						/>
-					);
+						const date = new SimpleDate(appointment.extra.date.year, appointment.extra.date.month, appointment.extra.date.day);
+						const time = new Time(appointment.extra.time.hours, appointment.extra.time.minutes).incrementMinutes(-tzos);
+						const doctor = appointment.doctor;
+						const clinic = appointment.clinic;
+		
+						/**
+						 * @todo sort by date and time.
+						 */
+						return (
+							<Card
+								key={appointment.appointment.id}
+								link={"/specific/user/appointments/edit/" + appointment.appointment.id}
+								image={appointment.image}
+								altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
+								title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
+								body={doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}
+								footer={clinic ? clinic.name + ", " + clinic.city : null}
+							/>
+						);
+					});
+					
+					promises.push(promise);
 				}
 
-				setResults(cards);
+				Promise.all(promises).then(cards => {
+					setResults(cards);
+				});
 			}
 		}
 

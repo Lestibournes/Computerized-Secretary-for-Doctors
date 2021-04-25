@@ -174,26 +174,27 @@ async function get(id) {
  * @returns {Promise<object[]>} An array of appointment data.
  */
 async function getAll({user, start, end, doctor, clinic}) {
+	let results = [];
+	let promises = [];
+
 	let query = db.collection("users").doc(user).collection("appointments");
 
 	// if (start) {
 	// 	query = query.orderBy("start").where("start", ">=", start);
 	// }
 	
-	let results = [];
-	let snaps;
 	
-	await query.get().then(querySnapshot => {
-		snaps = querySnapshot.docs;
-	});
-	
-	for (let snap of snaps) {	
-		await get(snap.id).then(appointment => {
-			results.push(appointment);
-		});
-	}
+	return query.get().then(querySnapshot => {
+		for (let snap of querySnapshot.docs) {
+			promises.push(get(snap.id).then(appointment => {
+				return appointment;
+			}));
+		}
 
-	return results;
+		return Promise.all(promises).then(results => {
+			return results;
+		});
+	});
 }
 
 /**
