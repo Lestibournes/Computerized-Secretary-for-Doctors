@@ -61,6 +61,7 @@ export function DoctorEditor() {
 			if (auth.user) {
 				getDoctorID({user: auth.user.uid}).then(response => {
 					if (response.data) {
+						console.log("Testing 1,2,3... ", response.data);
 						getDoctor({id: response.data}).then(results => {
 							setDoctor(results.data);
 						});
@@ -146,7 +147,8 @@ export function DoctorEditor() {
 						success={doctor => {
 							setCreateProfile(false);
 							getDoctor({id: doctor}).then(results => {
-								setDoctor(doctor);
+								console.log("Testing a, b, c... ", results.data)
+								setDoctor(results.data);
 							});
 						}}
 						failure={() => setAlreadyExists(true)}
