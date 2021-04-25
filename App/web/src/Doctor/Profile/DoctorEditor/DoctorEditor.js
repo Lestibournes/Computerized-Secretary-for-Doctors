@@ -53,6 +53,28 @@ For each shift, select start and end time or remove the shift.
 It would be good to add some kind of notification widget to easily show new membership requests, private messages from clients, or whatever else.
 */
 
+function generateClinicCards(doctor, clinics) {
+	const clinics_list = [];
+		
+	for (let clinic_data of clinics) {
+		clinics_list.push(
+			<Card
+				key={clinic_data.id}
+				title={clinic_data.name}
+				body={clinic_data.city}
+				footer={clinic_data.address}
+				link={(
+					clinic_data.owner === doctor ?
+					"/specific/doctor/clinics/edit/" + clinic_data.id
+					:
+					"/specific/doctor/clinics/view/" + clinic_data.id
+				)}
+			/>
+		);
+	}
+
+	return clinics_list;
+}
 export function DoctorEditor() {
 	const auth = useAuth();
 
@@ -87,7 +109,9 @@ export function DoctorEditor() {
 	
 	useEffect(() => {
 		if (doctor) {
-			getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
+			getAllClinics({doctor: doctor.doctor.id}).then(results => {
+				setClinics(generateClinicCards(doctor.doctor.id, results.data));
+			});
 
 			getPictureURL(doctor.user.id).then(url => {
 				setImage(url);
@@ -97,33 +121,21 @@ export function DoctorEditor() {
 
 	let display = <h2>Loading...</h2>;
 
-	if (clinics) {
-		const clinics_list = [];
-	
-		for (let clinic_data of clinics) {
-			clinics_list.push(
-				<Card
-					key={clinic_data.id}
-					title={clinic_data.name}
-					body={clinic_data.city}
-					footer={clinic_data.address}
-					link={(
-						clinic_data.owner === doctor.doctor.id ?
-						"/specific/doctor/clinics/edit/" + clinic_data.id
-						:
-						"/specific/doctor/clinics/view/" + clinic_data.id
-					)}
-				/>
-			);
-		}
-		
+	if (doctor && clinics) {
 		display = (
 			<>
+				<div className="headerbar">
+					<h2>Details</h2> <Button label="Edit" action={() => setEditData(true)} />
+				</div>
+				<div className="table">
+					<b>Photo</b> <img src={image} alt={doctor.user.firstName + " " + doctor.user.lastName} />
+					<b>Name:</b> <span>{doctor.user.firstName + " " + doctor.user.lastName}</span>
+				</div>
 				<div className="headerbar">
 					<h2>Clinics</h2> <Button label="+" action={() => setCreateClinic(true)} />
 				</div>
 				<div className="cardList">
-					{clinics_list}
+					{clinics}
 				</div>
 			</>
 		);
@@ -133,15 +145,6 @@ export function DoctorEditor() {
 			<Page
 				title="Doctor Profile"
 				content={<>
-					<div className="headerbar">
-						<h2>Details</h2> <Button label="Edit" action={() => setEditData(true)} />
-					</div>
-					{doctor ?
-						<div className="table">
-							<b>Photo</b> <img src={image} alt={doctor.user.firstName + " " + doctor.user.lastName} />
-							<b>Name:</b> <span>{doctor.user.firstName + " " + doctor.user.lastName}</span>
-						</div> : "Loading..."
-					}
 					{createProfile && auth.user ? <CreateProfile
 						user={auth.user.uid}
 						success={doctor => {
@@ -169,7 +172,7 @@ export function DoctorEditor() {
 						doctor={doctor.doctor.id}
 						success={clinic => {
 							setCreateClinic(false);
-							getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(results.data);});
+							getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(generateClinicCards(doctor.doctor.id, results.data));});
 						}}
 						close={() => setCreateClinic(false)}
 					/>
