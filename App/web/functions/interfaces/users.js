@@ -10,3 +10,7 @@ exports.getPicture = functions.https.onCall((data, context) => {
 exports.updatePicture = functions.https.onCall((data, context) => {
 	return users.updatePicture(data.id);
 });
+
+exports.update = functions.https.onCall((data, context) => {
+	return users.update(data.id, data.changes);
+});

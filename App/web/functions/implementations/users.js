@@ -40,5 +40,10 @@ async function updatePicture(id) {
 	return "users/" + id + "/pictures/" + (current + 1);
 }
 
+async function update(id, changes) {
+	db.collection("users").doc(id).update(changes);
+}
+
 exports.getPicture = getPicture;
 exports.updatePicture = updatePicture;
+exports.update = update;

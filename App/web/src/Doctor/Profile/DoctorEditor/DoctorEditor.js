@@ -83,7 +83,6 @@ export function DoctorEditor() {
 			if (auth.user) {
 				getDoctorID({user: auth.user.uid}).then(response => {
 					if (response.data) {
-						console.log("Testing 1,2,3... ", response.data);
 						getDoctor({id: response.data}).then(results => {
 							setDoctor(results.data);
 						});
@@ -130,6 +129,7 @@ export function DoctorEditor() {
 				<div className="table">
 					<b>Photo</b> <img src={image} alt={doctor.user.firstName + " " + doctor.user.lastName} />
 					<b>Name:</b> <span>{doctor.user.firstName + " " + doctor.user.lastName}</span>
+					<b>Sex:</b> <span>{doctor.user.sex[0].toLocaleUpperCase() + doctor.user.sex.substr(1).toLowerCase()}</span>
 				</div>
 				<div className="headerbar">
 					<h2>Clinics</h2> <Button label="+" action={() => setCreateClinic(true)} />

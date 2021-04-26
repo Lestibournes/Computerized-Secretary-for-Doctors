@@ -1,4 +1,4 @@
-import { Form, Formik } from "formik";
+import { Form, Formik, useField } from "formik";
 import * as Yup from 'yup';
 import { useState } from "react";
 import { Button } from "../../../Common/Components/Button";
@@ -6,51 +6,57 @@ import { Popup } from "../../../Common/Components/Popup";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { fn, storage } from "../../../init";
 import { PictureSelector } from "./PictureSelector";
+import { RadioInput } from "../../../Common/Components/RadioInput";
 
 // const editClinic = fn.httpsCallable("clinics-edit");
 
 const updatePicture = fn.httpsCallable("users-updatePicture");
+const update = fn.httpsCallable("users-update");
 
-export function UserEditForm({user, firstName, lastName, image, close, success, deleted}) {
+export function UserEditForm({user, image, close, success, deleted}) {
 	const [selectedImage, setSelectedImage] = useState(image);
 	const [file, setFile] = useState(null);
 	const [problem, setProblem] = useState(null);
 
-	let display = 
+	return (
 		<Popup title="Edit Details"
 			display={
 				<div className="form">
 					<Formik
 						initialValues={{
-							firstName: firstName,
-							lastName: lastName,
-							photo: image
+							firstName: user.firstName,
+							lastName: user.lastName,
+							sex: (user.sex + "")[0].toUpperCase() + (user.sex + "").substring(1).toLowerCase()
 						}}
 						validationSchema={Yup.object({
 							firstName: Yup.string(),
 							lastName: Yup.string(),
-							// photo: Yup.string()
+							sex: Yup.string(),
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
+
+							const promises = [];
 							
 							if (file) {
-								updatePicture({id: user.id}).then(response => {
-									storage.child(response.data).put(file).then(() => {
-										close();
-									});
-								});
+								promises.push(updatePicture({id: user.id}).then(response => {
+									storage.child(response.data).put(file);
+								}));
 							}
 
-							// close();
+							const updates = {};
 
-							// if (firstName) {
-							// 	// update the first name.
-							// }
+							if (values.firstName) updates.firstName = values.firstName;
 
-							// if (lastName) {
-							// 	// update the last name.
-							// }
+							if (values.lastName) updates.lastName = values.lastName;
+
+							if (values.sex) updates.sex = values.sex.toLowerCase();
+
+							promises.push(update({id: user.id, changes: updates}));
+
+							Promise.all(promises).then(results => {
+								close();
+							});
 						}}
 					>
 						<Form>
@@ -59,14 +65,22 @@ export function UserEditForm({user, firstName, lastName, image, close, success, 
 									label="First Name"
 									name="firstName"
 									type="text"
-									placeholder="Johnathan"
+									placeholder="Jane"
 								/>
+
 								<TextInput
 									label="Last Name"
 									name="lastName"
 									type="text"
-									placeholder="Robinson"
+									placeholder="Doe"
 								/>
+
+								<RadioInput
+									label="Sex"
+									name="sex"
+									options={["Male", "Female"]}
+								/>
+
 								<PictureSelector
 									src={selectedImage}
 									alt="Selected"
@@ -82,8 +96,9 @@ export function UserEditForm({user, firstName, lastName, image, close, success, 
 
 									}}
 								/>
-								
+
 							</div>
+
 							<div className="buttonBar">
 								<Button label="Cancel" action={close} />
 								<Button type="submit" label="Save" />
@@ -96,5 +111,5 @@ export function UserEditForm({user, firstName, lastName, image, close, success, 
 			}
 			close={close}
 		/>
-	return display;
+	);
 }
