@@ -13,7 +13,7 @@ const getAllAppointment = fn.httpsCallable("appointments-getAll");
 export function AppointmentListPage(props) {
 	const auth = useAuth();
 	const [appointments, setAppointments] = useState(null);
-	const [results, setResults] = useState();
+	const [results, setResults] = useState(null);
 	
 	useEffect(() => {
 		if (auth.user) {
@@ -67,10 +67,17 @@ export function AppointmentListPage(props) {
 		build(appointments);
 	}, [appointments]);
 
+	let display = <h3>Loading...</h3>;
+
+	if (results) {
+		if (results.length) display = <div className="cardList">{results}</div>;
+		else display = <h3>You don't have any upcoming appointments.</h3>
+	}
+	
 	return (
 		<Page
 			title="My Future Appointments"
-			content={<div className="cardList">{results}</div>}
+			content={display}
 		/>
 	);
 }
