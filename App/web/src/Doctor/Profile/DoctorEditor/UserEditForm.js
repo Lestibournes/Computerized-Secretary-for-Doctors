@@ -5,8 +5,8 @@ import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { fn, storage } from "../../../init";
-import { PictureSelector } from "./PictureSelector";
 import { RadioInput } from "../../../Common/Components/RadioInput";
+import { PictureInput } from "../../../Common/Components/PictureInput";
 
 // const editClinic = fn.httpsCallable("clinics-edit");
 
@@ -62,7 +62,7 @@ export function UserEditForm({user, image, close, success, deleted}) {
 						<Form>
 							<div className="widgets">
 								<TextInput
-									label="First Name"
+									label="First effing Name"
 									name="firstName"
 									type="text"
 									placeholder="Jane"
@@ -81,9 +81,11 @@ export function UserEditForm({user, image, close, success, deleted}) {
 									options={["Male", "Female"]}
 								/>
 
-								<PictureSelector
+								<PictureInput
+									label="Profile Picture:"
 									src={selectedImage}
 									alt="Selected"
+									name="photo"
 									callback={file => {
 										setFile(file);
 

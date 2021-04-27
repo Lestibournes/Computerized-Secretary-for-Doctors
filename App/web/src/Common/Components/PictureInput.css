@@ -1,0 +1,25 @@
+.Picture label {
+	display: flex;
+	flex-flow: row;
+	gap: var(--margin);
+	flex-grow: 1;
+	width: 1fr;
+}
+
+.Picture img {
+	background-color: var(--control-background);
+	border: 1px solid var(--control-background-pressed);
+	border-radius: var(--radius);
+}
+
+.Picture img:hover {
+	background-color: var(--control-background-hover);
+}
+
+.Picture img:active {
+	background-color: var(--control-background-pressed);
+}
+
+.Picture input {
+	display: none;
+}
