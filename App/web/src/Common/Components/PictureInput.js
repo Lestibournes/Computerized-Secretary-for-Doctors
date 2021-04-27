@@ -1,6 +1,6 @@
 import './Input.css';
 import "./PictureInput.css";
-import { useField } from 'formik';
+import { Field, useField } from 'formik';
 
 /**
  * A Formik text input component.
@@ -25,7 +25,7 @@ import { useField } from 'formik';
 				<div>{label}</div>
 				<img src={src} alt={alt} />
 			</label>
-			<input
+			<Field
 				type="file"
 				onChange={e => callback(e.target.files[0])}
 				className={error}

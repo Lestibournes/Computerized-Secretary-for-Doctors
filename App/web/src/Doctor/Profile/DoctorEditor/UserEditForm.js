@@ -26,7 +26,7 @@ export function UserEditForm({user, image, close, success, deleted}) {
 						initialValues={{
 							firstName: user.firstName,
 							lastName: user.lastName,
-							sex: (user.sex + "")[0].toUpperCase() + (user.sex + "").substring(1).toLowerCase()
+							sex: String((user.sex && user.sex.toLowerCase() === "male") ? "Male" : "Female")
 						}}
 						validationSchema={Yup.object({
 							firstName: Yup.string(),
