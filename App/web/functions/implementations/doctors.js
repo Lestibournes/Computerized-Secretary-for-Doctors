@@ -15,7 +15,7 @@ const stringContains = require('./functions').stringContains;
  * @param {string} id The id of the doctor.
  * @param {string} field The doctor's specialization.
  * @param {string} city The city in which service is being sought.
- * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}} The data of the requested doctor.
+ * @returns {Promise<{doctor: object, user: object, clinics: object[] ,fields: object[]}>} The data of the requested doctor.
  */
  async function getData(id, field, city) {
 	 const result = {
@@ -34,6 +34,7 @@ const stringContains = require('./functions').stringContains;
 		await db.collection("users").doc(result.doctor.user).get().then(user_snapshot => {
 			result.user = user_snapshot.data();
 			result.user.id = user_snapshot.id;
+			result.user.fullName = user_snapshot.data().firstName + " " + user_snapshot.data().lastName;
 		});
 		
 		// Get the field data for the given doctor:
@@ -143,71 +144,28 @@ async function create(id) {
  */
 async function search(name, field, city) {
 	// Fetch the data of all the doctor documents:
-	const doctors = [];
-
-	await db.collection("doctors").get().then(snapshots => {
-		snapshots.forEach(snapshot => {
-			let doctor = snapshot.data();
-			doctor.id = snapshot.id;
-
-			doctors.push({
-				doctor: doctor, // The doctor data.
-				user: null, // The user data.
-				clinics: [], // An array of the data of all the matching clinics associated with this doctor.
-				fields: [], // An array of the ids of all the matching specializations of this doctor.
-			});
-		});
-	});
+	const promises = [];
 	
-	for (const doctor of doctors) {
-		// Get the user data from refs:
-		await db.collection("users").doc(doctor.doctor.user).get().then(user_snapshot => {
-			doctor.user = user_snapshot.data();
-			doctor.user.id = user_snapshot.id;
+	return db.collection("doctors").get().then(snapshots => {
+		snapshots.forEach(snapshot => {
+			promises.push(getData(snapshot.id, field, city));
 		});
 
-		// Check if the name is unspecified or is a match:
-		let fullName = doctor.user.firstName + " " + doctor.user.lastName;
+		return Promise.all(promises).then(results => {
+			const doctors = [];
 
-		// Only consider doctors who's name is a match or not specified:
-		if ((name && stringContains(fullName, name)) || !name) {
-			// Get the field data for the given doctor:
-			for (let f of doctor.doctor.fields) {
-				if (f) {
-					await db.collection("fields").doc(f).get().then(field_snapshot => {
-						// Check if the field is unspecified or is a match:
-						if ((field && stringContains(field_snapshot.id, field)) || !field) {
-							let field_data = field_snapshot.data();
-							field_data.id = field_snapshot.id;
-							doctor.fields.push(field_data);
-						}
-					});
+			// Filter the doctors base on whether they have matching locations, specializations, and names:
+			for (let result of results) {
+				console.log(name, result.user.fullName);
+				if (result.clinics.length > 0 && result.fields.length > 0 &&
+					((name && stringContains(result.user.fullName, name)) || !name)) {
+					doctors.push(result);
 				}
 			}
 
-			// Get the clinic data for the given doctor:
-			for (let c of doctor.doctor.clinics) {
-				await db.collection("clinics").doc(c).get().then(clinic_snapshot => {
-					// Check if the city is unspecified or is a match:
-					if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
-						let clinic_data = clinic_snapshot.data();
-						clinic_data.id = clinic_snapshot.id;
-						doctor.clinics.push(clinic_data);
-					}
-				});
-			};
-		}
-	}
-
-	// Only add to the results the doctors who have both fields and clinics that are a match:
-	const results = [];
-	for (const doctor of doctors) {
-		if (doctor.clinics.length > 0 && doctor.fields.length > 0) {
-			results.push(doctor);
-		}
-	}
-
-	return results;
+			return doctors;
+		});
+	});
 }
 
 async function getID(user) {
