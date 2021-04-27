@@ -126,7 +126,13 @@ export function SearchDoctorsPage() {
 					setSubmitting(true);
 					setSearching(true);
 
-					searchDoctors({name: values.name, city: values.city, field: values.field}).then((result) => {
+					const data = {}
+
+					if (values.name) data.name = values.name;
+					if (values.city) data.city = values.city;
+					if (values.field) data.field = values.field;
+
+					searchDoctors(data).then((result) => {
 						setDoctors(result.data);
 					});
 				}}
