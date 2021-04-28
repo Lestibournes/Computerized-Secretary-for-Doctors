@@ -82,24 +82,24 @@ export function DoctorEditor() {
 
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
-			if (auth.user) {
-				getDoctorID({user: auth.user.uid}).then(response => {
-					if (response.data) {
-						getDoctor({id: response.data}).then(results => {
-							setDoctor(results.data);
-						});
-					}
-					else {
-						setCreateProfile(true);
-					}
-				});
-			}
+			if (auth.user) loadData(auth.user.uid);
 		});
 
 		return unsubscribe;
 	}, [auth]);
 
-	
+	function loadData(user) {
+		getDoctorID({user: user}).then(response => {
+			if (response.data) {
+				getDoctor({id: response.data}).then(results => {
+					setDoctor(results.data);
+				});
+			}
+			else {
+				setCreateProfile(true);
+			}
+		});
+	}
 	const [doctor, setDoctor] = useState(null);
 	const [image, setImage] = useState(null);
 	const [clinics, setClinics] = useState(null);
@@ -119,7 +119,7 @@ export function DoctorEditor() {
 				setImage(url);
 			});
 		}
-	}, [doctor, editData, selectSpecialization]);
+	}, [doctor]);
 
 	let display = <h2>Loading...</h2>;
 
@@ -198,7 +198,10 @@ export function DoctorEditor() {
 					<UserEditForm
 						user={doctor.user}
 						image={image}
-						close={() => setEditData(false)}
+						close={() => {
+							loadData(auth.user.uid);
+							setEditData(false);
+						}}
 					/>
 					: ""}
 					{selectSpecialization && doctor ? 
@@ -206,7 +209,10 @@ export function DoctorEditor() {
 						specializations={doctor.fields}
 						close={() => setSelectSpecializations(false)}
 						success={specialization => {
-							addSpecialization({doctor: doctor.doctor.id, specialization: specialization});
+							addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
+							.then(() => {
+								loadData(auth.user.uid);
+							});
 						}}
 					/>
 					: ""}

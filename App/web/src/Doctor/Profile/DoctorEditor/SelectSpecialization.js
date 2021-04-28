@@ -80,6 +80,10 @@ export function SelectSpecialization({specializations, close, success}) {
 					{create ?
 						<CreateSpecialization
 							close={() => setCreate(false)}
+							success={specialization => {
+								success(specialization)
+								setCreate(false);
+							}}
 						/>
 					: "" }
 				</>
@@ -90,6 +94,8 @@ export function SelectSpecialization({specializations, close, success}) {
 	return display;
 }
 
+const createSpecialization = fn.httpsCallable("specializations-create");
+
 function CreateSpecialization({specialization, close, success}) {
 	return (
 		<Popup
@@ -97,16 +103,20 @@ function CreateSpecialization({specialization, close, success}) {
 			close={close}
 			display={
 				<>
-					<p>Please check carefully and only create a new specialization if it doesn't already exist</p>
+					<p>Please go back and check carefully and only create a new specialization if it doesn't already exist.</p>
 					<Formik
 						initialValues={{
-							specialization: ""
+							specialization: specialization
 						}}
 						validationSchema={Yup.object({
 							specialization: Yup.string()
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
+							console.log(values.specialization)
+							createSpecialization({name: values.specialization}).then(() => {
+								success(values.specialization);
+							})
 						}}
 					>
 						<Form>

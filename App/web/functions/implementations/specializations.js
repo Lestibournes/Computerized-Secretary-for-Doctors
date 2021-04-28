@@ -25,9 +25,10 @@ async function search(text) {
 }
 
 async function getAll() {
-	let specializations = [];
+	
+	return db.collection("fields").get().then(spec_snaps => {
+		let specializations = [];
 
-	await db.collection("fields").get().then(spec_snaps => {
 		spec_snaps.forEach(spec => {
 			specializations.push({
 				id: spec.id,
@@ -36,12 +37,19 @@ async function getAll() {
 				})
 			});
 		});
-	});
 
-	return specializations;
+		return specializations;
+	});
+}
+
+async function create(name) {
+	console.log(name)
+	return db.collection(NAME).doc(name).create({
+		exists: true
+	});
 }
 
 exports.search = search;
-// exports.create = create;
+exports.create = create;
 exports.getAll = getAll;
 exports.NAME = NAME;
