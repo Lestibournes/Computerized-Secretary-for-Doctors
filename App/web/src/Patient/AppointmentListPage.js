@@ -10,7 +10,7 @@ import { getPictureURL } from '../Common/functions';
 
 const getAllAppointment = fn.httpsCallable("appointments-getAll");
 
-export function AppointmentListPage(props) {
+export function AppointmentListPage() {
 	const auth = useAuth();
 	const [appointments, setAppointments] = useState(null);
 	const [results, setResults] = useState(null);

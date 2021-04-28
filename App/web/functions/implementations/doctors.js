@@ -6,6 +6,8 @@ const admin = require('firebase-admin');
  */
 const db = admin.firestore();
 
+const specializations = require('./specializations');
+
 const stringContains = require('./functions').stringContains;
 
 /**
@@ -38,18 +40,16 @@ const stringContains = require('./functions').stringContains;
 		});
 		
 		// Get the field data for the given doctor:
-		for (let f of result.doctor.fields) {
-			if (f) {
-				await db.collection("fields").doc(f).get().then(field_snapshot => {
-					// Check if the field is unspecified or is a match:
-					if ((field && stringContains(field_snapshot.id, field)) || !field) {
-						let field_data = field_snapshot.data();
-						field_data.id = field_snapshot.id;
-						result.fields.push(field_data);
-					}
-				});
+		await db.collection("doctors").doc(id).collection(specializations.NAME).get().then(spec_snaps => {
+			for (let spec of spec_snaps.docs) {
+				// Check if the field is unspecified or is a match:
+				if ((field && stringContains(spec.id, field)) || !field) {
+					let field_data = spec.data();
+					field_data.id = spec.id;
+					result.fields.push(field_data);
+				}
 			}
-		}
+		});
 		
 		// Get the clinic data for the given doctor:
 		for (i in result.doctor.clinics) {
@@ -177,21 +177,23 @@ async function getID(user) {
 	return id;
 }
 
-async function getAllSpecializations() {
-	let specializations = [];
+async function addSpecialization(doctor, specialization) {
+	return db.collection(specializations.NAME).doc(specialization).get()
+		.then(spec_snap => {
+			if (spec_snap.exists) {
+				return db.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).set({exists: true})
+					.then(() => {
+						return db.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).set({exists: true});
+					})
+			}
+		})
+}
 
-	await db.collection("fields").get().then(spec_snaps => {
-		spec_snaps.forEach(spec => {
-			specializations.push({
-				id: spec.id,
-				label: String(spec.id).split(" ").map(word => {
-					return String(word)[0].toLocaleUpperCase() + String(word).slice(1) + " ";
-				})
-			});
-		});
-	});
-
-	return specializations;
+async function removeSpecialization(doctor, specialization) {
+	return db.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).delete()
+		.then(() => {
+			return db.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).delete();
+		})
 }
 
 exports.getData = getData;
@@ -199,4 +201,5 @@ exports.getAllClinics = getAllClinics;
 exports.create = create;
 exports.search = search;
 exports.getID = getID;
-exports.getAllSpecializations = getAllSpecializations;
+exports.addSpecialization = addSpecialization;
+exports.removeSpecialization = removeSpecialization;

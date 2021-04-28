@@ -10,11 +10,13 @@ import { Page } from "../../../Common/Components/Page";
 import { ClinicCreateForm } from "./ClinicCreateForm";
 import { CreateProfile } from "./CreateProfile";
 import { UserEditForm } from "./UserEditForm";
-import { getPictureURL } from "../../../Common/functions";
+import { capitalize, getPictureURL } from "../../../Common/functions";
+import { SelectSpecialization } from "./SelectSpecialization";
 
 const getDoctor = fn.httpsCallable("doctors-getData");
 const getDoctorID = fn.httpsCallable("doctors-getID");
 const getAllClinics = fn.httpsCallable("doctors-getAllClinics");
+const addSpecialization = fn.httpsCallable("doctors-addSpecialization");
 
 /**
 @todo
@@ -105,6 +107,7 @@ export function DoctorEditor() {
 	const [alreadyExists, setAlreadyExists] = useState(false);
 	const [createClinic, setCreateClinic] = useState(false);
 	const [editData, setEditData] = useState(false);
+	const [selectSpecialization, setSelectSpecializations] = useState(false);
 	
 	useEffect(() => {
 		if (doctor) {
@@ -116,7 +119,7 @@ export function DoctorEditor() {
 				setImage(url);
 			});
 		}
-	}, [doctor, editData]);
+	}, [doctor, editData, selectSpecialization]);
 
 	let display = <h2>Loading...</h2>;
 
@@ -129,7 +132,19 @@ export function DoctorEditor() {
 				<div className="table">
 					<b>Photo</b> <img src={image} alt={doctor.user.firstName + " " + doctor.user.lastName} />
 					<b>Name:</b> <span>{doctor.user.firstName + " " + doctor.user.lastName}</span>
-					<b>Sex:</b> <span>{doctor.user.sex[0].toLocaleUpperCase() + doctor.user.sex.substr(1).toLowerCase()}</span>
+					<b>Sex:</b> <span>{doctor.user.sex ? doctor.user.sex[0].toLocaleUpperCase() + doctor.user.sex.substr(1).toLowerCase() : "Not specified"}</span>
+				</div>
+				<div className="headerbar">
+					<h2>Specializations</h2> <Button label="+" action={() => setSelectSpecializations(true)} />
+				</div>
+				<div>
+					{
+						doctor.fields.length > 0 ?
+							doctor.fields.map(field => 
+							<div className="headerbar"><span>{capitalize(field.id)}</span></div>)
+							:
+							"No specializations specified"
+					}
 				</div>
 				<div className="headerbar">
 					<h2>Clinics</h2> <Button label="+" action={() => setCreateClinic(true)} />
@@ -172,7 +187,9 @@ export function DoctorEditor() {
 						doctor={doctor.doctor.id}
 						success={clinic => {
 							setCreateClinic(false);
-							getAllClinics({doctor: doctor.doctor.id}).then(results => {setClinics(generateClinicCards(doctor.doctor.id, results.data));});
+							getAllClinics({doctor: doctor.doctor.id}).then(results => {
+								setClinics(generateClinicCards(doctor.doctor.id, results.data));
+							});
 						}}
 						close={() => setCreateClinic(false)}
 					/>
@@ -182,6 +199,15 @@ export function DoctorEditor() {
 						user={doctor.user}
 						image={image}
 						close={() => setEditData(false)}
+					/>
+					: ""}
+					{selectSpecialization && doctor ? 
+					<SelectSpecialization
+						specializations={doctor.fields}
+						close={() => setSelectSpecializations(false)}
+						success={specialization => {
+							addSpecialization({doctor: doctor.doctor.id, specialization: specialization});
+						}}
 					/>
 					: ""}
 					{display}

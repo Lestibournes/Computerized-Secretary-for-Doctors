@@ -23,6 +23,10 @@ exports.getID = functions.https.onCall((data, context) => {
 	return doctors.getID(data.user);
 });
 
-exports.getAllSpecializations = functions.https.onCall((data, context) => {
-	return doctors.getAllSpecializations();
+exports.addSpecialization = functions.https.onCall((data, context) => {
+	return doctors.addSpecialization(data.doctor, data.specialization);
+});
+
+exports.removeSpecialization = functions.https.onCall((data, context) => {
+	return doctors.removeSpecialization(data.doctor, data.specialization);
 });

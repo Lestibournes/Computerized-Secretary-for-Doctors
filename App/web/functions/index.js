@@ -14,3 +14,4 @@ exports.clinics = require('./interfaces/clinics');
 exports.doctors = require('./interfaces/doctors');
 exports.appointments = require('./interfaces/appointments');
 exports.users = require('./interfaces/users');
+exports.specializations = require('./interfaces/specializations');

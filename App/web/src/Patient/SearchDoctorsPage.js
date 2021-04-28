@@ -14,7 +14,7 @@ import { getPictureURL } from "../Common/functions";
 
 const searchDoctors = fn.httpsCallable("doctors-search");
 const getAllCities = fn.httpsCallable("clinics-getAllCities");
-const getAllSpecializations = fn.httpsCallable("doctors-getAllSpecializations");
+const getAllSpecializations = fn.httpsCallable("specializations-getAll");
 
 export function SearchDoctorsPage() {
 	const [cities, setCities] = useState([]);
