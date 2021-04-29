@@ -86,6 +86,7 @@ export function ClinicEditor() {
 							: "No specializations specified"}
 						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
 						image={doctor.image}
+						link={"/specific/doctor/clinics/schedule/edit/" + clinic + "/" + doctor.doctor.id}
 					/>);
 	
 					cards.push({
@@ -155,9 +156,6 @@ export function ClinicEditor() {
 					<SelectDoctor
 						close={() => setAddDoctor(false)}
 						success={selected => {
-							/**
-							 * @todo add doctor to clinic.
-							 */
 							joinClinic({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
 								getAllDoctors({clinic: clinic}).then(doctors_data => {
 									setDoctors(doctors_data.data);
