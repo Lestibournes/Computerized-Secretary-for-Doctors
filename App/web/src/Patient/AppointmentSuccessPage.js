@@ -5,7 +5,6 @@ import { fn } from '../init';
 import { Page } from '../Common/Components/Page';
 import { SimpleDate } from '../Common/classes';
 
-const getDoctor = fn.httpsCallable("doctors-getData");
 const getAppointment = fn.httpsCallable("appointments-get");
 
 export function AppointmentSuccessPage() {
@@ -23,7 +22,7 @@ export function AppointmentSuccessPage() {
 			setDoctor(response.data.doctor);
 			setClinic(response.data.clinic);
 		});
-  }, []);
+  }, [appointment]);
 
 	return (
 		<Page

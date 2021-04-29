@@ -37,4 +37,5 @@ option:disabled {
 	box-sizing: border-box;
 	grid-template-columns: 1fr auto;
 	place-items: center start;
+	margin-bottom: var(--margin);
 }

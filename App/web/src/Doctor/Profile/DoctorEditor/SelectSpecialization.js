@@ -68,6 +68,7 @@ export function SelectSpecialization({specializations, close, success}) {
 								<Button type="cancel" label="Create" action={() => {
 									setCreate(true);
 								}} />
+								<Button label="Close" action={close} />
 								<Button type="submit" label="Search" />
 							</div>
 						</Form>

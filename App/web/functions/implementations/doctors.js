@@ -178,22 +178,17 @@ async function getID(user) {
 }
 
 async function addSpecialization(doctor, specialization) {
-	return db.collection(specializations.NAME).doc(specialization).get()
-		.then(spec_snap => {
-			if (spec_snap.exists) {
-				return db.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).set({exists: true})
-					.then(() => {
-						return db.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).set({exists: true});
-					})
-			}
-		})
+	return db.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).set({exists: true})
+		.then(() => {
+			return db.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).set({exists: true});
+		});
 }
 
 async function removeSpecialization(doctor, specialization) {
 	return db.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).delete()
 		.then(() => {
 			return db.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).delete();
-		})
+		});
 }
 
 exports.getData = getData;
