@@ -62,7 +62,7 @@ export function MakeAppointmentPage(props) {
 	
 
 	const types = ["new patient", "regular", "follow up"];//Temporary. Should be read from the doctor's configuration on the server.
-	const tzos = (new Date()).getTimezoneOffset() / 60;
+	// const tzos = (new Date()).getTimezoneOffset() / 60;
 
 	return (
 		<Page
@@ -90,7 +90,7 @@ export function MakeAppointmentPage(props) {
 							patient: auth.user.uid,
 							date: date,
 							time: {
-								hours: Number(("" + times[time]).split(":")[0]) + tzos,
+								hours: Number(("" + times[time]).split(":")[0]),
 								minutes: Number(("" + times[time]).split(":")[1])
 							},
 							type: types[type]
@@ -140,7 +140,7 @@ export function MakeAppointmentPage(props) {
 												const times = [];
 
 												results.data.forEach(result => {
-													times.push((result.start.hours - tzos) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
+													times.push((result.start.hours) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
 												});
 								
 												setTimes(times);

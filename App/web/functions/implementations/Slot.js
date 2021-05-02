@@ -47,7 +47,7 @@
 	 * @returns {boolean} True if it's completely contained. False if not.
 	 */
 	contains(that) {
-		return that.start.compare(this.start) >= 0 && that.end.compare(this.end) <= 0;
+		return this.start.compare(that.start) <= 0 && this.end.compare(that.end) >= 0;
 	}
 	
 	toString() {

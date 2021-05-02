@@ -32,7 +32,18 @@ Collections:
  * Get the complete schedule the specified doctor at the speciefied clinic.
  * @param {string} doctor the id of the doctor
  * @param {string} clinic the id of the clinic
- * @returns {Slot[][]} The top level of the array represents the days of the week (0-6).
+ * @returns {Promise<{
+ * day: number,
+ * start: {
+ * 	hours: number,
+ * 	minutes: number
+ * },
+ * end: {
+ * 	hours: number,
+ * 	minutes: number
+ * },
+ * min:	number
+ * }[][]>} The top level of the array represents the days of the week (0-6).
  * The second level the shifts within each day, with 1 slot object per shift.
  */
 async function get(clinic, doctor) {

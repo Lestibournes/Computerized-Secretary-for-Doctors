@@ -10,6 +10,7 @@ const db = admin.firestore();
 
 const doctors = require("./doctors");
 const clinics = require("./clinics");
+const schedules = require("./schedules");
 
 /**
  * @todo Make the 2 classes files identical and get rid of the redundancy:
@@ -25,7 +26,7 @@ const SimpleDate = require("./SimpleDate").SimpleDate;
  * @param {string} doctor The id of the doctor
  * @param {string} clinic The id of the clinic
  * @param {SimpleDate} date The day in question
- * @returns {TimeRange[]} Array of occupied time slots.
+ * @returns {Slot[]} Array of occupied time slots.
  */
  async function getAppointments(doctor, clinic, date) {
 	// The time from the server is in UTC with no timezone offset data.
@@ -57,8 +58,8 @@ const SimpleDate = require("./SimpleDate").SimpleDate;
 
 /**
  * Check if the speciefied time slot is available.
- * @param {TimeRange[]} appointments An array of time slots that have already been booked.
- * @param {TimeRange} slot
+ * @param {Slot[]} appointments An array of time slots that have already been booked.
+ * @param {Slot} slot
  * @returns {boolean} Return true if there is a collision, false if there isn't. (Temporarily returning 0,1)
  */
 const appointmentCollides = (appointments, slot) => {
@@ -83,7 +84,7 @@ const appointmentCollides = (appointments, slot) => {
  * @param {string} doctor The id of the doctor for which the appointment is being requested.
  * @param {string} clinic The id of the clinic for which the appointment is being requested.
  * @param {SimpleDate} date The requested date of the appointment.
- * @param {TimeRange} slot The requested time of the appointment.
+ * @param {Slot} slot The requested time of the appointment.
  * @param {string} type The type of appointment.
  * @returns {boolean} true if available, false if unavailable (temporarily returning 0,1)
  */
@@ -205,53 +206,77 @@ async function getAll({user, start, end, doctor, clinic}) {
  * @param {string} clinic The id of the clinic.
  * @param {SimpleDate} date The date for which available appointments are being queried.
  * @param {string} type The type of appointment.
- * @return {TimeRange[]} An array of available time slots.
+ * @return {Slot[]} An array of available time slots.
  */
 async function getAvailable(doctor, clinic, date, type) {
-	date = new SimpleDate(date.year, date.month, date.day);
 	// The time from the server is in UTC with no timezone offset data.
-
+	
+	date = new SimpleDate(date.year, date.month, date.day);
+	
+	const available = [];
+	
 	// First get all of the booked time ranges:
-	let appointments = await getAppointments(doctor, clinic, date);
-
-	// Then get all of the time slots while leaving out the ones that are already booked:
-	let slots = [];
-	
-	// Get all the weekly schedules for the specified doctor at the specified clinic (there should only be one):
-	await db.collection("slots")
-	.where("clinic", "==", clinic)
-	.where("doctor", "==", doctor)
-	.get().then(snapshots => {
-		snapshots.forEach(snapshot => {
-			const weekly = new Map(Object.entries(snapshot.data().weekly));
-			
-			// Get the schedule for the requested day of the week, if it exists:
-			if (weekly.has(date.dayname)) {
-				const schedule = weekly.get(date.dayname);
+	return getAppointments(doctor, clinic, date).then(appointments => {
+		return schedules.get(clinic, doctor).then(schedule => {
+			for (const shift of schedule[date.weekday]) {
+				const start = Time.fromObject(shift.start);
+				const end = Time.fromObject(shift.end);
+				const shift_slot = new Slot(start, end);
 				
-				// The schedule can consist of multiple shifts. Go over each of them:
-				schedule.forEach(shift => {
-					// TODO use Slot object:
-					let now = new Time(shift.start.toDate().getUTCHours(), shift.start.toDate().getUTCMinutes());
-					const end = new Time(shift.end.toDate().getUTCHours(), shift.end.toDate().getUTCMinutes());
-					
-					// For each shift, add all of the time slots that don't
-					// collide with existing appointments To the slots array:
-					while (now.compare(end) < 0) {
-						const slot = new Slot(now, now.incrementMinutes(shift.size));
-						
-						if (!appointmentCollides(appointments, slot)) {
-							slots.push(slot);
-						}
-	
-						now = now.incrementMinutes(shift.size);
+				let current_slot = new Slot(start, start.incrementMinutes(shift.min));
+				
+				while (shift_slot.contains(current_slot)) {
+					if (!appointmentCollides(appointments, current_slot)) {
+						available.push(current_slot);
 					}
-				});
+
+					current_slot = new Slot(current_slot.start.incrementMinutes(shift.min),
+						current_slot.end.incrementMinutes(shift.min))
+				}
 			}
+
+			return available;
 		});
 	});
 
-	return slots;
+	// // Then get all of the time slots while leaving out the ones that are already booked:
+	// let slots = [];
+	
+	// // Get all the weekly schedules for the specified doctor at the specified clinic (there should only be one):
+	// await db.collection("slots")
+	// .where("clinic", "==", clinic)
+	// .where("doctor", "==", doctor)
+	// .get().then(snapshots => {
+	// 	snapshots.forEach(snapshot => {
+	// 		const weekly = new Map(Object.entries(snapshot.data().weekly));
+			
+	// 		// Get the schedule for the requested day of the week, if it exists:
+	// 		if (weekly.has(date.dayname)) {
+	// 			const schedule = weekly.get(date.dayname);
+				
+	// 			// The schedule can consist of multiple shifts. Go over each of them:
+	// 			schedule.forEach(shift => {
+	// 				// TODO use Slot object:
+	// 				let now = new Time(shift.start.toDate().getUTCHours(), shift.start.toDate().getUTCMinutes());
+	// 				const end = new Time(shift.end.toDate().getUTCHours(), shift.end.toDate().getUTCMinutes());
+					
+	// 				// For each shift, add all of the time slots that don't
+	// 				// collide with existing appointments To the slots array:
+	// 				while (now.compare(end) < 0) {
+	// 					const slot = new Slot(now, now.incrementMinutes(shift.size));
+						
+	// 					if (!appointmentCollides(appointments, slot)) {
+	// 						slots.push(slot);
+	// 					}
+	
+	// 					now = now.incrementMinutes(shift.size);
+	// 				}
+	// 			});
+	// 		}
+	// 	});
+	// });
+
+	// return slots;
 }
 
 /**
