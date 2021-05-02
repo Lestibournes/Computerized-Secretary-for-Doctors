@@ -3,9 +3,9 @@ import * as Yup from 'yup';
 import { useState } from "react";
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
-import { ConfirmDelete } from "./ConfirmDelete";
+import { fn } from "../../../init";
 
-export function ShiftEditForm({clinic, doctor, day, start, end, min, close, success, deleted}) {
+export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, close, success, deleted}) {
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [problem, setProblem] = useState(null);
 
@@ -82,6 +82,7 @@ export function ShiftEditForm({clinic, doctor, day, start, end, min, close, succ
 							{confirmDelete ? <ConfirmDelete
 									clinic={clinic}
 									doctor={doctor}
+									shift={shift}
 									close={() => setConfirmDelete(false)}
 									success={deleted} />
 								: ""}
@@ -93,4 +94,32 @@ export function ShiftEditForm({clinic, doctor, day, start, end, min, close, succ
 			close={close}
 		/>
 	);
+}
+
+const deleteShift = fn.httpsCallable("schedules-delete");
+
+function ConfirmDelete({clinic, doctor, shift, close, success}) {
+	const [problem, setProblem] = useState(null);
+
+	return (
+	<Popup
+		title="Confirm Deletion"
+		display={
+			<>
+				<p>Are you sure you wish to delete this shift?</p>
+				<p>This action is permanent and cannot be undone.</p>
+				<div className="buttonBar">
+					<Button type="cancel" label="Yes" action={() => {
+						deleteShift({clinic: clinic, doctor: doctor, shift: shift}).then(response => {
+							if (!response.data.success) {setProblem(response.data.message)}
+							else {success()}
+						});
+					}} />
+					<Button type="okay" label="Cancel" action={close} />
+					{problem ? <Popup title="Error" display={<div>{problem}</div>} close={() => setProblem(false)} /> : ""}
+				</div>
+			</>
+		}
+		close={close}
+	/>);
 }

@@ -20,7 +20,11 @@ Collections:
 	shifts: a collection of shifts, each containing:
 		day: the day of the week
 		start: the start time
+			hours
+			minutes
 		end: the end time
+			hours
+			minutes
 		min: The minimum duration of an appointment, in minutes.
  */
 
@@ -41,7 +45,9 @@ async function get(clinic, doctor) {
 		}
 
 		for (const shift of shift_snaps.docs) {
-			days[shift.data().day].push(shift.data());
+			const data = shift.data();
+			data.id = shift.id;
+			days[shift.data().day].push(data);
 		}
 
 		return days;
@@ -68,7 +74,23 @@ async function add(clinic, doctor, day, start, end, min) {
 	});
 }
 
+async function remove(clinic, doctor, shift) {
+	return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).doc(shift).delete()
+	.then(() => {
+		return {
+			success: true
+		}
+	})
+	.catch(() => {
+		return {
+			success: false,
+			message: "There was an error with deleting the shift."
+		}
+	});
+}
+
 
 exports.get = get;
 exports.add = add;
+exports.delete = remove;
 exports.NAME = NAME;

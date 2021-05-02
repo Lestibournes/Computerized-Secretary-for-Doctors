@@ -153,9 +153,7 @@ async function eliminate(id, doctor) {
 			await db.collection("doctors").doc(d).update({clinics: clinics});
 		}
 		// Delete the clinic:
-		await db.collection("clinics").doc(id).delete().then(value => {
-			console.log("deleted", value);
-		});
+		await db.collection("clinics").doc(id).delete();
 
 		response.success = true;
 	}

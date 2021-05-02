@@ -10,3 +10,7 @@ exports.get = functions.https.onCall((data, context) => {
 exports.add = functions.https.onCall((data, context) => {
 	return schedules.add(data.clinic, data.doctor, data.day, data.start, data.end, data.min);
 });
+
+exports.delete = functions.https.onCall((data, context) => {
+	return schedules.delete(data.clinic, data.doctor, data.shift);
+});

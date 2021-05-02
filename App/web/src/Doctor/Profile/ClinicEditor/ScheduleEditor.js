@@ -44,7 +44,7 @@ export function ScheduleEditor() {
 	
 	const [redirect, setRedirect] = useState(null); //Where to redirect to in case the doctor is removed from the clinic.
 
-	const [shiftAdder, setShiftAdder] = useState(null);
+	const [shiftEditor, setShiftEditor] = useState(null);
 	const [schedule, setSchedule] = useState(null);
 	const [cards, setCards] = useState();
 	
@@ -82,8 +82,16 @@ export function ScheduleEditor() {
 				for (const shift of day) {
 					temp_day.push(
 						<Card
+							key={shift.id}
 							title={Time.fromObject(shift.start).toString() +
 							" - " + Time.fromObject(shift.end).toString()}
+							action={() => setShiftEditor({
+								shift: shift.id,
+								day: shift.day,
+								start: shift.start,
+								end: shift.end,
+								min: shift.min
+							})}
 						/>
 					)
 				}
@@ -98,18 +106,24 @@ export function ScheduleEditor() {
 	let display = <h2>Loading...</h2>;
 	const popups = 
 	<>
-		{shiftAdder !== null ?
+		{shiftEditor !== null ?
 			<ShiftEditForm
 				doctor={doctor}
 				clinic={clinic}
-				day={shiftAdder}
-				close={() => setShiftAdder(null)}
+				{...shiftEditor}
+				close={() => setShiftEditor(null)}
 				success={data => {
 					addShift(data).then(() => {
 						getSchedule({doctor: doctor, clinic: clinic}).then(response => {
 							setSchedule(response.data);
-							setShiftAdder(null);
+							setShiftEditor(null);
 						});
+					});
+				}}
+				deleted={() => {
+					getSchedule({doctor: doctor, clinic: clinic}).then(response => {
+						setSchedule(response.data);
+						setShiftEditor(null);
 					});
 				}}
 			/>
@@ -126,49 +140,49 @@ export function ScheduleEditor() {
 				</div>
 
 				<div className="headerbar">
-					<h2>Sunday</h2> <Button label="+" action={() => setShiftAdder(0)} />
+					<h2>Sunday</h2> <Button label="+" action={() => setShiftEditor({day: 0})} />
 				</div>
 				<div className="cardList">
 					{cards[0]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Monday</h2> <Button label="+" action={() => setShiftAdder(1)} />
+					<h2>Monday</h2> <Button label="+" action={() => setShiftEditor({day: 1})} />
 				</div>
 				<div className="cardList">
 					{cards[1]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Tuesday</h2> <Button label="+" action={() => setShiftAdder(2)} />
+					<h2>Tuesday</h2> <Button label="+" action={() => setShiftEditor({day: 2})} />
 				</div>
 				<div className="cardList">
 					{cards[2]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Wednesday</h2> <Button label="+" action={() => setShiftAdder(3)} />
+					<h2>Wednesday</h2> <Button label="+" action={() => setShiftEditor({day: 3})} />
 				</div>
 				<div className="cardList">
 					{cards[3]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Thursday</h2> <Button label="+" action={() => setShiftAdder(4)} />
+					<h2>Thursday</h2> <Button label="+" action={() => setShiftEditor({day: 4})} />
 				</div>
 				<div className="cardList">
 					{cards[4]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Friday</h2> <Button label="+" action={() => setShiftAdder(5)} />
+					<h2>Friday</h2> <Button label="+" action={() => setShiftEditor({day: 5})} />
 				</div>
 				<div className="cardList">
 					{cards[5]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Saturday</h2> <Button label="+" action={() => setShiftAdder(6)} />
+					<h2>Saturday</h2> <Button label="+" action={() => setShiftEditor({day: 6})} />
 				</div>
 				<div className="cardList">
 					{cards[6]}
