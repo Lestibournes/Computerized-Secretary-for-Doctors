@@ -26,7 +26,7 @@ async function search(text) {
 
 async function getAll() {
 	
-	return db.collection("fields").get().then(spec_snaps => {
+	return db.collection(NAME).get().then(spec_snaps => {
 		let specializations = [];
 
 		spec_snaps.forEach(spec => {

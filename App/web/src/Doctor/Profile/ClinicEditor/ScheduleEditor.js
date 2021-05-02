@@ -1,30 +1,24 @@
-import "./ClinicEditor.css"
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { fn } from '../../../init';
 import { Button } from "../../../Common/Components/Button";
-import { Card } from "../../../Common/Components/Card"
 import { Page } from "../../../Common/Components/Page";
-import { ClinicEditForm } from "./ClinicEditForm";
-import { getPictureURL } from "../../../Common/functions";
+import { Popup } from '../../../Common/Components/Popup';
+import { Card } from '../../../Common/Components/Card';
+
+import { SimpleDate, Time } from '../../../Common/classes';
+import { capitalize } from '../../../Common/functions';
+import { ShiftEditForm } from './ShiftEditForm';
 
 const getClinic = fn.httpsCallable("clinics-get");
 
 const getDoctor = fn.httpsCallable("doctors-getData");
 const getDoctorID = fn.httpsCallable("doctors-getID");
-const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
 
-/**
-@todo
-Edit clinic page:
-Can either be used to create a new clinic or edit an existing one. For an existing clinic it will show:
-* Options to modify the name and location.
-* A list of current members with the option to boot them.
-* A list of pending membership requests with the option to accept or reject them.
-* A button to go to a search page to find existing doctors and invite them to join the clinic.
-*/
+const getSchedule = fn.httpsCallable("schedules-get");
+const addShift = fn.httpsCallable("schedules-add");
 
 export function ScheduleEditor() {
 	const auth = useAuth();
@@ -50,29 +44,79 @@ export function ScheduleEditor() {
 	
 	const [redirect, setRedirect] = useState(null); //Where to redirect to in case the doctor is removed from the clinic.
 
-	const [addShift, setAddShift] = useState(false);
-	const [sunday, setSunday] = useState();
-	const [monday, setMonday] = useState();
-	const [tuesday, setTuesday] = useState();
-	const [wednesday, setWednesday] = useState();
-	const [thursday, setThursday] = useState();
-	const [friday, setFriday] = useState();
-	const [saturday, setSaturday] = useState();
+	const [shiftAdder, setShiftAdder] = useState(null);
+	const [schedule, setSchedule] = useState(null);
+	const [cards, setCards] = useState();
+	
+	// const [sunday, setSunday] = useState();
+	// const [monday, setMonday] = useState();
+	// const [tuesday, setTuesday] = useState();
+	// const [wednesday, setWednesday] = useState();
+	// const [thursday, setThursday] = useState();
+	// const [friday, setFriday] = useState();
+	// const [saturday, setSaturday] = useState();
 
 	useEffect(() => {
-		if (clinic) {
+		if (clinic && doctor) {
 			getClinic({id: clinic}).then(clinic_data => {
 				setClinicData(clinic_data.data);
+
+				getDoctor({id: doctor}).then(doctor_data => {
+					setDoctorData(doctor_data.data);
+
+					getSchedule({doctor: doctor, clinic: clinic}).then(response => {
+						setSchedule(response.data);
+					});
+				});
 			});
 		}
-	}, [clinic]);
+	}, [clinic, doctor]);
+
+	useEffect(() => {
+		if (schedule) {
+			const temp_cards = [];
+	
+			for (const day of schedule) {
+				const temp_day = [];
+
+				for (const shift of day) {
+					temp_day.push(
+						<Card
+							title={Time.fromObject(shift.start).toString() +
+							" - " + Time.fromObject(shift.end).toString()}
+						/>
+					)
+				}
+
+				temp_cards.push(temp_day);
+			}
+	
+			setCards(temp_cards);
+		}
+	}, [schedule])
 
 	let display = <h2>Loading...</h2>;
 	const popups = 
 	<>
+		{shiftAdder !== null ?
+			<ShiftEditForm
+				doctor={doctor}
+				clinic={clinic}
+				day={shiftAdder}
+				close={() => setShiftAdder(null)}
+				success={data => {
+					addShift(data).then(() => {
+						getSchedule({doctor: doctor, clinic: clinic}).then(response => {
+							setSchedule(response.data);
+							setShiftAdder(null);
+						});
+					});
+				}}
+			/>
+		: ""}
 	</>;
 	
-	if (clinicData && doctorData /* && results.length */) {
+	if (clinicData && doctorData && cards) {
 		display = (
 			<>
 				{redirect ? <Redirect to={redirect} /> : ""}
@@ -82,52 +126,52 @@ export function ScheduleEditor() {
 				</div>
 
 				<div className="headerbar">
-					<h2>Sunday</h2> <Button label="+" action={() => addShift(0)} />
+					<h2>Sunday</h2> <Button label="+" action={() => setShiftAdder(0)} />
 				</div>
 				<div className="cardList">
-					{sunday}
+					{cards[0]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Monday</h2> <Button label="+" action={() => addShift(1)} />
+					<h2>Monday</h2> <Button label="+" action={() => setShiftAdder(1)} />
 				</div>
 				<div className="cardList">
-					{monday}
+					{cards[1]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Tuesday</h2> <Button label="+" action={() => addShift(2)} />
+					<h2>Tuesday</h2> <Button label="+" action={() => setShiftAdder(2)} />
 				</div>
 				<div className="cardList">
-					{tuesday}
+					{cards[2]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Wednesday</h2> <Button label="+" action={() => addShift(3)} />
+					<h2>Wednesday</h2> <Button label="+" action={() => setShiftAdder(3)} />
 				</div>
 				<div className="cardList">
-					{wednesday}
+					{cards[3]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Thursday</h2> <Button label="+" action={() => addShift(4)} />
+					<h2>Thursday</h2> <Button label="+" action={() => setShiftAdder(4)} />
 				</div>
 				<div className="cardList">
-					{thursday}
+					{cards[4]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Friday</h2> <Button label="+" action={() => addShift(5)} />
+					<h2>Friday</h2> <Button label="+" action={() => setShiftAdder(5)} />
 				</div>
 				<div className="cardList">
-					{friday}
+					{cards[5]}
 				</div>
 
 				<div className="headerbar">
-					<h2>Saturday</h2> <Button label="+" action={() => addShift(6)} />
+					<h2>Saturday</h2> <Button label="+" action={() => setShiftAdder(6)} />
 				</div>
 				<div className="cardList">
-					{saturday}
+					{cards[6]}
 				</div>
 			</>
 		);

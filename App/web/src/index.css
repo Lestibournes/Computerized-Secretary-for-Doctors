@@ -39,3 +39,18 @@ option:disabled {
 	place-items: center start;
 	margin-bottom: var(--margin);
 }
+
+.table {
+	display: grid;
+	grid-template-columns: min-content max-content;
+	place-items: center start;
+	gap: var(--margin);
+}
+
+.table img {
+	max-width: 128px;
+	max-height: 128px;
+
+	width: auto;
+	height: auto;
+}

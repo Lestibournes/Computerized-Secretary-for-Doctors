@@ -1,4 +1,3 @@
-import "./ClinicEditor.css"
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
