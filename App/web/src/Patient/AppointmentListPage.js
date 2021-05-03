@@ -26,16 +26,29 @@ export function AppointmentListPage() {
 	useEffect(() => {
 		const build = async (appointments) => {
 			if (appointments) {
+				appointments.sort((a, b) => {
+					const date_a = SimpleDate.fromObject(a.extra.date);
+					const date_b = SimpleDate.fromObject(b.extra.date);
+
+					const time_a = Time.fromObject(a.extra.time);
+					const time_b = Time.fromObject(b.extra.time);
+					
+					if (date_a.compare(date_b) === 0) {
+						return time_a.compareTime(time_b);
+					}
+
+					return date_a.compare(date_b);
+				});
+
 				// load the data and create the cards:
-				const tzos = new Date().getTimezoneOffset();
 				let promises = [];
 
 				for (let appointment of appointments) {
 					let promise = getPictureURL(appointment.doctor.user.id).then(url => {
 						appointment.image = url;
 
-						const date = new SimpleDate(appointment.extra.date.year, appointment.extra.date.month, appointment.extra.date.day);
-						const time = new Time(appointment.extra.time.hours, appointment.extra.time.minutes).incrementMinutes(-tzos);
+						const date = SimpleDate.fromObject(appointment.extra.date);
+						const time = Time.fromObject(appointment.extra.time);
 						const doctor = appointment.doctor;
 						const clinic = appointment.clinic;
 		

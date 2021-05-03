@@ -24,6 +24,7 @@ import { AppointmentCalendarPage } from './Doctor/AppointmentCalendarPage';
 import { DoctorEditor } from './Doctor/Profile/DoctorEditor/DoctorEditor'
 import { ClinicEditor } from './Doctor/Profile/ClinicEditor/ClinicEditor';
 import { ScheduleEditor } from './Doctor/Profile/ClinicEditor/ScheduleEditor';
+import { SetAppointmentPage } from './Patient/SetAppointmentPage';
 
 /**
  * URL Scheme:
@@ -49,7 +50,7 @@ ReactDOM.render(
 					<RegisterPage />
 				</Route>
 				<Route path="/specific/:doctor/user/appointments/create/:clinic">
-					<MakeAppointmentPage />
+					<SetAppointmentPage />
 				</Route>
 				<Route path="/specific/user/appointments/success/:appointment">
 					<AppointmentSuccessPage />
@@ -58,7 +59,7 @@ ReactDOM.render(
 					<AppointmentDeletedPage />
 				</Route>
 				<Route path="/specific/user/appointments/edit/:appointment">
-					<EditAppointmentPage />
+					<SetAppointmentPage />
 				</Route>
 				<Route path="/specific/user/appointments/list">
 					<AppointmentListPage />

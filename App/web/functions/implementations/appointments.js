@@ -26,7 +26,7 @@ const SimpleDate = require("./SimpleDate").SimpleDate;
  * @param {string} doctor The id of the doctor
  * @param {string} clinic The id of the clinic
  * @param {SimpleDate} date The day in question
- * @returns {Slot[]} Array of occupied time slots.
+ * @returns {Promise<Slot[]>} Array of occupied time slots.
  */
  async function getAppointments(doctor, clinic, date) {
 	// The time from the server is in UTC with no timezone offset data.
@@ -73,7 +73,7 @@ const appointmentCollides = (appointments, slot) => {
 			}
 		});
 	}
-
+	
 	return collides;
 }
 
@@ -86,49 +86,26 @@ const appointmentCollides = (appointments, slot) => {
  * @param {SimpleDate} date The requested date of the appointment.
  * @param {Slot} slot The requested time of the appointment.
  * @param {string} type The type of appointment.
- * @returns {boolean} true if available, false if unavailable (temporarily returning 0,1)
+ * @returns {Promise<boolean>} true if available, false if unavailable (temporarily returning 0,1)
  */
 async function isAvailable(doctor, clinic, date, slot, type) {
 	// Get all the unavailable time slots:
-	const appointments = await getAppointments(doctor, clinic, date);
-	
-	/**
-	 * Store wether of not the requested time slot is available. By default, no.
-	 */
-	let okay = false;
-	
-	// Get the all the schedules for the specified doctor at the specified clinic
-	// (there should only be one, since each doctor should only have 1 schedule per clinic,
-	// but it will return a snapshot of multiple results that need to be iterated over, of size 1):
-	await db.collection("slots")
-	.where("clinic", "==", clinic)
-	.where("doctor", "==", doctor)
-	.get().then(snapshots => {
-		snapshots.forEach(snapshot => {
-			const weekly = new Map(Object.entries(snapshot.data().weekly));
+	return getAppointments(doctor, clinic, date).then(appointments => {
+		return schedules.get(clinic, doctor).then(schedule => {
+			for (const shift of schedule[date.weekday]) {
+				const timeRange = new Slot(Time.fromObject(shift.start), Time.fromObject(shift.end));
 
-			// Get the schedule for the requested day of the week, if it exists:
-			if (weekly.has(date.dayname)) {
-				const schedule = weekly.get(date.dayname);
-				
-				// The schedule can consist of multiple shifts. Check each of them:
-				schedule.forEach(shift => {
-					const timeRange = new Slot(new Time(shift.start.toDate().getHours(), shift.start.toDate().getMinutes()),
-																					new Time(shift.end.toDate().getHours(), shift.end.toDate().getMinutes()));
-					
-					// Check if the requested slot for the appointment is both within the time
-					// limit of the shift and doesn't collide with an existing appointment:
-					if (timeRange.contains(slot) && !appointmentCollides(appointments, slot)) {
-						okay = true;
-						return;
-					}
-				});
+				// Check if the requested slot for the appointment is both within the time
+				// limit of the shift and doesn't collide with an existing appointment:
+				if (timeRange.contains(slot) && !appointmentCollides(appointments, slot)) {
+					return true;
+				}
 			}
+
+			return false;
 		});
 	});
-
-	// Return the available time slots:
-	return okay;
+	
 }
 
 // API implementation code:
@@ -212,7 +189,7 @@ async function getAvailable(doctor, clinic, date, type) {
 	// The time from the server is in UTC with no timezone offset data.
 	
 	date = new SimpleDate(date.year, date.month, date.day);
-	
+
 	const available = [];
 	
 	// First get all of the booked time ranges:

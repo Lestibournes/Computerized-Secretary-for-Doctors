@@ -34,9 +34,6 @@ export function MakeAppointmentPage(props) {
 	const currentDate = new Date();
 	const { doctor, clinic } = useParams(); //The ID of the doctor and clinic.
 	const [type, setType] = useState(null);
-	// const [day, setDay] = useState(null);
-	// const [month, setMonth] = useState(0);
-	// const [year, setYear] = useState(2021);
 	const [time, setTime] = useState(null);
 	const [times, setTimes] = useState([]);
 	const [date, setDate] = useState({

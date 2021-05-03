@@ -67,13 +67,13 @@ export class Time {	/**
 	 * @returns {number} 1 if this > that, 0 if this == that, -1 if this < that.
 	 */
 	compareTime(that) {
-		if (this.#hours > that.#hours || (this.#hours === that.#hours && this.#minutes > that.#minutes)) return 1;
-		else if (this.#hours === that.#hours && this.#minutes === that.#minutes) return 0;
+		if (this.hours > that.hours || (this.hours === that.hours && this.minutes > that.minutes)) return 1;
+		else if (this.hours === that.hours && this.minutes === that.minutes) return 0;
 		else return -1;
 	};
 
 	toString() {
-		return (this.#hours < 10 ? "0" : "") + this.#hours + ":" + (this.#minutes < 10 ? "0" : "") + this.#minutes;
+		return (this.hours < 10 ? "0" : "") + this.hours + ":" + (this.minutes < 10 ? "0" : "") + this.minutes;
 	}
 }
 
