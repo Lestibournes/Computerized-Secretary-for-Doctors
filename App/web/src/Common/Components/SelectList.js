@@ -25,15 +25,16 @@ import "./SelectList.css";
 				<input type="hidden" className={error} {...field} {...props} />
 			</div>
 			<div className="list">
-				{options.map((option, index) => {
+				{options ? options.map((option, index) => {
 					return <div
 						key={option}
-						className={"item" + (selected === index ? " selected" : "")}
-						onClick={() => props.onClick(index)}
+						className={"item" + (selected === option ? " selected" : "")}
+						onClick={() => props.onClick(option)}
 						>
-							{option}
+							{option.toString()}
 						</div>
-				})}
+				})
+				: ""}
 			</div>
 			{/* This code here is commented out because it causes a bug: */}
 				{/* {meta.touched && meta.error ? (

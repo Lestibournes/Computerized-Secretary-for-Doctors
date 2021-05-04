@@ -35,7 +35,7 @@ export function Page({unprotected, title, subtitle, content}) {
 			</div>
 			{title ? <h1>{title}</h1> : ""}
 			{subtitle ? <h2>{subtitle}</h2> : ""}
-			{content ? content : ""}
+			{content ? content : <h3>Loading...</h3>}
 		</div>
 	);
 }

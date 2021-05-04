@@ -10,6 +10,7 @@ import { SelectList } from "../Common/Components/SelectList";
 import { SelectDate } from "../Common/Components/SelectDate";
 import { Page } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
+import { Popup } from '../Common/Components/Popup';
 
 const getAppointment = fn.httpsCallable("appointments-get");
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
@@ -52,7 +53,7 @@ export function SetAppointmentPage() {
 	
 	const [type, setType] = useState(null);
 	const [time, setTime] = useState(null);
-	const [times, setTimes] = useState([]);
+	const [times, setTimes] = useState();
 	const [date, setDate] = useState(SimpleDate.fromObject({
 		year: currentDate.getUTCFullYear(),
 		month: currentDate.getUTCMonth(),
@@ -61,6 +62,7 @@ export function SetAppointmentPage() {
 
 	const [success, setSuccess] = useState(null);
 	const [deleted, setDeleted] = useState(null);
+	const [confirmDelete, setConfirmDelete] = useState(false);
 
 	const [doctor_data, setDoctorData] = useState(null);
 	const [clinic_data, setClinicData] = useState(null);
@@ -110,7 +112,8 @@ export function SetAppointmentPage() {
 				const times = [];
 
 				results.data.forEach(result => {
-					times.push((result.start.hours) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
+					// times.push((result.start.hours) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
+					times.push(Time.fromObject(result.start));
 				});
 
 				setTimes(times);
@@ -121,24 +124,37 @@ export function SetAppointmentPage() {
 	const types = ["new patient", "regular", "follow up"];//Temporary. Should be read from the doctor's configuration on the server.
 	// const tzos = (new Date()).getTimezoneOffset() / 60;
 
-	return (
-		<Page
-			title={data ? "Change Your Appointment" : "Make an Appointment"}
-			subtitle={"Appointment Details" + 
-				(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : "") + 
-				(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : "")
-			}
-			content={
+	let popups =
+	<>
+		{confirmDelete ?
+			<ConfirmDelete
+				appointment={appointment}
+				close={() => setConfirmDelete(false)}
+				success={() => setDeleted(true)}
+			/>
+		: ""}
+	</>;
+
+	let subtitle;
+	let display;
+	
+	if ((data || !appointment) && doctor_data && clinic_data) {
+		subtitle = 
+			"Appointment Details" + 
+			(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : "") + 
+			(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : "");
+		
+		display = 
 			<>
 				{data ?
-				<>
-					<p>
-						Currently the appointment is a <b>{data.appointment.type}</b> appointment
-						on <b>{SimpleDate.fromObject(data.extra.date).toString()}</b>
-						at <b>{Time.fromObject(data.extra.time).toString()}</b>.
-					</p>
-					<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
-				</>
+					<>
+						<p>
+							Currently the appointment is a <b>{data.appointment.type}</b> appointment
+							on <b>{SimpleDate.fromObject(data.extra.date).toString()}</b>
+							at <b>{Time.fromObject(data.extra.time).toString()}</b>.
+						</p>
+						<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
+					</>
 				: ""}
 				<Formik
 					initialValues={{}}
@@ -155,11 +171,8 @@ export function SetAppointmentPage() {
 								appointment: appointment
 							};
 
-							if (time) {
-								new_data.time = {
-									hours: Number(("" + times[time]).split(":")[0]),
-									minutes: Number(("" + times[time]).split(":")[1])
-								};
+							if (time != null) {
+								new_data.time = time.toObject();
 							}
 							
 							if (date) {
@@ -167,7 +180,7 @@ export function SetAppointmentPage() {
 							}
 
 							if (type) {
-								new_data.type = types[type];
+								new_data.type = type;
 							}
 							
 							editAppointment(new_data)
@@ -191,11 +204,8 @@ export function SetAppointmentPage() {
 								clinic: clinic,
 								patient: auth.user.uid,
 								date: date.toObject(),
-								time: {
-									hours: Number(("" + times[time]).split(":")[0]),
-									minutes: Number(("" + times[time]).split(":")[1])
-								},
-								type: types[type]
+								time: time.toObject(),
+								type: type
 							})
 							.then(response => {
 								if (response.data.messages.length > 0) {
@@ -240,27 +250,53 @@ export function SetAppointmentPage() {
 							/>
 						</div>
 						<div className="buttonBar">
-						<Button type="cancel" action={() => {
-							cancelAppointment({appointment: appointment}).then(response => {
-								if (response.data.success) {
-									setDeleted(true);
-								}
-								else {
-									response.data.messages.forEach(message => {
-										console.log(message)
-									});
-								}
-							});
-							}}
-							label="Delete" />
+							{appointment ? 
+								<Button
+									type="cancel"
+									action={() => setConfirmDelete(true)}
+								label="Delete" />
+							: ""}
 							<Button type="submit" label="Submit" />
 						</div>
 					</Form>
 				</Formik>
+				{popups}
 				{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
 				{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
-			</>
-			}
+			</>;
+	}
+
+	return (
+		<Page
+			title={appointment ? "Change Your Appointment" : "Make an Appointment"}
+			subtitle={subtitle}
+			content={display}
 		/>
 	);
+}
+
+function ConfirmDelete({appointment, close, success}) {
+	const [problem, setProblem] = useState(null);
+
+	return (
+	<Popup
+		title="Confirm Deletion"
+		display={
+			<>
+				<p>Are you sure you wish to delete this shift?</p>
+				<p>This action is permanent and cannot be undone.</p>
+				<div className="buttonBar">
+					<Button type="cancel" label="Yes" action={() => {
+						cancelAppointment({appointment: appointment}).then(response => {
+							if (!response.data.success) {setProblem(response.data.message)}
+							else success();
+						});
+					}} />
+					<Button type="okay" label="Cancel" action={close} />
+					{problem ? <Popup title="Error" display={<div>{problem}</div>} close={() => setProblem(false)} /> : ""}
+				</div>
+			</>
+		}
+		close={close}
+	/>);
 }

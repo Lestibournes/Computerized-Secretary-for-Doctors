@@ -7,10 +7,14 @@ export class Time {	/**
 	* @param {{hours: number, minutes: number}} time 
 	* @returns {Time}
 	*/
- static fromObject(time) {
-	 return new Time(time.hours, time.minutes);
- }
+	static fromObject(time) {
+		return new Time(time.hours, time.minutes);
+	}
 	
+	toObject() {
+		return {hours: this.hours, minutes: this.minutes};
+	}
+
 	#hours;
 	#minutes;
 

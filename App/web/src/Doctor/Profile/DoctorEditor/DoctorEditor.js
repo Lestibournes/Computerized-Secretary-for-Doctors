@@ -229,7 +229,7 @@ export function DoctorEditor() {
 			close={() => setRemoveSpecialization(false)}
 			display={
 				<>
-					Are you sure you wish to remove the specialization {removeSpecialization}?
+					Are you sure you wish to remove the specialization {capitalize(removeSpecialization)}?
 					<div className="buttonBar">
 						<Button type="okay" label="Cancel" action={() => setRemoveSpecialization(false)} />
 						<Button type="cancel" label="Yes" action={() => {

@@ -270,7 +270,7 @@ async function getAvailable(doctor, clinic, date, type) {
  * @param {string} type The type of appointment
  * @returns {{id: string, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
  */
- async function add(doctor, clinic, patient, date, time, type) {
+async function add(doctor, clinic, patient, date, time, type) {
 	let response = {
 		id: null,
 		messages: []
@@ -348,7 +348,8 @@ async function getAvailable(doctor, clinic, date, type) {
  * @param {string} type The type of appointment
  * @returns {{id: string, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
  */
- async function edit(appointment, date, time, type) {
+async function edit(appointment, date, time, type) {
+	console.log(time);
 	let response = {
 		id: null,
 		messages: []
