@@ -48,49 +48,42 @@ export function SearchDoctorsPage() {
 	}, []);
 
 	useEffect(() => {
-		const cards = [];
-		const build = async (doctor, clinic, cards, total) => {
-			await getPictureURL(doctor.user.id).then(url => {
-				doctor.image = url;
-			});
-
-			const card = (<Card
-				key={doctor.doctor.id + ", " + clinic.id}
-				link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
-				title={doctor.user.firstName + " " + doctor.user.lastName}
-				body=
-					{doctor.fields.length > 0 ?
-						doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-						: ""))
-					: null}
-				footer={clinic.name + ", " + clinic.city}
-				image={doctor.image} />);
-			cards.push(card);
-
-			if (cards.length === total) {
-				setResults(cards);
-				setSearching(false);
-				setSearched(true);
-			}
-		}
-
 		if (doctors.length === 0) {
 			setResults([]);
 			setSearching(false);
 		}
-		
 		else {
-			let total = 0;
-			
-			for (let doctor of doctors) {
-				total += doctor.clinics.length;
-			}
+			const promises = [];
 
 			for (let doctor of doctors) {
 				for (let clinic of doctor.clinics) {
-					build(doctor, clinic, cards, total);
+					promises.push(
+						getPictureURL(doctor.user.id).then(url => {
+							doctor.image = url;
+
+							return (
+							<Card
+								key={doctor.doctor.id + ", " + clinic.id}
+								link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
+								title={doctor.user.firstName + " " + doctor.user.lastName}
+								body=
+									{doctor.fields.length > 0 ?
+										doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
+										: ""))
+									: null}
+								footer={clinic.name + ", " + clinic.city}
+								image={doctor.image}
+							/>);
+						})
+					);
 				}
 			}
+
+			Promise.all(promises).then(cards => {
+				setResults(cards);
+				setSearching(false);
+				setSearched(true);
+			});
 		}
 	}, [doctors]);
 
