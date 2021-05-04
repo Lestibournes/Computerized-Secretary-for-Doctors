@@ -173,7 +173,6 @@ export function DoctorEditor() {
 			success={doctor => {
 				setCreateProfile(false);
 				getDoctor({id: doctor}).then(results => {
-					console.log("Testing a, b, c... ", results.data)
 					setDoctor(results.data);
 				});
 			}}

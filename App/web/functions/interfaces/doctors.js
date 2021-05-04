@@ -28,6 +28,5 @@ exports.addSpecialization = functions.https.onCall((data, context) => {
 });
 
 exports.removeSpecialization = functions.https.onCall((data, context) => {
-	console.log(data);
 	return doctors.removeSpecialization(data.doctor, data.specialization);
 });

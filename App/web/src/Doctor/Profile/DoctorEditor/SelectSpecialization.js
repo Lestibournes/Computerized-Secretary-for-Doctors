@@ -114,7 +114,6 @@ function CreateSpecialization({specialization, close, success}) {
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
-							console.log(values.specialization)
 							createSpecialization({name: values.specialization}).then(() => {
 								success(values.specialization);
 							})

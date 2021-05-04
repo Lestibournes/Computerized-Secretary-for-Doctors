@@ -156,7 +156,6 @@ async function search(name, field, city) {
 
 			// Filter the doctors base on whether they have matching locations, specializations, and names:
 			for (let result of results) {
-				console.log(name, result.user.fullName);
 				if (result.clinics.length > 0 && result.fields.length > 0 &&
 					((name && stringContains(result.user.fullName, name)) || !name)) {
 					doctors.push(result);

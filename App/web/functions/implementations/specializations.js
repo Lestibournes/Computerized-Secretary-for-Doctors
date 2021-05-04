@@ -43,7 +43,6 @@ async function getAll() {
 }
 
 async function create(name) {
-	console.log(name)
 	return db.collection(NAME).doc(name).create({
 		exists: true
 	});
