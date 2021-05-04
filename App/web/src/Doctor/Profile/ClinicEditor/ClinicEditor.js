@@ -67,13 +67,12 @@ export function ClinicEditor() {
 
 
 	useEffect(() => {
-		const cards = [];
-		const build = async (doctors) => {
-			if (doctors) {
-				for (const doctor of doctors) {
-					await getPictureURL(doctor.user.id).then(url => {
-						doctor.image = url;
-					});
+		if (doctors) {
+			const promises = [];
+
+			for (const doctor of doctors) {
+				promises.push(getPictureURL(doctor.user.id).then(url => {
+					doctor.image = url;
 
 					const card = (<Card
 						key={doctor.doctor.id}
@@ -88,13 +87,15 @@ export function ClinicEditor() {
 						link={"/specific/doctor/clinics/schedule/edit/" + clinic + "/" + doctor.doctor.id}
 					/>);
 	
-					cards.push({
+					return {
 						name: doctor.user.lastName + doctor.user.firstName,
 						id: doctor.doctor.id,
 						component: card
-					});
-				}
-				
+					};
+				}));
+			}
+
+			Promise.all(promises).then(cards => {
 				cards.sort((a, b) => {
 					if (a.id === data.owner) {
 						return -1;
@@ -116,11 +117,9 @@ export function ClinicEditor() {
 				});
 				
 				setResults(cards.map(card => card.component));
-			}
+			});
 		}
-		
-		build(doctors);
-	}, [doctors, data]);
+	}, [doctors, data, clinic]);
 
 	let display = <h2>Loading...</h2>;
 	if (data && results.length) {
