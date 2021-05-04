@@ -11,6 +11,7 @@ import { SelectDate } from "../Common/Components/SelectDate";
 import { Page } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
 import { Popup } from '../Common/Components/Popup';
+import { capitalize } from '../Common/functions';
 
 const getAppointment = fn.httpsCallable("appointments-get");
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
@@ -52,7 +53,7 @@ export function SetAppointmentPage() {
 	const [clinicID, setClinicID] = useState();
 	
 	const [type, setType] = useState(null);
-	const [time, setTime] = useState(null);
+	const [time, setTime] = useState();
 	const [times, setTimes] = useState();
 	const [date, setDate] = useState(SimpleDate.fromObject({
 		year: currentDate.getUTCFullYear(),
@@ -101,7 +102,7 @@ export function SetAppointmentPage() {
   }, [clinicID]);
 
 	useEffect(() => {
-		if (date.day && date.month && date.year) {
+		if (date.day && date.month && date.year && (time || !appointment)) {
 			getAvailableAppointments({
 				doctor: doctorID,
 				clinic: clinicID,
@@ -109,20 +110,34 @@ export function SetAppointmentPage() {
 				type: type
 			})
 			.then(results => {
-				const times = [];
+				const list = [];
 
 				results.data.forEach(result => {
-					// times.push((result.start.hours) + ":" + (result.start.minutes < 10 ? "0" : "") + result.start.minutes);
-					times.push(Time.fromObject(result.start));
+					list.push(Time.fromObject(result.start));
 				});
 
-				setTimes(times);
+				if (time) {
+					for (let i = 0; i < list.length; i++) {
+						if (list[i].compare(time) === 0) {
+							break;
+						}
+						else if (i === list.length - 1) {
+							list.push(Time.fromObject(time));
+						};
+					}
+				}
+
+				list.sort((a, b) => {return a.compare(b)});
+
+				setTimes(list);
 			});
 		}
-	}, [date])
+	}, [appointment, time, date])
 
-	const types = ["new patient", "regular", "follow up"];//Temporary. Should be read from the doctor's configuration on the server.
-	// const tzos = (new Date()).getTimezoneOffset() / 60;
+	/**
+	 * @todo Appointment types should be read from the doctor's configuration on the server.
+	 */
+	const types = ["new patient", "regular", "follow up"];
 
 	let popups =
 	<>
@@ -149,7 +164,7 @@ export function SetAppointmentPage() {
 				{data ?
 					<>
 						<p>
-							Currently the appointment is a <b>{data.appointment.type}</b> appointment
+							Currently the appointment is a <b>{capitalize(data.appointment.type)}</b> appointment
 							on <b>{SimpleDate.fromObject(data.extra.date).toString()}</b>
 							at <b>{Time.fromObject(data.extra.time).toString()}</b>.
 						</p>
@@ -157,11 +172,22 @@ export function SetAppointmentPage() {
 					</>
 				: ""}
 				<Formik
-					initialValues={{}}
+					initialValues={{
+						type: (type ? type : ""),
+						date: (date ? date : ""),
+						time: (time ? time : "")
+					}}
 					validationSchema={Yup.object({
 						type: Yup.string(),
-						date: Yup.date(),
-						time: Yup.string(),
+						date: Yup.object({
+							year: Yup.number(),
+							month: Yup.number(),
+							day: Yup.number(),
+						}),
+						time: Yup.object({
+							hours: Yup.number(),
+							minutes: Yup.number()
+						})
 					})}
 					onSubmit={async (values, { setSubmitting }) => {
 						setSubmitting(true);
@@ -171,16 +197,16 @@ export function SetAppointmentPage() {
 								appointment: appointment
 							};
 
-							if (time != null) {
-								new_data.time = time.toObject();
+							if (values.time) {
+								new_data.time = values.time.toObject();
 							}
 							
-							if (date) {
-								new_data.date = date.toObject();
+							if (values.date) {
+								new_data.date = values.date.toObject();
 							}
 
-							if (type) {
-								new_data.type = type;
+							if (values.type) {
+								new_data.type = values.type;
 							}
 							
 							editAppointment(new_data)
@@ -203,9 +229,9 @@ export function SetAppointmentPage() {
 								doctor: doctor,
 								clinic: clinic,
 								patient: auth.user.uid,
-								date: date.toObject(),
-								time: time.toObject(),
-								type: type
+								date: values.date.toObject(),
+								time: values.time.toObject(),
+								type: values.type
 							})
 							.then(response => {
 								if (response.data.messages.length > 0) {
@@ -227,23 +253,21 @@ export function SetAppointmentPage() {
 						<div className="pickers">
 							<SelectList
 								label="Appointment Type"
-								id="type"
+								name="type"
 								options={types}
 								selected={type}
 								onClick={(index) => setType(index)}
 							/>
 							<SelectDate
-								id="date"
-								day={date.day}
-								month={date.month}
-								year={date.year}
+								name="date"
+								selected={date}
 								onClick={(date) => {
 									setDate(SimpleDate.fromObject(date));
 								}}
 							/>
 							<SelectList
 								label="Time Slot"
-								id="time"
+								name="time"
 								options={times}
 								selected={time}
 								onClick={(time) => setTime(time)}

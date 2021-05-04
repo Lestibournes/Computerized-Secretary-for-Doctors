@@ -35,12 +35,12 @@ input:active {
 }
 
 
-input.error {
+input.error, Field.error {
 	background-color: var(--warning-color);
 }
 
 div.error {
-	font-size: var(--font-size-f);
+	font-size: var(--font-size-e);
 	color: var(--warning-color);
 	grid-column: 2/3;
 }

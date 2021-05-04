@@ -70,7 +70,7 @@ export class Time {	/**
 	 * @param {Time} that Another point in time
 	 * @returns {number} 1 if this > that, 0 if this == that, -1 if this < that.
 	 */
-	compareTime(that) {
+	compare(that) {
 		if (this.hours > that.hours || (this.hours === that.hours && this.minutes > that.minutes)) return 1;
 		else if (this.hours === that.hours && this.minutes === that.minutes) return 0;
 		else return -1;
@@ -119,8 +119,8 @@ export class Slot {
 	 */
 	collides(that) {
 		return (
-			((this.#start.compareTime(that.#start) >= 0 && this.#start.compareTime(that.#end) < 0) ||
-			 (this.#end.compareTime(that.#start) >= 0 && this.#end(that.#end) < 0))
+			((this.#start.compare(that.#start) >= 0 && this.#start.compare(that.#end) < 0) ||
+			 (this.#end.compare(that.#start) >= 0 && this.#end(that.#end) < 0))
 		);
 	}
 }
@@ -135,7 +135,7 @@ export class Slot {
 	 * it's stored in the database and how it's represented by the JS Date object.
 	 */
 	static day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-
+	static month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	/**
 	 * Convert a Date object to a SimpleDate object.
 	 * @param {Date} date 
@@ -177,6 +177,16 @@ export class Slot {
 	 * @param {number} day valid values: 0...31 (depends on the month) and null.
 	 */
 	constructor(year, month, day) {
+		// Correcting the month and year that are received from the params in case the value of the month is wrong:
+		if (month < 0) {
+			month += 12;
+			year--;
+		}
+		else if (month > 11) {
+			month %= 11;
+			year++;
+		}
+		
 		this.#year = year;
 		this.#month = month;
 		this.#day = day;
@@ -207,7 +217,7 @@ export class Slot {
 	 * @returns {number} The day of the week. Values 0...6.
 	 */
 	get weekday() {
-		return new Date(this.#year, this.#month, this.#day).getDay();
+		return new Date(this.year, this.month, this.day).getDay();
 	}
 
 	/**
@@ -218,16 +228,23 @@ export class Slot {
 	}
 
 	/**
+	 * @returns {string} The name of the day of the week, in lowercase.
+	 */
+	get monthname() {
+		return SimpleDate.month_names[this.month];
+	}
+
+	/**
 	 * Get the next month on the calendar.
 	 * @returns {SimpleDate} A new date representing the next month on the calendar.
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getNextMonth() {
-		if (this.#month === 11) {
-			return new SimpleDate(this.#year + 1, 0, this.#day);
+		if (this.month === 11) {
+			return new SimpleDate(this.year + 1, 0, this.day);
 		}
 		else {
-			return new SimpleDate(this.#year, this.#month + 1, this.#day);
+			return new SimpleDate(this.year, this.month + 1, this.day);
 		}
 	}
 	/**
@@ -236,11 +253,11 @@ export class Slot {
 	 * @todo Take care of the day of the month too, in cases where its value is greater than the last day of the month.
 	 */
 	getPreviousMonth() {
-		if (this.#month === 0) {
-			return new SimpleDate(this.#year - 1, 11, this.#day);
+		if (this.month === 0) {
+			return new SimpleDate(this.year - 1, 11, this.day);
 		}
 		else {
-			return new SimpleDate(this.#year, this.#month - 1, this.#day);
+			return new SimpleDate(this.year, this.month - 1, this.day);
 		}
 	}
 

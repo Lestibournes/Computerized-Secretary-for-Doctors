@@ -1,4 +1,5 @@
-import { useField } from "formik";
+import { Field, useField, useFormikContext } from "formik";
+import { useEffect } from "react";
 import "./SelectList.css";
 
 /**
@@ -16,19 +17,28 @@ import "./SelectList.css";
 	const [field, meta] = useField(props);
 	const error = meta.touched && meta.error ? "error" : null;
 	
-	// field.value = options[selected]; // The index of the currently selected option.
+	const {
+		setFieldValue
+	} = useFormikContext();
+
+	useEffect(() => {
+		if (props.name && selected && setFieldValue) {
+			setFieldValue(props.name, selected);
+		}
+
+	}, [props.name, selected, setFieldValue]);
 
 	return (
 		<div className="SelectList">
 			<div className="header">
 				<div className="label"><label htmlFor={props.id}>{label}:</label></div>
-				<input type="hidden" className={error} {...field} {...props} />
+				<Field type="hidden" className={error} {...field} {...props} />
 			</div>
 			<div className="list">
-				{options ? options.map((option, index) => {
+				{options ? options.map(option => {
 					return <div
 						key={option}
-						className={"item" + (selected === option ? " selected" : "")}
+						className={"item" + (selected === option || (selected && selected.compare && selected.compare(option) === 0) ? " selected" : "")}
 						onClick={() => props.onClick(option)}
 						>
 							{option.toString()}
@@ -36,10 +46,9 @@ import "./SelectList.css";
 				})
 				: ""}
 			</div>
-			{/* This code here is commented out because it causes a bug: */}
-				{/* {meta.touched && meta.error ? (
-					<div className="error">{String(meta.error)}</div>
-				) : null} */}
+			{meta.touched && meta.error ?
+				<div className="error">{String(meta.error)}</div>
+			: ""}
 		</div>
 	);
 };

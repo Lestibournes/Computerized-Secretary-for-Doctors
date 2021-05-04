@@ -1,7 +1,7 @@
 .SelectList {
 	display: grid;
 	grid-template-rows: auto 1fr;
-
+	grid-auto-rows: 3em;
 	width: 100%;
 	height: 100%;
 	aspect-ratio: 1/1;
@@ -49,4 +49,9 @@
 .SelectList .faded {
 	color: var(--control-background-pressed);
 	background-color: var(--control-background-hover);
+}
+
+div.error {
+	grid-column: unset;
+	overflow: auto;
 }

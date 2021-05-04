@@ -92,7 +92,7 @@ export function AppointmentCalendarPage() {
 
 						let start_time = new Time(start_date.getUTCHours(), start_date.getUTCMinutes()).incrementMinutes(-start_date.getTimezoneOffset());
 
-						if (!start || start_time.compareTime(start) < 0) {
+						if (!start || start_time.compare(start) < 0) {
 							start = start_time;
 						}
 
@@ -101,7 +101,7 @@ export function AppointmentCalendarPage() {
 
 						let end_time = new Time(end_date.getUTCHours(), end_date.getUTCMinutes()).incrementMinutes(-end_date.getTimezoneOffset());
 						
-						if (!end || end_time.compareTime(end) > 0) {
+						if (!end || end_time.compare(end) > 0) {
 							end = end_time;
 						}
 					}

@@ -1,4 +1,5 @@
-import { useField } from "formik";
+import { Field, useField, useFormikContext } from "formik";
+import { useEffect } from "react";
 import { Button } from "./Button";
 import "./SelectDate.css";
 
@@ -6,7 +7,7 @@ import "./SelectDate.css";
  * Uses Formik to present a date selector.
  * @todo Switch to using the Time and SimpleDate objects.
  */
- export const SelectDate = ({ day, month, year, ...props}) => {
+ export const SelectDate = ({ selected, ...props}) => {
 	// Make sure that if either id or name is not specified, that it will have the correct value:
 	if (!props.id) {
 		props.id = props.name;
@@ -17,74 +18,40 @@ import "./SelectDate.css";
 
 	const [field, meta] = useField(props);
 	const error = meta.touched && meta.error ? "error" : null;
-	const month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-	// Helper functions for changing the month being displayed:
-	const getNextMonth = (month, year) => {
-		if (month === 11) {
-			return {
-				month: 0,
-				year: year + 1
-			}
+	const {
+		setFieldValue
+	} = useFormikContext();
+	
+	useEffect(() => {
+		if (props.name && selected && setFieldValue) {
+			setFieldValue(props.name, selected);
 		}
-		else {
-			return {
-				month: month + 1,
-				year: year
-			}
-		}
-	}
-
-	const getPreviousMonth = (month, year) => {
-		if (month === 0) {
-			return {
-				month: 11,
-				year: year - 1
-			}
-		}
-		else {
-			return {
-				month: month - 1,
-				year: year
-			}
-		}
-	}
-
-	// Correcting the month and year that are received from the props in case the value of the month is wrong:
-	if (month < 0) {
-		month += 12;
-		year--;
-	}
-	else if (month > 11) {
-		month %= 11;
-		year++;
-	}
-
-	// field.value = new Date(year, month, day);
+	}, [props.name, selected, setFieldValue]);
+	
+	/**
+	 * The next month relative to the currently selected month.
+	 */
+	const next_month = selected.getNextMonth();
 	
 	/**
 	 * The first day of the week for the currently displayed month.
 	 */
-	const startday = new Date(year, month, 1).getDay();
+	const startday = new Date(selected.year, selected.month, 1).getDay();
 	/**
 	 * The number of days in the current month.
 	 */
-	const current_length = (new Date(year, month + 1, 0)).getDate();
+	const current_length = (new Date(next_month.year, next_month.month, 0)).getDate();
 	
 	/**
 	 * The previous month.
 	 */
-	const previous_month = getPreviousMonth(month, year);
+	const previous_month = selected.getPreviousMonth();
 	/**
 	 * The number of days in the previous month.
 	 */
-	const previous_length = (new Date(previous_month.year, previous_month.month, 0)).getDate();
+	const previous_length = (new Date(selected.year, selected.month, 0)).getDate();
 
-	/**
-	 * The next month relative to the currently selected month.
-	 */
-	const next_month = getNextMonth(month, year);
-	
 	/**
 	 * Holds all the components representing the days that will appear on the calendar.
 	 * It should hold 42 components, which include the ending of the previous month,
@@ -121,52 +88,45 @@ import "./SelectDate.css";
 			// Set the values and display style for the days of the current month:
 			date = {
 				day: i - startday,
-				month: month,
-				year: year
+				month: selected.month,
+				year: selected.year
 			};
 			
-			className = (day === date.day ? "selected" : "")
+			className = (selected.day === date.day ? "selected" : "")
 		}
 
 		// Create the component and add it to the array to be displayed:
-		days.push(<div
-			key={i}
-			className={"item " + className}
-			onClick={() => props.onClick(date)}
+		days.push(
+			<div
+				key={i}
+				className={"item " + className}
+				onClick={() => props.onClick(date)}
 			>
 				{date.day}
-			</div>)
+			</div>
+		)
 	}
 
 	return (
 		<div className="SelectDate">
 			<div className="header">
-				<Button action={
-					() => {
-						let date = getPreviousMonth(month, year);
-						// date.day = null;
-						props.onClick(date);
-					}
-					}
-					label="<" />
-				<div className="label">{month_names[month] + " " + year}</div>
-				<input type="hidden" className={error} {...field} {...props} />
-				<Button action={
-					() => {
-						let date = getNextMonth(month, year);
-						// date.day = null;
-						props.onClick(date);
-					}
-					}
-					label=">" />
+				<Button
+					action={() => props.onClick(selected.getPreviousMonth())}
+					label="<"
+				/>
+				<div className="label">{selected.monthname + " " + selected.year}</div>
+				<Field type="hidden" className={error} {...field} {...props} />
+				<Button
+					action={() => props.onClick(selected.getNextMonth())}
+					label=">"
+				/>
 			</div>
 			<div className="body">
 				{days}
 			</div>
-			{/* This code here is commented out because it causes a bug: */}
-				{/* {meta.touched && meta.error ? (
-					<div className="error">{String(meta.error)}</div>
-				) : null} */}
+			{meta.touched && meta.error ?
+				<div className="error">{String(meta.error)}</div>
+			: ""}
 		</div>
 	);
 };

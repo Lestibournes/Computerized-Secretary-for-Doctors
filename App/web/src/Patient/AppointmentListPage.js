@@ -33,7 +33,7 @@ export function AppointmentListPage() {
 				const time_b = Time.fromObject(b.extra.time);
 				
 				if (date_a.compare(date_b) === 0) {
-					return time_a.compareTime(time_b);
+					return time_a.compare(time_b);
 				}
 
 				return date_a.compare(date_b);

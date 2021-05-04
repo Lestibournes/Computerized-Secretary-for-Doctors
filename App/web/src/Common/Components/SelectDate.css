@@ -1,6 +1,7 @@
 .SelectDate {
 	display: grid;
 	grid-template-rows: auto 1fr;
+	grid-auto-rows: 3em;
 	gap: var(--margin-small);
 	
 	height: 100%;
@@ -56,4 +57,9 @@
 .SelectDate .faded {
 	color: var(--control-background-pressed);
 	background-color: var(--control-background-hover);
+}
+
+div.error {
+	grid-column: unset;
+	overflow: auto;
 }
