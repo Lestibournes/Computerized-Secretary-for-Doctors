@@ -78,6 +78,7 @@ function generateClinicCards(doctor, clinics) {
 
 	return clinics_list;
 }
+
 export function DoctorEditor() {
 	const auth = useAuth();
 
@@ -113,9 +114,7 @@ export function DoctorEditor() {
 
 	useEffect(() => {
 		if (doctor) {
-			getAllClinics({doctor: doctor.doctor.id}).then(results => {
-				setClinics(generateClinicCards(doctor.doctor.id, results.data));
-			});
+			setClinics(generateClinicCards(doctor.doctor.id, doctor.clinics));
 
 			getPictureURL(doctor.user.id).then(url => {
 				setImage(url);
@@ -143,7 +142,10 @@ export function DoctorEditor() {
 					{
 						doctor.fields.length > 0 ?
 							doctor.fields.map(field => 
-							<div className="headerbar">
+							<div
+								key={field.id}
+								className="headerbar"
+							>
 								<span>{capitalize(field.id)}</span>
 								<Button
 									label="-"
@@ -192,7 +194,7 @@ export function DoctorEditor() {
 		{createClinic ? 
 		<ClinicCreateForm
 			doctor={doctor.doctor.id}
-			success={clinic => {
+			success={() => {
 				setCreateClinic(false);
 				getAllClinics({doctor: doctor.doctor.id}).then(results => {
 					setClinics(generateClinicCards(doctor.doctor.id, results.data));

@@ -47,8 +47,8 @@ export function ClinicEditor() {
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
 	const [editData, setEditData] = useState(false);
-	const [doctors, setDoctors] = useState([]);
-	const [results, setResults] = useState([]);
+	const [doctors, setDoctors] = useState();
+	const [results, setResults] = useState();
 	const [addDoctor, setAddDoctor] = useState(false);
 	const [doctor, setDoctor] = useState(null);
 	const [redirect, setRedirect] = useState(null);
@@ -122,7 +122,7 @@ export function ClinicEditor() {
 	}, [doctors, data, clinic]);
 
 	let display = <h2>Loading...</h2>;
-	if (data && results.length) {
+	if (data && results) {
 		display = (
 			<>
 				{redirect ? <Redirect to={redirect} /> : ""}

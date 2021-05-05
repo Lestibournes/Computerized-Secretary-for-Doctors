@@ -28,7 +28,7 @@ const SimpleDate = require("./SimpleDate").SimpleDate;
  * @param {SimpleDate} date The day in question
  * @returns {Promise<Slot[]>} Array of occupied time slots.
  */
- async function getAppointments(doctor, clinic, date) {
+async function getAppointments(doctor, clinic, date) {
 	// The time from the server is in UTC with no timezone offset data.
 	// The client will have to implement the timezone offset in the display.
 
@@ -36,45 +36,41 @@ const SimpleDate = require("./SimpleDate").SimpleDate;
 	const start_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day));
 	const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
 
-	// First get all of the booked time ranges:
-	const appointments = [];
-
-	await db.collection("appointments").orderBy("start")
+	return db.collection("appointments").orderBy("start")
 	.where("start", ">=", start_day)
 	.where("start", "<", end_day)
 	.where("clinic", "==", clinic)
 	.where("doctor", "==", doctor)
-	.get().then(snapshots => {
-		snapshots.forEach(snapshot => {
-			const start_time = new Time(snapshot.data().start.toDate().getUTCHours(), snapshot.data().start.toDate().getUTCMinutes());
-			const end_time = start_time.incrementMinutes(snapshot.data().duration);
+	.get().then(appointment_snaps => {
+		const appointments = [];
 
+		for (const appointment_snap of appointment_snaps.docs) {
+			const start_time = Time.fromDate(appointment_snap.data().start.toDate());
+			const end_time = start_time.incrementMinutes(appointment_snap.data().duration);
+	
 			appointments.push(new Slot(start_time, end_time));
-		});
-	});
+		}
 
-	return appointments;
+		return appointments;
+	});
 }
 
 /**
  * Check if the speciefied time slot is available.
  * @param {Slot[]} appointments An array of time slots that have already been booked.
  * @param {Slot} slot
- * @returns {boolean} Return true if there is a collision, false if there isn't. (Temporarily returning 0,1)
+ * @returns {boolean} Return true if there is a collision, false if there isn't.
  */
-const appointmentCollides = (appointments, slot) => {
-	let collides = false;
-
+function appointmentCollides(appointments, slot) {
 	if (appointments.length > 0) {
 		appointments.forEach(appointment => {
 			if (slot.collides(appointment)) {
-				collides = true;
-				return;
+				return true;
 			}
 		});
 	}
 	
-	return collides;
+	return false;
 }
 
 /**
@@ -105,7 +101,6 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 			return false;
 		});
 	});
-	
 }
 
 // API implementation code:
@@ -116,34 +111,42 @@ async function isAvailable(doctor, clinic, date, slot, type) {
  * @returns {Promise<{appointment: object, doctor: object, clinic: object, extra: {date: SimpleDate, time: Time}}>} An object containing all the relevant data.
  */
 async function get(id) {
-	let data = {
-		appointment: null,
-		doctor: null,
-		clinic: null,
-		extra: {
-			date: null,
-			time: null
-		}
-	};
+	return db.collection("appointments").doc(id).get().then(appointment_snap => {
+		const promises = [];
 
-	await db.collection("appointments").doc(id).get().then(appointment_snap => {
+		let data = {
+			appointment: null,
+			doctor: null,
+			clinic: null,
+			extra: {
+				date: null,
+				time: null
+			}
+		};
+
 		data.appointment = appointment_snap.data();
 		data.appointment.id = id;
+
+		promises.push(
+			doctors.getData(data.appointment.doctor).then(doctor => {
+				data.doctor = doctor;
+			})
+		);
+	
+		promises.push(
+			clinics.get(data.appointment.clinic).then(clinic => {
+				data.clinic = clinic;
+			})
+		);
+
+		const date = new Date(data.appointment.start.toDate());
+		data.extra.date = new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+		data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
+	
+		return Promise.all(promises).then(results => {
+			return data;
+		});
 	});
-
-	await doctors.getData(data.appointment.doctor).then(doctor => {
-		data.doctor = doctor;
-	});
-
-	await clinics.get(data.appointment.clinic).then(clinic => {
-		data.clinic = clinic;
-	});
-
-	const date = new Date(data.appointment.start.toDate());
-	data.extra.date = new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-	data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
-
-	return data;
 }
 
 /**
@@ -215,45 +218,6 @@ async function getAvailable(doctor, clinic, date, type) {
 			return available;
 		});
 	});
-
-	// // Then get all of the time slots while leaving out the ones that are already booked:
-	// let slots = [];
-	
-	// // Get all the weekly schedules for the specified doctor at the specified clinic (there should only be one):
-	// await db.collection("slots")
-	// .where("clinic", "==", clinic)
-	// .where("doctor", "==", doctor)
-	// .get().then(snapshots => {
-	// 	snapshots.forEach(snapshot => {
-	// 		const weekly = new Map(Object.entries(snapshot.data().weekly));
-			
-	// 		// Get the schedule for the requested day of the week, if it exists:
-	// 		if (weekly.has(date.dayname)) {
-	// 			const schedule = weekly.get(date.dayname);
-				
-	// 			// The schedule can consist of multiple shifts. Go over each of them:
-	// 			schedule.forEach(shift => {
-	// 				// TODO use Slot object:
-	// 				let now = new Time(shift.start.toDate().getUTCHours(), shift.start.toDate().getUTCMinutes());
-	// 				const end = new Time(shift.end.toDate().getUTCHours(), shift.end.toDate().getUTCMinutes());
-					
-	// 				// For each shift, add all of the time slots that don't
-	// 				// collide with existing appointments To the slots array:
-	// 				while (now.compare(end) < 0) {
-	// 					const slot = new Slot(now, now.incrementMinutes(shift.size));
-						
-	// 					if (!appointmentCollides(appointments, slot)) {
-	// 						slots.push(slot);
-	// 					}
-	
-	// 					now = now.incrementMinutes(shift.size);
-	// 				}
-	// 			});
-	// 		}
-	// 	});
-	// });
-
-	// return slots;
 }
 
 /**
@@ -268,7 +232,7 @@ async function getAvailable(doctor, clinic, date, type) {
  * @param {SimpleDate} date The date of the appointment
  * @param {Time} time The time of the appointment
  * @param {string} type The type of appointment
- * @returns {{id: string, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
+ * @returns {Promise<{id: string, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
  */
 async function add(doctor, clinic, patient, date, time, type) {
 	let response = {
@@ -346,7 +310,7 @@ async function add(doctor, clinic, patient, date, time, type) {
  * @param {SimpleDate} date The date of the appointment
  * @param {Time} time The time of the appointment
  * @param {string} type The type of appointment
- * @returns {{id: string, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
+ * @returns {Promise<{id: string, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
  */
 async function edit(appointment, date, time, type) {
 	let response = {
@@ -428,9 +392,9 @@ async function edit(appointment, date, time, type) {
  * @todo use session tokens to verify that the user canceling the appointment
  * is the user for which the appointment has been made.
  * @param {string} appointment The id of the appointment
- * @returns {{success: boolean, messages: string[]}} The id is the id of the new appointment. Messages contains the error messages.
+ * @returns {Promise<{success: boolean, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
  */
- async function cancel(appointment) {
+async function cancel(appointment) {
 	const response = {
 		success: false,
 		messages: []
@@ -458,9 +422,9 @@ async function edit(appointment, date, time, type) {
 		response.messages.push("appointment doesn't exist");
 	}
 
-
 	return response;
- }
+}
+
 exports.get = get;
 exports.getAll = getAll;
 exports.getAvailable = getAvailable;

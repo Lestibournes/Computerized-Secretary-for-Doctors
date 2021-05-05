@@ -62,7 +62,7 @@ export function UserEditForm({user, image, close, success, deleted}) {
 						<Form>
 							<div className="widgets">
 								<TextInput
-									label="First effing Name"
+									label="First Name"
 									name="firstName"
 									type="text"
 									placeholder="Jane"

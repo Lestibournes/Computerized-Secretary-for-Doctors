@@ -17,8 +17,8 @@ const getAllCities = fn.httpsCallable("clinics-getAllCities");
 const getAllSpecializations = fn.httpsCallable("specializations-getAll");
 
 export function SearchDoctorsPage() {
-	const [cities, setCities] = useState([]);
-	const [fields, setFields] = useState([]);
+	const [cities, setCities] = useState();
+	const [fields, setFields] = useState();
 
 	/**
 	 * There are the following states:
@@ -34,8 +34,8 @@ export function SearchDoctorsPage() {
 	const [searching, setSearching] = useState(false);
 	const [searched, setSearched] = useState(false);
 	
-	const [doctors, setDoctors] = useState([]);
-	const [results, setResults] = useState([]);
+	const [doctors, setDoctors] = useState();
+	const [results, setResults] = useState();
 
 	useEffect(() => {
 		getAllCities().then(response => {
@@ -48,42 +48,45 @@ export function SearchDoctorsPage() {
 	}, []);
 
 	useEffect(() => {
-		if (doctors.length === 0) {
-			setResults([]);
-			setSearching(false);
-		}
-		else {
-			const promises = [];
-
-			for (let doctor of doctors) {
-				for (let clinic of doctor.clinics) {
-					promises.push(
-						getPictureURL(doctor.user.id).then(url => {
-							doctor.image = url;
-
-							return (
-							<Card
-								key={doctor.doctor.id + ", " + clinic.id}
-								link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
-								title={doctor.user.firstName + " " + doctor.user.lastName}
-								body=
-									{doctor.fields.length > 0 ?
-										doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-										: ""))
-									: null}
-								footer={clinic.name + ", " + clinic.city}
-								image={doctor.image}
-							/>);
-						})
-					);
-				}
-			}
-
-			Promise.all(promises).then(cards => {
-				setResults(cards);
+		if (doctors) {
+			if (doctors.length === 0) {
+				setResults([]);
 				setSearching(false);
 				setSearched(true);
-			});
+			}
+			else {
+				const promises = [];
+	
+				for (let doctor of doctors) {
+					for (let clinic of doctor.clinics) {
+						promises.push(
+							getPictureURL(doctor.user.id).then(url => {
+								doctor.image = url;
+	
+								return (
+								<Card
+									key={doctor.doctor.id + ", " + clinic.id}
+									link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
+									title={doctor.user.firstName + " " + doctor.user.lastName}
+									body=
+										{doctor.fields.length > 0 ?
+											doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
+											: ""))
+										: null}
+									footer={clinic.name + ", " + clinic.city}
+									image={doctor.image}
+								/>);
+							})
+						);
+					}
+				}
+	
+				Promise.all(promises).then(cards => {
+					setResults(cards);
+					setSearching(false);
+					setSearched(true);
+				});
+			}
 		}
 	}, [doctors]);
 
@@ -105,7 +108,7 @@ export function SearchDoctorsPage() {
 		}
 	}
 
-	if (cities.length > 0 && fields.length > 0) {
+	if (cities && fields) {
 		display = 
 		<>
 			<Formik

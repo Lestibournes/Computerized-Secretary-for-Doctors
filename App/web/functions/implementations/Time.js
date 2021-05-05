@@ -4,6 +4,15 @@
  */
 class Time {
 	/**
+	 * Convert a Date object to a Time object.
+	 * @param {Date} date 
+	 * @returns {Time}
+	 */
+	static fromDate(date) {
+		return new Time(date.getUTCHours(), date.getUTCMinutes());
+	}
+
+	/**
 	 * Convert a simple object into a Time object.
 	 * @param {{hours: number, minutes: number}} time 
 	 * @returns {Time}

@@ -4,7 +4,7 @@
  * @param {string} search The search term
  * @returns {number} 0 if the search term was not found in the text, 1 if the search term was found in the text.
  */
- const stringContains = (text, search) => {
+const stringContains = (text, search) => {
 	let src = (String) (text);
 	let term = (String) (search);
 
@@ -17,4 +17,21 @@
 	return false;
 }
 
+/**
+ * Capitalize the first letter of every word in the given text.
+ * @param {string} text 
+ * @returns {string}
+ */
+function capitalize(text) {
+	const words = text.split(/\s+/);
+	let result = "";
+
+	for (const word of words) {
+		result += " " + word[0].toUpperCase() + word.substr(1).toLowerCase();
+	}
+
+	return result;
+}
+
 exports.stringContains = stringContains;
+exports.capitalize = capitalize;

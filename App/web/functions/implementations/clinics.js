@@ -2,6 +2,7 @@
 const admin = require('firebase-admin');
 
 const doctors = require('./doctors');
+const { capitalize } = require('./functions');
 
 /**
  * Convenience global variable for accessing the Admin Firestore object.
@@ -13,37 +14,30 @@ const db = admin.firestore();
  * @param {string} id the id of the requested clinic.
  * @returns the data of the requested clinic.
  */
- async function get(id) {
-	let clinic;
+async function get(id) {
+	return db.collection("clinics").doc(id).get().then(clinic_snap => {
+		const clinic = clinic_snap.data();
+		clinic.id = clinic_snap.id;
 
-	await db.collection("clinics").doc(id).get().then(snap => {
-		clinic = snap.data();
-		clinic.id = snap.id;
+		return clinic;
 	});
-
-	return clinic;
 }
 
 /**
  * Get all the doctors who work in the given clinic.
  * @param {string} clinic The id of the clinic.
- * @returns {{doctor: object, user: object, clinics: object[], fields: string[]}[]} The data of the requested doctors.
+ * @returns {Promise<{doctor: object, user: object, clinics: object[], fields: string[]}[]>} The data of the requested doctors.
  */
 async function getAllDoctors(clinic) {
-	let doctor_ids = [];
-	const doctor_data = [];
+	return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
+		const promises = [];
 
-	await db.collection("clinics").doc(clinic).get().then(clinic_snap => {
-		doctor_ids = clinic_snap.data().doctors;
+		for (const doctor of doctor_snaps.docs) {
+			promises.push(doctors.getData(doctor.id));
+		}
+
+		return Promise.all(promises);
 	});
-	
-	for (doctor_id of doctor_ids) {
-		await doctors.getData(doctor_id).then(result => {
-			doctor_data.push(result);
-		})
-	}
-
-	return doctor_data;
 }
 
 /**
@@ -54,114 +48,93 @@ async function getAllDoctors(clinic) {
  * @param {string} address The street and building number where the clinic is located.
  */
 async function add(doctor, name, city, address) {
-	let clinics = [];
-	let clinic;
-	
-	await db.collection("doctors").doc(doctor).get().then(doctor_snap => {
-		if (doctor_snap.data().clinics) {
-			clinics = doctor_snap.data().clinics;
-		}
-	});
-
-	await db.collection("clinics").add({
-		doctors: [doctor],
+	db.collection("clinics").add({
 		name: name,
 		city: city,
 		address: address,
 		owner: doctor
 	}).then(clinicRef => {
-		clinic = clinicRef.id;
-		clinics.push(clinicRef.id);
+		clinicRef.collection("doctors").doc(doctor).set({exists: true});
+		db.collection("doctors").doc(doctor).collection("clinics").doc(clinicRef.id).set({exists: true});
+		db.collection("cities").doc(city).set({exists: true});
+		db.collection("cities").doc(city).collection("clinics").doc(clinicRef.id).set({exists: true});
 	});
-
-	await db.collection("doctors").doc(doctor).update({
-		clinics: clinics
-	});
-
-	return clinic;
 }
 
 /**
  * Edit the details of an existing clinic.
- * @param {string} id The id of the clinic.
+ * @param {string} clinic The id of the clinic.
  * @param {string} doctor The doctor who is requesting the change.
  * @param {string} name The new name of the clinic.
  * @param {string} city The new city where the clinic is located.
  * @param {string} address The new street name and building number where the clinic is located.
- * @returns 
+ * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
-async function edit(id, doctor, name, city, address) {
-	const response = {
-		success: false,
-		message: ""
-	};
+async function edit(clinic, doctor, name, city, address) {
+	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+		const response = {
+			success: false,
+			message: ""
+		};
 
-	let owner;
+		if (clinic_snap.data().owner === doctor) {
+			return db.collection("clinics").doc(clinic).update({
+				name: name,
+				city: city,
+				address: address
+			}).then(() => {
+				response.success = true;
+				return response;
+			});
+		}
 
-	await db.collection("clinics").doc(id).get().then(clinic_snap => {
-		owner = clinic_snap.data().owner;
-	});
-
-	if (owner === doctor) {
-		await db.collection("clinics").doc(id).update({
-			name: name,
-			city: city,
-			address: address
-		});
-
-		response.success = true;
-	}
-	else {
 		response.message = "It's not your clinic.";
-	}
-
-	return response;
+		return response;
+	});
 }
 
 /**
  * Delete a clinic.
- * @param {string} id The id of the clinic.
+ * @param {string} clinic The id of the clinic.
  * @param {string} doctor The doctor who is requesting the change.
- * @returns 
+ * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
-async function eliminate(id, doctor) {
-	const response = {
-		success: false,
-		message: ""
-	};
-	let clinic_data;
-	let owner;
+async function eliminate(clinic, doctor) {
+	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+		const response = {
+			success: false,
+			message: ""
+		};
 
-	await db.collection("clinics").doc(id).get().then(clinic_snap => {
-		clinic_data = clinic_snap.data();
-		owner = clinic_snap.data().owner;
-	});
+		if (clinic_snap.data().owner === doctor) {
+			// Go over all of the clnic's doctors and remove the clinic from their profile:
+			return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
+				const doctor_promises = [];
 
-	if (owner === doctor) {
-		// Go over all of the clnic's doctors and remove the clinic from their profile:
-		for (let d of clinic_data.doctors) {
-			let clinics = [];
-
-			await db.collection("doctors").doc(d).get().then(doctor_snap => {
-				for (let c of  doctor_snap.data().clinics) {
-					if (c !== id) {
-						clinics.push(c);
-					}
+				for (const doctor_snap of doctor_snaps.docs) {
+					doctor_promises.push(
+						db.collection("doctors").doc(doctor_snap.id).collection("clinics").doc(clinic).delete()
+					);
 				}
+
+				// Delete the clinic:
+				doctor_promises.push(db.collection("clinics").doc(clinic).delete());
+
+				// Remove the clinic from the city:
+				doctor_promises.push(
+					db.collection("cities").doc(clinic_snap.data().city).collection("clinics").doc(clinic).delete()
+				);
+
+				return Promise.all(doctor_promises).then(() => {
+					response.success = true;
+					return response;
+				});
 			});
-
-			await db.collection("doctors").doc(d).update({clinics: clinics});
 		}
-		// Delete the clinic:
-		await db.collection("clinics").doc(id).delete();
 
-		response.success = true;
-	}
-	else {
 		response.message = "It's not your clinic.";
-	}
-
-	return response;
+		return response;
+	});
 }
 
 /**
@@ -170,56 +143,8 @@ async function eliminate(id, doctor) {
  * @param {string} doctor The id of the doctor.
  */
 async function leave(clinic, doctor) {
-	
-	// Remove the doctor from the clinic:
-	
-	let old_doctors = [];
-	let new_doctors = [];
-	let update = false;
-	
-	await db.collection("clinics").doc(clinic).get().then(clinic_snap => {
-		old_doctors = clinic_snap.data().doctors;
-	});
-	
-	for (let i = 0; i < old_doctors.length; i++) {
-		if (old_doctors[i] !== doctor) {
-			new_doctors.push(old_doctors[i]);
-		}
-		else {
-			update = true;
-		}
-	}
-
-	if (update) {
-		await db.collection("clinics").doc(clinic).update({
-			doctors: new_doctors
-		});
-	}
-
-	update = false;
-
-	// Remove the clinic from the doctor:
-
-	let old_clinics = [];
-	let new_clinics = [];
-	
-	await db.collection("doctors").doc(doctor).get().then(doctor_snap => {
-		old_clinics = doctor_snap.data().clinics
-	});
-	for (let i = 0; i < old_clinics.length; i++) {
-		if (old_clinics[i] !== clinic) {
-			new_clinics.push(old_clinics[i]);
-		}
-		else {
-			update = true;
-		}
-	}
-	
-	if (update) {
-		await db.collection("doctors").doc(doctor).update({
-			clinics: new_clinics
-		});
-	}
+	db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).delete();
+	db.collection("doctors").doc(doctor).collection("clinics").doc(clinic).delete();
 }
 
 /**
@@ -227,57 +152,46 @@ async function leave(clinic, doctor) {
  * @param {string} clinic The id of the clinic.
  * @param {string} requester The doctor who is requesting the change.
  * @param {string} doctor The doctor one wishes to add.
+ * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
 async function join(clinic, requester, doctor) {
-	let owner;
-	let old_doctors = [];
-	
-	await db.collection("clinics").doc(clinic).get().then(clinic_snap => {
-		owner = clinic_snap.data().owner;
-		old_doctors = clinic_snap.data().doctors;
+	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+		const response = {
+			success: false,
+			message: ""
+		};
+
+		if (clinic_snap.data().owner === requester) {
+			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).set({exists: true}).then(() => {
+				return db.collection("doctors").doc(doctor).collection("clinics").doc(clinic).set({exists: true}).then(() => {
+					response.success = true;
+					return response;
+				})
+			})
+		}
+
+		response.message = "It's not your clinic.";
+		return response;
 	});
-
-	if (requester === owner) {
-		if(old_doctors.indexOf(doctor) < 0) {
-			old_doctors.push(doctor);
-	
-			await db.collection("clinics").doc(clinic).update({
-				doctors: old_doctors
-			});
-		}
-	
-		// Add the clinic to the doctor:
-		let old_clinics = [];
-		
-		await db.collection("doctors").doc(doctor).get().then(doctor_snap => {
-			old_clinics = doctor_snap.data().clinics;
-		});
-
-		if (old_clinics.indexOf(clinic) < 0) {
-			old_clinics.push(clinic);
-	
-			await db.collection("doctors").doc(doctor).update({
-				clinics: old_clinics
-			});
-		}
-	}
 }
 
+/**
+ * Get the ids and display names of all the cities that have clinics.
+ * @returns {Promise<{id: string, label: string}[]>} the ids and display names of all the cities.
+ */
 async function getAllCities() {
-	let cities = [];
-
-	await db.collection("cities").get().then(cities_snap => {
-		cities_snap.forEach(city => {
+	return db.collection("cities").get().then(city_snaps => {
+		let cities = [];
+		
+		for (const city_snap of city_snaps.docs) {
 			cities.push({
-				id: city.id,
-				label: String(city.id).split(" ").map(word => {
-					return String(word)[0].toLocaleUpperCase() + String(word).slice(1) + " ";
-				})
+				id: city_snap.id,
+				label: capitalize(city_snap.id)
 			});
-		});
+		}
+		
+		return cities;
 	});
-
-	return cities;
 }
 
 exports.get = get;

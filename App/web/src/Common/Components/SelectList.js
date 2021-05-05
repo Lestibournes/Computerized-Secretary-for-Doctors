@@ -35,15 +35,18 @@ import "./SelectList.css";
 				<Field type="hidden" className={error} {...field} {...props} />
 			</div>
 			<div className="list">
-				{options ? options.map(option => {
-					return <div
-						key={option}
-						className={"item" + (selected === option || (selected && selected.compare && selected.compare(option) === 0) ? " selected" : "")}
-						onClick={() => props.onClick(option)}
-						>
-							{option.toString()}
-						</div>
-				})
+				{options ? 
+					options.length > 0 ?
+						options.map(option => {
+							return <div
+								key={option}
+								className={"item" + (selected === option || (selected && selected.compare && selected.compare(option) === 0) ? " selected" : "")}
+								onClick={() => props.onClick(option)}
+								>
+									{option.toString()}
+								</div>
+						})
+					: "No options available"
 				: ""}
 			</div>
 			{meta.touched && meta.error ?
