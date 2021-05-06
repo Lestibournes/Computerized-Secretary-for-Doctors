@@ -19,8 +19,8 @@ const stringContains = require('./functions').stringContains;
  * @param {string} city The city in which service is being sought.
  * @returns {Promise<{doctor: object, user: object, clinics: object[] ,fields: object[]}>} The data of the requested doctor.
  */
- async function getData(doctor, field, city) {
-	 return db.collection("doctors").doc(doctor).get().then(doctor_snapshot => {
+async function getData(doctor, field, city) {
+	return db.collection("doctors").doc(doctor).get().then(doctor_snapshot => {
 		const result = {
 			doctor: null, // The doctor data.
 			user: null, // The user data.

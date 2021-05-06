@@ -17,7 +17,7 @@ export function AppointmentListPage() {
 	
 	useEffect(() => {
 		if (auth.user) {
-			getAllAppointment({user: auth.user.uid, start: new Date()}).then(response => {
+			getAllAppointment({user: auth.user.uid, start: SimpleDate.fromDate(new Date()).toObject()}).then(response => {
 				setAppointments(response.data);
 			});
 		}

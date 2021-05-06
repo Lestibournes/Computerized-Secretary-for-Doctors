@@ -138,6 +138,8 @@ export class Slot {
 	static month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	/**
 	 * Convert a Date object to a SimpleDate object.
+	 * Date object days of month start at 1.
+	 * Day 0 of each month is the last day of the previous month.
 	 * @param {Date} date 
 	 * @returns {SimpleDate}
 	 */
@@ -166,6 +168,10 @@ export class Slot {
 		};
 	}
 
+	toDate() {
+		return new Date(this.year, this.month, this.day);
+	}
+
 	#year;
 	#month;
 	#day;
@@ -174,7 +180,7 @@ export class Slot {
 	 * Create a new SimpleDate object.
 	 * @param {number} year Can be any value. 
 	 * @param {number} month valid values: 0...11
-	 * @param {number} day valid values: 0...31 (depends on the month) and null.
+	 * @param {number} day valid values: 0...30 (depends on the month) and null.
 	 */
 	constructor(year, month, day) {
 		// Correcting the month and year that are received from the params in case the value of the month is wrong:
@@ -207,7 +213,7 @@ export class Slot {
 	}
 
 	/**
-	 * @returns {number} The day of the month. Values 0...31 and null.
+	 * @returns {number} The day of the month. Values 0...30 and null.
 	 */
 	get day() {
 		return this.#day;

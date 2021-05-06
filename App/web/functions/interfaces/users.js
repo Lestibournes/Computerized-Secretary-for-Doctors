@@ -3,6 +3,10 @@ const functions = require('firebase-functions');
 
 const users = require("../implementations/users");
 
+exports.get = functions.https.onCall((data, context) => {
+	return users.get(data.user);
+});
+
 exports.getPicture = functions.https.onCall((data, context) => {
 	return users.getPicture(data.id);
 });

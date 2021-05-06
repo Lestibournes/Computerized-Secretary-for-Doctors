@@ -2,17 +2,17 @@
 .calendarHeader, .calendarBody {
 	position: relative;
 	display: block;
-	width: calc(200px * 7 + 50px);
+	width: min-content;
 }
 
 .calendarHeader {
 	left: 50px;
+	height: 3em;
 }
 
 .calendarDayHeader {
-	position: relative;
+	position: absolute;
 	display: inline-block;
-	width: 200px;
 	text-align: center;
 	text-transform: capitalize;
 }

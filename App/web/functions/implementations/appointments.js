@@ -11,6 +11,7 @@ const db = admin.firestore();
 const doctors = require("./doctors");
 const clinics = require("./clinics");
 const schedules = require("./schedules");
+const users = require("./users");
 
 /**
  * @todo Make the 2 classes files identical and get rid of the redundancy:
@@ -118,6 +119,7 @@ async function get(id) {
 			appointment: null,
 			doctor: null,
 			clinic: null,
+			patient: null,
 			extra: {
 				date: null,
 				time: null
@@ -139,6 +141,12 @@ async function get(id) {
 			})
 		);
 
+		promises.push(
+			users.get(data.appointment.patient).then(user => {
+				data.patient = user;
+			})
+		);
+
 		const date = new Date(data.appointment.start.toDate());
 		data.extra.date = new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 		data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
@@ -155,21 +163,24 @@ async function get(id) {
  * @returns {Promise<object[]>} An array of appointment data.
  */
 async function getAll({user, start, end, doctor, clinic}) {
-	let results = [];
 	let promises = [];
 
-	let query = db.collection("users").doc(user).collection("appointments");
+	let query = db;
 
-	// if (start) {
-	// 	query = query.orderBy("start").where("start", ">=", start);
-	// }
+	if (user) query = query.collection("users").doc(user).collection("appointments");
+	else if (doctor) query = query.collection("doctors").doc(doctor).collection("appointments");
 	
+	if (start || end ) query = query.orderBy("start");
+	if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
+	if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
 	
 	return query.get().then(querySnapshot => {
-		for (let snap of querySnapshot.docs) {
-			promises.push(get(snap.id).then(appointment => {
-				return appointment;
-			}));
+		for (const snap of querySnapshot.docs) {
+			promises.push(
+				get(snap.id).then(appointment => {
+					return appointment;
+				})
+			);
 		}
 
 		return Promise.all(promises).then(results => {

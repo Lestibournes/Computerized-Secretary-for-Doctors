@@ -40,6 +40,10 @@ class SimpleDate {
 			day: this.day
 		};
 	}
+
+	toDate() {
+		return new Date(this.year, this.month, this.day);
+	}
 	
 	year;
 	month;
