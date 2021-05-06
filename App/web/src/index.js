@@ -25,6 +25,7 @@ import { DoctorEditor } from './Doctor/Profile/DoctorEditor/DoctorEditor'
 import { ClinicEditor } from './Doctor/Profile/ClinicEditor/ClinicEditor';
 import { ScheduleEditor } from './Doctor/Profile/ClinicEditor/ScheduleEditor';
 import { SetAppointmentPage } from './Patient/SetAppointmentPage';
+import { SecretaryEditor } from './Doctor/Profile/SecretaryEditor/SecretaryEditor';
 
 /**
  * URL Scheme:
@@ -78,6 +79,9 @@ ReactDOM.render(
 				</Route>
 				<Route path="/specific/doctor/clinics/schedule/edit/:clinic/:doctor">
 					<ScheduleEditor />
+				</Route>
+				<Route path="/specific/secretary/profile">
+					<SecretaryEditor />
 				</Route>
 			</Switch>
 		</Router>

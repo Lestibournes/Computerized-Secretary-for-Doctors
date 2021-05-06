@@ -9,7 +9,7 @@ import { Popup } from "../../../Common/Components/Popup";
 import { Page } from "../../../Common/Components/Page";
 import { ClinicCreateForm } from "./ClinicCreateForm";
 import { CreateProfile } from "./CreateProfile";
-import { UserEditForm } from "./UserEditForm";
+import { UserEditForm } from "../UserEditor/UserEditForm";
 import { capitalize, getPictureURL } from "../../../Common/functions";
 import { SelectSpecialization } from "./SelectSpecialization";
 

@@ -14,6 +14,7 @@ export function HomePage() {
 				<Button link="/specific/user/appointments/list" label="My Future Appointments" />
 				<Button link="/specific/doctor/appointments/calendar" label="Work Calendar" />
 				<Button link="/specific/doctor/profile" label="Doctor Profile" />
+				<Button link="/specific/secretary/profile" label="Secretary Profile" />
 			</div>
 			}
 		/>
