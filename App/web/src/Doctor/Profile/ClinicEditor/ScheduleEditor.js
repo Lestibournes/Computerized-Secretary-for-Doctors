@@ -192,14 +192,9 @@ export function ScheduleEditor() {
 	}
 
 	return (
-		<Page
-			title={"Edit Schedule"}
-			content={
-				<>
-					{display}
-					{popups}
-				</>
-			}
-		/>
+		<Page title={"Edit Schedule"}>
+			{display}
+			{popups}
+		</Page>
 	);
 }

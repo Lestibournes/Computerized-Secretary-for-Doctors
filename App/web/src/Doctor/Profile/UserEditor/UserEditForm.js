@@ -19,99 +19,100 @@ export function UserEditForm({user, image, close, success, deleted}) {
 	const [problem, setProblem] = useState(null);
 
 	return (
-		<Popup title="Edit Details"
-			display={
-				<div className="form">
-					<Formik
-						initialValues={{
-							firstName: user.firstName,
-							lastName: user.lastName,
-							sex: String((user.sex && user.sex.toLowerCase() === "male") ? "Male" : "Female")
-						}}
-						validationSchema={Yup.object({
-							firstName: Yup.string(),
-							lastName: Yup.string(),
-							sex: Yup.string(),
-						})}
-						onSubmit={async (values, { setSubmitting }) => {
-							setSubmitting(true);
+		<Popup title="Edit Details" close={close}>
+			<div className="form">
+				<Formik
+					initialValues={{
+						firstName: user.firstName,
+						lastName: user.lastName,
+						sex: String((user.sex && user.sex.toLowerCase() === "male") ? "Male" : "Female")
+					}}
+					validationSchema={Yup.object({
+						firstName: Yup.string(),
+						lastName: Yup.string(),
+						sex: Yup.string(),
+					})}
+					onSubmit={async (values, { setSubmitting }) => {
+						setSubmitting(true);
 
-							const promises = [];
-							
-							if (file) {
-								promises.push(updatePicture({id: user.id}).then(response => {
-									storage.child(response.data).put(file);
-								}));
-							}
+						const promises = [];
+						
+						if (file) {
+							promises.push(updatePicture({id: user.id}).then(response => {
+								storage.child(response.data).put(file);
+							}));
+						}
 
-							const updates = {};
+						const updates = {};
 
-							if (values.firstName) updates.firstName = values.firstName;
+						if (values.firstName) updates.firstName = values.firstName;
 
-							if (values.lastName) updates.lastName = values.lastName;
+						if (values.lastName) updates.lastName = values.lastName;
 
-							if (values.sex) updates.sex = values.sex.toLowerCase();
+						if (values.sex) updates.sex = values.sex.toLowerCase();
 
-							promises.push(update({id: user.id, changes: updates}));
+						promises.push(update({id: user.id, changes: updates}));
 
-							Promise.all(promises).then(results => {
-								close();
-							});
-						}}
-					>
-						<Form>
-							<div className="widgets">
-								<TextInput
-									label="First Name"
-									name="firstName"
-									type="text"
-									placeholder="Jane"
-								/>
+						Promise.all(promises).then(results => {
+							close();
+						});
+					}}
+				>
+					<Form>
+						<div className="widgets">
+							<TextInput
+								label="First Name"
+								name="firstName"
+								type="text"
+								placeholder="Jane"
+							/>
 
-								<TextInput
-									label="Last Name"
-									name="lastName"
-									type="text"
-									placeholder="Doe"
-								/>
+							<TextInput
+								label="Last Name"
+								name="lastName"
+								type="text"
+								placeholder="Doe"
+							/>
 
-								<RadioInput
-									label="Sex"
-									name="sex"
-									options={["Male", "Female"]}
-								/>
+							<RadioInput
+								label="Sex"
+								name="sex"
+								options={["Male", "Female"]}
+							/>
 
-								<PictureInput
-									label="Profile Picture:"
-									src={selectedImage}
-									alt="Selected"
-									name="photo"
-									callback={file => {
-										setFile(file);
+							<PictureInput
+								label="Profile Picture:"
+								src={selectedImage}
+								alt="Selected"
+								name="photo"
+								callback={file => {
+									setFile(file);
 
-										var temp = storage.child("users/" + user.id + "/pictures/temp");
-										temp.put(file).then(() => {
-											temp.getDownloadURL().then(url => {
-												setSelectedImage(url);
-											});
+									var temp = storage.child("users/" + user.id + "/pictures/temp");
+									temp.put(file).then(() => {
+										temp.getDownloadURL().then(url => {
+											setSelectedImage(url);
 										});
+									});
 
-									}}
-								/>
+								}}
+							/>
 
-							</div>
+						</div>
 
-							<div className="buttonBar">
-								<Button label="Cancel" action={close} />
-								<Button type="submit" label="Save" />
-							</div>
+						<div className="buttonBar">
+							<Button label="Cancel" action={close} />
+							<Button type="submit" label="Save" />
+						</div>
 
-							{problem ? <Popup title="Error" display={<div>{problem}</div>} close={() => setProblem(false)} /> : ""}
-						</Form>
-					</Formik>
-				</div>
-			}
-			close={close}
-		/>
+						{problem ?
+							<Popup title="Error" close={() => setProblem(false)}>
+								<div>{problem}</div>
+							</Popup>
+						: ""}
+					</Form>
+				</Formik>
+			</div>
+		</Popup>
 	);
 }

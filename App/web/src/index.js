@@ -7,7 +7,6 @@ import { LoginPage } from './Common/LoginPage';
 import { RegisterPage } from "./Common/RegisterPage";
 import { ProvideAuth } from "./Common/Auth";
 import { SearchDoctorsPage } from "./Patient/SearchDoctorsPage"
-import { MakeAppointmentPage } from "./Patient/MakeAppointmentPage"
 
 import {
 	BrowserRouter as Router,
@@ -18,7 +17,6 @@ import {
 import { HomePage } from './Common/HomePage';
 import { AppointmentSuccessPage } from './Patient/AppointmentSuccessPage';
 import { AppointmentListPage } from './Patient/AppointmentListPage';
-import { EditAppointmentPage } from './Patient/EditAppointmentPage';
 import { AppointmentDeletedPage } from './Patient/AppointmentDeletedPage';
 import { AppointmentCalendarPage } from './Doctor/AppointmentCalendarPage';
 import { DoctorEditor } from './Doctor/Profile/DoctorEditor/DoctorEditor'

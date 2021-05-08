@@ -49,10 +49,8 @@ export function AppointmentSuccessPage() {
 		</p>
 	}
 	return (
-		<Page
-			title="Make an Appointment"
-			subtitle="Success!"
-			content={display}
-		/>
+		<Page title="Make an Appointment" subtitle="Success!">
+			{display}
+		</Page>
 	);
 }

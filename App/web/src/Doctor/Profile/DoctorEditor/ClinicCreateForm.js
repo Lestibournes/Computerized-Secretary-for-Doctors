@@ -10,9 +10,7 @@ const addClinic = fn.httpsCallable("clinics-add");
 
 export function ClinicCreateForm({doctor, close, success}) {
 	return (
-	<Popup 
-		title="Create New Clinic"
-		display={
+		<Popup title="Create New Clinic" close={close}>
 			<div className="form">
 				<Formik
 					initialValues={{
@@ -66,7 +64,6 @@ export function ClinicCreateForm({doctor, close, success}) {
 					</Form>
 				</Formik>
 			</div>
-		}
-		close={close}
-	/>);
+		</Popup>
+	);
 }

@@ -98,47 +98,47 @@ export function SecretaryEditor() {
 
 	const popups =
 	<>
-		{createProfile && auth.user ? <CreateProfile
-			user={auth.user.uid}
-			success={secretary => {
-				setCreateProfile(false);
-				getSecretary({secretary: secretary}).then(results => {
-					setSecretary(results.data);
-				});
-			}}
-			failure={() => setAlreadyExists(true)}
-			close={() => {window.history.back()}}
-		/> : ""}
+		{createProfile && auth.user ?
+			<CreateProfile
+				user={auth.user.uid}
+				success={secretary => {
+					setCreateProfile(false);
+					getSecretary({secretary: secretary}).then(results => {
+						setSecretary(results.data);
+					});
+				}}
+				failure={() => setAlreadyExists(true)}
+				close={() => {window.history.back()}}
+			/>
+		: ""}
 
-		{alreadyExists ? <Popup
-			title="Info"
-			display={
+		{alreadyExists ?
+			<Popup
+				title="Info"
+				close={() => {
+					setAlreadyExists(false);
+					setCreateProfile(false);
+				}}
+			>
 				<div>You already have a secretary profile</div>
-			}
-			close={() => {
-				setAlreadyExists(false);
-				setCreateProfile(false);
-			}}
-		/> : ""}
+			</Popup>
+		: ""}
 		
 		{editData ? 
-		<UserEditForm
-			user={secretary.user}
-			image={image}
-			close={() => {
-				loadData(auth.user.uid).then(() => setEditData(false));
-			}}
-		/>
+			<UserEditForm
+				user={secretary.user}
+				image={image}
+				close={() => {
+					loadData(auth.user.uid).then(() => setEditData(false));
+				}}
+			/>
 		: ""}
 	</>;
 
 	return (
-			<Page
-				title="Secretary Profile"
-				content={<>
-					{popups}
-					{display}
-					</>}
-			/>
+			<Page title="Secretary Profile">
+				{popups}
+				{display}
+			</Page>
 	);
 }

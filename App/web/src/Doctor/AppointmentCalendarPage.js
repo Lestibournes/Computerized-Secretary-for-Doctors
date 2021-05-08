@@ -161,37 +161,29 @@ export function AppointmentCalendarPage() {
 	const simpleDate = SimpleDate.fromDate(date);
 
 	return (
-		<>
-			<Page
-				title="Work Calendar"
-				content={
-					<div
-						className="Calendar"
-						id="display"
-					>
-						<div className="buttonBar">
-						<Button action={() => {
-								setDate(new Date());
-								}} label="Today" />
-							<Button action={() => {
-								setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - 7));
-								}} label="<" />
-							<Button action={() => {
-								setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 7));
-								}} label=">" />
-							<h3>{simpleDate.monthname + " " + simpleDate.year}</h3>
-						</div>
-						<CalendarWeek
-							date={date}
-							appointments={appointments}
-							schedule={schedule}
-							minimum={minimum}
-							width={dimensions.width}
-							height={960}
-						/>
-					</div>
-				}
-			/>
-		</>
+		<Page title="Work Calendar">
+			<div className="Calendar" id="display">
+				<div className="buttonBar">
+				<Button action={() => {
+						setDate(new Date());
+						}} label="Today" />
+					<Button action={() => {
+						setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - 7));
+						}} label="<" />
+					<Button action={() => {
+						setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 7));
+						}} label=">" />
+					<h3>{simpleDate.monthname + " " + simpleDate.year}</h3>
+				</div>
+				<CalendarWeek
+					date={date}
+					appointments={appointments}
+					schedule={schedule}
+					minimum={minimum}
+					width={dimensions.width}
+					height={960}
+				/>
+			</div>
+		</Page>
 	);
 }

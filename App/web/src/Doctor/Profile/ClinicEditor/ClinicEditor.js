@@ -177,9 +177,8 @@ export function ClinicEditor() {
 	}
 
 	return (
-		<Page
-			title="Edit Clinic"
-			content={display}
-		/>
+		<Page title="Edit Clinic">
+			{display}
+		</Page>
 	);
 }

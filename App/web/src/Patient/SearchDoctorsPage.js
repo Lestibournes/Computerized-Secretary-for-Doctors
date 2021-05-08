@@ -154,10 +154,8 @@ export function SearchDoctorsPage() {
 	}
 
 	return (
-		<Page
-			title="Make an Appointment"
-			subtitle="Find a Doctor"
-			content={display}
-		/>
+		<Page title="Make an Appointment" subtitle="Find a Doctor">
+			{display}
+		</Page>
 	);
 }

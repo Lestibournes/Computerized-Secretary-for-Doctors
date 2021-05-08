@@ -5,7 +5,7 @@ import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
 
-export function Page({unprotected, title, subtitle, content}) {
+export function Page({unprotected, title, subtitle, children}) {
 	const auth = useAuth();
 	const [redirect, setRedirect] = useState(false);
 	
@@ -35,7 +35,7 @@ export function Page({unprotected, title, subtitle, content}) {
 			</div>
 			{title ? <h1>{title}</h1> : ""}
 			{subtitle ? <h2>{subtitle}</h2> : ""}
-			{content ? content : <h3>Loading...</h3>}
+			{children ? children : <h3>Loading...</h3>}
 		</div>
 	);
 }

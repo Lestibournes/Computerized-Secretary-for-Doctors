@@ -170,7 +170,8 @@ export function DoctorEditor() {
 
 	const popups =
 	<>
-		{createProfile && auth.user ? <CreateProfile
+		{createProfile && auth.user ?
+		<CreateProfile
 			user={auth.user.uid}
 			success={doctor => {
 				setCreateProfile(false);
@@ -180,79 +181,77 @@ export function DoctorEditor() {
 			}}
 			failure={() => setAlreadyExists(true)}
 			close={() => {window.history.back()}}
-		/> : ""}
-		{alreadyExists ? <Popup
-			title="Info"
-			display={
+		/>
+		: ""}
+
+		{alreadyExists ?
+			<Popup
+				title="Info"
+				close={() => {
+					setAlreadyExists(false);
+					setCreateProfile(false);
+				}}
+			>
 				<div>You already have a doctor profile</div>
-			}
-			close={() => {
-				setAlreadyExists(false);
-				setCreateProfile(false);
-			}}
-		/> : ""}
+			</Popup>
+		: ""}
+
 		{createClinic ? 
-		<ClinicCreateForm
-			doctor={doctor.doctor.id}
-			success={() => {
-				setCreateClinic(false);
-				getAllClinics({doctor: doctor.doctor.id}).then(results => {
-					setClinics(generateClinicCards(doctor.doctor.id, results.data));
-				});
-			}}
-			close={() => setCreateClinic(false)}
-		/>
+			<ClinicCreateForm
+				doctor={doctor.doctor.id}
+				success={() => {
+					setCreateClinic(false);
+					getAllClinics({doctor: doctor.doctor.id}).then(results => {
+						setClinics(generateClinicCards(doctor.doctor.id, results.data));
+					});
+				}}
+				close={() => setCreateClinic(false)}
+			/>
 		: ""}
+
 		{editData ? 
-		<UserEditForm
-			user={doctor.user}
-			image={image}
-			close={() => {
-				loadData(auth.user.uid).then(() => setEditData(false));
-			}}
-		/>
+			<UserEditForm
+				user={doctor.user}
+				image={image}
+				close={() => {
+					loadData(auth.user.uid).then(() => setEditData(false));
+				}}
+			/>
 		: ""}
+
 		{selectSpecialization && doctor ? 
-		<SelectSpecialization
-			specializations={doctor.fields}
-			close={() => setSelectSpecializations(false)}
-			success={specialization => {
-				addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
-				.then(() => {
-					loadData(auth.user.uid);
-				});
-			}}
-		/>
+			<SelectSpecialization
+				specializations={doctor.fields}
+				close={() => setSelectSpecializations(false)}
+				success={specialization => {
+					addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
+					.then(() => {
+						loadData(auth.user.uid);
+					});
+				}}
+			/>
 		: ""}
+
 		{removeSpecialization && doctor ? 
-		<Popup
-			title="Please Confirm"
-			close={() => setRemoveSpecialization(false)}
-			display={
-				<>
-					Are you sure you wish to remove the specialization {capitalize(removeSpecialization)}?
-					<div className="buttonBar">
-						<Button type="okay" label="Cancel" action={() => setRemoveSpecialization(false)} />
-						<Button type="cancel" label="Yes" action={() => {
-							delSpecialization({doctor: doctor.doctor.id, specialization: removeSpecialization})
-							.then(() => {
-								loadData(auth.user.uid).then(() => setRemoveSpecialization(false));
-							});
-						}} />
-					</div>
-				</>
-			}
-		/>
+			<Popup title="Please Confirm" close={() => setRemoveSpecialization(false)}>
+				Are you sure you wish to remove the specialization {capitalize(removeSpecialization)}?
+				<div className="buttonBar">
+					<Button type="okay" label="Cancel" action={() => setRemoveSpecialization(false)} />
+					<Button type="cancel" label="Yes" action={() => {
+						delSpecialization({doctor: doctor.doctor.id, specialization: removeSpecialization})
+						.then(() => {
+							loadData(auth.user.uid).then(() => setRemoveSpecialization(false));
+						});
+					}} />
+				</div>
+			</Popup>
 		: ""}
 	</>;
 
 	return (
-			<Page
-				title="Doctor Profile"
-				content={<>
-					{popups}
-					{display}
-					</>}
-			/>
+		<Page title="Doctor Profile">
+			{popups}
+			{display}
+		</Page>
 	);
 }

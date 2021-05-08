@@ -84,9 +84,8 @@ export function AppointmentListPage() {
 	}
 	
 	return (
-		<Page
-			title="My Future Appointments"
-			content={display}
-		/>
+		<Page title="My Future Appointments">
+			{display}
+		</Page>
 	);
 }

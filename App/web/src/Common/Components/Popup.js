@@ -1,7 +1,7 @@
 import { Button } from "./Button";
 import "./Popup.css";
 
-export function Popup({title, display, close}) {
+export function Popup({title, children, close}) {
 	return (
 		<div className="Popup">
 			<div className="controls">
@@ -13,7 +13,7 @@ export function Popup({title, display, close}) {
 				</div>
 			</div>
 			<div className="display">
-				{display}
+				{children}
 			</div>
 		</div>
 	);
