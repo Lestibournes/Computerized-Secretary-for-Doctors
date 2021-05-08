@@ -9,13 +9,22 @@ import { Page } from "../../../Common/Components/Page";
 import { ClinicEditForm } from "./ClinicEditForm";
 import { SelectDoctor } from "./SelectDoctor";
 import { getPictureURL } from "../../../Common/functions";
+import { SelectSecretary } from './SelectSecretary';
 
-const getClinic = fn.httpsCallable("clinics-get");
-const joinClinic = fn.httpsCallable("clinics-join");
+const clinics = {
+	get: fn.httpsCallable("clinics-get"),
 
-const getDoctor = fn.httpsCallable("doctors-getData");
-const getDoctorID = fn.httpsCallable("doctors-getID");
-const getAllDoctors = fn.httpsCallable("clinics-getAllDoctors");
+	getAllDoctors: fn.httpsCallable("clinics-getAllDoctors"),
+	addDoctor: fn.httpsCallable("clinics-addDoctor"),
+
+	getAllSecretaries: fn.httpsCallable("clinics-getAllSecretaries"),
+	addSecretary: fn.httpsCallable("clinics-addSecretary"),
+}
+
+const doctors = {
+	getID: fn.httpsCallable("doctors-getID"),
+	getData: fn.httpsCallable("doctors-getData"),
+}
 
 /**
 @todo
@@ -33,8 +42,8 @@ export function ClinicEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) {
-				getDoctorID({user: auth.user.uid}).then(response => {
-					getDoctor({id: response.data}).then(doctor_data => {
+				doctors.getID({user: auth.user.uid}).then(response => {
+					doctors.getData({id: response.data}).then(doctor_data => {
 						setDoctor(doctor_data.data);
 					});
 				});
@@ -46,20 +55,30 @@ export function ClinicEditor() {
 
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
-	const [editData, setEditData] = useState(false);
-	const [doctors, setDoctors] = useState();
-	const [results, setResults] = useState();
-	const [addDoctor, setAddDoctor] = useState(false);
 	const [doctor, setDoctor] = useState(null);
+	const [editData, setEditData] = useState(false);
+	
+	const [doctorsData, setDoctorsData] = useState();
+	const [doctorCards, setDoctorCards] = useState();
+	const [showDoctorSelector, setShowDoctorSelector] = useState(false);
+	
+	const [secretariesData, setSecretariesData] = useState();
+	const [secretaryCards, setSecretaryCards] = useState();
+	const [showSecretarySelector, setShowSecretarySelector] = useState(false);
+
 	const [redirect, setRedirect] = useState(null);
 
 	useEffect(() => {
 		if (clinic) {
-			getClinic({id: clinic}).then(clinic_data => {
+			clinics.get({id: clinic}).then(clinic_data => {
 				setData(clinic_data.data);
 
-				getAllDoctors({clinic: clinic}).then(doctors_data => {
-					setDoctors(doctors_data.data);
+				clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
+					setDoctorsData(doctors_data.data);
+				});
+
+				clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
+					setSecretariesData(secretaries_data.data);
 				});
 			});
 		}
@@ -67,10 +86,10 @@ export function ClinicEditor() {
 
 
 	useEffect(() => {
-		if (doctors) {
+		if (doctorsData) {
 			const promises = [];
 
-			for (const doctor of doctors) {
+			for (const doctor of doctorsData) {
 				promises.push(getPictureURL(doctor.user.id).then(url => {
 					doctor.image = url;
 
@@ -116,13 +135,44 @@ export function ClinicEditor() {
 					}
 				});
 				
-				setResults(cards.map(card => card.component));
+				setDoctorCards(cards.map(card => card.component));
 			});
 		}
-	}, [doctors, data, clinic]);
+	}, [doctorsData, data, clinic]);
+
+	useEffect(() => {
+		if (secretariesData) {
+			const promises = [];
+
+			for (const secretary of secretariesData) {
+				promises.push(getPictureURL(secretary.user.id).then(url => {
+					secretary.image = url;
+
+					const card = (<Card
+						key={secretary.id}
+						title={secretary.fullName}
+						image={secretary.image}
+						link={"/specific/doctor/clinics/secretary/edit/" + clinic + "/" + secretary.id}
+					/>);
+	
+					return {
+						name: secretary.fullName,
+						id: secretary.id,
+						component: card
+					};
+				}));
+			}
+
+			Promise.all(promises).then(cards => {
+				cards.sort((a, b) => a.name === b.name ? 0 : a.name < b.name ? -1 : 1);
+				
+				setSecretaryCards(cards.map(card => card.component));
+			});
+		}
+	}, [secretariesData, data, clinic]);
 
 	let display = <h2>Loading...</h2>;
-	if (data && results) {
+	if (data && doctorCards && secretaryCards) {
 		display = (
 			<>
 				{redirect ? <Redirect to={redirect} /> : ""}
@@ -142,7 +192,7 @@ export function ClinicEditor() {
 						address={data.address}
 						close={() => {setEditData(false)}}
 						success={() => {
-							getClinic({id: clinic}).then(clinic_data => {
+							clinics.get({id: clinic}).then(clinic_data => {
 								setData(clinic_data.data);
 								setEditData(false);
 							});
@@ -150,27 +200,50 @@ export function ClinicEditor() {
 						deleted={() => setRedirect("/specific/doctor/profile")}
 					/> : ""}
 
-				{addDoctor ? 
+				{showDoctorSelector ? 
 					<SelectDoctor
-						close={() => setAddDoctor(false)}
+						close={() => setShowDoctorSelector(false)}
 						success={selected => {
-							joinClinic({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
-								getAllDoctors({clinic: clinic}).then(doctors_data => {
-									setDoctors(doctors_data.data);
+							clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
+								clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
+									setDoctorsData(doctors_data.data);
 								});
 							});
 
-							setAddDoctor(false);
+							setShowDoctorSelector(false);
+						}}
+					/>
+					: ""
+				}
+
+				{showSecretarySelector ? 
+					<SelectSecretary
+						close={() => setShowSecretarySelector(false)}
+						success={selected => {
+							clinics.addSecretary({clinic: clinic, requester: doctor.doctor.id, secretary: selected}).then(() => {
+								clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
+									setSecretariesData(secretaries_data.data);
+								});
+							});
+
+							setShowSecretarySelector(false);
 						}}
 					/>
 					: ""
 				}
 
 				<div className="headerbar">
-					<h2>Doctors</h2> <Button label="+" action={() => setAddDoctor(true)} />
+					<h2>Doctors</h2> <Button label="+" action={() => setShowDoctorSelector(true)} />
 				</div>
 				<div className="cardList">
-					{results}
+					{doctorCards}
+				</div>
+
+				<div className="headerbar">
+					<h2>Secretaries</h2> <Button label="+" action={() => setShowSecretarySelector(true)} />
+				</div>
+				<div className="cardList">
+					{secretaryCards}
 				</div>
 			</>
 		);

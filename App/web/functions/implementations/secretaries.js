@@ -70,10 +70,11 @@ async function getAllClinics(secretary) {
 		for (const clinic_snap of clinic_snaps.docs) {
 			clinic_promises.push(
 				db.collection("clinics").doc(clinic_snap.id).get().then(clinic_snapshot => {
-					// Check if the city is unspecified or is a match:
-					let clinic_data = clinic_snapshot.data();
-					clinic_data.id = clinic_snapshot.id;
-					return clinic_data;
+					if (clinic_snapshot.data()) {
+						let clinic_data = clinic_snapshot.data();
+						clinic_data.id = clinic_snapshot.id;
+						return clinic_data;
+					}
 				})
 			);
 		};
@@ -139,9 +140,9 @@ async function search(name) {
 	const promises = [];
 	
 	return db.collection("secretaries").get().then(secretary_snapshots => {
-		secretary_snapshots.forEach(snapshot => {
-			promises.push(getData(snapshot.id));
-		});
+		for (const secretary_snapshot of secretary_snapshots.docs) {
+			promises.push(getData(secretary_snapshot.id));
+		}
 
 		return Promise.all(promises).then(results => {
 			const secretaries = [];

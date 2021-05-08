@@ -11,10 +11,6 @@ exports.getAll = functions.https.onCall((data, context) => {
 	return clinics.getAll(data.doctor);
 });
 
-exports.getAllDoctors = functions.https.onCall((data, context) => {
-	return clinics.getAllDoctors(data.clinic);
-});
-
 exports.add = functions.https.onCall((data, context) => {
 	return clinics.add(data.doctor, data.name, data.city, data.address);
 });
@@ -27,12 +23,28 @@ exports.delete = functions.https.onCall((data, context) => {
 	return clinics.delete(data.id, data.doctor);
 });
 
-exports.leave = functions.https.onCall((data, context) => {
-	return clinics.leave(data.clinic, data.doctor);
+exports.getAllDoctors = functions.https.onCall((data, context) => {
+	return clinics.getAllDoctors(data.clinic);
 });
 
-exports.join = functions.https.onCall((data, context) => {
-	return clinics.join(data.clinic, data.requester ,data.doctor);
+exports.addDoctor = functions.https.onCall((data, context) => {
+	return clinics.addDoctor(data.clinic, data.requester ,data.doctor);
+});
+
+exports.removeDoctor = functions.https.onCall((data, context) => {
+	return clinics.removeDoctor(data.clinic, data.doctor);
+});
+
+exports.getAllSecretaries = functions.https.onCall((data, context) => {
+	return clinics.getAllSecretaries(data.clinic);
+});
+
+exports.addSecretary = functions.https.onCall((data, context) => {
+	return clinics.addSecretary(data.clinic, data.requester ,data.secretary);
+});
+
+exports.removeSecretary = functions.https.onCall((data, context) => {
+	return clinics.removeSecretary(data.clinic, data.secretary);
 });
 
 exports.getAllCities = functions.https.onCall((data, context) => {

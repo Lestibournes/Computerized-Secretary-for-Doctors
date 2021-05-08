@@ -2,6 +2,7 @@
 const admin = require('firebase-admin');
 
 const doctors = require('./doctors');
+const secretaries = require('./secretaries');
 const { capitalize } = require('./functions');
 
 /**
@@ -20,23 +21,6 @@ async function get(id) {
 		clinic.id = clinic_snap.id;
 
 		return clinic;
-	});
-}
-
-/**
- * Get all the doctors who work in the given clinic.
- * @param {string} clinic The id of the clinic.
- * @returns {Promise<{doctor: object, user: object, clinics: object[], fields: string[]}[]>} The data of the requested doctors.
- */
-async function getAllDoctors(clinic) {
-	return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
-		const promises = [];
-
-		for (const doctor of doctor_snaps.docs) {
-			promises.push(doctors.getData(doctor.id));
-		}
-
-		return Promise.all(promises);
 	});
 }
 
@@ -138,13 +122,20 @@ async function eliminate(clinic, doctor) {
 }
 
 /**
- * Have a doctor leave a clinic in which he works (does not change ownership of the clinic).
+ * Get all the doctors who work in the given clinic.
  * @param {string} clinic The id of the clinic.
- * @param {string} doctor The id of the doctor.
+ * @returns {Promise<{doctor: object, user: object, clinics: object[], fields: string[]}[]>} The data of the requested doctors.
  */
-async function leave(clinic, doctor) {
-	db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).delete();
-	db.collection("doctors").doc(doctor).collection("clinics").doc(clinic).delete();
+ async function getAllDoctors(clinic) {
+	return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
+		const promises = [];
+
+		for (const doctor of doctor_snaps.docs) {
+			promises.push(doctors.getData(doctor.id));
+		}
+
+		return Promise.all(promises);
+	});
 }
 
 /**
@@ -154,15 +145,15 @@ async function leave(clinic, doctor) {
  * @param {string} doctor The doctor one wishes to add.
  * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
-async function join(clinic, requester, doctor) {
+async function addDoctor(clinic, requester, doctor) {
 	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
 		const response = {
 			success: false,
 			message: ""
 		};
 
-		if (clinic_snap.data().owner === requester) {
-			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).set({exists: true}).then(() => {
+		if (clinic_snap.data().owner === requester || doctor === requester) {
+			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).set({exists: true}).then(() => {
 				return db.collection("doctors").doc(doctor).collection("clinics").doc(clinic).set({exists: true}).then(() => {
 					response.success = true;
 					return response;
@@ -170,7 +161,112 @@ async function join(clinic, requester, doctor) {
 			})
 		}
 
-		response.message = "It's not your clinic.";
+		response.message = "You don't have the right to change the clinic's doctors.";
+		return response;
+	});
+}
+
+/**
+ * Have a doctor leave a clinic in which he works (does not change ownership of the clinic).
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ */
+ async function removeDoctor(clinic, requester, doctor) {
+	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+		const response = {
+			success: false,
+			message: ""
+		};
+
+		if (clinic_snap.data().owner === requester || doctor === requester) {
+			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).delete().then(() => {
+				db.collection("doctors").doc(doctor).collection("clinics").doc(clinic).delete().then(() => {
+					response.success = true;
+					return response;
+				});
+			});
+		}
+
+		response.message = "You don't have the right to change the clinic's doctors.";
+		return response;
+	});
+}
+
+/**
+ * Get all the secretaries who work in the given clinic.
+ * @param {string} clinic The id of the clinic.
+ * @returns {Promise<{
+ * 	id: string,
+ * 	fullName: string,
+ * 	sex: string,
+ * 	clinics: object[],
+ * 	data: object,
+ * 	user: object
+ * }[]>} The data of the requested secretaries.
+ */
+ async function getAllSecretaries(clinic) {
+	return db.collection("clinics").doc(clinic).collection("secretaries").get().then(secretary_snaps => {
+		const promises = [];
+
+		for (const secretary of secretary_snaps.docs) {
+			promises.push(secretaries.getData(secretary.id));
+		}
+
+		return Promise.all(promises);
+	});
+}
+
+/**
+ * Add a secretary to a clinic.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} requester The profile who is requesting the change
+ * (either the owner's doctor profile or the employee's secretary profile)
+ * @param {string} secretary The secretary one wishes to add.
+ * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
+ */
+async function addSecretary(clinic, requester, secretary) {
+	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+		const response = {
+			success: false,
+			message: ""
+		};
+
+		if (clinic_snap.data().owner === requester || secretary === requester) {
+			return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).set({exists: true}).then(() => {
+				return db.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).set({exists: true}).then(() => {
+					response.success = true;
+					return response;
+				})
+			})
+		}
+
+		response.message = "You don't have the right to change the clinic's secretaries.";
+		return response;
+	});
+}
+
+/**
+ * Have a secretary leave a clinic in which he works (does not change ownership of the clinic).
+ * @param {string} clinic The id of the clinic.
+ * @param {string} secretary The id of the secretary.
+ */
+ async function removeSecretary(clinic, requester, secretary) {
+	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+		const response = {
+			success: false,
+			message: ""
+		};
+
+		if (clinic_snap.data().owner === requester || secretary === requester) {
+			return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete().then(() => {
+				return db.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).delete().then(() => {
+					response.success = true;
+					return response;
+				});
+			});
+		}
+
+		response.message = "You don't have the right to change the clinic's secretaries.";
 		return response;
 	});
 }
@@ -195,10 +291,16 @@ async function getAllCities() {
 }
 
 exports.get = get;
-exports.getAllDoctors = getAllDoctors;
 exports.add = add;
 exports.edit = edit;
 exports.delete = eliminate;
-exports.leave = leave;
-exports.join = join;
+
+exports.getAllDoctors = getAllDoctors;
+exports.addDoctor = addDoctor;
+exports.removeDoctor = removeDoctor;
+
+exports.getAllSecretaries = getAllSecretaries;
+exports.addSecretary = addSecretary;
+exports.removeSecretary = removeSecretary;
+
 exports.getAllCities = getAllCities;
