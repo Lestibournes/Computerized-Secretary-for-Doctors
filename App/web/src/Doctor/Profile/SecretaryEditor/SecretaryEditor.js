@@ -9,7 +9,7 @@ import { Popup } from "../../../Common/Components/Popup";
 import { Page } from "../../../Common/Components/Page";
 import { CreateProfile } from "./CreateProfile";
 import { UserEditForm } from "../UserEditor/UserEditForm";
-import { capitalize, getPictureURL } from "../../../Common/functions";
+import { capitalizeAll, getPictureURL } from "../../../Common/functions";
 
 const getSecretary = fn.httpsCallable("secretaries-getData");
 const getSecretaryID = fn.httpsCallable("secretaries-getID");
@@ -83,7 +83,7 @@ export function SecretaryEditor() {
 				<div className="table">
 					<b>Photo</b> <img src={image} alt={secretary.fullName} />
 					<b>Name:</b> <span>{secretary.fullName}</span>
-					<b>Sex:</b> <span>{secretary.sex ? capitalize(secretary.sex) : "Not specified"}</span>
+					<b>Sex:</b> <span>{secretary.sex ? capitalizeAll(secretary.sex) : "Not specified"}</span>
 				</div>
 				
 				<div className="headerbar">

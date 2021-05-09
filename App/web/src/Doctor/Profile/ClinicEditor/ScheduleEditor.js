@@ -9,7 +9,7 @@ import { Popup } from '../../../Common/Components/Popup';
 import { Card } from '../../../Common/Components/Card';
 
 import { SimpleDate, Time } from '../../../Common/classes';
-import { capitalize } from '../../../Common/functions';
+import { capitalizeAll } from '../../../Common/functions';
 import { ShiftEditForm } from './ShiftEditForm';
 
 const getClinic = fn.httpsCallable("clinics-get");

@@ -10,7 +10,7 @@ import { Page } from "../../../Common/Components/Page";
 import { ClinicCreateForm } from "./ClinicCreateForm";
 import { CreateProfile } from "./CreateProfile";
 import { UserEditForm } from "../UserEditor/UserEditForm";
-import { capitalize, getPictureURL } from "../../../Common/functions";
+import { capitalizeAll, getPictureURL } from "../../../Common/functions";
 import { SelectSpecialization } from "./SelectSpecialization";
 
 const getDoctor = fn.httpsCallable("doctors-getData");
@@ -146,7 +146,7 @@ export function DoctorEditor() {
 								key={field.id}
 								className="headerbar"
 							>
-								<span>{capitalize(field.id)}</span>
+								<span>{capitalizeAll(field.id)}</span>
 								<Button
 									label="-"
 									action={() => {
@@ -234,7 +234,7 @@ export function DoctorEditor() {
 
 		{removeSpecialization && doctor ? 
 			<Popup title="Please Confirm" close={() => setRemoveSpecialization(false)}>
-				Are you sure you wish to remove the specialization {capitalize(removeSpecialization)}?
+				Are you sure you wish to remove the specialization {capitalizeAll(removeSpecialization)}?
 				<div className="buttonBar">
 					<Button type="okay" label="Cancel" action={() => setRemoveSpecialization(false)} />
 					<Button type="cancel" label="Yes" action={() => {

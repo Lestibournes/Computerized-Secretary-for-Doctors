@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 
 const doctors = require('./doctors');
 const secretaries = require('./secretaries');
-const { capitalize } = require('./functions');
+const { capitalizeAll } = require('./functions');
 
 /**
  * Convenience global variable for accessing the Admin Firestore object.
@@ -282,7 +282,7 @@ async function getAllCities() {
 		for (const city_snap of city_snaps.docs) {
 			cities.push({
 				id: city_snap.id,
-				label: capitalize(city_snap.id)
+				label: capitalizeAll(city_snap.id)
 			});
 		}
 		

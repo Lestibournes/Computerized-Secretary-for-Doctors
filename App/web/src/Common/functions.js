@@ -15,7 +15,7 @@ export async function getPictureURL(user) {
  * @param {string} text 
  * @returns {string}
  */
-export function capitalize(text) {
+export function capitalizeAll(text) {
 	const words = text.split(/\s+/);
 	let result = "";
 
@@ -24,4 +24,13 @@ export function capitalize(text) {
 	}
 
 	return result;
+}
+
+/**
+ * Capitalize the first letter of string.
+ * @param {string} text 
+ * @returns {string}
+ */
+ export function capitalize(text) {
+	return text[0].toUpperCase() + text.substring(1);
 }

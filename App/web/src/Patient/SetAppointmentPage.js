@@ -11,7 +11,7 @@ import { SelectDate } from "../Common/Components/SelectDate";
 import { Page } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
 import { Popup } from '../Common/Components/Popup';
-import { capitalize } from '../Common/functions';
+import { capitalizeAll, capitalize } from '../Common/functions';
 
 const getAppointment = fn.httpsCallable("appointments-get");
 const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
@@ -67,6 +67,8 @@ export function SetAppointmentPage() {
 
 	const [doctor_data, setDoctorData] = useState(null);
 	const [clinic_data, setClinicData] = useState(null);
+
+	const [problem, setProblem] = useState(null);
 
 	useEffect(() => {
 		if (appointment) {
@@ -148,6 +150,12 @@ export function SetAppointmentPage() {
 				success={() => setDeleted(true)}
 			/>
 		: ""}
+
+		{problem ?
+			<Popup title="Error" close={() => setProblem(false)}>
+				<div>{problem}</div>
+			</Popup>
+		: ""}
 	</>;
 
 	let subtitle;
@@ -164,7 +172,7 @@ export function SetAppointmentPage() {
 				{data ?
 					<>
 						<p>
-							Currently the appointment is a <b>{capitalize(data.appointment.type)}</b> appointment
+							Currently the appointment is a <b>{capitalizeAll(data.appointment.type)}</b> appointment
 							on <b>{SimpleDate.fromObject(data.extra.date).toString()}</b>
 							at <b>{Time.fromObject(data.extra.time).toString()}</b>.
 						</p>
@@ -212,15 +220,15 @@ export function SetAppointmentPage() {
 							editAppointment(new_data)
 							.then(response => {
 								if (response.data.messages.length > 0) {
-									for (let i = 0; i < response.data.messages.length; i++) {
-										console.log(response.data.messages[i]);
-									}
+									setProblem(response.data.messages.map(message => {
+										return <p>{capitalize(message)}</p>;
+									}));
 								}
 
 								setSuccess(response.data.id);
 							})
 							.catch(reason => {
-								console.log(reason);
+								setProblem(capitalize(reason));
 							});
 						}
 						else {
@@ -235,15 +243,15 @@ export function SetAppointmentPage() {
 							})
 							.then(response => {
 								if (response.data.messages.length > 0) {
-									for (let i = 0; i < response.data.messages.length; i++) {
-										console.log(response.data.messages[i]);
-									}
+									setProblem(response.data.messages.map(message => {
+										return <p>{capitalize(message)}</p>;
+									}));
 								}
-								
+
 								setSuccess(response.data.id);
 							})
 							.catch(reason => {
-								console.log(reason);
+								setProblem(capitalize(reason));
 							});
 						}
 					}}

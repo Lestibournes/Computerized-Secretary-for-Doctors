@@ -22,7 +22,7 @@ const stringContains = (text, search) => {
  * @param {string} text 
  * @returns {string}
  */
-function capitalize(text) {
+function capitalizeAll(text) {
 	const words = text.split(/\s+/);
 	let result = "";
 
@@ -34,4 +34,4 @@ function capitalize(text) {
 }
 
 exports.stringContains = stringContains;
-exports.capitalize = capitalize;
+exports.capitalizeAll = capitalizeAll;

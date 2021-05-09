@@ -7,7 +7,7 @@ import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
 import { TextInput } from '../../../Common/Components/TextInput';
 import { Popup } from '../../../Common/Components/Popup';
-import { capitalize } from '../../../Common/functions';
+import { capitalizeAll } from '../../../Common/functions';
 
 const searchSpecializations = fn.httpsCallable("specializations-search");
 
@@ -42,7 +42,7 @@ export function SelectSpecialization({specializations, close, success}) {
 						for (let specialization of response.data) {
 							specialization_cards.push(<Card
 								key={specialization.id}
-								title={capitalize(specialization.id)}
+								title={capitalizeAll(specialization.id)}
 								body={hasSpecialization(specializations, specialization.id) ? "Already specified" : ""}
 								action={() => success(specialization.id)}
 							/>);
