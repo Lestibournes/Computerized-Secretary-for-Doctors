@@ -1,70 +1,48 @@
-# Getting Started with Create React App
+# About
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Computerized Secretary for Private Doctors is aimed to provide online appointment management services to doctors who work privately and don't benefit from the systems used by large organizations.
 
-## Available Scripts
+# Set-up
+## General Instructions for all platforms
+Install nodejs, npm, firebase tools, and git.
 
-In the project directory, you can run:
+Clone the repository into your preferred directory.
 
-### `yarn start`
+Navigate to the App/web folder within the repository.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Use:
+npm install
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+To install package dependencies both in the App/web folder and in App/web/functions
 
-### `yarn test`
+## Platform-Specific Instructions
+### Ubuntu
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+To set up the project:
+sudo snap install node
+sudo apt install git curl
+curl -sL firebase.tools | bash
+git clone https://github.com/Lestibournes/Computerized-Secretary-for-Doctors.git
+cd "Computerized Secretary for Doctors/App/web"
+npm install
+cd functions
+npm install
 
-### `yarn build`
+# Run
+While in App/web:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To run the app:
+npm start
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+To start the firebase functions emulation:
+firebase emulators:start --only functions
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+To use the functions emulator, make sure that src/init.js includes the following line (uncommented):
+fn.useEmulator("localhost", 5001);
 
-### `yarn eject`
+Comment out that line in order to use the functions directly on the production server.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+# Deploy
+To deploy the web app to the server run the following command while in App/web:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+npm run build && firebase deploy
