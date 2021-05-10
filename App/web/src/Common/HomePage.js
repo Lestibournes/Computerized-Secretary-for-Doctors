@@ -7,13 +7,22 @@ import { Page } from "./Components/Page";
 export function HomePage() {
 	return (
 		<Page title="Welcome">
-			<div className="home buttonBar">
-				<Button link="/general/searchDoctors" label="Make an Appointment" />
-				<Button link="/specific/user/appointments/list" label="My Future Appointments" />
-				<Button link="/specific/doctor/appointments/calendar" label="Work Calendar" />
-				<Button link="/specific/doctor/profile" label="Doctor Profile" />
-				<Button link="/specific/secretary/profile" label="Secretary Profile" />
-			</div>
+				<h2>Patient Services</h2>
+				<div className="Home buttonGrid">
+					<Button link="/general/searchDoctors" label="Make an Appointment" />
+					<Button link="/specific/user/appointments/list" label="Future Appointments" />
+				</div>
+
+				<h2>Doctor Services</h2>
+				<div className="Home buttonGrid">
+					<Button link="/specific/doctor/appointments/calendar" label="Work Calendar" />
+					<Button link="/specific/doctor/profile" label="Profile" />
+				</div>
+
+				<h2>Secretary Services</h2>
+				<div className="Home buttonGrid">
+					<Button link="/specific/secretary/profile" label="Profile" />
+				</div>
 		</Page>
 	);
 }

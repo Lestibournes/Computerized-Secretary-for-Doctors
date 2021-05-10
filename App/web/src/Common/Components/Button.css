@@ -13,6 +13,9 @@
 	height: min-content;
 	width: min-content;
 	box-sizing: border-box;
+
+	place-content: center;
+	text-align: center;
 }
 
 .Button:hover {
