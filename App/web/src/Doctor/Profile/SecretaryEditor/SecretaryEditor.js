@@ -47,6 +47,7 @@ export function SecretaryEditor() {
 		return getSecretaryID({user: user}).then(response => {
 			if (response.data) {
 				return getSecretary({secretary: response.data}).then(results => {
+					console.log(results.data);
 					return setSecretary(results.data);
 				});
 			}

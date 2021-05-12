@@ -90,29 +90,63 @@ async function eliminate(clinic, doctor) {
 			message: ""
 		};
 
+		const promises = [];
+
 		if (clinic_snap.data().owner === doctor) {
-			// Go over all of the clnic's doctors and remove the clinic from their profile:
-			return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
+			// Go over all of the clinic's doctors and remove the clinic from their profile:
+			promises.push(db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
 				const doctor_promises = [];
 
 				for (const doctor_snap of doctor_snaps.docs) {
 					doctor_promises.push(
 						db.collection("doctors").doc(doctor_snap.id).collection("clinics").doc(clinic).delete()
 					);
+
+					doctor_promises.push(
+						db.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snap.id).delete()
+					);
 				}
 
-				// Delete the clinic:
-				doctor_promises.push(db.collection("clinics").doc(clinic).delete());
-
-				// Remove the clinic from the city:
-				doctor_promises.push(
-					db.collection("cities").doc(clinic_snap.data().city).collection("clinics").doc(clinic).delete()
-				);
-
 				return Promise.all(doctor_promises).then(() => {
-					response.success = true;
-					return response;
+					return true;
 				});
+			}));
+
+			// Go over all of the clinic's secretaries and remove the clinic from their profile:
+			promises.push(db.collection("clinics").doc(clinic).collection("secretaries").get().then(secretary_snaps => {
+				const secretary_promises = [];
+
+				for (const secretary_snap of secretary_snaps.docs) {
+					secretary_promises.push(
+						db.collection("secretaries").doc(secretary_snap.id).collection("clinics").doc(clinic).delete()
+					);
+
+					secretary_promises.push(
+						db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary_snap.id).delete()
+					);
+				}
+
+				return Promise.all(secretary_promises).then(() => {
+					return true;
+				});
+			}));
+			
+			// Delete the clinic:
+			promises.push(db.collection("clinics").doc(clinic).delete());
+
+			// Remove the clinic from the city:
+			promises.push(
+				db.collection("cities").doc(clinic_snap.data().city).collection("clinics").doc(clinic).delete()
+			);
+
+			return Promise.all(promises).then(results => {
+				response.success = true;
+
+				for (const result of results) {
+					if (!result) response.success = false;
+				}
+
+				return response;
 			});
 		}
 
