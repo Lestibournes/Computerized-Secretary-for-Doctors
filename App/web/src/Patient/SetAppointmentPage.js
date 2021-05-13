@@ -266,7 +266,7 @@ export function SetAppointmentPage() {
 								name="date"
 								selected={date}
 								onClick={(date) => {
-									setDate(SimpleDate.fromObject(date));
+									setDate(date);
 								}}
 							/>
 							<SelectList

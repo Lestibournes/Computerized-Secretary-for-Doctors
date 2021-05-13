@@ -266,6 +266,12 @@ export class Slot {
 	 * @returns {SimpleDate} A new date representing the next month on the calendar.
 	 */
 	getNextMonth() {
+		const next = new SimpleDate(this.year, this.month + 1, 1);
+
+		if (next.getDaysInMonth() < this.day) {
+			return next.getLastDayInMonth();
+		}
+
 		return new SimpleDate(this.year, this.month + 1, this.day);
 	}
 
@@ -298,6 +304,12 @@ export class Slot {
 	 * @returns {SimpleDate} A new date representing the previous month on the calendar.
 	 */
 	getPreviousMonth() {
+		const previous = new SimpleDate(this.year, this.month - 1, 1);
+
+		if (previous.getDaysInMonth() < this.day) {
+			return previous.getLastDayInMonth();
+		}
+
 		return new SimpleDate(this.year, this.month - 1, this.day);
 	}
 
@@ -323,6 +335,22 @@ export class Slot {
 	 */
 	getDaysInMonth() {
 		return new Date(this.year, this.month + 1, 0).getDate();
+	}
+
+	/**
+	 * Get the first day of the current month.
+	 * @returns {SimpleDate}
+	 */
+	getFirstDayOfTheMonth() {
+		return new SimpleDate(new Date(this.year, this.month, 1));
+	}
+
+	/**
+	 * Get the last day of the current month.
+	 * @returns {SimpleDate}
+	 */
+	 getLastDayInMonth() {
+		return new SimpleDate(new Date(this.year, this.month + 1, 0));
 	}
 
 	/**

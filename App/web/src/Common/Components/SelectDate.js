@@ -1,5 +1,6 @@
 import { Field, useField, useFormikContext } from "formik";
 import { useEffect } from "react";
+import { SimpleDate } from "../classes";
 import { Button } from "./Button";
 import "./SelectDate.css";
 
@@ -28,29 +29,6 @@ import "./SelectDate.css";
 			setFieldValue(props.name, selected);
 		}
 	}, [props.name, selected, setFieldValue]);
-	
-	/**
-	 * The next month relative to the currently selected month.
-	 */
-	const next_month = selected.getNextMonth();
-	
-	/**
-	 * The first day of the week for the currently displayed month.
-	 */
-	const startday = new Date(selected.year, selected.month, 1).getDay();
-	/**
-	 * The number of days in the current month.
-	 */
-	const current_length = (new Date(next_month.year, next_month.month, 0)).getDate();
-	
-	/**
-	 * The previous month.
-	 */
-	const previous_month = selected.getPreviousMonth();
-	/**
-	 * The number of days in the previous month.
-	 */
-	const previous_length = (new Date(selected.year, selected.month, 0)).getDate();
 
 	/**
 	 * Holds all the components representing the days that will appear on the calendar.
@@ -62,35 +40,38 @@ import "./SelectDate.css";
 	const days = [];
 
 	for (let i = 1; i <= 42; i++) {
+		/**
+		 * @type {SimpleDate}
+		 */
 		let date;
 		let className;
 
-		if (i <= startday) {
+		if (i <= selected.getFirstDayOfTheMonth().weekday) {
 			// Set the values and display style for the last days of the previous month before adding the current month:
-			date = {
-				day: i + previous_length - startday,
-				month: previous_month.month,
-				year: previous_month.year
-			};
+			date = new SimpleDate(
+				selected.getPreviousMonth().year,
+				selected.getPreviousMonth().month,
+				i + selected.getPreviousMonth().getDaysInMonth() - selected.getFirstDayOfTheMonth().weekday,
+			);
 			className = "faded";
 		}
-		else if (i > current_length + startday) {
+		else if (i > selected.getDaysInMonth() + selected.getFirstDayOfTheMonth().weekday) {
 			// Set the values and display style for the first days of the next month after adding the current month:
-			date = {
-				day: i - (current_length + startday),
-				month: next_month.month,
-				year: next_month.year
-			};
+			date = new SimpleDate(
+				selected.getNextMonth().year,
+				selected.getNextMonth().month,
+				i - (selected.getDaysInMonth() + selected.getFirstDayOfTheMonth().weekday),
+			);
 
 			className = "faded";
 		}
 		else {
 			// Set the values and display style for the days of the current month:
-			date = {
-				day: i - startday,
-				month: selected.month,
-				year: selected.year
-			};
+			date = new SimpleDate(
+				selected.year,
+				selected.month,
+				i - selected.getFirstDayOfTheMonth().weekday,
+			);
 			
 			className = (selected.day === date.day ? "selected" : "")
 		}
