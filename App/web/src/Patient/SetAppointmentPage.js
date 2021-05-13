@@ -55,11 +55,7 @@ export function SetAppointmentPage() {
 	const [type, setType] = useState(null);
 	const [time, setTime] = useState();
 	const [times, setTimes] = useState();
-	const [date, setDate] = useState(SimpleDate.fromObject({
-		year: currentDate.getUTCFullYear(),
-		month: currentDate.getUTCMonth(),
-		day: null
-	}));
+	const [date, setDate] = useState(new SimpleDate());
 
 	const [success, setSuccess] = useState(null);
 	const [deleted, setDeleted] = useState(null);

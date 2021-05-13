@@ -49,19 +49,18 @@ export function CalendarWeek(props) {
 	const headers = [];
 	
 	const days = props.appointments.map((day, index) => {
-		const date = new Date(props.date.getUTCFullYear(), props.date.getUTCMonth(), props.date.getDate() - props.date.getDay() + 1 + index);
-		const simpleDate = new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+		const date = new SimpleDate(props.date.year, props.date.month, props.date.getSunday().day + index);
 
 		headers.push(
-			<div key={"header " + simpleDate.dayname} className="calendarDayHeader" style={{width: day_width, left: day_width * index}}>
-				<b>{simpleDate.dayname.substr(0, 3)}</b>
+			<div key={"header " + date.dayname} className="calendarDayHeader" style={{width: day_width, left: day_width * index}}>
+				<b>{date.dayname.substr(0, 3)}</b>
 				<br />
-				<small>{simpleDate.day + "/" + (simpleDate.month + 1)}</small>
+				<small>{date.day + "/" + (date.month + 1)}</small>
 			</div>
 		);
 
 		return (<CalendarDay
-			key={"day " + simpleDate.dayname}
+			key={"day " + date.dayname}
 			global={{
 				start: props.schedule.start,
 				end: props.schedule.end,

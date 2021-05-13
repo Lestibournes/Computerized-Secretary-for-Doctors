@@ -29,7 +29,7 @@ export function AppointmentCalendarPage() {
 	const auth = useAuth();
 
 	const [doctor, setDoctor] = useState(null);
-	const [date, setDate] = useState(new Date());
+	const [date, setDate] = useState(new SimpleDate());
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState(new Slot(new Time(8, 30), new Time(16, 30)));
 	const [minimum, setMinimum] = useState(60);
@@ -75,21 +75,17 @@ export function AppointmentCalendarPage() {
 	useEffect(() => {
 		if (doctor && date) {
 			// Load all the appointment data for the current time range:
-			const sunday = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - date.getUTCDay() + 1);
-			const saturday = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + (7 - date.getUTCDay()));
-
-			let current = sunday;
-			let next = new Date(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 2);
+			const saturday = date.getSaturday();
 			
 			const appointment_promises = [];
-
-			while (current <= saturday) {
+			
+			for (let current = date.getSunday(); current.compare(saturday) <= 0; current = current.getNextDay()) {
 				appointment_promises.push(
 					getAppointments(
 						{
 							doctor: doctor.doctor.id,
-							start: SimpleDate.fromDate(current).toObject(),
-							end: SimpleDate.fromDate(next).toObject()
+							start: current.toObject(),
+							end: current.getNextDay().toObject()
 						}
 					).then(results => {
 						const today = {
@@ -113,9 +109,6 @@ export function AppointmentCalendarPage() {
 						return today;
 					})
 				);
-
-				current = next;
-				next = new Date(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 2)
 			}
 
 			Promise.all(appointment_promises).then(week => {
@@ -158,22 +151,20 @@ export function AppointmentCalendarPage() {
 		}
 	}, [doctor, date, colors]);
 
-	const simpleDate = SimpleDate.fromDate(date);
-
 	return (
 		<Page title="Work Calendar">
 			<div className="Calendar" id="display">
 				<div className="buttonBar">
 				<Button action={() => {
-						setDate(new Date());
+						setDate(new SimpleDate());
 						}} label="Today" />
 					<Button action={() => {
-						setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - 7));
+						setDate(date.getPreviousWeek());
 						}} label="<" />
 					<Button action={() => {
-						setDate(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 7));
+						setDate(date.getNextWeek());
 						}} label=">" />
-					<h3>{simpleDate.monthname + " " + simpleDate.year}</h3>
+					<h3>{date.monthname + " " + date.year}</h3>
 				</div>
 				<CalendarWeek
 					date={date}
