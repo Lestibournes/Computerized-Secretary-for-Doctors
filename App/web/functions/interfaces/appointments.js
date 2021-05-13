@@ -32,3 +32,7 @@ exports.edit = functions.https.onCall((data, context) => {
 exports.cancel = functions.https.onCall((data, context) => {
 	return appointments.cancel(data.appointment);
 });
+
+exports.arrived = functions.https.onCall((data, context) => {
+	return appointments.arrived(data, context);
+});

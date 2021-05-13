@@ -30,3 +30,7 @@ exports.addSpecialization = functions.https.onCall((data, context) => {
 exports.removeSpecialization = functions.https.onCall((data, context) => {
 	return doctors.removeSpecialization(data.doctor, data.specialization);
 });
+
+exports.getAppointments = functions.https.onCall((data, context) => {
+	return doctors.getAppointments(data.doctor, data.clinic, data.start, data.end);
+});

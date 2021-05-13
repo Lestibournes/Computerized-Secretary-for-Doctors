@@ -104,7 +104,7 @@ export function SetAppointmentPage() {
   }, [clinicID]);
 
 	useEffect(() => {
-		if (date.day && date.month && date.year && (time || !appointment)) {
+		if (date.day && date.month && date.year && (time || !appointment) && doctorID && clinicID) {
 			getAvailableAppointments({
 				doctor: doctorID,
 				clinic: clinicID,
@@ -134,7 +134,7 @@ export function SetAppointmentPage() {
 				setTimes(list);
 			});
 		}
-	}, [appointment, time, date])
+	}, [appointment, time, date, doctorID, clinicID])
 
 	/**
 	 * @todo Appointment types should be read from the doctor's configuration on the server.

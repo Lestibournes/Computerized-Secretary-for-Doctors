@@ -47,7 +47,14 @@ exports.removeSecretary = functions.https.onCall((data, context) => {
 	return clinics.removeSecretary(data.clinic, data.secretary);
 });
 
+exports.hasSecretary = functions.https.onCall((data, context) => {
+	return clinics.hasSecretary(data.clinic, data.secretary);
+});
+
 exports.getAllCities = functions.https.onCall((data, context) => {
 	return clinics.getAllCities();
 });
 
+exports.getAppointments = functions.https.onCall((data, context) => {
+	return clinics.getAppointments(data.clinic, data.start, data.end);
+});

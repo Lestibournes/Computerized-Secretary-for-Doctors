@@ -1,3 +1,4 @@
+const functions = require('firebase-functions');
 const fs = require("@google-cloud/firestore");
 
 // The Firebase Admin SDK to access Cloud Firestore.
@@ -12,6 +13,7 @@ const doctors = require("./doctors");
 const clinics = require("./clinics");
 const schedules = require("./schedules");
 const users = require("./users");
+const secretaries = require("./secretaries");
 
 /**
  * @todo Make the 2 classes files identical and get rid of the redundancy:
@@ -148,8 +150,8 @@ async function get(id) {
 		);
 
 		const date = new Date(data.appointment.start.toDate());
-		data.extra.date = new SimpleDate(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 		data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
+		data.extra.date = new SimpleDate(date).toObject();
 	
 		return Promise.all(promises).then(results => {
 			return data;
@@ -158,11 +160,12 @@ async function get(id) {
 }
 
 /**
- * Get all of the appointments of the specified user, with filters.
- * @param {{user: string, start: Date, end: Date, doctor: string, clinic: string}} constrainst. end, doctor, and clinic are currently unimplemented. 
+ * Get all of the appointments of the specified user or doctor within the specified time range.
+ * Start and end times are optional. If they are not specified then there will not be a limit on start and end times.
+ * @param {{user: string, doctor: string, start: Date, end: Date}} constraints
  * @returns {Promise<object[]>} An array of appointment data.
  */
-async function getAll({user, start, end, doctor, clinic}) {
+async function getAll({user, start, end, doctor}) {
 	let promises = [];
 
 	let query = db;
@@ -173,7 +176,7 @@ async function getAll({user, start, end, doctor, clinic}) {
 	if (start || end ) query = query.orderBy("start");
 	if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
 	if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
-	
+
 	return query.get().then(querySnapshot => {
 		for (const snap of querySnapshot.docs) {
 			promises.push(
@@ -435,6 +438,50 @@ async function cancel(appointment) {
 
 	return response;
 }
+/**
+ * 
+ * @param {{appointment: string}} data 
+ * @param {functions.https.CallableContext} context 
+ * @returns 
+ */
+function arrived(data, context) {
+	const response = {
+		current: null,
+		success: false,
+		messages: ""
+	}
+	// Fetch the secretary ID of the current user:
+	return secretaries.getID(context.auth.uid).then(secretary => {
+		// If the user has a secretary profile:
+		if (secretary) {
+			// Fetch the appointment data:
+			return db.collection("appointments").doc(data.appointment).get().then(appointment_snapshot => {
+	
+				// Check if the current user works as a secretary in the clinic that the appointment is for:
+				return clinics.hasSecretary(appointment_snapshot.data().clinic, secretary).then(secretarty_exits => {
+					if (secretarty_exits) {
+						// If the current user is authorized, then toggle the patient's arrival status:
+						const update = {arrived: appointment_snapshot.data().arrived ? false : true}
+						return db.collection("appointments").doc(data.appointment).update(update)
+						.then(value => {
+							db.collection("users").doc(appointment_snapshot.data().patient).collection("appointments").doc(data.appointment).update(update);
+							db.collection("doctors").doc(appointment_snapshot.data().doctor).collection("appointments").doc(data.appointment).update(update);
+							response.success = true;
+							response.current = update.arrived;
+							return response;
+						})
+					}
+
+					response.messages = "You do not work at this clinic.";
+					return response;
+				});
+			});
+		}
+
+		response.messages = "You are not a secretary.";
+		return response;
+	});
+}
 
 exports.get = get;
 exports.getAll = getAll;
@@ -442,3 +489,4 @@ exports.getAvailable = getAvailable;
 exports.add = add;
 exports.edit = edit;
 exports.cancel = cancel;
+exports.arrived = arrived;

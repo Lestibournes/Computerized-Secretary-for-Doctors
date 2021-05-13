@@ -1,10 +1,10 @@
-import { fn } from "../../../init";
-import { Button } from "../../../Common/Components/Button";
-import { Popup } from "../../../Common/Components/Popup";
+import { fn } from "../init";
+import { Button } from "../Common/Components/Button";
+import { Popup } from "../Common/Components/Popup";
 
 const createSecretary = fn.httpsCallable("secretaries-create");
 
-export function CreateProfile({user, success, failure, close}) {
+export function SecretaryCreateProfile({user, success, failure, close}) {
 	return (
 		<Popup title="Create Profile" close={close}>
 			<div className="center">

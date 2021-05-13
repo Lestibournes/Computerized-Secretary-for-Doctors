@@ -12,8 +12,7 @@ const stringContains = require('./functions').stringContains;
  * Get the requested secretary.
  * @todo Be more picky about which data is being returned.
  * @param {string} secretary The id of the secretary.
- * @returns {
- * Promise<{
+ * @returns {Promise<{
  * 	id: string,
  * 	fullName: string,
  * 	sex: string,

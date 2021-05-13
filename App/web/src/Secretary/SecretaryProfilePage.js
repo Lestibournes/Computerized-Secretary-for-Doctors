@@ -1,15 +1,15 @@
-import { useAuth } from "../../../Common/Auth";
+import { useAuth } from "../Common/Auth";
 import { useEffect, useState } from "react";
-import { fn } from "../../../init";
+import { fn } from "../init";
 
-import { Card } from "../../../Common/Components/Card";
-import { Button } from "../../../Common/Components/Button";
-import { Popup } from "../../../Common/Components/Popup";
+import { Card } from "../Common/Components/Card";
+import { Button } from "../Common/Components/Button";
+import { Popup } from "../Common/Components/Popup";
 
-import { Page } from "../../../Common/Components/Page";
-import { CreateProfile } from "./CreateProfile";
-import { UserEditForm } from "../UserEditor/UserEditForm";
-import { capitalizeAll, getPictureURL } from "../../../Common/functions";
+import { Page } from "../Common/Components/Page";
+import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
+import { UserEditForm } from "../Doctor/Profile/UserEditor/UserEditForm";
+import { capitalizeAll, getPictureURL } from "../Common/functions";
 
 const getSecretary = fn.httpsCallable("secretaries-getData");
 const getSecretaryID = fn.httpsCallable("secretaries-getID");
@@ -24,7 +24,7 @@ function generateClinicCards(secretary, clinics) {
 				title={clinic_data.name}
 				body={clinic_data.city}
 				footer={clinic_data.address}
-				link={"/specific/doctor/clinics/view/" + clinic_data.id}
+				link={"/specific/secretary/clinics/view/" + clinic_data.id}
 			/>
 		);
 	}
@@ -32,7 +32,7 @@ function generateClinicCards(secretary, clinics) {
 	return clinics_list;
 }
 
-export function SecretaryEditor() {
+export function SecretaryProfilePage() {
 	const auth = useAuth();
 
 	useEffect(() => {
@@ -47,7 +47,6 @@ export function SecretaryEditor() {
 		return getSecretaryID({user: user}).then(response => {
 			if (response.data) {
 				return getSecretary({secretary: response.data}).then(results => {
-					console.log(results.data);
 					return setSecretary(results.data);
 				});
 			}
@@ -100,7 +99,7 @@ export function SecretaryEditor() {
 	const popups =
 	<>
 		{createProfile && auth.user ?
-			<CreateProfile
+			<SecretaryCreateProfile
 				user={auth.user.uid}
 				success={secretary => {
 					setCreateProfile(false);

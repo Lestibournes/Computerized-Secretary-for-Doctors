@@ -305,6 +305,12 @@ async function addSecretary(clinic, requester, secretary) {
 	});
 }
 
+async function hasSecretary(clinic, secretary) {
+	return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).get().then(secretary_snapshot => {
+		return secretary_snapshot.exists;
+	});
+}
+
 /**
  * Get the ids and display names of all the cities that have clinics.
  * @returns {Promise<{id: string, label: string}[]>} the ids and display names of all the cities.
@@ -324,6 +330,51 @@ async function getAllCities() {
 	});
 }
 
+/**
+ * Get all of the appointments of all the doctors of the specified clinic within the specified time range.
+ * Start and end times are optional. If they are not specified then there will not be a limit on start and end times.
+ * @param {{clinic: string, start: Date, end: Date}} constraints
+ * @returns {Promise<object[]>} An array of appointment data.
+ */
+ async function getAppointments({clinic, start, end}) {
+	let promises = [];
+
+	promises.push(db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
+		let doctor_promises = [];
+
+		for (const doctor_snapshot of doctor_snapshots.docs) {
+			let query = db.collection("doctors").doc(doctor_snapshot.id).collection("appointments");
+
+			if (start || end ) query = query.orderBy("start");
+			if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
+			if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
+			
+			doctor_promises.push(query.get().then(querySnapshot => {
+				const appointment_promises = [];
+
+				for (const snap of querySnapshot.docs) {
+					appointment_promises.push(
+						appointments.get(snap.id).then(appointment => {
+							return appointment;
+						})
+					);
+				}
+		
+				return Promise.all(appointment_promises).then(results => {
+					// Array of the doctor's appointments:
+					return results;
+				});
+			}));
+		}
+
+		return Promise.all(doctor_promises).then(results => {
+			// Array of arrays of the appointments of each doctor:
+			return results;
+		})
+	}));
+}
+
+
 exports.get = get;
 exports.add = add;
 exports.edit = edit;
@@ -336,5 +387,8 @@ exports.removeDoctor = removeDoctor;
 exports.getAllSecretaries = getAllSecretaries;
 exports.addSecretary = addSecretary;
 exports.removeSecretary = removeSecretary;
+exports.hasSecretary = hasSecretary;
 
 exports.getAllCities = getAllCities;
+
+exports.getAppointments = getAppointments;

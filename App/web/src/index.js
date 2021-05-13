@@ -23,7 +23,10 @@ import { DoctorEditor } from './Doctor/Profile/DoctorEditor/DoctorEditor'
 import { ClinicEditor } from './Doctor/Profile/ClinicEditor/ClinicEditor';
 import { ScheduleEditor } from './Doctor/Profile/ClinicEditor/ScheduleEditor';
 import { SetAppointmentPage } from './Patient/SetAppointmentPage';
-import { SecretaryEditor } from './Doctor/Profile/SecretaryEditor/SecretaryEditor';
+import { SecretaryProfilePage } from './Secretary/SecretaryProfilePage';
+import { SecretaryClinicPage } from './Secretary/SecretaryClinicPage';
+import { SecretaryDoctorAppointmentsPage } from './Secretary/SecretaryDoctorAppointmentsPage';
+import { SecretaryAppointmentPage } from './Secretary/SecretaryAppointmentPage';
 
 /**
  * URL Scheme:
@@ -35,18 +38,24 @@ ReactDOM.render(
 	<ProvideAuth>
 		<Router>
 			<Switch>
+
+				{/* General */}
+
 				<Redirect exact from="/" to="/general/" />
 				<Route exact path="/general/">
 					<HomePage />
-				</Route>
-				<Route exact path="/general/searchDoctors">
-					<SearchDoctorsPage />
 				</Route>
 				<Route path="/general/login">
 					<LoginPage />
 				</Route>
 				<Route path="/general/register">
 					<RegisterPage />
+				</Route>
+
+				{/* Patients */}
+
+				<Route exact path="/general/searchDoctors">
+					<SearchDoctorsPage />
 				</Route>
 				<Route path="/specific/:doctor/user/appointments/create/:clinic">
 					<SetAppointmentPage />
@@ -63,6 +72,9 @@ ReactDOM.render(
 				<Route path="/specific/user/appointments/list">
 					<AppointmentListPage />
 				</Route>
+
+				{/* Doctors */}
+
 				<Route path="/specific/doctor/appointments/calendar">
 					<AppointmentCalendarPage />
 				</Route>
@@ -78,9 +90,22 @@ ReactDOM.render(
 				<Route path="/specific/doctor/clinics/schedule/edit/:clinic/:doctor">
 					<ScheduleEditor />
 				</Route>
+
+				{/* Secretaries */}
+
 				<Route path="/specific/secretary/profile">
-					<SecretaryEditor />
+					<SecretaryProfilePage />
 				</Route>
+				<Route path="/specific/secretary/clinics/view/:clinic">
+					<SecretaryClinicPage />
+				</Route>
+				<Route path="/specific/secretary/clinics/:clinic/:doctor">
+					<SecretaryDoctorAppointmentsPage />
+				</Route>
+				<Route path="/specific/secretary/appointments/:appointment">
+					<SecretaryAppointmentPage />
+				</Route>
+
 			</Switch>
 		</Router>
 	</ProvideAuth>,

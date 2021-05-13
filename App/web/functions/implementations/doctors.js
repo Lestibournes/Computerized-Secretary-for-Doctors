@@ -8,7 +8,11 @@ const db = admin.firestore();
 
 const specializations = require('./specializations');
 
+const appointments = require('./appointments');
+
 const stringContains = require('./functions').stringContains;
+
+const SimpleDate = require('./SimpleDate').SimpleDate;
 
 /**
  * Get the requested doctor and then filter his data by field of specialization and the city where the clinic is.
@@ -208,6 +212,42 @@ async function removeSpecialization(doctor, specialization) {
 	});
 }
 
+
+/**
+ * Get all of the appointments of the specified doctor within the specified time range.
+ * Start and end times are optional. If they are not specified then there will not be a limit on start and end times.
+ * @param {{doctor: string, clinic: string, start: object, end: object}} constraints
+ * @returns {Promise<object[]>} An array of appointment data.
+ */
+ async function getAppointments(doctor, clinic, start, end) {
+	let promises = [];
+
+	let query = db.collection("doctors").doc(doctor).collection("appointments");
+
+	// if (clinic) {
+	// 	query = query.collection("clinics").doc(clinic);
+	// }
+
+	console.log(start, SimpleDate.fromObject(start).day, SimpleDate.fromObject(start).toDate())
+	if (start || end ) query = query.orderBy("start");
+	if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
+	if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
+
+	return query.get().then(querySnapshot => {
+		for (const snap of querySnapshot.docs) {
+			promises.push(
+				appointments.get(snap.id).then(appointment => {
+					return appointment;
+				})
+			);
+		}
+
+		return Promise.all(promises).then(results => {
+			return results;
+		});
+	});
+}
+
 exports.getData = getData;
 exports.getAllClinics = getAllClinics;
 exports.create = create;
@@ -215,3 +255,4 @@ exports.search = search;
 exports.getID = getID;
 exports.addSpecialization = addSpecialization;
 exports.removeSpecialization = removeSpecialization;
+exports.getAppointments = getAppointments;

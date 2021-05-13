@@ -5,7 +5,7 @@ import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
 
-export function Page({unprotected, title, subtitle, children}) {
+export function Page({unprotected, title, subtitle, popups, children}) {
 	const auth = useAuth();
 	const [redirect, setRedirect] = useState(false);
 	
@@ -33,6 +33,7 @@ export function Page({unprotected, title, subtitle, children}) {
 					: null}
 				</div>
 			</div>
+			{popups ? popups : ""}
 			{title ? <h1>{title}</h1> : ""}
 			{subtitle ? <h2>{subtitle}</h2> : ""}
 			{children ? children : <h3>Loading...</h3>}
