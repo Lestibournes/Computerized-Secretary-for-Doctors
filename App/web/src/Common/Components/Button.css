@@ -60,6 +60,8 @@
 .buttonBar {
 	display: flex;
 	gap: var(--margin);
+	row-gap: var(--margin);
+	column-gap: var(--margin);
 	flex-wrap: wrap;
 	place-self: flex-end;
 	place-content: flex-end;

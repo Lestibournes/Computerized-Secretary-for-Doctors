@@ -3,18 +3,18 @@
 	flex-flow: row;
 	gap: var(--margin);
 	flex-grow: 1;
-	width: 1fr;
+	/* width: 1fr; */
 }
 
-label, input, select {
+.Input label, .Input input, .Input select {
 	display: grid;
 	place-items: center start;
 	flex-grow: 1;
 	min-width: max-content;
-	width: 100%;
+	/* width: 100%; */
 }
 
-input {
+.Input input {
 	text-decoration: none;
 	background-color: var(--control-background);
 	color: var(--color);
@@ -24,28 +24,28 @@ input {
 	border-radius: var(--radius);
 }
 
-input:focus {
+.Input input:focus {
 	background-color: var(--control-background-hover);
 	color: var(--color);
 }
 
-input:active {
+.Input input:active {
 	background-color: var(--control-background-pressed);
 	color: var(--alt-color);
 }
 
 
-input.error, Field.error {
+.Input input.error, .Input Field.error {
 	background-color: var(--warning-color);
 }
 
-div.error {
+.Input div.error {
 	font-size: var(--font-size-e);
 	color: var(--warning-color);
 	grid-column: 2/3;
 }
 
-select {
+.Input select {
 	text-decoration: none;
 	background-color: var(--control-background);
 	color: var(--color);
@@ -63,7 +63,7 @@ Form {
 }
 
 /* For simple inputs with labels, such as text input and drop-down lists */
-.widgets {
+Form .widgets {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
@@ -74,19 +74,14 @@ Form {
 }
 
 /* For fat picker widgets like selecting from a list, or selecting a date */
-.pickers {
+Form .pickers {
 	display: grid;
-	width: 100%;
-	grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 	grid-auto-flow: row;
+	grid-auto-rows: 300px;
 	gap: var(--margin);
+
+	width: 100%;
 	max-width: unset;
-}
-
-.Input img {
-	max-width: 128px;
-	max-height: 128px;
-
-	width: auto;
-	height: auto;
+	max-height: 100%;
 }

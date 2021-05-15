@@ -4,7 +4,9 @@
 	'controls'
 	'display';
 
-	position: fixed;
+	grid-template-rows: auto 1fr;
+	
+	position: absolute;
 	left: 50%;
 	top: 50%;
 	transform: translate(-50%, -50%);
@@ -14,7 +16,10 @@
 	border-radius: var(--radius);
 	box-shadow: 0px 0px 5px 5px gray;
 	
-	width: min-content;
+	min-width: fit-content;
+
+	max-height: 100vh;
+	max-width: 100vw;
 }
 
 .controls {
@@ -23,6 +28,8 @@
 	padding: var(--margin-small);
 	border-radius: inherit;
 	grid-template-areas: 'title buttons';
+	grid-template-columns: 1fr auto;
+	gap: var(--margin)
 }
 
 .title {
@@ -33,6 +40,7 @@
 .buttons {
 	display: grid;
 	place-content: end;
+	gap: var(--margin)
 }
 
 .buttons .Button {
@@ -52,15 +60,56 @@
 	display: grid;
 	grid-auto-flow: row;
 	gap: var(--margin);
-	width: fit-content;
 	place-items: center;
+
+	max-height: 100%;
+	max-width: 100%;
+	overflow: auto;
 }
 
-.Popup form {
+.Popup .Input {
+	display: grid;
+	grid-template-areas: 
+	'label ...'
+	'error error';
+	grid-template-columns: 1fr 1fr;
+}
+
+.Popup Form {
+	grid-template-areas:
+	'body'
+	'buttons';
+}
+
+.Popup Form .widgets {
+	flex-direction: column;
+	grid-area: body;
+}
+
+.Popup Form .buttonBar {
+	grid-area: buttons;
+	gap: var(--margin);
+}
+
+.Input div.error {
+	grid-area: error;
+}
+
+.Input label {
+	grid-area: label;
+}
+
+.Input.Radio .Group {
 	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	width: fit-content;
-	min-height: max-content;
-	max-width: min-content;
+	gap: var(--margin);
+}
+
+.Input.Radio .Group div {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: var(--margin-small);
+}
+.Input.Radio .Group div * {
+	grid-column: unset;
+	grid-row: unset;
 }

@@ -23,9 +23,8 @@ export const RadioInput = ({ label, options, initialValue, ...props }) => {
 
 	for (let option of options) {
 		buttons.push(
-			<Fragment key={option}>
+			<div key={option}>
 				<Field
-					className={error}
 					type="radio"
 					{...field}
 					{...props}
@@ -33,15 +32,17 @@ export const RadioInput = ({ label, options, initialValue, ...props }) => {
 					id={option}
 					name={props.name}
 				/>
-				<label htmlFor={option}>{option}</label>
-			</Fragment>
+				<label htmlFor={option} className={error}>{option}</label>
+			</div>
 		)
 	}
 	
 	return (
-		<div className="Input">
+		<div className="Input Radio">
 			<label>{label}</label>
-			{buttons}
+			<div className="Group">
+				{buttons}
+			</div>
 			{meta.touched && meta.error ? (
 				<div className="error">{meta.error}</div>
 			) : null}

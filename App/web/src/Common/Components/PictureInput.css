@@ -1,15 +1,18 @@
 .Picture label {
-	display: flex;
-	flex-flow: row;
-	gap: var(--margin);
-	flex-grow: 1;
-	width: 1fr;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
 }
 
 .Picture img {
 	background-color: var(--control-background);
 	border: 1px solid var(--control-background-pressed);
 	border-radius: var(--radius);
+
+	max-width: 128px;
+	max-height: 128px;
+
+	width: auto;
+	height: auto;
 }
 
 .Picture img:hover {

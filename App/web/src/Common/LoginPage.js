@@ -36,7 +36,7 @@ export function LoginPage() {
 							auth.login(values.email, values.password);
 						}}
 					>
-						<Form className="Login">
+						<Form>
 							<div className="widgets">
 								<TextInput
 									label="Email Address"

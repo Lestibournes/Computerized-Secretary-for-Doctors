@@ -101,9 +101,18 @@ export function SetAppointmentPage() {
 				const list = [];
 
 				results.data.forEach(result => {
+					console.log(result);
 					list.push(Time.fromObject(result.start));
 				});
 
+				console.log("====================================");
+				console.log("====================================");
+				console.log("====================================");
+				console.log("====================================");
+				console.log("====================================");
+				console.log("====================================");
+				console.log("====================================");
+				console.log("====================================");
 				if (time) {
 					for (let i = 0; i < list.length; i++) {
 						if (list[i].compare(time) === 0) {

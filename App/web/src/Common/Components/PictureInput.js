@@ -20,15 +20,14 @@ import { Field, useField } from 'formik';
 	const error = meta.touched && meta.error ? "error" : null; // Whether or not an error message should be displayed.
 	
 	return (
-		<div className="Input Picture">
-			<label htmlFor={props.id}>
+		<div className="Picture">
+			<label htmlFor={props.id} className={error}>
 				<div>{label}</div>
 				<img src={src} alt={alt} />
 			</label>
 			<Field
 				type="file"
 				onChange={e => callback(e.target.files[0])}
-				className={error}
 				{...props}
 			/>
 			{meta.touched && meta.error ? (

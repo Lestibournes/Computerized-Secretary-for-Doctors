@@ -19,9 +19,9 @@ code {
 		monospace;
 }
 
-#root {
+/* #root {
 	height: 100vh;
-}
+} */
 
 h1 {
 	color: var(--highlight);
