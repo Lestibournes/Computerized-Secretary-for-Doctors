@@ -1,6 +1,5 @@
 import { useAuth } from "../Common/Auth";
 import { useEffect, useState } from "react";
-import { fn } from "../init";
 
 import { Card } from "../Common/Components/Card";
 import { Button } from "../Common/Components/Button";
@@ -10,9 +9,7 @@ import { Page } from "../Common/Components/Page";
 import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
 import { UserEditForm } from "../Doctor/Profile/UserEditor/UserEditForm";
 import { capitalizeAll, getPictureURL } from "../Common/functions";
-
-const getSecretary = fn.httpsCallable("secretaries-getData");
-const getSecretaryID = fn.httpsCallable("secretaries-getID");
+import { server } from "../Common/server";
 
 function generateClinicCards(secretary, clinics) {
 	const clinics_list = [];
@@ -44,9 +41,9 @@ export function SecretaryProfilePage() {
 	}, [auth]);
 
 	async function loadData(user) {
-		return getSecretaryID({user: user}).then(response => {
+		return server.secretaries.getID({user: user}).then(response => {
 			if (response.data) {
-				return getSecretary({secretary: response.data}).then(results => {
+				return server.secretaries.getData({secretary: response.data}).then(results => {
 					return setSecretary(results.data);
 				});
 			}
@@ -103,7 +100,7 @@ export function SecretaryProfilePage() {
 				user={auth.user.uid}
 				success={secretary => {
 					setCreateProfile(false);
-					getSecretary({secretary: secretary}).then(results => {
+					server.secretaries.getData({secretary: secretary}).then(results => {
 						setSecretary(results.data);
 					});
 				}}

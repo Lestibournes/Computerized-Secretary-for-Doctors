@@ -222,11 +222,13 @@ async function removeSpecialization(doctor, specialization) {
  async function getAppointments(doctor, clinic, start, end) {
 	let promises = [];
 
-	let query = db.collection("doctors").doc(doctor).collection("appointments");
+	let query = db;
 
-	// if (clinic) {
-	// 	query = query.collection("clinics").doc(clinic);
-	// }
+	if (clinic) {
+		query = query.collection("clinics").doc(clinic);
+	}
+
+	query = query.collection("doctors").doc(doctor).collection("appointments");
 
 	console.log(start, SimpleDate.fromObject(start).day, SimpleDate.fromObject(start).toDate())
 	if (start || end ) query = query.orderBy("start");

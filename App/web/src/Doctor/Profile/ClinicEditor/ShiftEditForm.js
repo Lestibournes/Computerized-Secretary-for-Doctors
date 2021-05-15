@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { useState } from "react";
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
-import { fn } from "../../../init";
+import { server } from "../../../Common/server";
 
 export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, close, success, deleted}) {
 	const [confirmDelete, setConfirmDelete] = useState(false);
@@ -39,6 +39,7 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 						setSubmitting(true);
 
 						success({
+							shift: shift,
 							doctor: doctor,
 							clinic: clinic,
 							day: day,
@@ -98,8 +99,6 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 	);
 }
 
-const deleteShift = fn.httpsCallable("schedules-delete");
-
 function ConfirmDelete({clinic, doctor, shift, close, success}) {
 	const [problem, setProblem] = useState(null);
 
@@ -109,7 +108,7 @@ function ConfirmDelete({clinic, doctor, shift, close, success}) {
 		<p>This action is permanent and cannot be undone.</p>
 		<div className="buttonBar">
 			<Button type="cancel" label="Yes" action={() => {
-				deleteShift({clinic: clinic, doctor: doctor, shift: shift}).then(response => {
+				server.schedules.delete({clinic: clinic, doctor: doctor, shift: shift}).then(response => {
 					if (!response.data.success) {setProblem(response.data.message)}
 					else {success()}
 				});

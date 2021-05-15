@@ -1,6 +1,5 @@
 import { useAuth } from "../../../Common/Auth";
 import { useEffect, useState } from "react";
-import { fn } from "../../../init";
 
 import { Card } from "../../../Common/Components/Card";
 import { Button } from "../../../Common/Components/Button";
@@ -12,12 +11,7 @@ import { CreateProfile } from "./CreateProfile";
 import { UserEditForm } from "../UserEditor/UserEditForm";
 import { capitalizeAll, getPictureURL } from "../../../Common/functions";
 import { SelectSpecialization } from "./SelectSpecialization";
-
-const getDoctor = fn.httpsCallable("doctors-getData");
-const getDoctorID = fn.httpsCallable("doctors-getID");
-const getAllClinics = fn.httpsCallable("doctors-getAllClinics");
-const addSpecialization = fn.httpsCallable("doctors-addSpecialization");
-const delSpecialization = fn.httpsCallable("doctors-removeSpecialization");
+import { server } from "../../../Common/server";
 
 /**
 @todo
@@ -56,29 +50,6 @@ For each shift, select start and end time or remove the shift.
 It would be good to add some kind of notification widget to easily show new membership requests, private messages from clients, or whatever else.
 */
 
-function generateClinicCards(doctor, clinics) {
-	const clinics_list = [];
-		
-	for (let clinic_data of clinics) {
-		clinics_list.push(
-			<Card
-				key={clinic_data.id}
-				title={clinic_data.name}
-				body={clinic_data.city}
-				footer={clinic_data.address}
-				link={(
-					clinic_data.owner === doctor ?
-					"/specific/doctor/clinics/edit/" + clinic_data.id
-					:
-					"/specific/doctor/clinics/view/" + clinic_data.id
-				)}
-			/>
-		);
-	}
-
-	return clinics_list;
-}
-
 export function DoctorEditor() {
 	const auth = useAuth();
 
@@ -91,9 +62,9 @@ export function DoctorEditor() {
 	}, [auth]);
 
 	async function loadData(user) {
-		return getDoctorID({user: user}).then(response => {
+		return server.doctors.getID({user: user}).then(response => {
 			if (response.data) {
-				return getDoctor({id: response.data}).then(results => {
+				return server.doctors.getData({id: response.data}).then(results => {
 					return setDoctor(results.data);
 				});
 			}
@@ -104,7 +75,10 @@ export function DoctorEditor() {
 	}
 	const [doctor, setDoctor] = useState(null);
 	const [image, setImage] = useState(null);
-	const [clinics, setClinics] = useState(null);
+	const [clinicCards, setClinicCards] = useState(null);
+	const [clinics, setClinics] = useState();
+
+	// Popup toggles:
 	const [createProfile, setCreateProfile] = useState(false);
 	const [alreadyExists, setAlreadyExists] = useState(false);
 	const [createClinic, setCreateClinic] = useState(false);
@@ -114,7 +88,7 @@ export function DoctorEditor() {
 
 	useEffect(() => {
 		if (doctor) {
-			setClinics(generateClinicCards(doctor.doctor.id, doctor.clinics));
+			setClinics(doctor.clinics);
 
 			getPictureURL(doctor.user.id).then(url => {
 				setImage(url);
@@ -122,9 +96,34 @@ export function DoctorEditor() {
 		}
 	}, [doctor]);
 
+	useEffect(() => {
+		if (clinics && doctor) {
+			const clinics_list = [];
+			
+			for (let clinic_data of clinics) {
+				clinics_list.push(
+					<Card
+						key={clinic_data.id}
+						title={clinic_data.name}
+						body={clinic_data.city}
+						footer={clinic_data.address}
+						link={(
+							clinic_data.owner === doctor.doctor.id ?
+							"/specific/doctor/clinics/edit/" + clinic_data.id
+							:
+							"/specific/doctor/clinics/view/" + clinic_data.id
+						)}
+					/>
+				);
+			}
+
+			setClinicCards(clinics_list);
+		}
+	}, [doctor, clinics]);
+
 	let display = <h2>Loading...</h2>;
 
-	if (doctor && clinics) {
+	if (doctor && clinicCards) {
 		display = (
 			<>
 				<div className="headerbar">
@@ -162,7 +161,7 @@ export function DoctorEditor() {
 					<h2>Clinics</h2> <Button label="+" action={() => setCreateClinic(true)} />
 				</div>
 				<div className="cardList">
-					{clinics}
+					{clinicCards}
 				</div>
 			</>
 		);
@@ -175,7 +174,7 @@ export function DoctorEditor() {
 			user={auth.user.uid}
 			success={doctor => {
 				setCreateProfile(false);
-				getDoctor({id: doctor}).then(results => {
+				server.doctors.getData({id: doctor}).then(results => {
 					setDoctor(results.data);
 				});
 			}}
@@ -199,10 +198,13 @@ export function DoctorEditor() {
 		{createClinic ? 
 			<ClinicCreateForm
 				doctor={doctor.doctor.id}
-				success={() => {
+				success={clinic_id => {
 					setCreateClinic(false);
-					getAllClinics({doctor: doctor.doctor.id}).then(results => {
-						setClinics(generateClinicCards(doctor.doctor.id, results.data));
+					
+					server.clinics.get({id: clinic_id}).then(response => {
+						const new_clinics = [...clinics];
+						new_clinics.push(response.data);
+						setClinics(new_clinics);
 					});
 				}}
 				close={() => setCreateClinic(false)}
@@ -224,7 +226,7 @@ export function DoctorEditor() {
 				specializations={doctor.fields}
 				close={() => setSelectSpecializations(false)}
 				success={specialization => {
-					addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
+					server.doctors.addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
 					.then(() => {
 						loadData(auth.user.uid);
 					});
@@ -238,7 +240,7 @@ export function DoctorEditor() {
 				<div className="buttonBar">
 					<Button type="okay" label="Cancel" action={() => setRemoveSpecialization(false)} />
 					<Button type="cancel" label="Yes" action={() => {
-						delSpecialization({doctor: doctor.doctor.id, specialization: removeSpecialization})
+						server.doctors.removeSpecialization({doctor: doctor.doctor.id, specialization: removeSpecialization})
 						.then(() => {
 							loadData(auth.user.uid).then(() => setRemoveSpecialization(false));
 						});

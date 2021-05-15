@@ -32,16 +32,21 @@ async function get(id) {
  * @param {string} address The street and building number where the clinic is located.
  */
 async function add(doctor, name, city, address) {
-	db.collection("clinics").add({
+	return db.collection("clinics").add({
 		name: name,
 		city: city,
 		address: address,
 		owner: doctor
 	}).then(clinicRef => {
-		clinicRef.collection("doctors").doc(doctor).set({exists: true});
-		db.collection("doctors").doc(doctor).collection("clinics").doc(clinicRef.id).set({exists: true});
-		db.collection("cities").doc(city).set({exists: true});
-		db.collection("cities").doc(city).collection("clinics").doc(clinicRef.id).set({exists: true});
+		return clinicRef.collection("doctors").doc(doctor).set({exists: true}).then(() => {
+			return db.collection("doctors").doc(doctor).collection("clinics").doc(clinicRef.id).set({exists: true}).then(() => {
+				return db.collection("cities").doc(city).set({exists: true}).then(() => {
+					return db.collection("cities").doc(city).collection("clinics").doc(clinicRef.id).set({exists: true}).then(() => {
+						return clinicRef.id;
+					});
+				});
+			});
+		});
 	});
 }
 

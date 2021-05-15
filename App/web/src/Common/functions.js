@@ -1,4 +1,5 @@
-import { fn, storage } from "../init";
+import { fb, storage } from "../init";
+const fn = fb.functions();
 
 const getPicture = fn.httpsCallable("users-getPicture");
 

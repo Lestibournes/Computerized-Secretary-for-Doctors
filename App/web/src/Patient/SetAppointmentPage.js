@@ -4,7 +4,6 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
-import { fn } from '../init';
 import { Button } from "../Common/Components/Button";
 import { SelectList } from "../Common/Components/SelectList";
 import { SelectDate } from "../Common/Components/SelectDate";
@@ -12,16 +11,7 @@ import { Page } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
 import { Popup } from '../Common/Components/Popup';
 import { capitalizeAll, capitalize } from '../Common/functions';
-
-const getAppointment = fn.httpsCallable("appointments-get");
-const getAvailableAppointments = fn.httpsCallable("appointments-getAvailable");
-
-const makeAppointment = fn.httpsCallable("appointments-add");
-const editAppointment = fn.httpsCallable("appointments-edit");
-const cancelAppointment = fn.httpsCallable("appointments-cancel");
-
-const getDoctor = fn.httpsCallable("doctors-getData");
-const getClinic = fn.httpsCallable("clinics-get");
+import { server } from '../Common/server';
 
 /**
  * @todo
@@ -68,7 +58,7 @@ export function SetAppointmentPage() {
 
 	useEffect(() => {
 		if (appointment) {
-			getAppointment({id: appointment}).then(results => {
+			server.appointments.get({id: appointment}).then(results => {
 				setData(results.data);
 				setDoctorID(results.data.doctor.doctor.id);
 				setClinicID(results.data.clinic.id);
@@ -85,7 +75,7 @@ export function SetAppointmentPage() {
 
 	useEffect(() => {
 		if (doctorID && !doctor_data) {
-			getDoctor({id: doctorID}).then(result => {
+			server.doctors.getData({id: doctorID}).then(result => {
 				setDoctorData(result.data);
 			});
 		}
@@ -93,7 +83,7 @@ export function SetAppointmentPage() {
 	
 	useEffect(() => {
 		if (clinicID && !clinic_data) {
-			getClinic({id: clinicID}).then(response => {
+			server.clinics.get({id: clinicID}).then(response => {
 				setClinicData(response.data);
 			});
 		}
@@ -101,7 +91,7 @@ export function SetAppointmentPage() {
 
 	useEffect(() => {
 		if (date.day && date.month && date.year && (time || !appointment) && doctorID && clinicID) {
-			getAvailableAppointments({
+			server.appointments.getAvailable({
 				doctor: doctorID,
 				clinic: clinicID,
 				date: date.toObject(),
@@ -213,7 +203,7 @@ export function SetAppointmentPage() {
 								new_data.type = values.type;
 							}
 							
-							editAppointment(new_data)
+							server.appointments.edit(new_data)
 							.then(response => {
 								if (response.data.messages.length > 0) {
 									setProblem(response.data.messages.map(message => {
@@ -229,7 +219,7 @@ export function SetAppointmentPage() {
 						}
 						else {
 							// Set the appointment on the server:
-							makeAppointment({
+							server.appointments.add({
 								doctor: doctor,
 								clinic: clinic,
 								patient: auth.user.uid,
@@ -310,7 +300,7 @@ function ConfirmDelete({appointment, close, success}) {
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
-					cancelAppointment({appointment: appointment}).then(response => {
+					server.appointments.cancel({appointment: appointment}).then(response => {
 						if (!response.data.success) {setProblem(response.data.message)}
 						else success();
 					});

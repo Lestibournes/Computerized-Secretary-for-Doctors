@@ -12,8 +12,9 @@ import "./firebase_config";
 
 export const fb = firebase;
 export const db = firebase.firestore();
-export const fn = firebase.functions();
 export const st = firebase.storage();
 export const storage = firebase.storage().ref();
+
+const fn = firebase.functions();
 
 fn.useEmulator("localhost", 5001);

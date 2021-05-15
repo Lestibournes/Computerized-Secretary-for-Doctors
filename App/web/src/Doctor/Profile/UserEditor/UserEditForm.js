@@ -4,14 +4,10 @@ import { useState } from "react";
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { TextInput } from "../../../Common/Components/TextInput";
-import { fn, storage } from "../../../init";
+import { storage } from "../../../init";
 import { RadioInput } from "../../../Common/Components/RadioInput";
 import { PictureInput } from "../../../Common/Components/PictureInput";
-
-// const editClinic = fn.httpsCallable("clinics-edit");
-
-const updatePicture = fn.httpsCallable("users-updatePicture");
-const update = fn.httpsCallable("users-update");
+import { server } from "../../../Common/server";
 
 export function UserEditForm({user, image, close, success, deleted}) {
 	const [selectedImage, setSelectedImage] = useState(image);
@@ -38,7 +34,7 @@ export function UserEditForm({user, image, close, success, deleted}) {
 						const promises = [];
 						
 						if (file) {
-							promises.push(updatePicture({id: user.id}).then(response => {
+							promises.push(server.users.updatePicture({id: user.id}).then(response => {
 								storage.child(response.data).put(file);
 							}));
 						}
@@ -51,7 +47,7 @@ export function UserEditForm({user, image, close, success, deleted}) {
 
 						if (values.sex) updates.sex = values.sex.toLowerCase();
 
-						promises.push(update({id: user.id, changes: updates}));
+						promises.push(server.users.update({id: user.id, changes: updates}));
 
 						Promise.all(promises).then(results => {
 							close();

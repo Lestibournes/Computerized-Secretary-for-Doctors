@@ -1,28 +1,13 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { fn } from '../init';
 import { Time } from "../Common/classes";
-import { Card } from '../Common/Components/Card';
 import { SimpleDate } from "../Common/classes";
 import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
 import { Popup } from '../Common/Components/Popup';
-
-const functions = {
-	doctors: {
-		getAppointments: fn.httpsCallable("doctors-getAppointments"),
-		getData: fn.httpsCallable("doctors-getData"),
-	},
-	clinics: {
-		get: fn.httpsCallable("clinics-get"),
-	},
-	appointments: {
-		get: fn.httpsCallable("appointments-get"),
-		arrived: fn.httpsCallable("appointments-arrived"),
-	}
-}
+import { server } from '../Common/server';
 
 export function SecretaryAppointmentPage() {
 	/**
@@ -41,14 +26,14 @@ export function SecretaryAppointmentPage() {
 	
 	useEffect(() => {
 		if (appointment) {
-			functions.appointments.get({id: appointment}).then(results => {
+			server.appointments.get({id: appointment}).then(results => {
 				setAppointmentData(results.data);
 
-				functions.doctors.getData({id: results.data.appointment.doctor}).then(results => {
+				server.doctors.getData({id: results.data.appointment.doctor}).then(results => {
 					setDoctorData(results.data);
 				});
 				
-				functions.clinics.get({id: results.data.appointment.clinic}).then(results => {
+				server.clinics.get({id: results.data.appointment.clinic}).then(results => {
 					setClinicData(results.data);
 				});
 
@@ -85,7 +70,7 @@ export function SecretaryAppointmentPage() {
 					type={arrived ? "okay" : ""}
 					label="Arrived"
 					action={() => {
-						functions.appointments.arrived({appointment: appointment}).then(response => {
+						server.appointments.arrived({appointment: appointment}).then(response => {
 							if (response.data.success) {
 								setArrived(response.data.current);
 							}

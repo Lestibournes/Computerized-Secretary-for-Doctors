@@ -1,12 +1,10 @@
-import { fn } from "../../../init";
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput } from '../../../Common/Components/TextInput';
-
-const addClinic = fn.httpsCallable("clinics-add");
+import { server } from "../../../Common/server";
 
 export function ClinicCreateForm({doctor, close, success}) {
 	return (
@@ -29,9 +27,9 @@ export function ClinicCreateForm({doctor, close, success}) {
 					onSubmit={async (values, { setSubmitting }) => {
 						setSubmitting(true);
 
-						addClinic({doctor: doctor, name: values.name, city: values.city, address: values.address})
+						server.clinics.add({doctor: doctor, name: values.name, city: values.city, address: values.address})
 						.then(response => {
-								success(response);
+								success(response.data);
 								close();
 						});
 					}}

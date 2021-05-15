@@ -2,14 +2,12 @@
 import React, { useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { fn } from '../../../init';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
 import { TextInput } from '../../../Common/Components/TextInput';
 import { Popup } from '../../../Common/Components/Popup';
 import { getPictureURL } from '../../../Common/functions';
-
-const searchDoctors = fn.httpsCallable("doctors-search");
+import { server } from '../../../Common/server';
 
 export function SelectDoctor({close, success}) {
 	const [cards, setCards] = useState([]);
@@ -30,7 +28,7 @@ export function SelectDoctor({close, success}) {
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
 
-					searchDoctors({name: values.name, city: values.city, specialization: values.specialization})
+					server.doctors.search({name: values.name, city: values.city, specialization: values.specialization})
 					.then(async response => {
 						const doctor_cards = [];
 

@@ -2,23 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
-import { fn } from '../../../init';
 import { Button } from "../../../Common/Components/Button";
 import { Page } from "../../../Common/Components/Page";
-import { Popup } from '../../../Common/Components/Popup';
 import { Card } from '../../../Common/Components/Card';
 
-import { SimpleDate, Time } from '../../../Common/classes';
-import { capitalizeAll } from '../../../Common/functions';
+import { Time } from '../../../Common/classes';
 import { ShiftEditForm } from './ShiftEditForm';
-
-const getClinic = fn.httpsCallable("clinics-get");
-
-const getDoctor = fn.httpsCallable("doctors-getData");
-const getDoctorID = fn.httpsCallable("doctors-getID");
-
-const getSchedule = fn.httpsCallable("schedules-get");
-const addShift = fn.httpsCallable("schedules-add");
+import { server } from '../../../Common/server';
 
 export function ScheduleEditor() {
 	const auth = useAuth();
@@ -26,8 +16,8 @@ export function ScheduleEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) {
-				getDoctorID({user: auth.user.uid}).then(response => {
-					getDoctor({id: response.data}).then(doctor_data => {
+				server.doctors.getID({user: auth.user.uid}).then(response => {
+					server.doctors.getData({id: response.data}).then(doctor_data => {
 						setDoctorData(doctor_data.data);
 					});
 				});
@@ -58,13 +48,13 @@ export function ScheduleEditor() {
 
 	useEffect(() => {
 		if (clinic && doctor) {
-			getClinic({id: clinic}).then(clinic_data => {
+			server.clinics.get({id: clinic}).then(clinic_data => {
 				setClinicData(clinic_data.data);
 
-				getDoctor({id: doctor}).then(doctor_data => {
+				server.doctors.getData({id: doctor}).then(doctor_data => {
 					setDoctorData(doctor_data.data);
 
-					getSchedule({doctor: doctor, clinic: clinic}).then(response => {
+					server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
 						setSchedule(response.data);
 					});
 				});
@@ -113,15 +103,26 @@ export function ScheduleEditor() {
 				{...shiftEditor}
 				close={() => setShiftEditor(null)}
 				success={data => {
-					addShift(data).then(() => {
-						getSchedule({doctor: doctor, clinic: clinic}).then(response => {
-							setSchedule(response.data);
-							setShiftEditor(null);
+					if (data.shift) {
+						alert("TODO");
+						// server.schedules.edit(data).then(() => {
+						// 	server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
+						// 		setSchedule(response.data);
+						// 		setShiftEditor(null);
+						// 	});
+						// });
+					}
+					else {
+						server.schedules.add(data).then(() => {
+							server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
+								setSchedule(response.data);
+								setShiftEditor(null);
+							});
 						});
-					});
+					}
 				}}
 				deleted={() => {
-					getSchedule({doctor: doctor, clinic: clinic}).then(response => {
+					server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
 						setSchedule(response.data);
 						setShiftEditor(null);
 					});

@@ -1,8 +1,6 @@
-import { fn } from "../init";
 import { Button } from "../Common/Components/Button";
 import { Popup } from "../Common/Components/Popup";
-
-const createSecretary = fn.httpsCallable("secretaries-create");
+import { server } from "../Common/server";
 
 export function SecretaryCreateProfile({user, success, failure, close}) {
 	return (
@@ -12,7 +10,7 @@ export function SecretaryCreateProfile({user, success, failure, close}) {
 				<div className="buttonBar">
 					<Button action={close} label="No" />
 					<Button type="okay" action={() => {
-						createSecretary({user: user}).then(response => {
+						server.secretaries.create({user: user}).then(response => {
 							if (response.data.success) success(response.data.secretary);
 							else failure();
 						});

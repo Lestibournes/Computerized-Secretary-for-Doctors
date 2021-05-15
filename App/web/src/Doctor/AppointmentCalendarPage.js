@@ -3,16 +3,12 @@ import "./AppointmentCalendarPage.css";
 //Reactjs:
 import { React, useEffect, useState } from 'react';
 import { useAuth } from "../Common/Auth";
-import { fn } from '../init';
 import { Slot, Time, SimpleDate } from "../Common/classes";
 import { CalendarWeek } from "../Common/Components/CalendarWeek";
 import { Button } from '../Common/Components/Button';
 import { Page } from '../Common/Components/Page';
-
-const getDoctorData = fn.httpsCallable("doctors-getData");
-const getSchedule = fn.httpsCallable("schedules-get");
-const getAppointments = fn.httpsCallable("appointments-getAll");
-const getUser = fn.httpsCallable("users-get");
+import { server } from "../Common/server";
+import { Popup } from "../Common/Components/Popup";
 
 function debounce(fn, ms) {
   let timer
@@ -31,7 +27,7 @@ export function AppointmentCalendarPage() {
 	const [doctor, setDoctor] = useState(null);
 	const [date, setDate] = useState(new SimpleDate());
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
-	const [schedule, setSchedule] = useState(new Slot(new Time(8, 30), new Time(16, 30)));
+	const [schedule, setSchedule] = useState();
 	const [minimum, setMinimum] = useState(60);
 	const [colors, setColors] = useState({
 		"new patient": 120,
@@ -62,9 +58,9 @@ export function AppointmentCalendarPage() {
 	useEffect(() => {
 		if (auth.user && !doctor) {
 			// Check if the current user is a doctor, and if he is, fetch his doctor id/ref:
-			getUser({user: auth.user.uid}).then(user => {
+			server.users.get({user: auth.user.uid}).then(user => {
 				if (user.data.doctor) {
-					getDoctorData({id: user.data.doctor}).then(doctor_data => {
+					server.doctors.getData({id: user.data.doctor}).then(doctor_data => {
 						setDoctor(doctor_data.data);
 					})
 				}
@@ -81,7 +77,7 @@ export function AppointmentCalendarPage() {
 			
 			for (let current = date.getSunday(); current.compare(saturday) <= 0; current = current.getNextDay()) {
 				appointment_promises.push(
-					getAppointments(
+					server.appointments.getAll(
 						{
 							doctor: doctor.doctor.id,
 							start: current.toObject(),
@@ -129,7 +125,7 @@ export function AppointmentCalendarPage() {
 
 			for (const clinic of doctor.clinics) {
 				schedule_promises.push(
-					getSchedule({clinic: clinic.id, doctor: doctor.doctor.id}).then(schedule => {
+					server.schedules.get({clinic: clinic.id, doctor: doctor.doctor.id}).then(schedule => {
 						for (const day of schedule.data) {
 							for (const shift of day) {
 								const start_time = Time.fromObject(shift.start);
@@ -145,14 +141,26 @@ export function AppointmentCalendarPage() {
 			}
 
 			Promise.all(schedule_promises).then(() => {
-				setSchedule(new Slot(start, end));
+				if (start && end) setSchedule(new Slot(start, end));
+				else setSchedule(false);
 				// setMinimum(minimum);
 			});
 		}
 	}, [doctor, date, colors]);
 
-	return (
-		<Page title="Work Calendar">
+	let popups = 
+	<>
+		{schedule === false ?
+			<Popup close={() => {window.history.back()}}>
+				You need to create a work schedule before viewing your appointment calendar.
+			</Popup>
+		: ""}
+	</>
+
+	let display;
+	
+	if (schedule) {
+		display = 
 			<div className="Calendar" id="display">
 				<div className="buttonBar">
 				<Button action={() => {
@@ -174,7 +182,12 @@ export function AppointmentCalendarPage() {
 					width={dimensions.width}
 					height={960}
 				/>
-			</div>
+			</div>;
+	}
+
+	return (
+		<Page title="Work Calendar" popups={popups}>
+			{display}
 		</Page>
 	);
 }

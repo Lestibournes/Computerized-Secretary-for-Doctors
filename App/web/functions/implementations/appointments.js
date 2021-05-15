@@ -299,6 +299,7 @@ async function add(doctor, clinic, patient, date, time, type) {
 			.then(value => {
 				db.collection("users").doc(patient).collection("appointments").doc(value.id).set(appointment);
 				db.collection("doctors").doc(doctor).collection("appointments").doc(value.id).set(appointment);
+				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("appointments").doc(value.id).set(appointment);
 				response.id = value.id;
 			})
 			.catch(reason => {
@@ -386,6 +387,7 @@ async function edit(appointment, date, time, type) {
 			.then(value => {
 				db.collection("users").doc(old_data.patient).collection("appointments").doc(appointment).update(new_data);
 				db.collection("doctors").doc(old_data.doctor).collection("appointments").doc(appointment).update(new_data);
+				db.collection("clinics").doc(old_data.clinic).collection("doctors").doc(old_data.doctor).collection("appointments").doc(appointment).update(new_data);
 				response.id = appointment;
 			})
 			.catch(reason => {
@@ -416,12 +418,14 @@ async function cancel(appointment) {
 
 	let user_appointment;
 	let doctor_appointment;
+	let clinic_appointment;
 	let general_appointment = db.collection("appointments").doc(appointment);
 
 	await general_appointment.get().then(snapshot => {
 		if (snapshot.exists) {
 			user_appointment = db.collection("users").doc(snapshot.data().patient).collection("appointments").doc(appointment);
 			doctor_appointment = db.collection("doctors").doc(snapshot.data().doctor).collection("appointments").doc(appointment);
+			clinic_appointment = db.collection("clinics").doc(snapshot.data().clinic).collection("doctors").doc(snapshot.data().doctor).collection("appointments").doc(appointment);
 		}
 	});
 
@@ -429,6 +433,7 @@ async function cancel(appointment) {
 		await general_appointment.delete();
 		await user_appointment.delete();
 		await doctor_appointment.delete()
+		await clinic_appointment.delete();
 
 		response.success = true;
 	}
@@ -464,12 +469,19 @@ function arrived(data, context) {
 						const update = {arrived: appointment_snapshot.data().arrived ? false : true}
 						return db.collection("appointments").doc(data.appointment).update(update)
 						.then(value => {
-							db.collection("users").doc(appointment_snapshot.data().patient).collection("appointments").doc(data.appointment).update(update);
-							db.collection("doctors").doc(appointment_snapshot.data().doctor).collection("appointments").doc(data.appointment).update(update);
-							response.success = true;
-							response.current = update.arrived;
-							return response;
-						})
+							return db.collection("users").doc(appointment_snapshot.data().patient).collection("appointments").doc(data.appointment).update(update).then(() => {
+								return db.collection("doctors").doc(appointment_snapshot.data().doctor).collection("appointments").doc(data.appointment).update(update).then(() => {
+									return db.collection("clinics").doc(appointment_snapshot.data().clinic)
+														.collection("doctors").doc(appointment_snapshot.data().doctor)
+														.collection("appointments").doc(data.appointment).update(update)
+														.then(() => {
+										response.success = true;
+										response.current = update.arrived;
+										return response;
+									});
+								});
+							});
+						});
 					}
 
 					response.messages = "You do not work at this clinic.";

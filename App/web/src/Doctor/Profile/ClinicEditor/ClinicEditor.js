@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
-import { fn } from '../../../init';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
 import { Page } from "../../../Common/Components/Page";
@@ -10,21 +9,7 @@ import { ClinicEditForm } from "./ClinicEditForm";
 import { SelectDoctor } from "./SelectDoctor";
 import { getPictureURL } from "../../../Common/functions";
 import { SelectSecretary } from './SelectSecretary';
-
-const clinics = {
-	get: fn.httpsCallable("clinics-get"),
-
-	getAllDoctors: fn.httpsCallable("clinics-getAllDoctors"),
-	addDoctor: fn.httpsCallable("clinics-addDoctor"),
-
-	getAllSecretaries: fn.httpsCallable("clinics-getAllSecretaries"),
-	addSecretary: fn.httpsCallable("clinics-addSecretary"),
-}
-
-const doctors = {
-	getID: fn.httpsCallable("doctors-getID"),
-	getData: fn.httpsCallable("doctors-getData"),
-}
+import { server } from '../../../Common/server';
 
 /**
 @todo
@@ -42,8 +27,8 @@ export function ClinicEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) {
-				doctors.getID({user: auth.user.uid}).then(response => {
-					doctors.getData({id: response.data}).then(doctor_data => {
+				server.doctors.getID({user: auth.user.uid}).then(response => {
+					server.doctors.getData({id: response.data}).then(doctor_data => {
 						setDoctor(doctor_data.data);
 					});
 				});
@@ -70,14 +55,14 @@ export function ClinicEditor() {
 
 	useEffect(() => {
 		if (clinic) {
-			clinics.get({id: clinic}).then(clinic_data => {
+			server.clinics.get({id: clinic}).then(clinic_data => {
 				setData(clinic_data.data);
 
-				clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
+				server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
 					setDoctorsData(doctors_data.data);
 				});
 
-				clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
+				server.clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
 					setSecretariesData(secretaries_data.data);
 				});
 			});
@@ -192,7 +177,7 @@ export function ClinicEditor() {
 						address={data.address}
 						close={() => {setEditData(false)}}
 						success={() => {
-							clinics.get({id: clinic}).then(clinic_data => {
+							server.clinics.get({id: clinic}).then(clinic_data => {
 								setData(clinic_data.data);
 								setEditData(false);
 							});
@@ -204,8 +189,8 @@ export function ClinicEditor() {
 					<SelectDoctor
 						close={() => setShowDoctorSelector(false)}
 						success={selected => {
-							clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
-								clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
+							server.clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
+								server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
 									setDoctorsData(doctors_data.data);
 								});
 							});
@@ -220,8 +205,8 @@ export function ClinicEditor() {
 					<SelectSecretary
 						close={() => setShowSecretarySelector(false)}
 						success={selected => {
-							clinics.addSecretary({clinic: clinic, requester: doctor.doctor.id, secretary: selected}).then(() => {
-								clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
+							server.clinics.addSecretary({clinic: clinic, requester: doctor.doctor.id, secretary: selected}).then(() => {
+								server.clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
 									setSecretariesData(secretaries_data.data);
 								});
 							});

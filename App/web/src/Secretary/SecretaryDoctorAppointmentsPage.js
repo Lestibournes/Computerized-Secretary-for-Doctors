@@ -1,22 +1,12 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { fn } from '../init';
 import { Time } from "../Common/classes";
 import { Card } from '../Common/Components/Card';
 import { SimpleDate } from "../Common/classes";
 import { Page } from '../Common/Components/Page';
-import { getPictureURL } from '../Common/functions';
+import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
-
-const functions = {
-	doctors: {
-		getAppointments: fn.httpsCallable("doctors-getAppointments"),
-		getData: fn.httpsCallable("doctors-getData"),
-	},
-	clinics: {
-		get: fn.httpsCallable("clinics-get"),
-	}
-}
+import { server } from '../Common/server';
 
 export function SecretaryDoctorAppointmentsPage() {
 	const { doctor, clinic } = useParams(); //The ID of the doctor.
@@ -30,15 +20,15 @@ export function SecretaryDoctorAppointmentsPage() {
 			const today = new SimpleDate().toObject();
 			const tomorrow = new SimpleDate().getNextDay().toObject();
 			
-			functions.doctors.getAppointments({doctor: doctor, clinic: clinic, start: today, end: tomorrow}).then(response => {
+			server.doctors.getAppointments({doctor: doctor, clinic: clinic, start: today, end: tomorrow}).then(response => {
 				setAppointments(response.data);
 			});
 			
-			functions.doctors.getData({id: doctor}).then(results => {
+			server.doctors.getData({id: doctor}).then(results => {
 				setDoctorData(results.data);
 			});
 			
-			functions.clinics.get({id: clinic}).then(results => {
+			server.clinics.get({id: clinic}).then(results => {
 				setClinicData(results.data);
 			});
 		}
@@ -64,9 +54,9 @@ export function SecretaryDoctorAppointmentsPage() {
 			let promises = [];
 
 			for (let appointment of appointments) {
-				let promise = getPictureURL(appointment.doctor.user.id).then(url => {
+				let promise = getPictureURL(appointment.patient.id).then(url => {
 					appointment.image = url;
-// console.log(appointment.extra.date, SimpleDate.fromObject(appointment.extra.date).day, SimpleDate.fromObject(appointment.extra.date).toDate());
+
 					const date = SimpleDate.fromObject(appointment.extra.date);
 					const time = Time.fromObject(appointment.extra.time);
 					const doctor = appointment.doctor;
@@ -77,9 +67,9 @@ export function SecretaryDoctorAppointmentsPage() {
 							key={appointment.appointment.id}
 							link={"/specific/secretary/appointments/" + appointment.appointment.id}
 							image={appointment.image}
-							altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
-							title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
-							body={doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}
+							altText={appointment.patient.fullName}
+							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}
+							body={capitalizeAll(appointment.appointment.type)}
 							footer={clinic ? clinic.name + ", " + clinic.city : null}
 						/>
 					);
@@ -100,7 +90,7 @@ export function SecretaryDoctorAppointmentsPage() {
 
 	if (results && doctorData && clinicData) {
 		if (results.length) display = <div className="cardList">{results}</div>;
-		else display = <h3>You don't have any upcoming appointments.</h3>;
+		else display = <h3>Dr. {doctorData.user.fullName} has no appointments today.</h3>;
 		
 		subtitle = "Dr. " + doctorData.user.fullName + "'s Agenda";
 		title = clinicData.name;

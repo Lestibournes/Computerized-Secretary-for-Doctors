@@ -1,11 +1,9 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fn } from '../init';
 import { Page } from '../Common/Components/Page';
 import { Time, SimpleDate } from '../Common/classes';
-
-const getAppointment = fn.httpsCallable("appointments-get");
+import { server } from '../Common/server';
 
 export function AppointmentSuccessPage() {
 	const { appointment } = useParams(); //The ID of the doctor and clinic.
@@ -17,7 +15,7 @@ export function AppointmentSuccessPage() {
 	const [time, setTime] = useState()
 
 	useEffect(() => {
-		getAppointment({id: appointment}).then(response => {
+		server.appointments.get({id: appointment}).then(response => {
 			setAppointment(response.data.appointment);
 			setDate(SimpleDate.fromObject(response.data.extra.date));
 			setTime(Time.fromObject(response.data.extra.time));

@@ -4,9 +4,7 @@ import { useState } from "react";
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { TextInput } from "../../../Common/Components/TextInput";
-import { fn } from "../../../init";
-
-const editClinic = fn.httpsCallable("clinics-edit");
+import { server } from "../../../Common/server";
 
 export function ClinicEditForm({clinic, doctor, name, city, address, close, success, deleted}) {
 	const [confirmDelete, setConfirmDelete] = useState(false);
@@ -31,7 +29,7 @@ export function ClinicEditForm({clinic, doctor, name, city, address, close, succ
 					})}
 					onSubmit={async (values, { setSubmitting }) => {
 						setSubmitting(true);
-						editClinic({id: clinic, doctor: doctor, name: values.name, city: values.city, address: values.address})
+						server.clinics.edit({id: clinic, doctor: doctor, name: values.name, city: values.city, address: values.address})
 						.then(response => {
 							if (!response.data.success) {setProblem(response.data.message)}
 							else {success()}
@@ -82,8 +80,6 @@ export function ClinicEditForm({clinic, doctor, name, city, address, close, succ
 	);
 }
 
-const deleteClinic = fn.httpsCallable("clinics-delete");
-
 function ConfirmDelete({clinic, doctor, close, success}) {
 	const [problem, setProblem] = useState(null);
 
@@ -93,7 +89,7 @@ function ConfirmDelete({clinic, doctor, close, success}) {
 		<p>This action is permanent and cannot be undone.</p>
 		<div className="buttonBar">
 			<Button type="cancel" label="Yes" action={() => {
-				deleteClinic({id: clinic, doctor: doctor}).then(response => {
+				server.clinics.delete({id: clinic, doctor: doctor}).then(response => {
 					if (!response.data.success) {setProblem(response.data.message)}
 					else {success()}
 				});

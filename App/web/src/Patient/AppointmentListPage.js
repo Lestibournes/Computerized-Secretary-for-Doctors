@@ -1,14 +1,12 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
 import { useAuth } from "../Common/Auth";
-import { fn } from '../init';
 import { Time } from "../Common/classes";
 import { Card } from '../Common/Components/Card';
 import { SimpleDate } from "../Common/classes";
 import { Page } from '../Common/Components/Page';
 import { getPictureURL } from '../Common/functions';
-
-const getAllAppointment = fn.httpsCallable("appointments-getAll");
+import { server } from '../Common/server';
 
 export function AppointmentListPage() {
 	const auth = useAuth();
@@ -17,7 +15,7 @@ export function AppointmentListPage() {
 	
 	useEffect(() => {
 		if (auth.user) {
-			getAllAppointment({user: auth.user.uid, start: SimpleDate.fromDate(new Date()).toObject()}).then(response => {
+			server.appointments.getAll({user: auth.user.uid, start: SimpleDate.fromDate(new Date()).toObject()}).then(response => {
 				setAppointments(response.data);
 			});
 		}

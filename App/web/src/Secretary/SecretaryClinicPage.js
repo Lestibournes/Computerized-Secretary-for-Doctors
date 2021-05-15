@@ -1,22 +1,10 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { fn } from '../init';
 import { Card } from "../Common/Components/Card"
 import { Page } from "../Common/Components/Page";
 import { getPictureURL } from "../Common/functions";
-
-const clinics = {
-	get: fn.httpsCallable("clinics-get"),
-
-	getAllDoctors: fn.httpsCallable("clinics-getAllDoctors"),
-	addDoctor: fn.httpsCallable("clinics-addDoctor"),
-
-	getAllSecretaries: fn.httpsCallable("clinics-getAllSecretaries"),
-	addSecretary: fn.httpsCallable("clinics-addSecretary"),
-
-	getAppointments: fn.httpsCallable("clinics-getAppointments"),
-}
+import { server } from '../Common/server';
 
 /**
 @todo
@@ -37,10 +25,10 @@ export function SecretaryClinicPage() {
 
 	useEffect(() => {
 		if (clinic) {
-			clinics.get({id: clinic}).then(clinic_data => {
+			server.clinics.get({id: clinic}).then(clinic_data => {
 				setData(clinic_data.data);
 
-				clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
+				server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
 					setDoctorsData(doctors_data.data);
 				});
 			});

@@ -2,14 +2,12 @@
 import React, { useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { fn } from '../../../init';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
 import { TextInput } from '../../../Common/Components/TextInput';
 import { Popup } from '../../../Common/Components/Popup';
 import { getPictureURL } from '../../../Common/functions';
-
-const searchSecretaries = fn.httpsCallable("secretaries-search");
+import { server } from '../../../Common/server';
 
 export function SelectSecretary({close, success}) {
 	const [cards, setCards] = useState([]);
@@ -26,7 +24,7 @@ export function SelectSecretary({close, success}) {
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
 
-					searchSecretaries({name: values.name})
+					server.secretaries.search({name: values.name})
 					.then(async response => {
 						const secretary_cards = [];
 

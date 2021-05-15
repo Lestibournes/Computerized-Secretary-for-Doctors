@@ -4,17 +4,13 @@ import "./SearchDoctorsPage.css";
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { fn } from '../init';
 import { TextInput } from '../Common/Components/TextInput';
 import { Card } from '../Common/Components/Card';
 import { Button } from '../Common/Components/Button';
 import { Select } from "../Common/Components/Select";
 import { Page } from "../Common/Components/Page";
 import { getPictureURL } from "../Common/functions";
-
-const searchDoctors = fn.httpsCallable("doctors-search");
-const getAllCities = fn.httpsCallable("clinics-getAllCities");
-const getAllSpecializations = fn.httpsCallable("specializations-getAll");
+import { server } from "../Common/server";
 
 export function SearchDoctorsPage() {
 	const [cities, setCities] = useState();
@@ -38,11 +34,11 @@ export function SearchDoctorsPage() {
 	const [results, setResults] = useState();
 
 	useEffect(() => {
-		getAllCities().then(response => {
+		server.clinics.getAllCities().then(response => {
 			setCities(response.data);
 		});
 
-		getAllSpecializations().then(response => {
+		server.specializations.getAll().then(response => {
 			setFields(response.data);
 		});
 	}, []);
@@ -128,7 +124,7 @@ export function SearchDoctorsPage() {
 					if (values.city) data.city = values.city;
 					if (values.field) data.field = values.field;
 
-					searchDoctors(data).then((result) => {
+					server.doctors.search(data).then((result) => {
 						setDoctors(result.data);
 					});
 				}}

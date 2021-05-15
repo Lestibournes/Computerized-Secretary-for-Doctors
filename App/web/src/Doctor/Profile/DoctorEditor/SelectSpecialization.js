@@ -2,14 +2,12 @@
 import React, { useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { fn } from '../../../init';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
 import { TextInput } from '../../../Common/Components/TextInput';
 import { Popup } from '../../../Common/Components/Popup';
 import { capitalizeAll } from '../../../Common/functions';
-
-const searchSpecializations = fn.httpsCallable("specializations-search");
+import { server } from '../../../Common/server';
 
 function hasSpecialization(specializations, specialization) {
 	for (const spec of specializations) {
@@ -34,8 +32,8 @@ export function SelectSpecialization({specializations, close, success}) {
 				})}
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
-
-					searchSpecializations({text: values.specialization})
+					
+					server.specializations.search({text: values.specialization})
 					.then(response => {
 						const specialization_cards = [];
 						
@@ -88,8 +86,6 @@ export function SelectSpecialization({specializations, close, success}) {
 		);
 }
 
-const createSpecialization = fn.httpsCallable("specializations-create");
-
 function CreateSpecialization({specialization, close, success}) {
 	return (
 		<Popup title="Create New Specialization" close={close}>
@@ -103,7 +99,7 @@ function CreateSpecialization({specialization, close, success}) {
 				})}
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
-					createSpecialization({name: values.specialization}).then(() => {
+					server.specializations.create({name: values.specialization}).then(() => {
 						success(values.specialization);
 					})
 				}}

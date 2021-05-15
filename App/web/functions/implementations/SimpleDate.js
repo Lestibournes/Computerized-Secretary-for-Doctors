@@ -1,7 +1,7 @@
 /**
  * A simple and immutable representation of a calendar date.
  */
-class SimpleDate {
+ class SimpleDate {
 	/**
 	 * The names of the days of the week as used in the database, for easy conversion between how
 	 * it's stored in the database and how it's represented by the JS Date object.
@@ -67,7 +67,7 @@ class SimpleDate {
 	 * @constructor
 	 * @param {number} year Can be any value. 
 	 * @param {number} month valid values: 0...11
-	 * @param {number} day valid values: 0...30 (depends on the month) and null.
+	 * @param {number} day valid values: 1...31 (depends on the month).
 	 *//**
 	 * A wrapper for the native Date object to make it easier to deal with.
 	 * Will construct a new date object using the provided date.
@@ -79,8 +79,7 @@ class SimpleDate {
 	 * @constructor
 	 */
 	constructor(...args) {
-		if (args.length === 3) this.#date = new Date(args[0], args[1], args[2]);
-		if (args.length === 2) this.#date = new Date(...args);
+		if (args.length === 3 || args.length === 2) this.#date = new Date(...args);
 		if (args.length === 1) this.#date = args[0];
 		if (args.length === 0) this.#date = new Date();
 	}
@@ -133,7 +132,7 @@ class SimpleDate {
 	 * @returns {SimpleDate} A new date representing the next year on the calendar.
 	 */
 	getNextYear() {
-		return new SimpleDate(this.year + 1, this.month, this.day + 1);
+		return new SimpleDate(this.year + 1, this.month, this.day);
 	}
 
 	/**
@@ -141,7 +140,21 @@ class SimpleDate {
 	 * @returns {SimpleDate} A new date representing the next month on the calendar.
 	 */
 	getNextMonth() {
-		return new SimpleDate(this.year, this.month + 1, this.day + 1);
+		const next = new SimpleDate(this.year, this.month + 1, 1);
+
+		if (next.getDaysInMonth() < this.day) {
+			return next.getLastDayInMonth();
+		}
+
+		return new SimpleDate(this.year, this.month + 1, this.day);
+	}
+
+	/**
+	 * Get the next week on the calendar.
+	 * @returns {SimpleDate} A new date representing the next week on the calendar.
+	 */
+	 getNextWeek() {
+		return new SimpleDate(this.year, this.month, this.day + 7);
 	}
 
 	/**
@@ -149,7 +162,7 @@ class SimpleDate {
 	 * @returns {SimpleDate} A new date representing the next day on the calendar.
 	 */
 	getNextDay() {
-		return new SimpleDate(this.year, this.month, this.day + 2);
+		return new SimpleDate(this.year, this.month, this.day + 1);
 	}
 
 	/**
@@ -157,7 +170,7 @@ class SimpleDate {
 	 * @returns {SimpleDate} A new date representing the previous year on the calendar.
 	 */
 	getPreviousYear() {
-		return new SimpleDate(this.year - 1, this.month, this.day + 1);
+		return new SimpleDate(this.year - 1, this.month, this.day);
 	}
 
 	/**
@@ -165,7 +178,21 @@ class SimpleDate {
 	 * @returns {SimpleDate} A new date representing the previous month on the calendar.
 	 */
 	getPreviousMonth() {
-		return new SimpleDate(this.year, this.month - 1, this.day + 1);
+		const previous = new SimpleDate(this.year, this.month - 1, 1);
+
+		if (previous.getDaysInMonth() < this.day) {
+			return previous.getLastDayInMonth();
+		}
+
+		return new SimpleDate(this.year, this.month - 1, this.day);
+	}
+
+	/**
+	 * Get the previous week on the calendar.
+	 * @returns {SimpleDate} A new date representing the previous week on the calendar.
+	 */
+	 getPreviousWeek() {
+		return new SimpleDate(this.year, this.month, this.day - 7);
 	}
 
 	/**
@@ -173,7 +200,7 @@ class SimpleDate {
 	 * @returns {SimpleDate} A new date representing the previous day on the calendar.
 	 */
 	getPreviousDay() {
-		return new SimpleDate(this.year, this.month, this.day);
+		return new SimpleDate(this.year, this.month, this.day - 1);
 	}
 
 	/**
@@ -184,6 +211,38 @@ class SimpleDate {
 		return new Date(this.year, this.month + 1, 0).getDate();
 	}
 
+	/**
+	 * Get the first day of the current month.
+	 * @returns {SimpleDate}
+	 */
+	getFirstDayOfTheMonth() {
+		return new SimpleDate(new Date(this.year, this.month, 1));
+	}
+
+	/**
+	 * Get the last day of the current month.
+	 * @returns {SimpleDate}
+	 */
+	 getLastDayInMonth() {
+		return new SimpleDate(new Date(this.year, this.month + 1, 0));
+	}
+
+	/**
+	 * Get the date of Sunday for the current week.
+	 * @returns {SimpleDate}
+	 */
+	getSunday() {
+		return new SimpleDate(new Date(this.year, this.month, this.day - this.weekday));
+	}
+
+	/**
+	 * Get the date of Saturday for the current week.
+	 * @returns {SimpleDate}
+	 */
+	 getSaturday() {
+		return new SimpleDate(new Date(this.year, this.month, this.day + 6 - this.weekday));
+	}
+	
 	/**
 	 * Compares the current date to the specified time.
 	 * @param {SimpleDate} that Another date
