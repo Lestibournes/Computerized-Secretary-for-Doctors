@@ -21,8 +21,21 @@ export function SelectSpecialization({specializations, close, success}) {
 	const [cards, setCards] = useState([]);
 	const [create, setCreate] = useState(false);
 	
+	const popups = 
+	<>
+		{create ?
+			<CreateSpecialization
+				close={() => setCreate(false)}
+				success={specialization => {
+					success(specialization)
+					setCreate(false);
+				}}
+			/>
+		: "" }
+	</>;
+	
 	return (
-		<Popup title="Add Specialization" close={close}>
+		<Popup  title="Add Specialization" close={close} popups={popups}>
 			<Formik
 				initialValues={{
 					specialization: ""
@@ -72,16 +85,6 @@ export function SelectSpecialization({specializations, close, success}) {
 			<div className="cardList">
 				{cards}
 			</div>
-
-			{create ?
-				<CreateSpecialization
-					close={() => setCreate(false)}
-					success={specialization => {
-						success(specialization)
-						setCreate(false);
-					}}
-				/>
-			: "" }
 		</Popup>
 		);
 }
