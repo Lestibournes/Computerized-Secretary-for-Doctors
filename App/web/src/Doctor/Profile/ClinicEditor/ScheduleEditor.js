@@ -75,6 +75,7 @@ export function ScheduleEditor() {
 							key={shift.id}
 							title={Time.fromObject(shift.start).toString() +
 							" - " + Time.fromObject(shift.end).toString()}
+							body={"Minimum duration: " + shift.min + " minutes"}
 							action={() => setShiftEditor({
 								shift: shift.id,
 								day: shift.day,

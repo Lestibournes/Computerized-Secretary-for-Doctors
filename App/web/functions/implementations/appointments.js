@@ -66,11 +66,11 @@ async function getAppointments(doctor, clinic, date) {
  */
 function appointmentCollides(appointments, slot) {
 	if (appointments.length > 0) {
-		appointments.forEach(appointment => {
+		for (const appointment of appointments) {
 			if (slot.collides(appointment)) {
 				return true;
 			}
-		});
+		}
 	}
 	
 	return false;
@@ -220,7 +220,7 @@ async function getAvailable(doctor, clinic, date, type) {
 				let current_slot = new Slot(start, start.incrementMinutes(shift.min));
 				
 				while (shift_slot.contains(current_slot)) {
-					if (!appointmentCollides(appointments, current_slot)) {
+					if (!appointmentCollides(appointments, current_slot) && !appointmentCollides(available, current_slot)) {
 						available.push(current_slot);
 					}
 
