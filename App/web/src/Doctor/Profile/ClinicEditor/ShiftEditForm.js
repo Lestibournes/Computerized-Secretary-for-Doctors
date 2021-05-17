@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
+import { TextInput } from "../../../Common/Components/TextInput";
+import { Time } from "../../../Common/classes";
 
 export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, close, success, deleted}) {
 	const [confirmDelete, setConfirmDelete] = useState(false);
@@ -22,17 +24,11 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 			<div className="form">
 				<Formik
 					initialValues={{
-						start_hours: (start ? start.hours : 0),
-						start_minutes: (start ? start.minutes : 0),
-						end_hours: (end ? end.hours : 0),
-						end_minutes: (end ? end.minutes : 0),
-						min: (min ? min : 0)
+						start: (start ? Time.fromObject(start).toString() : ""),
+						end: (end ? Time.fromObject(end).toString() : ""),
+						min: (min ? min : 15)
 					}}
 					validationSchema={Yup.object({
-						start_hours: Yup.number().min(0).max(23),
-						start_minutes: Yup.number().min(0).max(59),
-						end_hours: Yup.number().min(0).max(23),
-						end_minutes: Yup.number().min(0).max(59),
 						min: Yup.number().min(0),
 					})}
 					onSubmit={async (values, { setSubmitting }) => {
@@ -44,12 +40,12 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 							clinic: clinic,
 							day: day,
 							start: {
-								hours: values.start_hours,
-								minutes: values.start_minutes
+								hours: Number(values.start.split(":")[0]),
+								minutes: Number(values.start.split(":")[1])
 							},
 							end: {
-								hours: values.end_hours,
-								minutes: values.end_minutes
+								hours: Number(values.end.split(":")[0]),
+								minutes: Number(values.end.split(":")[1])
 							},
 							min: values.min
 						});
@@ -57,20 +53,9 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 				>
 					<Form>
 						<div className="widgets">
-							<label htmlFor="start_hours">Start hours:</label>
-							<Field type="number" name="start_hours" max="23" min="0" />
-
-							<label htmlFor="start_minutes">Start minutes:</label>
-							<Field type="number" name="start_minutes" max="59" min="0" />
-
-							<label htmlFor="end_hours">End hours:</label>
-							<Field type="number" name="end_hours" max="23" min="0" />
-
-							<label htmlFor="end_minutes">End minutes:</label>
-							<Field type="number" name="end_minutes" max="59" min="0" />
-
-							<label htmlFor="min">Minimum timeslot (in minutes):</label>
-							<Field type="number" name="min" min="0" />
+							<TextInput label="Shift Start" type="time" name="start" />
+							<TextInput label="Shift End" type="time" name="end" />
+							<TextInput label="Minimum Duration (in minutes):" type="number" name="min" min="0" />
 						</div>
 						<div className="buttonBar">
 							{deletable ? 
@@ -104,8 +89,10 @@ function ConfirmDelete({clinic, doctor, shift, close, success}) {
 
 	return (
 	<Popup title="Confirm Deletion" close={close}>
-		<p>Are you sure you wish to delete this shift?</p>
-		<p>This action is permanent and cannot be undone.</p>
+		<div>
+			<p>Are you sure you wish to delete this shift?</p>
+			<p>This action is permanent and cannot be undone.</p>
+		</div>
 		<div className="buttonBar">
 			<Button type="cancel" label="Yes" action={() => {
 				server.schedules.delete({clinic: clinic, doctor: doctor, shift: shift}).then(response => {

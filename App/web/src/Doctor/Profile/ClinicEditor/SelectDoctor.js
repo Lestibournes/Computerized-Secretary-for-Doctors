@@ -82,12 +82,12 @@ export function SelectDoctor({close, success}) {
 						<Button label="Cancel" action={close} />
 						<Button type="submit" label="Search" />
 					</div>
+					<div className="cardList">
+						{cards}
+					</div>
 				</Form>
 			</Formik>
 
-			<div className="cardList">
-				{cards}
-			</div>
 		</Popup>
 	);
 }

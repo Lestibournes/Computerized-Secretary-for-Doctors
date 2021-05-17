@@ -92,7 +92,6 @@ export function SelectSpecialization({specializations, close, success}) {
 function CreateSpecialization({specialization, close, success}) {
 	return (
 		<Popup title="Create New Specialization" close={close}>
-			<p>Please go back and check carefully and only create a new specialization if it doesn't already exist.</p>
 			<Formik
 				initialValues={{
 					specialization: specialization
@@ -109,6 +108,7 @@ function CreateSpecialization({specialization, close, success}) {
 			>
 				<Form>
 					<div className="widgets">
+						<p>Please go back and check carefully and only create a new specialization if it doesn't already exist.</p>
 						<TextInput
 							label="Specialization"
 							name="specialization"

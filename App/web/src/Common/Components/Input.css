@@ -3,15 +3,10 @@
 	flex-flow: row;
 	gap: var(--margin);
 	flex-grow: 1;
-	/* width: 1fr; */
 }
 
-.Input label, .Input input, .Input select {
-	display: grid;
-	place-items: center start;
-	flex-grow: 1;
-	min-width: max-content;
-	/* width: 100%; */
+.Input label {
+	place-self: center start;
 }
 
 .Input input {
@@ -56,10 +51,12 @@
 }
 
 Form {
-	display: grid;
+	/* display: grid;
 	grid-template-rows: 1fr auto;
 	width: 100%;
-	gap: var(--margin);
+	gap: var(--margin); */
+	display: flex;
+	flex-direction: row;
 }
 
 /* For simple inputs with labels, such as text input and drop-down lists */
@@ -84,4 +81,61 @@ Form .pickers {
 	width: 100%;
 	max-width: unset;
 	max-height: 100%;
+}
+
+@media screen and (max-width: 900) {
+	.Input {
+		display: grid;
+		grid-template-areas: 
+		'label ...'
+		'error error';
+		grid-template-columns: 1fr 1fr;
+	}
+
+	Form {
+		display: grid;
+		/* grid-template-columns: 1fr 1fr; */
+
+		width: fit-content;
+		gap: var(--margin);
+		grid-template-areas:
+		'body'
+		'buttons';
+	}
+
+	Form .widgets {
+		/* flex-direction: row; */
+		display: grid;
+		grid-template-rows: repeat(auto-fill, auto);
+		grid-template-columns: 1fr;
+		grid-area: body;
+	}
+
+	Form .buttonBar {
+		grid-area: buttons;
+		gap: var(--margin);
+	}
+
+	.Input div.error {
+		grid-area: error;
+	}
+
+	.Input label {
+		grid-area: label;
+	}
+
+	.Input.Radio .Group {
+		display: flex;
+		gap: var(--margin);
+	}
+
+	.Input.Radio .Group div {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: var(--margin-small);
+	}
+	.Input.Radio .Group div * {
+		grid-column: unset;
+		grid-row: unset;
+	}
 }
