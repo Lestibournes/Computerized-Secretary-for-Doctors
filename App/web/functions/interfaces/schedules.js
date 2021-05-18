@@ -8,14 +8,13 @@ exports.get = functions.https.onCall((data, context) => {
 });
 
 exports.add = functions.https.onCall((data, context) => {
-	return schedules.add(data.clinic, data.doctor, data.day, data.start, data.end, data.min);
+	return schedules.add(data.clinic, data.doctor, data.day, data.start, data.end, data.min, context);
 });
 
 exports.edit = functions.https.onCall((data, context) => {
-	console.log(context.auth.uid);
-	return schedules.edit(data.shift, data.clinic, data.doctor, data.day, data.start, data.end, data.min, context);
+	return schedules.edit(data.clinic, data.doctor, data.shift, data.day, data.start, data.end, data.min, context);
 });
 
 exports.delete = functions.https.onCall((data, context) => {
-	return schedules.delete(data.clinic, data.doctor, data.shift);
+	return schedules.delete(data.clinic, data.doctor, data.shift, context);
 });

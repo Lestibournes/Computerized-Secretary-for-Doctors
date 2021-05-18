@@ -110,36 +110,57 @@ async function get(clinic, doctor) {
  * @param {Time} start The start time of the shift
  * @param {Time} end The end time of the shift.
  * @param {number} min The minimum duration of an appointment, in minutes.
- * @returns 
+ * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	message: string
+ * }>}
  */
-async function add(clinic, doctor, day, start, end, min) {
-	return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).add({
-		day: day,
-		start: start,
-		end: end,
-		min: min
-	});
-}
-
-/**
- * Add a new shift to the schedule of the doctor at the clinic.
- * @param {string} shift The id of the shift that is being edited.
- * @param {string} clinic the id of the clinic
- * @param {string} doctor the id of the doctor
- * @param {number} day The number of the day, 0-6.
- * @param {Time} start The start time of the shift
- * @param {Time} end The end time of the shift.
- * @param {number} min The minimum duration of an appointment, in minutes.
- * @returns 
- */
-async function edit(shift, clinic, doctor, day, start, end, min, context) {
+async function add(clinic, doctor, day, start, end, min, context) {
 	const response = {
 		success: false,
 		message: "",
 	}
 
 	return checkModifyPermission(clinic, doctor, context).then(allowed => {
-		console.log("allowed: " + allowed);
+		if (allowed) {
+			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).add({
+				day: day,
+				start: start,
+				end: end,
+				min: min
+			}).then(() => {
+				response.success = true;
+			});
+		}
+
+		response.message = "You are not authorized to perform this action";
+		return response;
+	});
+}
+
+/**
+ * Add a new shift to the schedule of the doctor at the clinic.
+ * @param {string} clinic the id of the clinic
+ * @param {string} doctor the id of the doctor
+ * @param {string} shift The id of the shift that is being edited.
+ * @param {number} day The number of the day, 0-6.
+ * @param {Time} start The start time of the shift
+ * @param {Time} end The end time of the shift.
+ * @param {number} min The minimum duration of an appointment, in minutes.
+ * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	message: string
+ * }>}
+ */
+async function edit(clinic, doctor, shift, day, start, end, min, context) {
+	const response = {
+		success: false,
+		message: "",
+	}
+
+	return checkModifyPermission(clinic, doctor, context).then(allowed => {
 		if (allowed) {
 			const shift_ref = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).doc(shift);
 			
@@ -168,21 +189,41 @@ async function edit(shift, clinic, doctor, day, start, end, min, context) {
 	});
 }
 
-async function remove(clinic, doctor, shift) {
-	return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).doc(shift).delete()
-	.then(() => {
-		return {
-			success: true
-		}
-	})
-	.catch(() => {
-		return {
-			success: false,
-			message: "There was an error with deleting the shift."
-		}
-	});
-}
+/**
+ * Add a new shift to the schedule of the doctor at the clinic.
+ * @param {string} clinic the id of the clinic
+ * @param {string} doctor the id of the doctor
+ * @param {string} shift The id of the shift that is being edited.
+ * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	message: string
+ * }>}
+ */
+async function remove(clinic, doctor, shift, context) {
+	const response = {
+		success: false,
+		message: "",
+	}
 
+	return checkModifyPermission(clinic, doctor, context).then(allowed => {
+		if (allowed) {
+			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).doc(shift).delete()
+			.then(() => {
+				response.success = true;
+				return response;
+			})
+			.catch(() => {
+				response.message = "There was an error with deleting the shift";
+				return response;
+			});
+		}
+
+		response.message = "You are not authorized to perform this action";
+		return response;
+	});
+	
+}
 
 exports.get = get;
 exports.add = add;
