@@ -310,9 +310,27 @@ async function addSecretary(clinic, requester, secretary) {
 	});
 }
 
+/**
+ * Check whether the given clinic has the given secretary.
+ * @param {string} clinic The id of the clinic
+ * @param {string} secretary The id of the secretary
+ * @returns {Promise<boolean>}
+ */
 async function hasSecretary(clinic, secretary) {
 	return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).get().then(secretary_snapshot => {
 		return secretary_snapshot.exists;
+	});
+}
+
+/**
+ * Check whether the given doctor is the owner of the given clinic.
+ * @param {string} clinic The id of the clinic
+ * @param {string} doctor The id of the doctor.
+ * @returns {Promise<boolean>}
+ */
+ async function isOwner(clinic, doctor) {
+	return db.collection("clinics").doc(clinic).get().then(clinic_snapshot => {
+		return doctor === clinic_snapshot.data().owner;
 	});
 }
 
@@ -388,6 +406,7 @@ exports.delete = eliminate;
 exports.getAllDoctors = getAllDoctors;
 exports.addDoctor = addDoctor;
 exports.removeDoctor = removeDoctor;
+exports.isOwner = isOwner;
 
 exports.getAllSecretaries = getAllSecretaries;
 exports.addSecretary = addSecretary;

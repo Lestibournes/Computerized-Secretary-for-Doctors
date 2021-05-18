@@ -55,7 +55,7 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 						<div className="widgets">
 							<TextInput label="Shift Start" type="time" name="start" />
 							<TextInput label="Shift End" type="time" name="end" />
-							<TextInput label="Minimum Duration (in minutes):" type="number" name="min" min="0" />
+							<TextInput label="Minimum Duration (in minutes)" type="number" name="min" min="0" />
 						</div>
 						<div className="buttonBar">
 							{deletable ? 

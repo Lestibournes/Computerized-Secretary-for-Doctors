@@ -455,6 +455,7 @@ function arrived(data, context) {
 		success: false,
 		messages: ""
 	}
+	
 	// Fetch the secretary ID of the current user:
 	return secretaries.getID(context.auth.uid).then(secretary => {
 		// If the user has a secretary profile:

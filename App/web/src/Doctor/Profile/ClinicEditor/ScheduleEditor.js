@@ -9,6 +9,7 @@ import { Card } from '../../../Common/Components/Card';
 import { Time } from '../../../Common/classes';
 import { ShiftEditForm } from './ShiftEditForm';
 import { server } from '../../../Common/server';
+import { message } from '../../../Common/functions';
 
 export function ScheduleEditor() {
 	const auth = useAuth();
@@ -37,6 +38,8 @@ export function ScheduleEditor() {
 	const [shiftEditor, setShiftEditor] = useState(null);
 	const [schedule, setSchedule] = useState(null);
 	const [cards, setCards] = useState();
+
+	const [oops, setPopups] = useState([]);
 	
 	// const [sunday, setSunday] = useState();
 	// const [monday, setMonday] = useState();
@@ -92,7 +95,7 @@ export function ScheduleEditor() {
 	
 			setCards(temp_cards);
 		}
-	}, [schedule])
+	}, [schedule]);
 
 	let display = <h2>Loading...</h2>;
 	const popups = 
@@ -105,13 +108,21 @@ export function ScheduleEditor() {
 				close={() => setShiftEditor(null)}
 				success={data => {
 					if (data.shift) {
-						alert("TODO");
-						// server.schedules.edit(data).then(() => {
-						// 	server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
-						// 		setSchedule(response.data);
-						// 		setShiftEditor(null);
-						// 	});
-						// });
+						server.schedules.edit(data).then(result => {
+							if (result.data.success) {
+								server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
+									setSchedule(response.data);
+									setShiftEditor(null);
+								});
+							}
+
+							else {
+								message(oops, setPopups, "Error", 
+								<div>
+									{result.data.message}
+								</div>)
+							}
+						});
 					}
 					else {
 						server.schedules.add(data).then(() => {
@@ -194,7 +205,7 @@ export function ScheduleEditor() {
 	}
 
 	return (
-		<Page title={"Edit Schedule"}>
+		<Page title={"Edit Schedule"} popups={oops}>
 			{display}
 			{popups}
 		</Page>

@@ -1,4 +1,7 @@
 import { fb, storage } from "../init";
+import { Button } from "./Components/Button";
+import {Popup} from "./Components/Popup";
+
 const fn = fb.functions();
 
 const getPicture = fn.httpsCallable("users-getPicture");
@@ -34,4 +37,40 @@ export function capitalizeAll(text) {
  */
  export function capitalize(text) {
 	return text[0].toUpperCase() + text.substring(1);
+}
+
+/**
+ * 
+ * @param {[]} popups The array that holds the Page's displayed popups.
+ * @param {(popups: []) => {}} setPopups A function to update the Page's displayed popups.
+ * @param {string} title The title of the popup.
+ * @param {*} body JSX of the Popup body.
+ */
+export function message(popups, setPopups, title, body) {
+	let oops = [...popups];
+
+	const close = () => {
+		const temp = [];
+
+		for (const item of oops) {
+			if (item !== popup) temp.push(item);
+		}
+
+		setPopups(temp);
+	};
+
+	const popup = 
+	<Popup
+		key={Math.random()}
+		title={title}
+		close={close}
+	>
+		{body}
+		<div className="buttonBar">
+			<Button label="Close" action={close} />
+		</div>
+	</Popup>;
+
+	oops.push(popup);
+	setPopups(oops);
 }

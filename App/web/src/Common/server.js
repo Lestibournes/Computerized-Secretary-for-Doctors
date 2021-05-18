@@ -44,6 +44,7 @@ export const server = {
 	schedules: {
 		get: fn.httpsCallable("schedules-get"),
 		add: fn.httpsCallable("schedules-add"),
+		edit: fn.httpsCallable("schedules-edit"),
 		delete: fn.httpsCallable("schedules-delete"),
 	},
 
