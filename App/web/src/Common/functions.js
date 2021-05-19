@@ -41,22 +41,14 @@ export function capitalizeAll(text) {
 
 /**
  * 
- * @param {[]} popups The array that holds the Page's displayed popups.
- * @param {(popups: []) => {}} setPopups A function to update the Page's displayed popups.
+ * @param {() => []} getPopups A function to get array that holds the Page's displayed popups.
+ * @param {([]) => {}} setPopups A function to update the Page's displayed popups.
  * @param {string} title The title of the popup.
  * @param {*} body JSX of the Popup body.
  */
-export function message(popups, setPopups, title, body) {
-	let oops = [...popups];
-
+export function error(addPopup, removePopup, title, body) {
 	const close = () => {
-		const temp = [];
-
-		for (const item of oops) {
-			if (item !== popup) temp.push(item);
-		}
-
-		setPopups(temp);
+		removePopup(popup);
 	};
 
 	const popup = 
@@ -71,6 +63,5 @@ export function message(popups, setPopups, title, body) {
 		</div>
 	</Popup>;
 
-	oops.push(popup);
-	setPopups(oops);
+	addPopup(popup);
 }

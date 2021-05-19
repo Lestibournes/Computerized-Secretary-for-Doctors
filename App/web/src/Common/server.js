@@ -46,6 +46,14 @@ export const server = {
 		add: fn.httpsCallable("schedules-add"),
 		edit: fn.httpsCallable("schedules-edit"),
 		delete: fn.httpsCallable("schedules-delete"),
+
+		addType: fn.httpsCallable("schedules-addType"),
+		editType: fn.httpsCallable("schedules-editType"),
+		deleteType: fn.httpsCallable("schedules-deleteType"),
+		getTypes: fn.httpsCallable("schedules-getTypes"),
+		
+		setMinimum: fn.httpsCallable("schedules-setMinimum"),
+		getMinimum: fn.httpsCallable("schedules-getMinimum"),
 	},
 
 	secretaries: {

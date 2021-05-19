@@ -7,14 +7,14 @@ import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { Time } from "../../../Common/classes";
 
-export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, close, success, deleted}) {
+export function ShiftEditForm({clinic, doctor, shift, day, start, end, close, success, deleted}) {
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [problem, setProblem] = useState(null);
 
 	let title = "Create New Shift";
 	let deletable = false;
 
-	if (start && end && min) {
+	if (start && end) {
 		title = "Edit Shift";
 		deletable = true;
 	}
@@ -26,10 +26,9 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 					initialValues={{
 						start: (start ? Time.fromObject(start).toString() : ""),
 						end: (end ? Time.fromObject(end).toString() : ""),
-						min: (min ? min : 15)
 					}}
 					validationSchema={Yup.object({
-						min: Yup.number().min(0),
+						
 					})}
 					onSubmit={async (values, { setSubmitting }) => {
 						setSubmitting(true);
@@ -47,7 +46,6 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 								hours: Number(values.end.split(":")[0]),
 								minutes: Number(values.end.split(":")[1])
 							},
-							min: values.min
 						});
 					}}
 				>
@@ -55,7 +53,6 @@ export function ShiftEditForm({clinic, doctor, shift, day, start, end, min, clos
 						<div className="widgets">
 							<TextInput label="Shift Start" type="time" name="start" />
 							<TextInput label="Shift End" type="time" name="end" />
-							<TextInput label="Minimum Duration (in minutes)" type="number" name="min" min="0" />
 						</div>
 						<div className="buttonBar">
 							{deletable ? 

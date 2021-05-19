@@ -35,7 +35,7 @@ Collections:
  */
 
 /**
- * Check if the current user is authorized to modify the given doctor's shifts.
+ * Check if the current user is authorized to modify the given doctor's work schedule.
  * @param {string} clinic The id of the clinic
  * @param {string} doctor The id of the doctor
  * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
@@ -79,7 +79,6 @@ async function checkModifyPermission(clinic, doctor, context) {
  * 	hours: number,
  * 	minutes: number
  * },
- * min:	number
  * }[][]>} The top level of the array represents the days of the week (0-6).
  * The second level the shifts within each day, with 1 slot object per shift.
  */
@@ -109,14 +108,13 @@ async function get(clinic, doctor) {
  * @param {number} day The number of the day, 0-6.
  * @param {Time} start The start time of the shift
  * @param {Time} end The end time of the shift.
- * @param {number} min The minimum duration of an appointment, in minutes.
  * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
  * @returns {Promise<{
  * 	success: boolean,
  * 	message: string
  * }>}
  */
-async function add(clinic, doctor, day, start, end, min, context) {
+async function add(clinic, doctor, day, start, end, context) {
 	const response = {
 		success: false,
 		message: "",
@@ -128,7 +126,6 @@ async function add(clinic, doctor, day, start, end, min, context) {
 				day: day,
 				start: start,
 				end: end,
-				min: min
 			}).then(() => {
 				response.success = true;
 			});
@@ -147,14 +144,13 @@ async function add(clinic, doctor, day, start, end, min, context) {
  * @param {number} day The number of the day, 0-6.
  * @param {Time} start The start time of the shift
  * @param {Time} end The end time of the shift.
- * @param {number} min The minimum duration of an appointment, in minutes.
  * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
  * @returns {Promise<{
  * 	success: boolean,
  * 	message: string
  * }>}
  */
-async function edit(clinic, doctor, shift, day, start, end, min, context) {
+async function edit(clinic, doctor, shift, day, start, end, context) {
 	const response = {
 		success: false,
 		message: "",
@@ -171,7 +167,6 @@ async function edit(clinic, doctor, shift, day, start, end, min, context) {
 					if (day) data.day = day;
 					if (start) data.start = start;
 					if (end) data.end = end;
-					if (min) data.min = min;
 
 					return shift_ref.update(data).then(() => {
 						response.success = true;
@@ -222,11 +217,268 @@ async function remove(clinic, doctor, shift, context) {
 		response.message = "You are not authorized to perform this action";
 		return response;
 	});
-	
 }
 
+/**
+ * Add a new appointment type to the given doctor at the given clinic.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ * @param {string} name The display name of the appointment type.
+ * @param {number} duration The integer multiplier of the minimum duration.
+ * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	id: string,
+ * 	message: string
+ * }>} Whether or not the operations succeeded, the id of the new appointment type, and error messages.
+ */
+async function addType(clinic, doctor, name, duration, context) {
+	const response = {
+		success: false,
+		id: null,
+		name: name,
+		duration: duration,
+		message: ""
+	};
+
+	return checkModifyPermission(clinic, doctor, context).then(allowed => {
+		if (allowed) {
+			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types")
+			.add({
+				name: name,
+				duration: duration
+			}).then(type_ref => {
+				response.success = true;
+				response.id = type_ref.id;
+
+				return response;
+			})
+			.catch(() => {
+				response.message = "There was an error with adding the appointment type";
+				return response;
+			})
+		}
+
+		// If the current user isn't allowed to add new appointment types to this doctor at this clinic,
+		// i.e, if he's not the owner of the clinic, the owner of the doctor account, or a secretary working at the clinic:
+		response.message = "You are not authorized to perform this action";
+		return response;
+	});
+}
+
+/**
+ * Edit an exitsing appointment type of the given doctor at the given clinic.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ * @param {string} type The id of the appointment type.
+ * @param {string} name The display name of the appointment type.
+ * @param {number} duration The integer multiplier of the minimum duration.
+ * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	id: string,
+ * 	message: string
+ * }>} Whether or not the operations succeeded, the id of the new appointment type, and error messages.
+ */
+async function editType(clinic, doctor, type, name, duration, context) {
+	const response = {
+		success: false,
+		id: type,
+		name: name,
+		duration: duration,
+		message: ""
+	};
+
+	return checkModifyPermission(clinic, doctor, context).then(allowed => {
+		if (allowed) {
+			const type_ref = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type);
+			return type_ref.get().then(type_snap => {
+				if (type_snap.exists) {
+					return type_ref.update({
+						name: name,
+						duration: duration
+					}).then(() => {
+						response.success = true;
+						return response;
+					}).catch(() => {
+						response.message = "There was an error with editing the appointment type";
+						return response;
+					})
+				}
+
+				response.message = "The requested appointment type does not exist";
+				return response;
+			});
+		}
+
+		// If the current user isn't allowed to add new appointment types to this doctor at this clinic,
+		// i.e, if he's not the owner of the clinic, the owner of the doctor account, or a secretary working at the clinic:
+		response.message = "You are not authorized to perform this action";
+		return response;
+	});
+}
+
+
+/**
+ * Delete an exitsing appointment type of the given doctor at the given clinic.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ * @param {string} type The id of the appointment type.
+ * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	id: string,
+ * 	message: string
+ * }>} Whether or not the operations succeeded, the id of the new appointment type, and error messages.
+ */
+async function deleteType(clinic, doctor, type, context) {
+	const response = {
+		success: false,
+		id: type,
+		message: ""
+	};
+
+	return checkModifyPermission(clinic, doctor, context).then(allowed => {
+		if (allowed) {
+			const type_ref = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type);
+			return type_ref.get().then(type_snap => {
+				if (type_snap.exists) {
+					return type_ref.delete().then(() => {
+						response.success = true;
+						return response;
+					}).catch(() => {
+						response.message = "There was an error with deleting the appointment type";
+						return response;
+					})
+				}
+
+				response.message = "The requested appointment type does not exist";
+				return response;
+			});
+		}
+
+		// If the current user isn't allowed to add new appointment types to this doctor at this clinic,
+		// i.e, if he's not the owner of the clinic, the owner of the doctor account, or a secretary working at the clinic:
+		response.message = "You are not authorized to perform this action";
+		return response;
+	});
+}
+
+/**
+ * Get all of the appointment types for the doctor at the clinic.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	types: {
+ * 		name: string,
+ * 		duration: number,
+ * 		id: string
+ * 	}[],
+ * 	message: string
+ * }>} Whether or not the data was successfully fetched, an array of the data and ids of all the appointment types, and error messages in case of failure.
+ */
+async function getTypes(clinic, doctor) {
+	const response = {
+		success: false,
+		types: [],
+		message: ""
+	};
+
+	return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").get()
+		.then(type_snaps => {
+			for (const type_snap of type_snaps.docs) {
+				const data = type_snap.data();
+				data.id = type_snap.id;
+
+				response.types.push(data);
+			}
+
+			response.success = true;
+			return response;
+		})
+		.catch(() => {
+			response.message = "There was an error fetching the appointment types";
+			return response;
+		});
+}
+
+
+/**
+ * Set the minimum duration for appointments.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ * @param {number} minimum The minimum number of minutes for each appointment's time slot.
+ * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	message: string
+ * }>} Whether or not the operations succeeded and error messages.
+ */
+async function setMinimum(clinic, doctor, minimum, context) {
+	const response = {
+		success: false,
+		message: ""
+	};
+
+	return checkModifyPermission(clinic, doctor, context).then(allowed => {
+		if (allowed) {
+			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).update({
+				minimum: minimum
+			}).then(() => {
+				response.success = true;
+				return response;
+			})
+			.catch(() => {
+				response.message = "There was an error with setting the minimum appointment duration";
+				return response;
+			})
+		}
+
+		// If the current user isn't allowed to modify the minimum appointment duration of this doctor at this clinic,
+		// i.e, if he's not the owner of the clinic, the owner of the doctor account, or a secretary working at the clinic:
+		response.message = "You are not authorized to perform this action";
+		return response;
+	});
+}
+
+
+/**
+ * Get the minimum duration for appointments.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ * @returns {Promise<{
+ * 	success: boolean,
+ * 	message: string
+ * }>} Whether or not the operations succeeded and error messages.
+ */
+async function getMinimum(clinic, doctor) {
+	const response = {
+		success: false,
+		minimum: 0,
+		message: ""
+	};
+
+	return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).get().then(snap => {
+		response.success = true;
+		response.minimum = snap.data().minimum ? snap.data().minimum : 0;
+		return response;
+	})
+	.catch(() => {
+		response.message = "There was an error with getting the minimum appointment duration";
+		return response;
+	});
+}
+
+exports.checkModifyPermission = checkModifyPermission;
 exports.get = get;
 exports.add = add;
 exports.edit = edit;
 exports.delete = remove;
 exports.NAME = NAME;
+exports.addType = addType;
+exports.editType = editType;
+exports.deleteType = deleteType;
+exports.getTypes = getTypes;
+exports.setMinimum = setMinimum;
+exports.getMinimum = getMinimum;
