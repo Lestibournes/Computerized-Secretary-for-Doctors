@@ -76,7 +76,7 @@ export function AppointmentCalendarPage() {
 			const appointment_promises = [];
 			
 			// Go day by day:
-			for (let current = date.getSunday(); current.compare(saturday) <= 0; current = current.getNextDay()) {
+			for (let current = date.getSunday(), day = 0; current.compare(saturday) <= 0; current = current.getNextDay(), day++) {
 				appointment_promises.push(
 					server.appointments.getAll(
 						{
@@ -89,7 +89,7 @@ export function AppointmentCalendarPage() {
 
 						const today = {
 							appointments: [],
-							day: results.data[0] ? SimpleDate.fromObject(results.data[0].extra.date) : new SimpleDate(null, null, null)
+							day: day
 						};
 						
 						// Results holds all the appointments for 1 day.
@@ -115,7 +115,7 @@ export function AppointmentCalendarPage() {
 											duration: result.appointment.duration,
 											start: Time.fromObject(result.extra.time),
 											id: result.appointment.id,
-											name: result.patient.fullName
+											name: result.patient.fullName,
 										};
 									})
 								})
@@ -136,7 +136,8 @@ export function AppointmentCalendarPage() {
 
 			Promise.all(appointment_promises).then(week => {
 				week.sort((a, b) => {
-					return -a.day.compare(b);
+					return a.day > b.day ? 1 : a.day < b.day ? -1 : 0;
+					// return -a.day.compare(b); //@todo Firefox gives an opposite sort order to everyone else!
 				});
 
 				setAppointments(week.map(day => day.appointments));
