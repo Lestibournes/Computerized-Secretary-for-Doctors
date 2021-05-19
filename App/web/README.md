@@ -19,6 +19,8 @@ To install package dependencies both in the App/web folder and in App/web/functi
 ### Ubuntu
 
 To set up the project:
+
+```
 sudo snap install node
 sudo apt install git curl
 curl -sL firebase.tools | bash
@@ -27,22 +29,31 @@ cd "Computerized Secretary for Doctors/App/web"
 npm install
 cd functions
 npm install
+```
 
 # Run
 While in App/web:
 
 To run the app:
+```
 npm start
+```
 
 To start the firebase functions emulation:
+```
 firebase emulators:start --only functions
+```
 
 To use the functions emulator, make sure that src/init.js includes the following line (uncommented):
+```
 fn.useEmulator("localhost", 5001);
+```
 
 Comment out that line in order to use the functions directly on the production server.
 
 # Deploy
 To deploy the web app to the server run the following command while in App/web:
 
+```
 npm run build && firebase deploy
+```
