@@ -9,7 +9,7 @@ import { Card } from '../../../Common/Components/Card';
 import { Time } from '../../../Common/classes';
 import { ShiftEditForm } from './ShiftEditForm';
 import { server } from '../../../Common/server';
-import { error } from '../../../Common/functions';
+import { compareByName, error } from '../../../Common/functions';
 
 import { MinimumFormPopup } from './MinimumFormPopup';
 import { TypeFormPopup } from './TypeFormPopup';
@@ -79,7 +79,7 @@ export function ScheduleEditor() {
 			server.schedules.getMinimum({clinic: clinic, doctor: doctor}).then(response => {
 				if (response.data.success) setMinimum(response.data.minimum);
 				else {
-					error(addPopup, removePopup, "Error",
+					error(addPopup, removePopup,
 						<div>
 							{response.data.message}
 						</div>
@@ -101,7 +101,7 @@ export function ScheduleEditor() {
 					setTypesData(types);
 				}
 				else {
-					error(addPopup, removePopup, "Error",
+					error(addPopup, removePopup,
 						<div>
 							{response.data.message}
 						</div>
@@ -185,7 +185,7 @@ export function ScheduleEditor() {
 							}
 	
 							else {
-								error(addPopup, removePopup, "Error", 
+								error(addPopup, removePopup, 
 								<div>
 									{result.data.message}
 								</div>)
@@ -335,8 +335,4 @@ export function ScheduleEditor() {
 			{display}
 		</Page>
 	);
-}
-
-function compareByName(a, b) {
-	return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
 }

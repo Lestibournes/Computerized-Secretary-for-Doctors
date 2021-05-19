@@ -212,24 +212,29 @@ async function getAvailable(doctor, clinic, date, type) {
 	// First get all of the booked time ranges:
 	return getAppointments(doctor, clinic, date).then(appointments => {
 		return schedules.get(clinic, doctor).then(schedule => {
-			for (const shift of schedule[date.weekday]) {
-				const start = Time.fromObject(shift.start);
-				const end = Time.fromObject(shift.end);
-				const shift_slot = new Slot(start, end);
-				
-				let current_slot = new Slot(start, start.incrementMinutes(shift.min));
-				
-				while (shift_slot.contains(current_slot)) {
-					if (!appointmentCollides(appointments, current_slot) && !appointmentCollides(available, current_slot)) {
-						available.push(current_slot);
+			return schedules.getType(clinic, doctor, type).then(response => {
+				if (response.success) {
+					for (const shift of schedule[date.weekday]) {
+						const start = Time.fromObject(shift.start);
+						const end = Time.fromObject(shift.end);
+						const shift_slot = new Slot(start, end);
+						
+						let current_slot = new Slot(start, start.incrementMinutes(response.minutes));
+						
+						while (shift_slot.contains(current_slot)) {
+							// If the current time slot doesn't collide with the occupied time slots:
+							if (!appointmentCollides(appointments, current_slot)) {
+								available.push(current_slot);
+							}
+		
+							current_slot = new Slot(current_slot.start.incrementMinutes(response.minimum),
+								current_slot.end.incrementMinutes(response.minimum))
+						}
 					}
-
-					current_slot = new Slot(current_slot.start.incrementMinutes(shift.min),
-						current_slot.end.incrementMinutes(shift.min))
+		
+					return available;
 				}
-			}
-
-			return available;
+			});
 		});
 	});
 }
@@ -243,8 +248,15 @@ async function getAvailable(doctor, clinic, date, type) {
  * @param {string} doctor The id of the doctor
  * @param {string} clinic The id of the clinic
  * @param {string} patient The id of the patient
- * @param {SimpleDate} date The date of the appointment
- * @param {Time} time The time of the appointment
+ * @param {{
+ * 	year: number,
+ * 	month: number,
+ * 	day: number
+ * }} date The date of the appointment
+ * @param {{
+ * 	hours: number,
+ * 	minutes:number
+ * }} time The time of the appointment
  * @param {string} type The type of appointment
  * @returns {Promise<{id: string, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
  */
@@ -255,27 +267,46 @@ async function add(doctor, clinic, patient, date, time, type) {
 	};
 
 	if (!doctor) {
-		response.messages.push("missing doctor");
+		response.messages.push("Missing doctor");
 	}
 	
 	if (!clinic) {
-		response.messages.push("missing clinic");
+		response.messages.push("Missing clinic");
 	}
 	
 	if (!patient) {
-		response.messages.push("missing patient");
+		response.messages.push("Missing patient");
 	}
 	
 	if (!date) {
-		response.messages.push("missing date");
+		response.messages.push("Missing date");
+	}
+	else {
+		const simpleDate = SimpleDate.fromObject(date);
+		const currentDate = new SimpleDate();
+
+		if (simpleDate.compare(currentDate) < 0) {
+			response.messages.push("The date must be in the future.");
+		}
+		else if (simpleDate.compare(currentDate) === 0 && time) {
+			/**
+			 * @todo timezone bug.
+			 */
+			const simpleTime = Time.fromObject(time);
+			const currentTime = new Time();
+	
+			if (simpleTime.compare(currentTime) < 0) {
+				response.messages.push("The time must be in the future.")
+			}
+		}
 	}
 	
 	if (!time) {
-		response.messages.push("missing time");
+		response.messages.push("Missing time");
 	}
 	
 	if (!type) {
-		response.messages.push("missing type");
+		response.messages.push("Missing type");
 	}
 	
 	if (response.messages.length == 0) {
@@ -286,13 +317,15 @@ async function add(doctor, clinic, patient, date, time, type) {
 		const end_time = start_time.incrementMinutes(15);
 		const slot = new Slot(start_time, end_time);
 
+		const typeData = await schedules.getType(clinic, doctor, type);
+
 		if (await isAvailable(doctor, clinic, date, slot, type)) {
 			const appointment = {
 				clinic: clinic,
 				doctor: doctor,
 				patient: patient,
 				start: start,
-				duration: 15,
+				duration: typeData.minutes,
 				type: type
 			};
 			await db.collection("appointments").add(appointment)
@@ -334,7 +367,7 @@ async function edit(appointment, date, time, type) {
 	};
 
 	if (!appointment) {
-		response.messages.push("missing appointment");
+		response.messages.push("Missing appointment");
 	}
 	
 	if (!date && !time && !type) {

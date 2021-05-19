@@ -35,6 +35,10 @@ exports.getTypes = functions.https.onCall((data, context) => {
 	return schedules.getTypes(data.clinic, data.doctor);
 });
 
+exports.getType = functions.https.onCall((data, context) => {
+	return schedules.getType(data.clinic, data.doctor, data.type);
+});
+
 exports.setMinimum = functions.https.onCall((data, context) => {
 	return schedules.setMinimum(data.clinic, data.doctor, data.minimum, context);
 });

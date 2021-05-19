@@ -75,6 +75,7 @@ export function AppointmentCalendarPage() {
 			
 			const appointment_promises = [];
 			
+			// Go day by day:
 			for (let current = date.getSunday(); current.compare(saturday) <= 0; current = current.getNextDay()) {
 				appointment_promises.push(
 					server.appointments.getAll(
@@ -84,25 +85,51 @@ export function AppointmentCalendarPage() {
 							end: current.getNextDay().toObject()
 						}
 					).then(results => {
+						const day_promises = [];
+
 						const today = {
 							appointments: [],
-							day: new SimpleDate(null, null, null)
+							day: results.data[0] ? SimpleDate.fromObject(results.data[0].extra.date) : new SimpleDate(null, null, null)
 						};
 						
+						// Results holds all the appointments for 1 day.
+						// For each appointment:
 						for (const result of results.data) {
-							today.day = SimpleDate.fromObject(result.extra.date);
-							
-							today.appointments.push({
-								color: "white",
-								background: "hsl(" + colors[result.appointment.type] + ", 100%, 30%)",
-								duration: result.appointment.duration,
-								start: Time.fromObject(result.extra.time),
-								id: result.appointment.id,
-								name: result.patient.fullName
-							});
+							day_promises.push(
+								server.schedules.getTypes({clinic: result.appointment.clinic, doctor: result.appointment.doctor}).then(types_response => {
+									return server.schedules.getType({clinic: result.appointment.clinic, doctor: result.appointment.doctor, type: result.appointment.type}).then(type_response => {
+										let hue = 240; //result.appointment.duration % 360;
+	
+										if (types_response.data.success && type_response.data.success){
+											let max = 0;
+											for (const t of types_response.data.types) {
+												if (t.name && t.duration > max) max = t.duration;
+											}
+
+											hue = (360 / max) * type_response.data.duration;
+										}
+	
+										return {
+											color: "white",
+											background: "hsl(" + hue + ", 100%, 30%)",
+											duration: result.appointment.duration,
+											start: Time.fromObject(result.extra.time),
+											id: result.appointment.id,
+											name: result.patient.fullName
+										};
+									})
+								})
+							)
 						}
 						
-						return today;
+						// Once all the appointments for today have been loaded:
+						return Promise.all(day_promises).then(appointments => {
+							if (appointments) {
+								today.appointments = appointments;
+							}
+
+							return today;
+						})
 					})
 				);
 			}

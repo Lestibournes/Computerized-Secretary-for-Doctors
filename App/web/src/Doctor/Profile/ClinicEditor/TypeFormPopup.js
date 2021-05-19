@@ -63,7 +63,7 @@ import { error } from "../../../Common/functions";
 							});
 							close();
 						}
-						else error(addPopup, removePopup, "Error", response.data.message);
+						else error(addPopup, removePopup, response.data.message);
 					});
 				}
 				else {
@@ -76,7 +76,7 @@ import { error } from "../../../Common/functions";
 							});
 							close();
 						}
-						else error(addPopup, removePopup, "Error", response.data.message);
+						else error(addPopup, removePopup, response.data.message);
 					});
 				}
 			}}
@@ -145,7 +145,7 @@ export function TypeDeletePopup(addPopup, removePopup, clinic, doctor, type, nam
 						});
 						close();
 					}
-					else error(addPopup, removePopup, "Error", response.data.message);
+					else error(addPopup, removePopup, response.data.message);
 				});
 			}}
 			/>

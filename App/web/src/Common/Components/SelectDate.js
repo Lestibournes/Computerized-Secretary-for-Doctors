@@ -38,6 +38,17 @@ import "./SelectDate.css";
 	 * so that the current month will start on the 2nd Sunday that is being displayed.
 	 */
 	const days = [];
+	for (let i = 0; i < 7; i++) {
+		// Create the component and add it to the array to be displayed:
+		days.push(
+			<div
+				key={SimpleDate.day_names[i]}
+				className={"item weekday"}
+			>
+				{SimpleDate.day_names[i].substr(0, 3)}
+			</div>
+		)
+	}
 
 	for (let i = 1; i <= 42; i++) {
 		/**

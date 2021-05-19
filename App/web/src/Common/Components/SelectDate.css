@@ -34,7 +34,7 @@
 	border-radius: var(--radius);
 	display: grid;
 	gap: var(--margin-small);
-	grid-template-columns: auto auto auto auto auto auto auto;
+	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 }
 
 .SelectDate .item {
@@ -55,6 +55,12 @@
 }
 
 .SelectDate .faded {
+	color: var(--control-background-pressed);
+	background-color: var(--control-background-hover);
+}
+
+.SelectDate .weekday {
+	cursor: default;
 	color: var(--control-background-pressed);
 	background-color: var(--control-background-hover);
 }

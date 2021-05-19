@@ -10,7 +10,7 @@ import { SelectDate } from "../Common/Components/SelectDate";
 import { Page } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
 import { Popup } from '../Common/Components/Popup';
-import { capitalizeAll, capitalize } from '../Common/functions';
+import { capitalizeAll, capitalize, error, compareByName } from '../Common/functions';
 import { server } from '../Common/server';
 
 /**
@@ -29,8 +29,6 @@ import { server } from '../Common/server';
 export function SetAppointmentPage() {
 	const auth = useAuth();
 	
-	const currentDate = new Date();
-	
 	//The ID of the appointment:
 	const { appointment } = useParams();
 	
@@ -42,6 +40,7 @@ export function SetAppointmentPage() {
 	const [doctorID, setDoctorID] = useState();
 	const [clinicID, setClinicID] = useState();
 	
+	const [typesData, setTypesData] = useState([]);
 	const [type, setType] = useState(null);
 	const [time, setTime] = useState();
 	const [times, setTimes] = useState();
@@ -55,6 +54,38 @@ export function SetAppointmentPage() {
 	const [clinic_data, setClinicData] = useState(null);
 
 	const [problem, setProblem] = useState(null);
+
+
+	const [popups, setPopups] = useState([]);
+
+	function addPopup(popup) {
+		let exists = false;
+
+		for (const old_popup of popups) {
+			if (old_popup.key === popup.key) {
+				exists = true;
+			}
+		}
+
+		if (!exists) {
+			const new_popups = [...popups];
+			new_popups.push(popup);
+			setPopups(new_popups);
+		}
+	}
+
+	function removePopup(popup) {
+		const new_popups = [];
+
+		for (const p of popups) {
+			if (p !== popup) {
+				new_popups.push(p);
+			}
+		}
+
+		setPopups(new_popups);
+	}
+
 
 	useEffect(() => {
 		if (appointment) {
@@ -90,7 +121,7 @@ export function SetAppointmentPage() {
   }, [clinicID]);
 
 	useEffect(() => {
-		if (date.day && date.month && date.year && (time || !appointment) && doctorID && clinicID) {
+		if (date.day && date.month && date.year && type && (time || !appointment) && doctorID && clinicID) {
 			server.appointments.getAvailable({
 				doctor: doctorID,
 				clinic: clinicID,
@@ -101,18 +132,9 @@ export function SetAppointmentPage() {
 				const list = [];
 
 				results.data.forEach(result => {
-					console.log(result);
 					list.push(Time.fromObject(result.start));
 				});
 
-				console.log("====================================");
-				console.log("====================================");
-				console.log("====================================");
-				console.log("====================================");
-				console.log("====================================");
-				console.log("====================================");
-				console.log("====================================");
-				console.log("====================================");
 				if (time) {
 					for (let i = 0; i < list.length; i++) {
 						if (list[i].compare(time) === 0) {
@@ -129,14 +151,44 @@ export function SetAppointmentPage() {
 				setTimes(list);
 			});
 		}
-	}, [appointment, time, date, doctorID, clinicID])
+	}, [appointment, time, date, type, doctorID, clinicID])
+
+	useEffect(() => {
+		if (clinicID && doctorID) {
+			server.schedules.getTypes({clinic: clinicID, doctor: doctorID}).then(response => {
+				if (response.data.success) {
+					const types = [];
+	
+					for (const type of response.data.types) {
+						if (type.name) {
+							types.push(type);
+						}
+					}
+	
+					types.sort(compareByName);
+					setTypesData(types);
+				}
+				else {
+					error(addPopup, removePopup,
+						<div>
+							{response.data.message}
+						</div>
+					);
+				}
+			});
+		}
+	}, [clinicID, doctorID]);
 
 	/**
 	 * @todo Appointment types should be read from the doctor's configuration on the server.
 	 */
-	const types = ["new patient", "regular", "follow up"];
+	const types = [];
 
-	let popups =
+	for (const type of typesData) {
+		if (type.name) types.push(type.name);
+	}
+
+	let oops =
 	<>
 		{confirmDelete ?
 			<ConfirmDelete
@@ -287,14 +339,13 @@ export function SetAppointmentPage() {
 						</div>
 					</Form>
 				</Formik>
-				{popups}
 				{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
 				{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
 			</>;
 	}
 
 	return (
-		<Page title={appointment ? "Change Your Appointment" : "Make an Appointment"} subtitle={subtitle}>
+		<Page title={appointment ? "Change Your Appointment" : "Make an Appointment"} subtitle={subtitle} popups={popups.concat(oops)}>
 			{display}
 		</Page>
 	);

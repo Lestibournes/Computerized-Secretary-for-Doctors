@@ -405,6 +405,65 @@ async function getTypes(clinic, doctor) {
 
 
 /**
+ * Get the data of the requested appointment type.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ * @param {string} type The case-insensitive name of the appointment type.
+ * @returns {Promise<{
+ * 	success: string,
+ * 	message: string,
+ * 	id: string,
+ * 	name: string,
+ * 	minimum: number,
+ * 	duration: number,
+ * 	minutes: number,
+ * 	hue: number
+ * }>}
+ */
+async function getType(clinic, doctor, type) {
+	const response = {
+		success: false,
+		message: "",
+
+		id: "",
+		name: "",
+		minimum: 0,
+		duration: 0,
+		minutes: 0,
+		hue: 0,
+	};
+
+	return getMinimum(clinic, doctor).then(minimum_response => {
+		if (minimum_response.success) {
+			response.minimum = minimum_response.minimum;
+			
+			return getTypes(clinic, doctor).then(types_response => {
+				for (const t of types_response.types) {
+					if (t.name.toLowerCase() === type.toLowerCase()) {
+						response.success = true;
+
+						response.id = t.id;
+						response.name = t.name;
+						response.duration = t.duration;
+						response.minutes = t.duration * minimum_response.minimum;
+						response.hue = response.minutes % 360;
+
+						return response;
+					}
+				}
+	
+				response.message = "The requested type was not found";
+				return response;
+			});
+		}
+		else {
+			response.message = "There is no minimum appointment duration";
+			return response;
+		}
+	})
+}
+
+/**
  * Set the minimum duration for appointments.
  * @param {string} clinic The id of the clinic.
  * @param {string} doctor The id of the doctor.
@@ -449,6 +508,7 @@ async function setMinimum(clinic, doctor, minimum, context) {
  * @param {string} doctor The id of the doctor.
  * @returns {Promise<{
  * 	success: boolean,
+ * 	minimum: number,
  * 	message: string
  * }>} Whether or not the operations succeeded and error messages.
  */
@@ -470,15 +530,64 @@ async function getMinimum(clinic, doctor) {
 	});
 }
 
+/**
+ * Get the actual duration in minutes of the requested appointment type.
+ * @param {string} clinic The id of the clinic.
+ * @param {string} doctor The id of the doctor.
+ * @param {string} type The case-insensitive name of the appointment type.
+ * @returns {Promise<{
+ * 	success: string,
+ * 	message: string,
+ * 	duration: number,
+ * 	minimum: number
+ * }>}
+ */
+async function getMinutes(clinic, doctor, type) {
+	const response = {
+		success: false,
+		duration: 0,
+		minimum: 0,
+		message: ""
+	};
+
+	return getMinimum(clinic, doctor).then(minimum_response => {
+		if (minimum_response.success) {
+			response.minimum = minimum_response.minimum;
+
+			return getTypes(clinic, doctor).then(types_response => {
+				for (const t of types_response.types) {
+					if (t.name.toLowerCase() === type.toLowerCase()) {
+						response.success = true;
+						response.duration = t.duration * minimum_response.minimum;
+						return response;
+					}
+				}
+	
+				response.message = "The requested type was not found";
+				return response;
+			});
+		}
+		else {
+			response.message = "There is no minimum appointment duration";
+			return response;
+		}
+	})
+}
+
 exports.checkModifyPermission = checkModifyPermission;
 exports.get = get;
 exports.add = add;
 exports.edit = edit;
 exports.delete = remove;
 exports.NAME = NAME;
+
 exports.addType = addType;
 exports.editType = editType;
 exports.deleteType = deleteType;
 exports.getTypes = getTypes;
+exports.getType = getType;
+
 exports.setMinimum = setMinimum;
 exports.getMinimum = getMinimum;
+
+exports.getMinutes = getMinutes;

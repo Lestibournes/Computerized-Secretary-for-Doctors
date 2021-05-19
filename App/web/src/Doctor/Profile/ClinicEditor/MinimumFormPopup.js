@@ -45,7 +45,7 @@ import { error } from "../../../Common/functions";
 						success(values.minimum);
 						close();
 					}
-					else error(addPopup, removePopup, "Error", response.data.message);
+					else error(addPopup, removePopup, response.data.message);
 				});
 			}}
 		>

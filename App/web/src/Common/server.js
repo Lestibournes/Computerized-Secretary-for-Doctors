@@ -51,6 +51,7 @@ export const server = {
 		editType: fn.httpsCallable("schedules-editType"),
 		deleteType: fn.httpsCallable("schedules-deleteType"),
 		getTypes: fn.httpsCallable("schedules-getTypes"),
+		getType: fn.httpsCallable("schedules-getType"),
 		
 		setMinimum: fn.httpsCallable("schedules-setMinimum"),
 		getMinimum: fn.httpsCallable("schedules-getMinimum"),

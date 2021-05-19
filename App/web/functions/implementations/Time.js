@@ -30,9 +30,16 @@ class Time {
 	 * @param {number} hours The number of hours.
 	 * @param {number} minutes Then number of minutes.
 	 */
-	constructor(hours, minutes) {
-		this.hours = hours;
-		this.minutes = minutes;
+	constructor(...args) {
+		if (args.length === 2) {
+			this.hours = args[0];
+			this.minutes = args[1];
+		}
+		if (args.length === 0) {
+			const now = new Date();
+			this.hours = now.getHours();
+			this.minutes = now.getMinutes();
+		}
 	}
 
 	/**

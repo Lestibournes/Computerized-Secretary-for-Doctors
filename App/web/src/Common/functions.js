@@ -46,7 +46,7 @@ export function capitalizeAll(text) {
  * @param {string} title The title of the popup.
  * @param {*} body JSX of the Popup body.
  */
-export function error(addPopup, removePopup, title, body) {
+export function error(addPopup, removePopup, body) {
 	const close = () => {
 		removePopup(popup);
 	};
@@ -54,7 +54,7 @@ export function error(addPopup, removePopup, title, body) {
 	const popup = 
 	<Popup
 		key={Math.random()}
-		title={title}
+		title="Error"
 		close={close}
 	>
 		{body}
@@ -64,4 +64,8 @@ export function error(addPopup, removePopup, title, body) {
 	</Popup>;
 
 	addPopup(popup);
+}
+
+export function compareByName(a, b) {
+	return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
 }
