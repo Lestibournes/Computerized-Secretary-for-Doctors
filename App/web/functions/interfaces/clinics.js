@@ -44,7 +44,7 @@ exports.addSecretary = functions.https.onCall((data, context) => {
 });
 
 exports.removeSecretary = functions.https.onCall((data, context) => {
-	return clinics.removeSecretary(data.clinic, data.secretary);
+	return clinics.removeSecretary(data.clinic, data.secretary, context);
 });
 
 exports.hasSecretary = functions.https.onCall((data, context) => {

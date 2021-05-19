@@ -26,7 +26,8 @@ import { SetAppointmentPage } from './Patient/SetAppointmentPage';
 import { SecretaryProfilePage } from './Secretary/SecretaryProfilePage';
 import { SecretaryClinicPage } from './Secretary/SecretaryClinicPage';
 import { SecretaryDoctorAppointmentsPage } from './Secretary/SecretaryDoctorAppointmentsPage';
-import { SecretaryAppointmentPage } from './Secretary/SecretaryAppointmentPage';
+import { AppointmentPage } from './Doctor/AppointmentPage';
+import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
 
 /**
  * URL Scheme:
@@ -90,6 +91,9 @@ ReactDOM.render(
 				<Route path="/specific/doctor/clinics/schedule/edit/:clinic/:doctor">
 					<ScheduleEditor />
 				</Route>
+				<Route path="/specific/doctor/appointments/details/:appointment">
+					<AppointmentPage />
+				</Route>
 
 				{/* Secretaries */}
 
@@ -103,7 +107,10 @@ ReactDOM.render(
 					<SecretaryDoctorAppointmentsPage />
 				</Route>
 				<Route path="/specific/secretary/appointments/:appointment">
-					<SecretaryAppointmentPage />
+					<AppointmentPage />
+				</Route>
+				<Route path="/specific/doctor/clinics/secretary/edit/:clinic/:secretary">
+					<SecretaryEditor />
 				</Route>
 
 			</Switch>

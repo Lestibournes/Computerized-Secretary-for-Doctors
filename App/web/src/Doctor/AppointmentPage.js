@@ -9,7 +9,7 @@ import { Button } from '../Common/Components/Button';
 import { Popup } from '../Common/Components/Popup';
 import { server } from '../Common/server';
 
-export function SecretaryAppointmentPage() {
+export function AppointmentPage() {
 	/**
 	 * @type {{appointment: string}}
 	 */

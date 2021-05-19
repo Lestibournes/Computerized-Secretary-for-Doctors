@@ -19,13 +19,16 @@ export const server = {
 		add: fn.httpsCallable("clinics-add"),
 		edit: fn.httpsCallable("clinics-edit"),
 		delete: fn.httpsCallable("clinics-delete"),
+
 		getAllDoctors: fn.httpsCallable("clinics-getAllDoctors"),
 		addDoctor: fn.httpsCallable("clinics-addDoctor"),
 		removeDoctor: fn.httpsCallable("clinics-removeDoctor"),
+
 		getAllSecretaries: fn.httpsCallable("clinics-getAllSecretaries"),
 		addSecretary: fn.httpsCallable("clinics-addSecretary"),
 		removeSecretary: fn.httpsCallable("clinics-removeSecretary"),
 		hasSecretary: fn.httpsCallable("clinics-hasSecretary"),
+		
 		getAllCities: fn.httpsCallable("clinics-getAllCities"),
 		getAppointments: fn.httpsCallable("clinics-getAppointments"),
 	},

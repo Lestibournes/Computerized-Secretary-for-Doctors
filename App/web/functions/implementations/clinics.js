@@ -10,6 +10,21 @@ const { capitalizeAll } = require('./functions');
  */
 const db = admin.firestore();
 
+
+/**
+ * Check if the current user is authorized to modify the given doctor's work schedule.
+ * @param {string} clinic The id of the clinic
+ * @param {string} doctor The id of the doctor
+ * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @returns {Promise<boolean>}
+ */
+ async function checkModifyPermission(clinic, context) {
+	// If the current user is the owner:
+	return doctors.getID(context.auth.uid).then(doctor_id => {
+		return clinics.isOwner(clinic, doctor_id);
+	});
+}
+
 /**
  * Get the data of a specific clinic.
  * @param {string} id the id of the requested clinic.
@@ -289,24 +304,30 @@ async function addSecretary(clinic, requester, secretary) {
  * @param {string} clinic The id of the clinic.
  * @param {string} secretary The id of the secretary.
  */
- async function removeSecretary(clinic, requester, secretary) {
-	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
-		const response = {
-			success: false,
-			message: ""
-		};
+async function removeSecretary(clinic, secretary, context) {
+	const response = {
+		success: false,
+		message: ""
+	};
 
-		if (clinic_snap.data().owner === requester || secretary === requester) {
-			return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete().then(() => {
-				return db.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).delete().then(() => {
-					response.success = true;
-					return response;
-				});
+	// Check if the current user is the owner of the clinic:
+	// Check if the current user is the secretary being removed:
+	return doctors.getID(context.auth.uid).then(doctor_id => {
+		return isOwner(clinic, doctor_id).then(isOwner => {
+			return secretaries.getID(context.auth.uid).then(secretary_id => {
+				if (isOwner || secretary_id === secretary) {
+					return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete().then(() => {
+						return db.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).delete().then(() => {
+							response.success = true;
+							return response;
+						});
+					});
+				}
+
+				response.message = "You don't have the right to change the clinic's secretaries.";
+				return response;
 			});
-		}
-
-		response.message = "You don't have the right to change the clinic's secretaries.";
-		return response;
+		});
 	});
 }
 

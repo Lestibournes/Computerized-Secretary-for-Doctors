@@ -137,7 +137,6 @@ export function AppointmentCalendarPage() {
 			Promise.all(appointment_promises).then(week => {
 				week.sort((a, b) => {
 					return a.day > b.day ? 1 : a.day < b.day ? -1 : 0;
-					// return -a.day.compare(b); //@todo Firefox gives an opposite sort order to everyone else!
 				});
 
 				setAppointments(week.map(day => day.appointments));
