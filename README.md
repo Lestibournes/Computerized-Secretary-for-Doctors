@@ -11,7 +11,9 @@ Clone the repository into your preferred directory.
 Navigate to the App/web folder within the repository.
 
 Use:
+```
 npm install
+```
 
 To install package dependencies both in the App/web folder and in App/web/functions
 
