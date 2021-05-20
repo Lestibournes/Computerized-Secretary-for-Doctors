@@ -41,8 +41,7 @@ export function capitalizeAll(text) {
 
 /**
  * 
- * @param {() => []} getPopups A function to get array that holds the Page's displayed popups.
- * @param {([]) => {}} setPopups A function to update the Page's displayed popups.
+ * @param {{addPopup: () => {}, removePopup: () => {}}} popupManager an object that controls the display of popups in the current page.
  * @param {string} title The title of the popup.
  * @param {*} body JSX of the Popup body.
  */

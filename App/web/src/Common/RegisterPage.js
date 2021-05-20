@@ -1,5 +1,5 @@
 //Reactjs:
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "./Auth";
@@ -8,14 +8,16 @@ import { TextInput } from './Components/TextInput';
 import { Button } from './Components/Button';
 import { Page } from './Components/Page';
 import { Popup } from './Components/Popup';
+import { error } from './functions';
 
 export function RegisterPage() {
 	const auth = useAuth();
+	const [popupManager, setPopupManager] = useState({});
 	
 	return (
 		<>
 			{auth.user ? <Redirect to="/general/" /> : null }
-			<Page unprotected>
+			<Page unprotected PopupManager={popupManager}>
 				<Popup title="Register">
 					<Formik
 						initialValues={{
@@ -46,7 +48,15 @@ export function RegisterPage() {
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
 
-							auth.register(values.fname, values.lname, values.email, values.password);
+							auth.register(values.fname, values.lname, values.email, values.password).then(response => {
+								if (!response.success) {
+									error(popupManager,
+										<div>
+											{response.message}
+										</div>
+									)
+								}
+							});
 						}}
 					>
 						<Form>

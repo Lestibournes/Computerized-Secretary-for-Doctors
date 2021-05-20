@@ -14,6 +14,7 @@ export function Page({unprotected, title, subtitle, PopupManager, children}) {
 	useEffect(() => {
 		if (PopupManager) {
 			PopupManager.addPopup = (popup) => {
+				console.log("adding!");
 				let exists = false;
 		
 				for (const old_popup of popups) {
@@ -67,10 +68,10 @@ export function Page({unprotected, title, subtitle, PopupManager, children}) {
 					: null}
 				</div>
 			</div>
-			{popups ? popups : ""}
 			{title ? <h1>{title}</h1> : ""}
 			{subtitle ? <h2>{subtitle}</h2> : ""}
 			{children ? children : <h3>Loading...</h3>}
+			{popups ? popups : ""}
 		</div>
 	);
 }

@@ -24,14 +24,31 @@ function useProvideAuth() {
 	
 	/**
 	 * Log the user in with email and password.
-	 * @param {string} email 
-	 * @param {string} password 
+	 * @param {string} email
+	 * @param {string} password
+	 * @returns {Promise<{
+	 * 	success: boolean,
+	 * 	message: string,
+	 * 	user: firebase.default.User
+	 * }>}
 	 */
 	const login = (email, password) => {
-		return fb.auth().signInWithEmailAndPassword(email, password).then((response) => {
+		const result = {
+			success: false,
+			message: "",
+			user: null,
+		}
+		
+		return fb.auth().signInWithEmailAndPassword(email, password).then(response => {
+			result.success = true;
+			result.user = response.user;
+			
 			setUser(response.user);
-			return response.user;
-		});
+			return response;
+		}).catch(error => {
+			result.message = error.message;
+			return result;
+		})
 	};
 
 	/**
@@ -49,8 +66,13 @@ function useProvideAuth() {
 	 * @param {string} lastName 
 	 * @param {string} email Must be unique (no other user with the same exact email)
 	 * @param {string} password 
+	 * @returns {Promise<{
+	 * 	success: boolean,
+	 * 	message: string,
+	 * 	user: firebase.default.User
+	 * }>}
 	 */
-	const register = (firstName, lastName, email, password) => {
+	const register = async (firstName, lastName, email, password) => {
 		const result = {
 			success: false,
 			message: "",
@@ -59,10 +81,9 @@ function useProvideAuth() {
 
 		return fb.auth().createUserWithEmailAndPassword(email, password).then(create_response => {
 			result.user = create_response.user;
-
 			setUser(result.user);
 			
-			return server.users.add({user: user, firstName: firstName, lastName: lastName}).then(add_response => {
+			return server.users.add({user: result.user.uid, firstName: firstName, lastName: lastName}).then(add_response => {
 				if (add_response.data.success) {
 					result.success = true;
 					return result;

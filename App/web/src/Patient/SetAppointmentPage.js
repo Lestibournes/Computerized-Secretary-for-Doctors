@@ -55,37 +55,8 @@ export function SetAppointmentPage() {
 
 	const [problem, setProblem] = useState(null);
 
-
-	const [popups, setPopups] = useState([]);
-
-	function addPopup(popup) {
-		let exists = false;
-
-		for (const old_popup of popups) {
-			if (old_popup.key === popup.key) {
-				exists = true;
-			}
-		}
-
-		if (!exists) {
-			const new_popups = [...popups];
-			new_popups.push(popup);
-			setPopups(new_popups);
-		}
-	}
-
-	function removePopup(popup) {
-		const new_popups = [];
-
-		for (const p of popups) {
-			if (p !== popup) {
-				new_popups.push(p);
-			}
-		}
-
-		setPopups(new_popups);
-	}
-
+	const [popupManager, setPopupManager] = useState({});
+	const [popups, setPopups] = useState();
 
 	useEffect(() => {
 		if (appointment) {
