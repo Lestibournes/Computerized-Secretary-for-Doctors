@@ -46,9 +46,9 @@ export function capitalizeAll(text) {
  * @param {string} title The title of the popup.
  * @param {*} body JSX of the Popup body.
  */
-export function error(addPopup, removePopup, body) {
+export function error(popupManager, body) {
 	const close = () => {
-		removePopup(popup);
+		popupManager.removePopup(popup);
 	};
 
 	const popup = 
@@ -63,7 +63,7 @@ export function error(addPopup, removePopup, body) {
 		</div>
 	</Popup>;
 
-	addPopup(popup);
+	popupManager.addPopup(popup);
 }
 
 export function compareByName(a, b) {

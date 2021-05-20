@@ -15,9 +15,9 @@ import { error } from "../../../Common/functions";
  * @param {number} minimum The current minimum appointment duration.
  * @param {(minimum: number) => {}} success Callback for after updating the minimum.
  */
- export function MinimumFormPopup(addPopup, removePopup, clinic, doctor, minimum, success) {
+ export function MinimumFormPopup(popupManager, clinic, doctor, minimum, success) {
 	const close = () => {
-		removePopup(popup);
+		popupManager.removePopup(popup);
 	};
 
 	const popup = 
@@ -45,7 +45,7 @@ import { error } from "../../../Common/functions";
 						success(values.minimum);
 						close();
 					}
-					else error(addPopup, removePopup, response.data.message);
+					else error(popupManager, response.data.message);
 				});
 			}}
 		>
@@ -61,5 +61,5 @@ import { error } from "../../../Common/functions";
 		</Formik>
 	</Popup>;
 
-	addPopup(popup);
+	popupManager.addPopup(popup);
 }

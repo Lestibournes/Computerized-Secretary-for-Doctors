@@ -75,6 +75,7 @@ export const server = {
 	},
 
 	users: {
+		add: fn.httpsCallable("users-add"),
 		get: fn.httpsCallable("users-get"),
 		getPicture: fn.httpsCallable("users-getPicture"),
 		updatePicture: fn.httpsCallable("users-updatePicture"),

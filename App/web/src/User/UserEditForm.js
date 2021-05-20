@@ -9,7 +9,7 @@ import { RadioInput } from "../Common/Components/RadioInput";
 import { PictureInput } from "../Common/Components/PictureInput";
 import { server } from "../Common/server";
 
-export function UserEditForm({addPopup, removePopup, user, image, close, success}) {
+export function UserEditForm({popupManager, user, image, close, success}) {
 	const [selectedImage, setSelectedImage] = useState(image);
 	const [file, setFile] = useState(null);
 
@@ -103,9 +103,9 @@ export function UserEditForm({addPopup, removePopup, user, image, close, success
 	);
 }
 
-export function UserEditPopup(addPopup, removePopup, user, image, success) {
+export function UserEditPopup(popupManager, user, image, success) {
 	const close = () => {
-		removePopup(popup);
+		popupManager.removePopup(popup);
 	};
 
 	const popup = 
@@ -115,11 +115,11 @@ export function UserEditPopup(addPopup, removePopup, user, image, success) {
 		close={close}
 	>
 		<UserEditForm
-			addPopup={addPopup} removePopup={removePopup}
+			popupManager={popupManager}
 			success={success} close={close}
 			user={user} image={image}
 		/>
 	</Popup>;
 
-	addPopup(popup);
+	popupManager.addPopup(popup);
 }

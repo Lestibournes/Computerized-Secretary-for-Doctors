@@ -44,42 +44,14 @@ export function ScheduleEditor() {
 	const [schedule, setSchedule] = useState(null);
 	const [cards, setCards] = useState();
 
-	const [popups, setPopups] = useState([]);
-
-	function addPopup(popup) {
-		let exists = false;
-
-		for (const old_popup of popups) {
-			if (old_popup.key === popup.key) {
-				exists = true;
-			}
-		}
-
-		if (!exists) {
-			const new_popups = [...popups];
-			new_popups.push(popup);
-			setPopups(new_popups);
-		}
-	}
-
-	function removePopup(popup) {
-		const new_popups = [];
-
-		for (const p of popups) {
-			if (p !== popup) {
-				new_popups.push(p);
-			}
-		}
-
-		setPopups(new_popups);
-	}
+	const [popupManager, setPopupManager] = useState({});
 
 	useEffect(() => {
 		if (clinic && doctor) {
 			server.schedules.getMinimum({clinic: clinic, doctor: doctor}).then(response => {
 				if (response.data.success) setMinimum(response.data.minimum);
 				else {
-					error(addPopup, removePopup,
+					error(popupManager,
 						<div>
 							{response.data.message}
 						</div>
@@ -101,7 +73,7 @@ export function ScheduleEditor() {
 					setTypesData(types);
 				}
 				else {
-					error(addPopup, removePopup,
+					error(popupManager,
 						<div>
 							{response.data.message}
 						</div>
@@ -185,7 +157,7 @@ export function ScheduleEditor() {
 							}
 	
 							else {
-								error(addPopup, removePopup, 
+								error(popupManager, 
 								<div>
 									{result.data.message}
 								</div>)
@@ -220,14 +192,14 @@ export function ScheduleEditor() {
 				<div className="headerbar">
 					<span><b>Minimum duration:</b> {minimum} minutes.</span>
 					<Button label="Edit" action={() => {
-						MinimumFormPopup(addPopup, removePopup, clinic, doctor, minimum, minimum => setMinimum(minimum));
+						MinimumFormPopup(popupManager, clinic, doctor, minimum, minimum => setMinimum(minimum));
 					}} />
 				</div>
 
 				<div className="headerbar">
 					<h2>Appointment Types</h2>
 					<Button label="+" action={() => {
-						TypeFormPopup(addPopup, removePopup, clinic, doctor, null, null, null,
+						TypeFormPopup(popupManager, clinic, doctor, null, null, null,
 							new_type => {
 								const new_types = [...typesData];
 
@@ -251,7 +223,7 @@ export function ScheduleEditor() {
 									title={type.name}
 									body={type.duration * minimum + " Minutes"}
 									action={() => {
-										TypeFormPopup(addPopup, removePopup, clinic, doctor, type.id, type.name, type.duration,
+										TypeFormPopup(popupManager, clinic, doctor, type.id, type.name, type.duration,
 											new_type => {
 												const new_types = [];
 
@@ -326,12 +298,13 @@ export function ScheduleEditor() {
 				<div className="cardList">
 					{cards[6]}
 				</div>
+				{oops}
 			</>
 		);
 	}
 
 	return (
-		<Page title={"Edit Schedule"} subtitle={subtitle} popups={popups.concat(oops)}>
+		<Page title={"Edit Schedule"} subtitle={subtitle} PopupManager={popupManager}>
 			{display}
 		</Page>
 	);

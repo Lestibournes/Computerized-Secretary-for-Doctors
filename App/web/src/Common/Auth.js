@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { fb } from "../init";
-
-const db = fb.firestore();
+import {server} from "./server";
 
 // User authentication services:
 
@@ -21,7 +20,7 @@ export const useAuth = () => {
 // The actual authentication services:
 function useProvideAuth() {
 	const [user, setUser] = useState(null);
-	const [name, setName] = useState({first: null, last: null});
+	const [name, setName] = useState({first: null, last: null, full: null});
 	
 	/**
 	 * Log the user in with email and password.
@@ -52,15 +51,32 @@ function useProvideAuth() {
 	 * @param {string} password 
 	 */
 	const register = (firstName, lastName, email, password) => {
-		return fb.auth().createUserWithEmailAndPassword(email, password).then((response) => {
-			setUser(response.user);
+		const result = {
+			success: false,
+			message: "",
+			user: null,
+		}
 
-			db.collection("users").doc(response.user.uid).set({
-				firstName: firstName,
-				lastName: lastName
+		return fb.auth().createUserWithEmailAndPassword(email, password).then(create_response => {
+			result.user = create_response.user;
+
+			setUser(result.user);
+			
+			return server.users.add({user: user, firstName: firstName, lastName: lastName}).then(add_response => {
+				if (add_response.data.success) {
+					result.success = true;
+					return result;
+				}
+				else {
+					result.message = add_response.data.message;
+				}
+			}).catch(reason => {
+				result.message = "Could not create user profile";
+				return result;
 			});
-
-			return response.user;
+		}).catch(reason => {
+			result.message = "Could not register user";
+			return result;
 		});
 	};
 
@@ -98,20 +114,13 @@ function useProvideAuth() {
 			if (user) {
 				setUser(user);
 
-				db.collection("users").doc(user.uid).onSnapshot((doc) => {
-					if (doc.data()) {
-						setName({
-							first: doc.data().firstName,
-							last: doc.data().lastName
-						})
-					}
-					else {
-						setName({
-							first: null,
-							last: null
-						})
-					}
-				});
+				server.users.get({user: user.uid}).then(response => {
+					console.log(response.data);
+					setName({
+						first: response.data.firstName,
+						last: response.data.lastName,
+						full: response.data.firstName + " " + response.data.lastName})
+				})
 			}
 			else {
 				setUser(null);

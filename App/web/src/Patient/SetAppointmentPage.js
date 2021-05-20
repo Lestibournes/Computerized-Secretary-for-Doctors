@@ -169,7 +169,7 @@ export function SetAppointmentPage() {
 					setTypesData(types);
 				}
 				else {
-					error(addPopup, removePopup,
+					error(popupManager,
 						<div>
 							{response.data.message}
 						</div>

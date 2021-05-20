@@ -6,6 +6,13 @@ const admin = require('firebase-admin');
  */
 const db = admin.firestore();
 
+async function add(user, firstName, lastName, context) {
+	db.collection("users").doc(user).set({
+		firstName: firstName,
+		lastName: lastName
+	});
+}
+
 async function get(user) {
 	return db.collection("users").doc(user).get().then(user_snap => {
 		const data = user_snap.data();
@@ -53,6 +60,7 @@ async function update(id, changes) {
 	db.collection("users").doc(id).update(changes);
 }
 
+exports.add = add;
 exports.get = get;
 exports.getPicture = getPicture;
 exports.updatePicture = updatePicture;

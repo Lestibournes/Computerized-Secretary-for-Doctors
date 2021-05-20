@@ -5,10 +5,44 @@ import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
 
-export function Page({unprotected, title, subtitle, popups, children}) {
+export function Page({unprotected, title, subtitle, PopupManager, children}) {
 	const auth = useAuth();
 	const [redirect, setRedirect] = useState(false);
 	
+	const [popups, setPopups] = useState([]);
+
+	useEffect(() => {
+		if (PopupManager) {
+			PopupManager.addPopup = (popup) => {
+				let exists = false;
+		
+				for (const old_popup of popups) {
+					if (old_popup.key === popup.key) {
+						exists = true;
+					}
+				}
+		
+				if (!exists) {
+					const new_popups = [...popups];
+					new_popups.push(popup);
+					setPopups(new_popups);
+				}
+			}
+		
+			PopupManager.removePopup = (popup) => {
+				const new_popups = [];
+		
+				for (const p of popups) {
+					if (p !== popup) {
+						new_popups.push(p);
+					}
+				}
+		
+				setPopups(new_popups);
+			}
+		}
+	}, [PopupManager]);
+
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (!unprotected && !status) setRedirect("/general/login");
