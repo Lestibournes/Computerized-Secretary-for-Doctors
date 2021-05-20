@@ -136,7 +136,6 @@ function useProvideAuth() {
 				setUser(user);
 
 				server.users.get({user: user.uid}).then(response => {
-					console.log(response.data);
 					setName({
 						first: response.data.firstName,
 						last: response.data.lastName,

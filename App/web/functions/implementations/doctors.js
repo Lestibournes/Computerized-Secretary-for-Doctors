@@ -230,7 +230,6 @@ async function removeSpecialization(doctor, specialization) {
 
 	query = query.collection("doctors").doc(doctor).collection("appointments");
 
-	console.log(start, SimpleDate.fromObject(start).day, SimpleDate.fromObject(start).toDate())
 	if (start || end ) query = query.orderBy("start");
 	if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
 	if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());

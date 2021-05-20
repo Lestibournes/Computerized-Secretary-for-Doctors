@@ -14,7 +14,6 @@ export function Page({unprotected, title, subtitle, PopupManager, children}) {
 	useEffect(() => {
 		if (PopupManager) {
 			PopupManager.addPopup = (popup) => {
-				console.log("adding!");
 				let exists = false;
 		
 				for (const old_popup of popups) {
