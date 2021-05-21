@@ -3,7 +3,7 @@
 Computerized Secretary for Private Doctors is aimed to provide online appointment management services to doctors who work privately and don't benefit from the systems used by large organizations.
 
 # Set-up
-## General Instructions for all platforms
+## General
 Install nodejs, npm, firebase tools, and git.
 
 Clone the repository into your preferred directory.
@@ -17,15 +17,37 @@ npm install
 
 To install package dependencies both in the App/web folder and in App/web/functions
 
-## Platform-Specific Instructions
+## Tools Set-Up
 ### Ubuntu
-
-To set up the project:
+In the terminal:
 
 ```
 sudo snap install node
 sudo apt install git curl
 curl -sL firebase.tools | bash
+```
+
+### Mac OSX
+#### Using Homebrew
+Install homebrew from [Homebrew](brew.sh):
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Then in the terminal:
+
+```
+brew install node@14
+brew install git
+curl -sL firebase.tools | bash
+```
+
+## Project Set-Up
+
+In the terminal:
+
+```
 git clone https://github.com/Lestibournes/Computerized-Secretary-for-Doctors.git
 cd "Computerized Secretary for Doctors/App/web"
 npm install
@@ -37,16 +59,30 @@ npm install
 While in App/web:
 
 To run the app:
+
 ```
 npm start
 ```
 
+## Firebase Emulator
+### Service Account Key
+To use the Firebase emulator you will need a Service Account Key. This key is private and is not in the repository. To obtain this key please send a request here: mailto:s.y.schwarz@gmail.com
+
+The key file should be placed inside the project folder in:
+
+```
+App/web/Service Account Key/
+```
+
+### Functions Emulation
 To start the firebase functions emulation:
+
 ```
 firebase emulators:start --only functions
 ```
 
 To use the functions emulator, make sure that src/init.js includes the following line (uncommented):
+
 ```
 fn.useEmulator("localhost", 5001);
 ```
