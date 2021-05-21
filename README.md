@@ -6,6 +6,8 @@ Computerized Secretary for Private Doctors is aimed to provide online appointmen
 ## General
 Install nodejs, npm, firebase tools, and git.
 
+The project is currently using NodeJS 14.
+
 Clone the repository into your preferred directory.
 
 Navigate to the App/web folder within the repository.
@@ -43,6 +45,17 @@ brew install git
 curl -sL firebase.tools | bash
 ```
 
+### Windows
+Install [NodeJS](https://nodejs.org)
+
+Install [Git](https://git-scm.com)
+
+Install firebase-tools:
+
+```
+npm install -g firebase-tools
+```
+
 ## Project Set-Up
 
 In the terminal:
@@ -56,9 +69,7 @@ npm install
 ```
 
 # Run
-While in App/web:
-
-To run the app:
+To run the app locally while in the App/web folder:
 
 ```
 npm start
@@ -66,7 +77,7 @@ npm start
 
 ## Firebase Emulator
 ### Service Account Key
-To use the Firebase emulator you will need a Service Account Key. This key is private and is not in the repository. To obtain this key please send a request here: mailto:s.y.schwarz@gmail.com
+To use the Firebase emulator you will need a Service Account Key. This key is private and is not in the repository. To obtain this key please send a request here: [Email](s.y.schwarz@gmail.com)
 
 The key file should be placed inside the project folder in:
 
