@@ -1,9 +1,12 @@
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
+import { error } from "../../../Common/functions";
 import { server } from "../../../Common/server";
 
-export function CreateProfile({user, success, failure, close}) {
-	return (
+export function createProfilePopup(popupManager, user, success) {
+	const close = () => popupManager.removePopup(popup);
+	
+	const popup =
 		<Popup title="Create Profile" close={close}>
 			<div className="center">
 				<h2>Would you like to register as a doctor?</h2>
@@ -12,11 +15,17 @@ export function CreateProfile({user, success, failure, close}) {
 					<Button type="okay" action={() => {
 						server.doctors.create({user: user}).then(response => {
 							if (response.data.success) success(response.data.doctor);
-							else failure();
+							else {
+								error(
+									popupManager,
+									<div>You already have a doctor profile</div>
+								);
+							}
 						});
 					}} label="Yes" />
 				</div>
 			</div>
-		</Popup>
-	);
+		</Popup>;
+
+	popupManager.addPopup(popup);
 }

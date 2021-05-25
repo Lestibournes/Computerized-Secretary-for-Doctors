@@ -4,7 +4,7 @@ const functions = require('firebase-functions');
 const users = require("../implementations/users");
 
 exports.add = functions.https.onCall((data, context) => {
-	return users.add(data.user, context);
+	return users.add(data.user, data.firstName, data.lastName, context);
 });
 
 exports.get = functions.https.onCall((data, context) => {

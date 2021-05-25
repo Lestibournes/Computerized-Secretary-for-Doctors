@@ -13,14 +13,14 @@
 	box-shadow: 0px 0px 5px 5px gray;
 	
 	min-width: min-content;
-	width: fit-content;
+	width: 100vw; /*min(calc(100vw - 2 * var(--margin)), 540px);*/
 	max-width: 100vw;
 	
 	min-height: min-content;
 	max-height: 100vh;
 }
 
-.controls {
+.Popup .controls {
 	display: grid;
 	background-color: var(--control-background);
 	padding: var(--margin-small);
@@ -30,41 +30,41 @@
 	gap: var(--margin)
 }
 
-.title {
+.Popup .title {
 	font-size: large;
 	font-weight: bold;
 }
 
-.buttons {
+.Popup .buttons {
 	display: grid;
 	place-content: end;
 	gap: var(--margin)
 }
 
-.buttons .Button {
+.Popup .buttons .Button {
 	color: var(--color);
 	font-size: xx-small;
 	padding: 0.5em;
 	border: 1px solid var(--control-background-pressed);
 }
 
-.display {
+.Popup .display {
 	padding: var(--margin);
 	background-color: var(--alt-color);
 	border-radius: inherit;
 	border-start-start-radius: 0;
 	border-start-end-radius: 0;
-
-	display: flex;
-	flex-direction: column;
 	
-	gap: var(--margin);
-	place-items: center;
+	place-items: left;
 
-	width: max-content;
+	width: 100%;
 	max-height: 100%;
 	max-width: 100%;
 	overflow: auto;
+}
+
+.Popup .display > * {
+	width: 100%;
 }
 
 .Popup .Input {
@@ -73,6 +73,7 @@
 	'label ...'
 	'error error';
 	grid-template-columns: 1fr 1fr;
+	width: 100%;
 }
 
 .Popup Form {
@@ -81,50 +82,46 @@
 	'body'
 	'buttons';
 	gap: var(--margin);
-	width: min-content;
+}
+
+.Popup Form > * {
+	width: 100%;
 }
 
 .Popup Form .widgets {
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: 1fr;
 	grid-area: body;
+	gap: var(--margin);
 }
 
-.Popup Form .buttonBar {
+.Popup .buttonBar {
 	grid-area: buttons;
 	gap: var(--margin);
 }
 
-.Input div.error {
-	grid-area: error;
-}
-
-.Input label {
-	grid-area: label;
-	width: fit-content;
-}
-
-.Input input {
-	width: min-content;
-}
-
-.Input.Radio .Group {
+.Popup .Input.Radio .Group {
 	display: flex;
 	gap: var(--margin);
 }
 
-.Input.Radio .Group div {
+.Popup .Input.Radio .Group div {
 	display: grid;
 	grid-template-columns: auto 1fr;
 	gap: var(--margin-small);
 }
 
-.Input.Radio .Group div * {
+.Popup .Input.Radio .Group div * {
 	grid-column: unset;
 	grid-row: unset;
 }
 
 @media screen and (max-width: 540px) {
   .Popup {
-    width: 100vw;
+    width: calc(100vw - 2 * var(--margin));
   }
+}
+
+.Page .Popup > * {
+	background-color: lightpink;
 }

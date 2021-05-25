@@ -53,10 +53,7 @@ export function SetAppointmentPage() {
 	const [doctor_data, setDoctorData] = useState(null);
 	const [clinic_data, setClinicData] = useState(null);
 
-	const [problem, setProblem] = useState(null);
-
 	const [popupManager, setPopupManager] = useState({});
-	const [popups, setPopups] = useState();
 
 	useEffect(() => {
 		if (appointment) {
@@ -159,23 +156,6 @@ export function SetAppointmentPage() {
 		if (type.name) types.push(type.name);
 	}
 
-	let oops =
-	<>
-		{confirmDelete ?
-			<ConfirmDelete
-				appointment={appointment}
-				close={() => setConfirmDelete(false)}
-				success={() => setDeleted(true)}
-			/>
-		: ""}
-
-		{problem ?
-			<Popup title="Error" close={() => setProblem(false)}>
-				<div>{problem}</div>
-			</Popup>
-		: ""}
-	</>;
-
 	let subtitle;
 	let display;
 	
@@ -238,15 +218,21 @@ export function SetAppointmentPage() {
 							server.appointments.edit(new_data)
 							.then(response => {
 								if (response.data.messages.length > 0) {
-									setProblem(response.data.messages.map(message => {
-										return <p>{capitalize(message)}</p>;
-									}));
+									error(popupManager,
+										<div>
+											{response.data.messages.map(message => {
+												return <p>{capitalize(message)}</p>;
+											})}
+										</div>);
 								}
 
 								setSuccess(response.data.id);
 							})
 							.catch(reason => {
-								setProblem(capitalize(reason));
+								error(popupManager,
+									<div>
+										{capitalize(reason)}
+									</div>);
 							});
 						}
 						else {
@@ -261,15 +247,21 @@ export function SetAppointmentPage() {
 							})
 							.then(response => {
 								if (response.data.messages.length > 0) {
-									setProblem(response.data.messages.map(message => {
-										return <p>{capitalize(message)}</p>;
-									}));
+									error(popupManager,
+										<div>
+											{response.data.messages.map(message => {
+												return <p>{capitalize(message)}</p>;
+											})}
+										</div>);
 								}
 
 								setSuccess(response.data.id);
 							})
 							.catch(reason => {
-								setProblem(capitalize(reason));
+								error(popupManager,
+									<div>
+										{capitalize(reason)}
+									</div>);
 							});
 						}
 					}}
@@ -303,7 +295,7 @@ export function SetAppointmentPage() {
 							{appointment ? 
 								<Button
 									type="cancel"
-									action={() => setConfirmDelete(true)}
+									action={() => ConfirmDeletePopup(popupManager, appointment,() => setDeleted(true))}
 								label="Delete" />
 							: ""}
 							<Button type="submit" label="Submit" />
@@ -316,33 +308,35 @@ export function SetAppointmentPage() {
 	}
 
 	return (
-		<Page title={appointment ? "Change Your Appointment" : "Make an Appointment"} subtitle={subtitle} popups={popups.concat(oops)}>
+		<Page title={appointment ? "Change Your Appointment" : "Make an Appointment"} subtitle={subtitle} PopupManager={popupManager} >
 			{display}
 		</Page>
 	);
 }
 
-function ConfirmDelete({appointment, close, success}) {
-	const [problem, setProblem] = useState(null);
+function ConfirmDeletePopup(popupManager, appointment, success) {
+		const close = () => {
+			popupManager.removePopup(popup);
+		}
 
-	return (
-		<Popup title="Confirm Deletion" close={close}>
-			<p>Are you sure you wish to delete this shift?</p>
+		const popup = <Popup title="Confirm Deletion" close={close}>
+			<p>Are you sure you wish to delete this appointment?</p>
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.appointments.cancel({appointment: appointment}).then(response => {
-						if (!response.data.success) {setProblem(response.data.message)}
+						if (!response.data.success) {
+							error(popupManager,
+								<div>
+									{capitalize(response.data.message)}
+								</div>);
+							}
 						else success();
 					});
 				}} />
 				<Button type="okay" label="Cancel" action={close} />
-				{problem ?
-					<Popup title="Error" close={() => setProblem(false)}>
-						<div>{problem}</div>
-					</Popup>
-				: ""}
 			</div>
 		</Popup>
-	);
+
+		popupManager.addPopup(popup)
 }

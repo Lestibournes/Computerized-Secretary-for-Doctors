@@ -3,15 +3,14 @@ import { useEffect, useState } from "react";
 
 import { Card } from "../../../Common/Components/Card";
 import { Button } from "../../../Common/Components/Button";
-import { Popup } from "../../../Common/Components/Popup";
 
 import { Page } from "../../../Common/Components/Page";
-import { ClinicCreateForm } from "./ClinicCreateForm";
-import { CreateProfile } from "./CreateProfile";
-import { UserEditForm } from "../UserEditor/UserEditForm";
+import { clinicCreatePopup } from "./ClinicCreateForm";
+import { createProfilePopup } from "./CreateProfile";
 import { capitalizeAll, getPictureURL } from "../../../Common/functions";
-import { SelectSpecialization } from "./SelectSpecialization";
+import { selectSpecializationPopup, removeSpecializationPopup } from "./SelectSpecialization";
 import { server } from "../../../Common/server";
+import { UserDetails } from "../../../User/UserDetails";
 
 /**
 @todo
@@ -69,22 +68,25 @@ export function DoctorEditor() {
 				});
 			}
 			else {
-				return setCreateProfile(true);
+				createProfilePopup(
+					popupManager,
+					auth.user.uid,
+					doctor => {
+						server.doctors.getData({id: doctor}).then(results => {
+							setDoctor(results.data);
+						});
+					}
+				);
 			}
 		});
 	}
+
 	const [doctor, setDoctor] = useState(null);
 	const [image, setImage] = useState(null);
 	const [clinicCards, setClinicCards] = useState(null);
 	const [clinics, setClinics] = useState();
 
-	// Popup toggles:
-	const [createProfile, setCreateProfile] = useState(false);
-	const [alreadyExists, setAlreadyExists] = useState(false);
-	const [createClinic, setCreateClinic] = useState(false);
-	const [editData, setEditData] = useState(false);
-	const [selectSpecialization, setSelectSpecializations] = useState(false);
-	const [removeSpecialization, setRemoveSpecialization] = useState(false);
+	const [popupManager, setPopupManager] = useState({});
 
 	useEffect(() => {
 		if (doctor) {
@@ -121,21 +123,29 @@ export function DoctorEditor() {
 		}
 	}, [doctor, clinics]);
 
-	let display = <h2>Loading...</h2>;
+	let display;
 
 	if (doctor && clinicCards) {
 		display = (
 			<>
+				<UserDetails data={doctor.user} popupManager={popupManager} />
+				
 				<div className="headerbar">
-					<h2>Details</h2> <Button label="Edit" action={() => setEditData(true)} />
-				</div>
-				<div className="table">
-					<b>Photo</b> <img src={image} alt={doctor.user.firstName + " " + doctor.user.lastName} />
-					<b>Name:</b> <span>{doctor.user.firstName + " " + doctor.user.lastName}</span>
-					<b>Sex:</b> <span>{doctor.user.sex ? doctor.user.sex[0].toLocaleUpperCase() + doctor.user.sex.substr(1).toLowerCase() : "Not specified"}</span>
-				</div>
-				<div className="headerbar">
-					<h2>Specializations</h2> <Button label="+" action={() => setSelectSpecializations(true)} />
+					<h2>Specializations</h2>
+					<Button label="+"
+						action={() => {
+							selectSpecializationPopup(
+								popupManager,
+								doctor.fields,
+								specialization => {
+									server.doctors.addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
+									.then(() => {
+										loadData(auth.user.uid);
+									});
+								}
+							);
+						}}
+					/>
 				</div>
 				<div>
 					{
@@ -148,9 +158,7 @@ export function DoctorEditor() {
 								<span>{capitalizeAll(field.id)}</span>
 								<Button
 									label="-"
-									action={() => {
-										setRemoveSpecialization(field.id);
-									}}
+									action={() => removeSpecializationPopup(popupManager, doctor.doctor.id, field.id, () => loadData(doctor.user.id))}
 								/>
 							</div>)
 							:
@@ -158,7 +166,19 @@ export function DoctorEditor() {
 					}
 				</div>
 				<div className="headerbar">
-					<h2>Clinics</h2> <Button label="+" action={() => setCreateClinic(true)} />
+					<h2>Clinics</h2> <Button label="+" action={() => {
+						clinicCreatePopup(
+							popupManager,
+							doctor.doctor.id, 
+							clinic_id => {
+								server.clinics.get({id: clinic_id}).then(response => {
+									const new_clinics = [...clinics];
+									new_clinics.push(response.data);
+									setClinics(new_clinics);
+								});
+							}
+						);
+					}} />
 				</div>
 				<div className="cardList">
 					{clinicCards}
@@ -167,92 +187,8 @@ export function DoctorEditor() {
 		);
 	}
 
-	const popups =
-	<>
-		{createProfile && auth.user ?
-		<CreateProfile
-			user={auth.user.uid}
-			success={doctor => {
-				setCreateProfile(false);
-				server.doctors.getData({id: doctor}).then(results => {
-					setDoctor(results.data);
-				});
-			}}
-			failure={() => setAlreadyExists(true)}
-			close={() => {window.history.back()}}
-		/>
-		: ""}
-
-		{alreadyExists ?
-			<Popup
-				title="Info"
-				close={() => {
-					setAlreadyExists(false);
-					setCreateProfile(false);
-				}}
-			>
-				<div>You already have a doctor profile</div>
-			</Popup>
-		: ""}
-
-		{createClinic ? 
-			<ClinicCreateForm
-				doctor={doctor.doctor.id}
-				success={clinic_id => {
-					setCreateClinic(false);
-					
-					server.clinics.get({id: clinic_id}).then(response => {
-						const new_clinics = [...clinics];
-						new_clinics.push(response.data);
-						setClinics(new_clinics);
-					});
-				}}
-				close={() => setCreateClinic(false)}
-			/>
-		: ""}
-
-		{editData ? 
-			<UserEditForm
-				user={doctor.user}
-				image={image}
-				close={() => {
-					loadData(auth.user.uid).then(() => setEditData(false));
-				}}
-			/>
-		: ""}
-
-		{selectSpecialization && doctor ? 
-			<SelectSpecialization
-				specializations={doctor.fields}
-				close={() => setSelectSpecializations(false)}
-				success={specialization => {
-					server.doctors.addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
-					.then(() => {
-						loadData(auth.user.uid);
-					});
-				}}
-			/>
-		: ""}
-
-		{removeSpecialization && doctor ? 
-			<Popup title="Please Confirm" close={() => setRemoveSpecialization(false)}>
-				Are you sure you wish to remove the specialization {capitalizeAll(removeSpecialization)}?
-				<div className="buttonBar">
-					<Button type="okay" label="Cancel" action={() => setRemoveSpecialization(false)} />
-					<Button type="cancel" label="Yes" action={() => {
-						server.doctors.removeSpecialization({doctor: doctor.doctor.id, specialization: removeSpecialization})
-						.then(() => {
-							loadData(auth.user.uid).then(() => setRemoveSpecialization(false));
-						});
-					}} />
-				</div>
-			</Popup>
-		: ""}
-	</>;
-
 	return (
-		<Page title="Doctor Profile">
-			{popups}
+		<Page title="Doctor Profile" PopupManager={popupManager}>
 			{display}
 		</Page>
 	);

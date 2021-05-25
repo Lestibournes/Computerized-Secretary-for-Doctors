@@ -17,25 +17,11 @@ function hasSpecialization(specializations, specialization) {
 	return false;
 }
 
-export function SelectSpecialization({specializations, close, success}) {
+export function SelectSpecializationForm({popupManager, specializations, close, success}) {
 	const [cards, setCards] = useState([]);
-	const [create, setCreate] = useState(false);
-	
-	const popups = 
-	<>
-		{create ?
-			<CreateSpecialization
-				close={() => setCreate(false)}
-				success={specialization => {
-					success(specialization)
-					setCreate(false);
-				}}
-			/>
-		: "" }
-	</>;
-	
+
 	return (
-		<Popup  title="Add Specialization" close={close} popups={popups}>
+		<>
 			<Formik
 				initialValues={{
 					specialization: ""
@@ -73,9 +59,19 @@ export function SelectSpecialization({specializations, close, success}) {
 						/>
 					</div>
 					<div className="buttonBar">
-						<Button type="cancel" label="Create" action={() => {
-							setCreate(true);
-						}} />
+						<Button type="cancel" label="Create"
+							action={
+								() => {
+									createSpecializationPopup(
+										popupManager,
+										"",
+										specialization => {
+											success(specialization)
+										}
+									);
+								}
+							}
+						/>
 						<Button label="Close" action={close} />
 						<Button type="submit" label="Search" />
 					</div>
@@ -85,13 +81,12 @@ export function SelectSpecialization({specializations, close, success}) {
 			<div className="cardList">
 				{cards}
 			</div>
-		</Popup>
-		);
+		</>
+	);
 }
 
-function CreateSpecialization({specialization, close, success}) {
+function CreateSpecializationForm({specialization, close, success}) {
 	return (
-		<Popup title="Create New Specialization" close={close}>
 			<Formik
 				initialValues={{
 					specialization: specialization
@@ -122,6 +117,46 @@ function CreateSpecialization({specialization, close, success}) {
 					</div>
 				</Form>
 			</Formik>
-		</Popup>
 	);
+}
+
+export function selectSpecializationPopup(popupManager, specializations, success) {
+	const close = () => {popupManager.removePopup(popup)};
+	const popup =
+		<Popup  title="Add Specialization" close={close} popupManager={popupManager}>
+			<SelectSpecializationForm popupManager={popupManager} specializations={specializations} close={close} success={success} />
+		</Popup>;
+	popupManager.addPopup(popup);
+}
+
+export function createSpecializationPopup(popupManager, specialization, success) {
+	const close = () => {popupManager.removePopup(popup)};
+	const popup =
+		<Popup title="Create New Specialization" close={close}>
+			<CreateSpecializationForm specializations={specialization} close={close} success={success} />
+		</Popup>;
+	popupManager.addPopup(popup);
+}
+
+export function removeSpecializationPopup(popupManager, doctor, specialization, success) {
+	const close = () => {popupManager.removePopup(popup)}
+
+	const popup = 
+		<Popup title="Please Confirm" close={close}>
+			<p>
+				Are you sure you wish to remove the specialization {capitalizeAll(specialization)}?
+			</p>
+			<div className="buttonBar">
+				<Button type="okay" label="Cancel" action={close} />
+				<Button type="cancel" label="Yes" action={() => {
+					server.doctors.removeSpecialization({doctor: doctor, specialization: specialization})
+					.then(() => {
+						success();
+						close();
+					});
+				}} />
+			</div>
+		</Popup>;
+
+	popupManager.addPopup(popup);
 }

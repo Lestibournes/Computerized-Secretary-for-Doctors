@@ -29,11 +29,7 @@ export function AppointmentCalendarPage() {
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState();
 	const [minimum, setMinimum] = useState(60);
-	const [colors, setColors] = useState({
-		"new patient": 120,
-		"regular": 240,
-		"follow up": 360
-	});
+	const [popupManager, setPopupManager] = useState({});
 
 	const [dimensions, setDimensions] = useState({ 
 		height: window.innerHeight,
@@ -56,13 +52,16 @@ export function AppointmentCalendarPage() {
 	});
 	
 	useEffect(() => {
-		if (auth.user && !doctor) {
+		if (auth.user && doctor === null) {
 			// Check if the current user is a doctor, and if he is, fetch his doctor id/ref:
 			server.users.get({user: auth.user.uid}).then(user => {
 				if (user.data.doctor) {
 					server.doctors.getData({id: user.data.doctor}).then(doctor_data => {
 						setDoctor(doctor_data.data);
 					})
+				}
+				else {
+					setDoctor(false);
 				}
 			});
 		}
@@ -173,16 +172,23 @@ export function AppointmentCalendarPage() {
 				// setMinimum(minimum);
 			});
 		}
-	}, [doctor, date, colors]);
+	}, [doctor, date]);
 
-	let popups = 
-	<>
-		{schedule === false ?
+	if (schedule === false) {
+		popupManager.addPopup(
 			<Popup close={() => {window.history.back()}}>
 				You need to create a work schedule before viewing your appointment calendar.
 			</Popup>
-		: ""}
-	</>
+		);
+	}
+
+	if (doctor === false) {
+		popupManager.addPopup(
+			<Popup close={() => {window.history.back()}}>
+				You need to be a doctor to view your work calendar.
+			</Popup>
+		);
+	}
 
 	let display;
 	
@@ -213,7 +219,7 @@ export function AppointmentCalendarPage() {
 	}
 
 	return (
-		<Page title="Work Calendar" popups={popups}>
+		<Page title="Work Calendar" PopupManager={popupManager}>
 			{display}
 		</Page>
 	);

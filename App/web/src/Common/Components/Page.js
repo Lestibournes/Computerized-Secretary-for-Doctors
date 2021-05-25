@@ -52,25 +52,27 @@ export function Page({unprotected, title, subtitle, PopupManager, children}) {
 	}, [auth, unprotected]);
 
 	return (
-		<div className="Page">
-			{redirect ? <Redirect to={redirect} /> : null }
-			<div className="mainHeader">
-				<Link to="/general/" className="title">CSFPD</Link>
-				<div>
-					{auth.user ? 
-					<>
-						{auth.name.first ? auth.name.first + " " : null}
-						{auth.name.last ? auth.name.last + " " : null}
-						{auth.user ? "<" + auth.user.email + ">" : null}
-						<Button type="cancel" action={auth.logout} label="Log out" />
-					</>
-					: null}
+		<>
+			<div className="Page">
+				{redirect ? <Redirect to={redirect} /> : null }
+				<div className="mainHeader">
+					<Link to="/general/" className="title">CSFPD</Link>
+					<div>
+						{auth.user ? 
+						<>
+							{auth.name.first ? auth.name.first + " " : null}
+							{auth.name.last ? auth.name.last + " " : null}
+							{auth.user ? "<" + auth.user.email + ">" : null}
+							<Button type="cancel" action={auth.logout} label="Log out" />
+						</>
+						: null}
+					</div>
 				</div>
+				{title ? <h1>{title}</h1> : ""}
+				{subtitle ? <h2>{subtitle}</h2> : ""}
+				{children ? children : <h3>Loading...</h3>}
 			</div>
-			{title ? <h1>{title}</h1> : ""}
-			{subtitle ? <h2>{subtitle}</h2> : ""}
-			{children ? children : <h3>Loading...</h3>}
 			{popups ? popups : ""}
-		</div>
+		</>
 	);
 }
