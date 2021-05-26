@@ -1,7 +1,11 @@
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
 
-admin.initializeApp();
+const serviceAccount = require("../Service Account Key/csfpd-da7e7-firebase-adminsdk-pn31t-d63a3d9597.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 /**
  * Convenience global variable for accessing the Admin Firestore object.
