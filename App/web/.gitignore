@@ -26,3 +26,5 @@ yarn-error.log*
 .eslintcache
 .firebase
 ui-debug.log
+
+Service\ Account\ Key
