@@ -128,6 +128,7 @@ async function add(clinic, doctor, day, start, end, context) {
 				end: end,
 			}).then(() => {
 				response.success = true;
+				return response;
 			});
 		}
 

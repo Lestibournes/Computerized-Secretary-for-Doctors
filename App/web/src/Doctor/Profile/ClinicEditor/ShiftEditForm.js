@@ -6,104 +6,148 @@ import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { Time } from "../../../Common/classes";
+import { error } from "../../../Common/functions";
 
-export function ShiftEditForm({clinic, doctor, shift, day, start, end, close, success, deleted}) {
-	const [confirmDelete, setConfirmDelete] = useState(false);
-	const [problem, setProblem] = useState(null);
-
-	let title = "Create New Shift";
-	let deletable = false;
-
-	if (start && end) {
-		title = "Edit Shift";
-		deletable = true;
-	}
+export function ShiftEditForm({popupManager, clinic, doctor, shift, day, start, end, close, success, deleted}) {
+	let deletable = start && end;
 
 	return (
-		<Popup title={title} close={close}>
-			<div className="form">
-				<Formik
-					initialValues={{
-						start: (start ? Time.fromObject(start).toString() : ""),
-						end: (end ? Time.fromObject(end).toString() : ""),
-					}}
-					validationSchema={Yup.object({
-						
-					})}
-					onSubmit={async (values, { setSubmitting }) => {
-						setSubmitting(true);
+		<Formik
+			initialValues={{
+				start: (start ? Time.fromObject(start).toString() : ""),
+				end: (end ? Time.fromObject(end).toString() : ""),
+			}}
+			validationSchema={Yup.object({
+				
+			})}
+			onSubmit={async (values, { setSubmitting }) => {
+				setSubmitting(true);
 
+				const data = {
+					shift: shift,
+					doctor: doctor,
+					clinic: clinic,
+					day: day,
+					start: {
+						hours: Number(values.start.split(":")[0]),
+						minutes: Number(values.start.split(":")[1])
+					},
+					end: {
+						hours: Number(values.end.split(":")[0]),
+						minutes: Number(values.end.split(":")[1])
+					},
+				}
+
+				if (shift) {
+					server.schedules.edit(data).then(result => {
 						success({
-							shift: shift,
-							doctor: doctor,
-							clinic: clinic,
-							day: day,
-							start: {
-								hours: Number(values.start.split(":")[0]),
-								minutes: Number(values.start.split(":")[1])
-							},
-							end: {
-								hours: Number(values.end.split(":")[0]),
-								minutes: Number(values.end.split(":")[1])
-							},
+							data: data,
+							success: result.data.success,
+							message: result.data.message
 						});
-					}}
-				>
-					<Form>
-						<div className="widgets">
-							<TextInput label="Shift Start" type="time" name="start" />
-							<TextInput label="Shift End" type="time" name="end" />
-						</div>
-						<div className="buttonBar">
-							{deletable ? 
-							<Button type="cancel" label="Delete" action={() => setConfirmDelete(true)} />
-							: ""}
-							<Button label="Cancel" action={close} />
-							<Button type="submit" label="Save" />
-						</div>
-						{confirmDelete ? <ConfirmDelete
-								clinic={clinic}
-								doctor={doctor}
-								shift={shift}
-								close={() => setConfirmDelete(false)}
-								success={deleted} />
-							: ""}
-						{problem ?
-							<Popup title="Error" close={() => setProblem(false)}>
-								<div>{problem}</div>
-							</Popup>
-						: ""}
-					</Form>
-				</Formik>
-			</div>
-
-		</Popup>
+						close();
+					});
+				}
+				else {
+					server.schedules.add(data).then(result => {
+						success({
+							data: data,
+							success: result.data.success,
+							message: result.data.message
+						});
+						close();
+					});
+				}
+			}}
+		>
+			<Form>
+				<div className="widgets">
+					<TextInput label="Shift Start" type="time" name="start" />
+					<TextInput label="Shift End" type="time" name="end" />
+				</div>
+				<div className="buttonBar">
+					{deletable ? 
+					<Button
+						type="cancel"
+						label="Delete"
+						action={() => {
+							confirmDeletePopup(popupManager, clinic, doctor, shift, deleted ? deleted : success);
+						}}
+					/>
+					: ""}
+					<Button label="Cancel" action={close} />
+					<Button type="submit" label="Save" />
+				</div>
+			</Form>
+		</Formik>
 	);
 }
 
-function ConfirmDelete({clinic, doctor, shift, close, success}) {
-	const [problem, setProblem] = useState(null);
-
+function ConfirmDeleteForm({popupManager, clinic, doctor, shift, close, success}) {
 	return (
-	<Popup title="Confirm Deletion" close={close}>
 		<div>
-			<p>Are you sure you wish to delete this shift?</p>
-			<p>This action is permanent and cannot be undone.</p>
+			<div>
+				<p>Are you sure you wish to delete this shift?</p>
+				<p>This action is permanent and cannot be undone.</p>
+			</div>
+			<div className="buttonBar">
+				<Button type="cancel" label="Yes" action={() => {
+					server.schedules.delete({clinic: clinic, doctor: doctor, shift: shift}).then(response => {
+						if (!response.data.success) {error(popupManager, response.data.message)}
+						else {
+							success({
+								data: {clinic: clinic, doctor: doctor},
+								success: true,
+								message: ""
+							});
+							close();
+						}
+					});
+				}} />
+				<Button type="okay" label="Cancel" action={close} />
+			</div>
 		</div>
-		<div className="buttonBar">
-			<Button type="cancel" label="Yes" action={() => {
-				server.schedules.delete({clinic: clinic, doctor: doctor, shift: shift}).then(response => {
-					if (!response.data.success) {setProblem(response.data.message)}
-					else {success()}
-				});
-			}} />
-			<Button type="okay" label="Cancel" action={close} />
-			{problem ?
-				<Popup title="Error" close={() => setProblem(false)}>
-					<div>{problem}</div>
-				</Popup>
-			: ""}
-		</div>
-	</Popup>
 	);
+}
+
+export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, end, success, deleted) {
+	let title = "Create New Shift";
+
+	if (start && end) {
+		title = "Edit Shift";
+	}
+
+	const close = () => {popupManager.removePopup(popup)};
+	const popup =
+		<Popup title={title} close={close}>
+			<ShiftEditForm
+				popupManager={popupManager}
+				clinic={clinic}
+				doctor={doctor}
+				shift={shift}
+				day={day}
+				start={start}
+				end={end}
+				close={close}
+				success={success}
+				deleted={deleted}
+			/>
+		</Popup>;
+	popupManager.addPopup(popup);
+}
+
+export function confirmDeletePopup(popupManager, clinic, doctor, shift, success) {
+	const close = () => {popupManager.removePopup(popup)};
+	const popup =
+		<Popup title="Confirm Deletion" close={close}>
+			<ConfirmDeleteForm
+				popupManager={popupManager}
+				clinic={clinic}
+				doctor={doctor}
+				shift={shift}
+				close={close}
+				success={success}
+			/>
+		</Popup>;
+	popupManager.addPopup(popup);
 }
