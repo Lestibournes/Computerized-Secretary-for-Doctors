@@ -1,0 +1,20 @@
+
+.Page Form .searchBar {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: var(--margin);
+}
+
+.Page Form .searchBar .buttonBar {
+	width: unset;
+	height: unset;
+	place-items: unset;
+	place-content: unset;
+	place-self: unset;
+}
+
+@media screen and (min-width: 600px) {
+	.Page Form .searchBar .buttonBar {
+		grid-column: span 2;
+	}
+}

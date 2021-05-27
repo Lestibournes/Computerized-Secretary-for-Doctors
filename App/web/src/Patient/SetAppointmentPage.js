@@ -269,36 +269,38 @@ export function SetAppointmentPage() {
 					<Form>
 						{/* Put appointment-making widgets here. */}
 						<div className="pickers">
-							<SelectList
-								label="Appointment Type"
-								name="type"
-								options={types}
-								selected={type}
-								onClick={(index) => setType(index)}
-							/>
-							<SelectDate
-								name="date"
-								selected={date}
-								onClick={(date) => {
-									setDate(date);
-								}}
-							/>
-							<SelectList
-								label="Time Slot"
-								name="time"
-								options={times}
-								selected={time}
-								onClick={(time) => setTime(time)}
-							/>
-						</div>
-						<div className="buttonBar">
-							{appointment ? 
-								<Button
-									type="cancel"
-									action={() => ConfirmDeletePopup(popupManager, appointment,() => setDeleted(true))}
-								label="Delete" />
-							: ""}
-							<Button type="submit" label="Submit" />
+							<div className="widgets">
+								<SelectList
+									label="Appointment Type"
+									name="type"
+									options={types}
+									selected={type}
+									onClick={(index) => setType(index)}
+								/>
+								<SelectDate
+									name="date"
+									selected={date}
+									onClick={(date) => {
+										setDate(date);
+									}}
+								/>
+								<SelectList
+									label="Time Slot"
+									name="time"
+									options={times}
+									selected={time}
+									onClick={(time) => setTime(time)}
+								/>
+							</div>
+							<div className="buttonBar">
+								{appointment ? 
+									<Button
+										type="cancel"
+										action={() => ConfirmDeletePopup(popupManager, appointment,() => setDeleted(true))}
+									label="Delete" />
+								: ""}
+								<Button type="submit" label="Submit" />
+							</div>
 						</div>
 					</Form>
 				</Formik>

@@ -50,143 +50,24 @@
 /*********************************/
 
 .Page .Input {
-	display: flex;
-	flex-flow: row;
-	gap: var(--margin);
-	flex-grow: 1;
-}
-
-.Page .Input label {
-	place-self: center start;
-}
-
-.Page .Input input {
-	text-decoration: none;
-	background-color: var(--control-background);
-	color: var(--color);
-	border: none;
-	font-size: var(--font-size-e);
-	padding: var(--control-padding);
-	border-radius: var(--radius);
-}
-
-.Page .Input input:focus {
-	background-color: var(--control-background-hover);
-	color: var(--color);
-}
-
-.Page .Input input:active {
-	background-color: var(--control-background-pressed);
-	color: var(--alt-color);
-}
-
-
-.Page .Input input.error, .Page .Input Field.error {
-	background-color: var(--warning-color);
-}
-
-.Page .Input div.error {
-	font-size: var(--font-size-e);
-	color: var(--warning-color);
-	grid-column: 2/3;
-}
-
-.Page .Input select {
-	text-decoration: none;
-	background-color: var(--control-background);
-	color: var(--color);
-	border: none;
-	font-size: var(--font-size-e);
-	padding: var(--control-padding);
-	border-radius: var(--radius);
-}
-
-.Page Form {
-	/* display: grid;
-	grid-template-rows: 1fr auto;
-	width: 100%;
-	gap: var(--margin); */
-	display: flex;
-	flex-direction: row;
-}
-
-/* For simple inputs with labels, such as text input and drop-down lists */
-.Page Form .widgets {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	gap: var(--margin);
-
-	height: max-content;
+	grid-template-columns: auto 1fr;
 }
 
 /* For fat picker widgets like selecting from a list, or selecting a date */
 .Page Form .pickers {
 	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--margin);
+}
+
+.Page Form .widgets {
+	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 	grid-auto-flow: row;
 	grid-auto-rows: 300px;
 	gap: var(--margin);
-
+	
 	width: 100%;
 	max-width: unset;
 	max-height: 100%;
-}
-
-@media screen and (max-width: 900) {
-	.Page .Input {
-		display: grid;
-		grid-template-areas: 
-		'label ...'
-		'error error';
-		grid-template-columns: 1fr 1fr;
-	}
-
-	.Page Form {
-		background-color: red;
-		display: grid;
-		/* grid-template-columns: 1fr 1fr; */
-
-		width: fit-content;
-		gap: var(--margin);
-		grid-template-areas:
-		'body'
-		'buttons';
-	}
-
-	.Page Form .widgets {
-		/* flex-direction: row; */
-		display: grid;
-		grid-template-rows: repeat(auto-fill, auto);
-		grid-template-columns: 1fr;
-		grid-area: body;
-	}
-
-	.Page Form .buttonBar {
-		grid-area: buttons;
-		gap: var(--margin);
-	}
-
-	.Page .Input div.error {
-		grid-area: error;
-	}
-
-	.Page .Input label {
-		grid-area: label;
-	}
-
-	.Page .Input.Radio .Group {
-		display: flex;
-		gap: var(--margin);
-	}
-
-	.Page .Input.Radio .Group div {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		gap: var(--margin-small);
-	}
-	.Page .Input.Radio .Group div * {
-		grid-column: unset;
-		grid-row: unset;
-	}
 }
