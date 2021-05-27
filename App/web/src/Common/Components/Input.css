@@ -4,6 +4,7 @@
 	'label ...'
 	'error error';
 	grid-template-columns: 1fr 1fr;
+	gap: var(--margin);
 }
 
 .Input label {

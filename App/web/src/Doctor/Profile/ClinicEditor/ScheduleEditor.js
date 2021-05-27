@@ -7,7 +7,7 @@ import { Page } from "../../../Common/Components/Page";
 import { Card } from '../../../Common/Components/Card';
 
 import { Time } from '../../../Common/classes';
-import { ShiftEditForm, shiftEditPopup } from './ShiftEditForm';
+import { shiftEditPopup } from './ShiftEditForm';
 import { server } from '../../../Common/server';
 import { capitalize, compareByName, error } from '../../../Common/functions';
 
