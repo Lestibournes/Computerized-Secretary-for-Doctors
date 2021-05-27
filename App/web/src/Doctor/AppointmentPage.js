@@ -3,7 +3,7 @@ import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/classes";
 import { SimpleDate } from "../Common/classes";
 import { Page } from '../Common/Components/Page';
-import { capitalizeAll, getPictureURL } from '../Common/functions';
+import { capitalizeAll, error, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
 import { Popup } from '../Common/Components/Popup';
@@ -22,7 +22,7 @@ export function AppointmentPage() {
 	const [image, setImage] = useState(null); // The url of the patient's profile picture.
 	const [arrived, setArrived] = useState(false); // The patient's arrival status.
 
-	const [message, setMessage] = useState(); // A message to be displayed in a popup.
+	const [popupManager, setPopupManager] = useState({});
 	
 	useEffect(() => {
 		if (appointment) {
@@ -46,15 +46,6 @@ export function AppointmentPage() {
 		}
 	}, [appointment]);
 
-	const popups =
-	<>
-		{message ? 
-			<Popup title={message.title} close={() => setMessage(null)}>
-				{message.body}
-			</Popup>
-		: ""}
-	</>;
-
 	let display;
 	let subtitle;
 	let title;
@@ -66,24 +57,27 @@ export function AppointmentPage() {
 		<>
 			<div className="headerbar">
 				<h3>Patient Details</h3>
-				<Button
-					type={arrived ? "okay" : ""}
-					label="Arrived"
-					action={() => {
-						server.appointments.arrived({appointment: appointment}).then(response => {
-							if (response.data.success) {
-								setArrived(response.data.current);
-							}
-							else {
-								// Display error message popup.
-								setMessage({
-									title: "Error",
-									message: response.data.message
-								});
-							}
-						});
-					}}
-				/>
+				<div className="buttonBar">
+					<Button
+						label="Edit"
+						link={"/specific/secretary/appointments/edit/" + appointment}
+					/>
+					<Button
+						type={arrived ? "okay" : ""}
+						label="Arrived"
+						action={() => {
+							server.appointments.arrived({appointment: appointment}).then(response => {
+								if (response.data.success) {
+									setArrived(response.data.current);
+								}
+								else {
+									// Display error message popup.
+									error(popupManager, response.data.message);
+								}
+							});
+						}}
+					/>
+				</div>
 			</div>
 			<div className="table">
 				<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
@@ -105,7 +99,7 @@ export function AppointmentPage() {
 	}
 	
 	return (
-		<Page title={title} subtitle={subtitle} popups={popups}>
+		<Page title={title} subtitle={subtitle} PopupManager={popupManager}>
 			{display}
 		</Page>
 	);

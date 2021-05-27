@@ -26,7 +26,7 @@ exports.add = functions.https.onCall((data, context) => {
 });
 
 exports.edit = functions.https.onCall((data, context) => {
-	return appointments.edit(data.appointment, data.date, data.time, data.type);
+	return appointments.edit(data.appointment, data.date, data.time, data.type, context);
 });
 
 exports.cancel = functions.https.onCall((data, context) => {

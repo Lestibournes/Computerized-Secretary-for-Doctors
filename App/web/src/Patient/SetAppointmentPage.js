@@ -56,6 +56,7 @@ export function SetAppointmentPage() {
 	const [popupManager, setPopupManager] = useState({});
 
 	useEffect(() => {
+		console.log(appointment)
 		if (appointment) {
 			server.appointments.get({id: appointment}).then(results => {
 				setData(results.data);
@@ -215,23 +216,22 @@ export function SetAppointmentPage() {
 								new_data.type = values.type;
 							}
 							
-							server.appointments.edit(new_data)
-							.then(response => {
-								if (response.data.messages.length > 0) {
+							server.appointments.edit(new_data).then(response => {
+								if (response.data.success) {
+									setSuccess(response.data.id);
+								}
+								else {
+
 									error(popupManager,
 										<div>
-											{response.data.messages.map(message => {
-												return <p>{capitalize(message)}</p>;
-											})}
+											{response.data.message}
 										</div>);
 								}
-
-								setSuccess(response.data.id);
 							})
 							.catch(reason => {
 								error(popupManager,
 									<div>
-										{capitalize(reason)}
+										{reason}
 									</div>);
 							});
 						}
@@ -310,7 +310,7 @@ export function SetAppointmentPage() {
 	}
 
 	return (
-		<Page title={appointment ? "Change Your Appointment" : "Make an Appointment"} subtitle={subtitle} PopupManager={popupManager} >
+		<Page title={appointment ? "Modify Appointment" : "Make an Appointment"} subtitle={subtitle} PopupManager={popupManager} >
 			{display}
 		</Page>
 	);

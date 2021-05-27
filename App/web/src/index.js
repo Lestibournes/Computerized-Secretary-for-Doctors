@@ -106,8 +106,11 @@ ReactDOM.render(
 				<Route path="/specific/secretary/clinics/:clinic/:doctor">
 					<SecretaryDoctorAppointmentsPage />
 				</Route>
-				<Route path="/specific/secretary/appointments/:appointment">
+				<Route path="/specific/secretary/appointments/view/:appointment">
 					<AppointmentPage />
+				</Route>
+				<Route path="/specific/secretary/appointments/edit/:appointment">
+					<SetAppointmentPage />
 				</Route>
 				<Route path="/specific/doctor/clinics/secretary/edit/:clinic/:secretary">
 					<SecretaryEditor />

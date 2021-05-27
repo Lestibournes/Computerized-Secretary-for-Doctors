@@ -65,7 +65,7 @@ export function SecretaryDoctorAppointmentsPage() {
 					return (
 						<Card
 							key={appointment.appointment.id}
-							link={"/specific/secretary/appointments/" + appointment.appointment.id}
+							link={"/specific/secretary/appointments/view/" + appointment.appointment.id}
 							image={appointment.image}
 							altText={appointment.patient.fullName}
 							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}

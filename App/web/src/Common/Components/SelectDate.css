@@ -61,8 +61,8 @@
 
 .SelectDate .weekday {
 	cursor: default;
-	color: var(--control-background-pressed);
 	background-color: var(--control-background-hover);
+	color: var(--graphite);
 }
 
 div.error {

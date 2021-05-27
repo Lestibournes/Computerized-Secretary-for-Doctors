@@ -1,5 +1,6 @@
 :root{
 	--color: black;
+	--graphite: rgb(70, 70, 70);
 	--alt-color: white;
 	--warning-color: rgb(219, 112, 147);
 	--warning-color-hover: #e28da9;
