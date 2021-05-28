@@ -59,12 +59,17 @@ export function SetAppointmentPage() {
 		console.log(appointment)
 		if (appointment) {
 			server.appointments.get({id: appointment}).then(results => {
-				setData(results.data);
-				setDoctorID(results.data.doctor.doctor.id);
-				setClinicID(results.data.clinic.id);
-				setType(results.data.appointment.type);
-				setDate(SimpleDate.fromObject(results.data.extra.date));
-				setTime(Time.fromObject(results.data.extra.time));
+				if (results.data.success) {
+					setData(results.data.data);
+					setDoctorID(results.data.data.doctor.doctor.id);
+					setClinicID(results.data.data.clinic.id);
+					setType(results.data.data.appointment.type);
+					setDate(SimpleDate.fromObject(results.data.data.extra.date));
+					setTime(Time.fromObject(results.data.data.extra.time));
+				}
+				else {
+					error(popupManager, results.data.message);
+				}
 			});
 		}
 		else if (doctor && clinic && !doctorID && !clinicID) {

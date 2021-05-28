@@ -107,56 +107,105 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 	});
 }
 
+async function checkModifyPermission(appointment, context) {
+	return db.collection("appointments").doc(appointment).get().then(appointment_data => {
+		// Check if the user trying to modify the appointment is the patient:
+		if (appointment_data.data().patient === context.auth.uid) {
+			return true;
+		}
+
+		// Check if the user trying to modify the appointment is the doctor:
+		return doctors.getID(context.auth.uid).then(doctor_id => {
+			if (appointment_data.data().doctor === doctor_id) return true;
+
+			// Check if the user trying to modify the appointment is the owner of the clinic:
+			return clinics.isOwner(appointment_data.data().clinic, doctor_id).then(owner => {
+				if (owner) return true;
+
+				// Check if the user trying to modify the appointment is a secretary of the clinic:
+				return secretaries.getID(context.auth.uid).then(secretary_id => {
+					clinics.hasSecretary(appointment_data.data().clinic, secretary_id).then(exists => {
+						if (exists) return true;
+
+						// If the current user is neither the patient, nor the doctor, nor the owner of the clinic, nor a secretary at the clinic:
+						return false;
+					})
+				});
+			})
+		});
+	});
+}
+
 // API implementation code:
 
 /**
  * Get all the data of the appointment.
- * @param {string} id The id of the appointment.
+ * @param {string} appointment The id of the appointment.
  * @returns {Promise<{appointment: object, doctor: object, clinic: object, extra: {date: SimpleDate, time: Time}}>} An object containing all the relevant data.
  */
-async function get(id) {
-	return db.collection("appointments").doc(id).get().then(appointment_snap => {
-		const promises = [];
+async function get(appointment, context) {
+	const response = {
+		success: false,
+		message: "",
+		data: null
+	}
+	
+	return db.collection("appointments").doc(appointment).get().then(appointment_snap => {
+		if (appointment_snap.exists) {
+			return checkModifyPermission(appointment, context).then(allowed => {
+				if (allowed) {
+					const promises = [];
+			
+					let data = {
+						appointment: null,
+						doctor: null,
+						clinic: null,
+						patient: null,
+						extra: {
+							date: null,
+							time: null
+						}
+					};
+			
+					data.appointment = appointment_snap.data();
+					data.appointment.id = appointment;
+			
+					promises.push(
+						doctors.getData(data.appointment.doctor).then(doctor => {
+							data.doctor = doctor;
+						})
+					);
+			
+					promises.push(
+						clinics.get(data.appointment.clinic).then(clinic => {
+							data.clinic = clinic;
+						})
+					);
+			
+					promises.push(
+						users.get(data.appointment.patient).then(user => {
+							data.patient = user;
+						})
+					);
+			
+					const date = new Date(data.appointment.start.toDate());
+					data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
+					data.extra.date = new SimpleDate(date).toObject();
+			
+					return Promise.all(promises).then(results => {
+						response.success = true;
+						response.data = data;
+						return response;
+					});
+				}
+		
+				response.message = "You do not have permission to view this appointment";
+				return response;
+			});
+		}
 
-		let data = {
-			appointment: null,
-			doctor: null,
-			clinic: null,
-			patient: null,
-			extra: {
-				date: null,
-				time: null
-			}
-		};
-
-		data.appointment = appointment_snap.data();
-		data.appointment.id = id;
-
-		promises.push(
-			doctors.getData(data.appointment.doctor).then(doctor => {
-				data.doctor = doctor;
-			})
-		);
-
-		promises.push(
-			clinics.get(data.appointment.clinic).then(clinic => {
-				data.clinic = clinic;
-			})
-		);
-
-		promises.push(
-			users.get(data.appointment.patient).then(user => {
-				data.patient = user;
-			})
-		);
-
-		const date = new Date(data.appointment.start.toDate());
-		data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
-		data.extra.date = new SimpleDate(date).toObject();
-
-		return Promise.all(promises).then(results => {
-			return data;
-		});
+		response.message = "The requested appointment was not found";
+		return response;
 	});
 }
 
@@ -348,34 +397,6 @@ async function add(doctor, clinic, patient, date, time, type) {
 
 	return response;
 }
-async function checkModifyPermission(appointment, context) {
-		return get(appointment).then(appointment_data => {
-			// Check if the user trying to modify the appointment is the patient:
-			if (appointment_data.appointment.patient === context.auth.uid) {
-				return true;
-			}
-
-			// Check if the user trying to modify the appointment is the doctor:
-			return doctors.getID(context.auth.uid).then(doctor_id => {
-				if (appointment_data.appointment.doctor === doctor_id) return true;
-
-				// Check if the user trying to modify the appointment is the owner of the clinic:
-				return clinics.isOwner(appointment_data.appointment.clinic, doctor_id).then(owner => {
-					if (owner) return true;
-
-					// Check if the user trying to modify the appointment is a secretary of the clinic:
-					return secretaries.getID(context.auth.uid).then(secretary_id => {
-						clinics.hasSecretary(appointment_data.appointment.clinic, secretary_id).then(exists => {
-							if (exists) return true;
-
-							// If the current user is neither the patient, nor the doctor, nor the owner of the clinic, nor a secretary at the clinic:
-							return false;
-						})
-					});
-				})
-			});
-		});
-}
 
 /**
  * Edit an appointment, if the time slot that is requested is available.
@@ -489,40 +510,42 @@ async function edit(appointment, date, time, type, context) {
  * @todo use session tokens to verify that the user canceling the appointment
  * is the user for which the appointment has been made.
  * @param {string} appointment The id of the appointment
+ * @param {functions.https.CallableContext} context
  * @returns {Promise<{success: boolean, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
  */
-async function cancel(appointment) {
+async function cancel(appointment, context) {
 	const response = {
 		success: false,
-		messages: []
+		message: ""
 	};
 
-	let user_appointment;
-	let doctor_appointment;
-	let clinic_appointment;
-	let general_appointment = db.collection("appointments").doc(appointment);
-
-	await general_appointment.get().then(snapshot => {
-		if (snapshot.exists) {
-			user_appointment = db.collection("users").doc(snapshot.data().patient).collection("appointments").doc(appointment);
-			doctor_appointment = db.collection("doctors").doc(snapshot.data().doctor).collection("appointments").doc(appointment);
-			clinic_appointment = db.collection("clinics").doc(snapshot.data().clinic).collection("doctors").doc(snapshot.data().doctor).collection("appointments").doc(appointment);
+	return checkModifyPermission(appointment, context).then(allowed => {
+		if (allowed) {
+			let general_appointment = db.collection("appointments").doc(appointment);
+			
+			return general_appointment.get().then(appointment_snap => {
+				if (appointment_snap.exists) {
+					const promises = [];
+					
+					promises.push(db.collection("users").doc(appointment_snap.data().patient).collection("appointments").doc(appointment).delete());
+					promises.push(db.collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
+					promises.push(db.collection("clinics").doc(appointment_snap.data().clinic).collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
+					promises.push(general_appointment.delete());
+	
+					Promise.all(promises).then(() => {
+						response.success = true;
+						return response;
+					})
+				}
+	
+				response.message = "The appointment does not exist";
+				return response;
+			});
 		}
+
+		response.message = "You do not have the right to delete this appointment";
+		return response;
 	});
-
-	if (user_appointment) {
-		await general_appointment.delete();
-		await user_appointment.delete();
-		await doctor_appointment.delete()
-		await clinic_appointment.delete();
-
-		response.success = true;
-	}
-	else {
-		response.messages.push("appointment doesn't exist");
-	}
-
-	return response;
 }
 /**
  * 
