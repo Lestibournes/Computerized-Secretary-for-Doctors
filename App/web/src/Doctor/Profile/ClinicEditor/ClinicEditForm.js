@@ -91,9 +91,9 @@ export function ClinicDeleteForm({popupManager, clinic, doctor, close, success})
 }
 
 export function clinicEditPopup(popupManager, clinic, doctor, name, city, address, deleted, success) {
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup title="Edit Details" close={close}>
+		<Popup key="Edit Details" title="Edit Details" close={close}>
 			<ClinicEditForm
 				popupManager={popupManager}
 				clinic={clinic}
@@ -106,13 +106,13 @@ export function clinicEditPopup(popupManager, clinic, doctor, name, city, addres
 				deleted={deleted}
 			/>
 		</Popup>;
-		popupManager.addPopup(popup);
+		popupManager.add(popup);
 }
 
 export function clinicDeletePopup(popupManager, clinic, doctor, success) {
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup title="Confirm Deletion" close={close}>
+		<Popup key="Confirm Clinic Deletion" title="Confirm Deletion" close={close}>
 			<ClinicDeleteForm
 				popupManager={popupManager}
 				clinic={clinic}
@@ -121,5 +121,5 @@ export function clinicDeletePopup(popupManager, clinic, doctor, success) {
 				success={success}
 			/>
 		</Popup>;
-		popupManager.addPopup(popup);
+		popupManager.add(popup);
 }

@@ -231,7 +231,7 @@ export function ClinicEditor() {
 	}
 
 	return (
-		<Page title="Edit Clinic" PopupManager={popupManager}>
+		<Page title="Edit Clinic" popupManager={popupManager}>
 			{display}
 		</Page>
 	);

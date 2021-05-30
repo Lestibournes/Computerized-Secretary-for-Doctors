@@ -23,7 +23,7 @@ import { error } from "../../../Common/functions";
  */
  export function TypeFormPopup(popupManager, clinic, doctor, type, name, duration, success) {
 	const close = () => {
-		popupManager.removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -102,7 +102,7 @@ import { error } from "../../../Common/functions";
 		</Formik>
 	</Popup>;
 
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }
 
 
@@ -117,7 +117,7 @@ import { error } from "../../../Common/functions";
  */
 export function TypeDeletePopup(popupManager, clinic, doctor, type, name, duration, success) {
 	const close = () => {
-		popupManager.removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -152,5 +152,5 @@ export function TypeDeletePopup(popupManager, clinic, doctor, type, name, durati
 		</div>
 	</Popup>;
 
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

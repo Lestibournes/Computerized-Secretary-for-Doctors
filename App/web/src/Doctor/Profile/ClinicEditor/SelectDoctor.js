@@ -93,10 +93,10 @@ export function SelectDoctorForm({close, success}) {
 }
 
 export function selectDoctorPopup(popupManager, success) {
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup title="Add Doctor" close={close}>
+		<Popup key="Add Doctor" title="Add Doctor" close={close}>
 			<SelectDoctorForm close={close} success={success} />
 		</Popup>;
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

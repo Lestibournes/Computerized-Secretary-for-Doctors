@@ -78,7 +78,7 @@ export function SecretaryEditor() {
 	}
 
 	return (
-		<Page title="Edit Secretary" subtitle={subtitle} PopupManager={popupManager}>
+		<Page title="Edit Secretary" subtitle={subtitle} popupManager={popupManager}>
 			{display}
 		</Page>
 	);
@@ -86,7 +86,7 @@ export function SecretaryEditor() {
 
 export function RemoveSecretaryPopup(popupManager, clinic, secretaryData, success) {
 	const close = () => {
-		popupManager.removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -117,5 +117,5 @@ export function RemoveSecretaryPopup(popupManager, clinic, secretaryData, succes
 		</div>
 	</Popup>;
 
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

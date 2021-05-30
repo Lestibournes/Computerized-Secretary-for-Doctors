@@ -121,28 +121,28 @@ function CreateSpecializationForm({specialization, close, success}) {
 }
 
 export function selectSpecializationPopup(popupManager, specializations, success) {
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup  title="Add Specialization" close={close} popupManager={popupManager}>
+		<Popup key="Select Specialization" title="Add Specialization" close={close} popupManager={popupManager}>
 			<SelectSpecializationForm popupManager={popupManager} specializations={specializations} close={close} success={success} />
 		</Popup>;
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }
 
 export function createSpecializationPopup(popupManager, specialization, success) {
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup title="Create New Specialization" close={close}>
+		<Popup key="Create Specialization" title="Create New Specialization" close={close}>
 			<CreateSpecializationForm specializations={specialization} close={close} success={success} />
 		</Popup>;
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }
 
 export function removeSpecializationPopup(popupManager, doctor, specialization, success) {
-	const close = () => {popupManager.removePopup(popup)}
+	const close = () => {popupManager.remove(popup)}
 
 	const popup = 
-		<Popup title="Please Confirm" close={close}>
+		<Popup key="Remove Specialization" title="Please Confirm" close={close}>
 			<p>
 				Are you sure you wish to remove the specialization {capitalizeAll(specialization)}?
 			</p>
@@ -158,5 +158,5 @@ export function removeSpecializationPopup(popupManager, doctor, specialization, 
 			</div>
 		</Popup>;
 
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

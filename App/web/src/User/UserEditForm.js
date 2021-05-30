@@ -105,13 +105,13 @@ export function UserEditForm({popupManager, user, data, image, close, success}) 
 
 export function UserEditPopup(popupManager, user, data, image, success) {
 	const close = () => {
-		popupManager.removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
 	<Popup
-		key="DeleteType"
-		title="Delete Type"
+		key="Edit User Profile"
+		title="Edit User Profile"
 		close={close}
 	>
 		<UserEditForm
@@ -121,5 +121,5 @@ export function UserEditPopup(popupManager, user, data, image, success) {
 		/>
 	</Popup>;
 
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

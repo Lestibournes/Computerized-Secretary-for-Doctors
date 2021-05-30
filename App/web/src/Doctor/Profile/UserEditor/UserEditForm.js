@@ -15,7 +15,7 @@ export function UserEditForm({user, image, close, success, deleted}) {
 	const [problem, setProblem] = useState(null);
 
 	return (
-		<Popup title="Edit Details" close={close}>
+		<Popup key="Edit User Profile" title="Edit User Profile" close={close}>
 			<div className="form">
 				<Formik
 					initialValues={{

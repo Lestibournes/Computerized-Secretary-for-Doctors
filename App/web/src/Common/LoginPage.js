@@ -66,13 +66,13 @@ export function LoginPage() {
 		</Popup>;
 
 	useEffect(() => {
-		if (popupManager.addPopup) popupManager.addPopup(popup);
-	}, [popupManager.addPopup])
+		if (popupManager.add) popupManager.add(popup);
+	}, [popupManager.add])
 
 	return (
 		<>
 			{auth.user ? <Redirect to="/general/" /> : null }
-			<Page unprotected PopupManager={popupManager} />
+			<Page unprotected popupManager={popupManager} />
 		</>
 	);
 }

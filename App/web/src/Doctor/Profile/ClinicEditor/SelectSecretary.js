@@ -70,10 +70,10 @@ export function SelectSecretaryForm({close, success}) {
 }
 
 export function selectSecretaryPopup(popupManager, success) {
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup title="Add Secretary" close={close}>
+		<Popup key="Add Secretary" title="Add Secretary" close={close}>
 			<SelectSecretaryForm close={close} success={success} />
 		</Popup>;
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

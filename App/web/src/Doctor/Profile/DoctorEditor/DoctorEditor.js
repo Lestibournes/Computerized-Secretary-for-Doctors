@@ -188,7 +188,7 @@ export function DoctorEditor() {
 	}
 
 	return (
-		<Page title="Doctor Profile" PopupManager={popupManager}>
+		<Page title="Doctor Profile" popupManager={popupManager}>
 			{display}
 		</Page>
 	);

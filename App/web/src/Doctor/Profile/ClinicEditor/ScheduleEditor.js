@@ -238,7 +238,7 @@ export function ScheduleEditor() {
 	}
 
 	return (
-		<Page title={"Edit Schedule"} subtitle={subtitle} PopupManager={popupManager}>
+		<Page title={"Edit Schedule"} subtitle={subtitle} popupManager={popupManager}>
 			{display}
 		</Page>
 	);

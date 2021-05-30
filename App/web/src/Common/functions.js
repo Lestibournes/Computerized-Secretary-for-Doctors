@@ -47,7 +47,7 @@ export function capitalizeAll(text) {
  */
 export function error(popupManager, body) {
 	const close = () => {
-		popupManager.removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -62,7 +62,7 @@ export function error(popupManager, body) {
 		</div>
 	</Popup>;
 
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }
 
 export function compareByName(a, b) {

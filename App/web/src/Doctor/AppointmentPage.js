@@ -99,7 +99,7 @@ export function AppointmentPage() {
 	}
 	
 	return (
-		<Page title={title} subtitle={subtitle} PopupManager={popupManager}>
+		<Page title={title} subtitle={subtitle} popupManager={popupManager}>
 			{display}
 		</Page>
 	);

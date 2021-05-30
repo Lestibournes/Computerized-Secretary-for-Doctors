@@ -14,7 +14,7 @@ exports.getAll = functions.https.onCall((data, context) => {
 		end: data.end,
 		doctor: data.doctor,
 		clinic: data.clinic
-	});
+	}, context);
 });
 
 exports.getAvailable = functions.https.onCall((data, context) => {

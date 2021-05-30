@@ -117,7 +117,7 @@ export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, 
 		title = "Edit Shift";
 	}
 
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
 		<Popup title={title} close={close}>
 			<ShiftEditForm
@@ -133,13 +133,13 @@ export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, 
 				deleted={deleted}
 			/>
 		</Popup>;
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }
 
 export function confirmDeletePopup(popupManager, clinic, doctor, shift, success) {
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup title="Confirm Deletion" close={close}>
+		<Popup key="Confirm Shift Deletion" title="Confirm Deletion" close={close}>
 			<ConfirmDeleteForm
 				popupManager={popupManager}
 				clinic={clinic}
@@ -149,5 +149,5 @@ export function confirmDeletePopup(popupManager, clinic, doctor, shift, success)
 				success={success}
 			/>
 		</Popup>;
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

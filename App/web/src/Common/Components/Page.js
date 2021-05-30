@@ -5,43 +5,81 @@ import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
 
-export function Page({unprotected, title, subtitle, PopupManager, children}) {
+export function Page({unprotected, title, subtitle, popupManager, children}) {
 	const auth = useAuth();
 	const [redirect, setRedirect] = useState(false);
 	
-	const [popups, setPopups] = useState([]);
+	const [popups, setPopups] = useState(new Map());
+	const [pops, setPops] = useState([]);
 
 	useEffect(() => {
-		if (PopupManager) {
-			PopupManager.addPopup = (popup) => {
-				let exists = false;
-		
-				for (const old_popup of popups) {
-					if (old_popup.key === popup.key) {
-						exists = true;
+		if (popupManager) {
+			popupManager.add = (popup) => {
+				console.log(popup.key);
+				if (!popups.has(popup.key)) {
+					const popup_map = new Map();
+
+					for (const entry of popups.entries()) {
+						popup_map.set(entry[0], entry[1]);
 					}
+
+					popup_map.set(popup.key, popup);
+					setPopups(popup_map);
+
+					const popup_array = [];
+
+					for (const entry of popup_map) {
+						popup_array.push(entry[1]);
+					}
+
+					setPops(popup_array);
 				}
+				// let exists = false;
 		
-				if (!exists) {
-					const new_popups = [...popups];
-					new_popups.push(popup);
-					setPopups(new_popups);
-				}
+				// for (const old_popup of popups) {
+				// 	if (old_popup.key === popup.key) {
+				// 		exists = true;
+				// 	}
+				// }
+				
+				// if (!exists) {
+				// 	const new_popups = [...popups];
+				// 	new_popups.push(popup);
+				// 	console.log(popups);
+				// 	setPopups(new_popups);
+				// }
 			}
 		
-			PopupManager.removePopup = (popup) => {
-				const new_popups = [];
-		
-				for (const p of popups) {
-					if (p !== popup) {
-						new_popups.push(p);
+			popupManager.remove = (popup) => {
+				if (popups.has(popup.key)) {
+					const popup_map = new Map();
+
+					for (const entry of popups.entries()) {
+						if (entry[0] !== popup.key) popup_map.set(entry[0], entry[1]);
 					}
+
+					setPopups(popup_map);
+
+					const popup_array = [];
+
+					for (const entry of popup_map) {
+						popup_array.push(entry[1]);
+					}
+
+					setPops(popup_array);
 				}
+				// const new_popups = [];
 		
-				setPopups(new_popups);
+				// for (const p of popups) {
+				// 	if (p !== popup) {
+				// 		new_popups.push(p);
+				// 	}
+				// }
+		
+				// setPopups(new_popups);
 			}
 		}
-	}, [PopupManager]);
+	}, [popupManager, popups]);
 
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
@@ -72,7 +110,7 @@ export function Page({unprotected, title, subtitle, PopupManager, children}) {
 				{subtitle ? <h2>{subtitle}</h2> : ""}
 				{children ? children : <h3>Loading...</h3>}
 			</div>
-			{popups ? popups : ""}
+			{pops ? pops : ""}
 		</>
 	);
 }

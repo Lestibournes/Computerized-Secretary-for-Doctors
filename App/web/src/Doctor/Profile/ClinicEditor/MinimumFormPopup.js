@@ -17,7 +17,7 @@ import { error } from "../../../Common/functions";
  */
  export function MinimumFormPopup(popupManager, clinic, doctor, minimum, success) {
 	const close = () => {
-		popupManager.removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -61,5 +61,5 @@ import { error } from "../../../Common/functions";
 		</Formik>
 	</Popup>;
 
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

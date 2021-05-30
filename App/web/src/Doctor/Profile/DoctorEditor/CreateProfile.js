@@ -4,7 +4,7 @@ import { error } from "../../../Common/functions";
 import { server } from "../../../Common/server";
 
 export function createProfilePopup(popupManager, user, success) {
-	const close = () => popupManager.removePopup(popup);
+	const close = () => popupManager.remove(popup);
 	
 	const popup =
 		<Popup title="Create Profile" close={close}>
@@ -27,5 +27,5 @@ export function createProfilePopup(popupManager, user, success) {
 			</div>
 		</Popup>;
 
-	popupManager.addPopup(popup);
+	popupManager.add(popup);
 }

@@ -315,7 +315,7 @@ export function SetAppointmentPage() {
 	}
 
 	return (
-		<Page title={appointment ? "Modify Appointment" : "Make an Appointment"} subtitle={subtitle} PopupManager={popupManager} >
+		<Page title={appointment ? "Modify Appointment" : "Make an Appointment"} subtitle={subtitle} popupManager={popupManager} >
 			{display}
 		</Page>
 	);
@@ -323,10 +323,10 @@ export function SetAppointmentPage() {
 
 function ConfirmDeletePopup(popupManager, appointment, success) {
 		const close = () => {
-			popupManager.removePopup(popup);
+			popupManager.remove(popup);
 		}
 
-		const popup = <Popup title="Confirm Deletion" close={close}>
+		const popup = <Popup key="Confirm Appointment Deletion" title="Confirm Deletion" close={close}>
 			<p>Are you sure you wish to delete this appointment?</p>
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
@@ -345,5 +345,5 @@ function ConfirmDeletePopup(popupManager, appointment, success) {
 			</div>
 		</Popup>
 
-		popupManager.addPopup(popup)
+		popupManager.add(popup)
 }

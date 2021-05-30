@@ -141,7 +141,11 @@ async function checkModifyPermission(appointment, context) {
 /**
  * Get all the data of the appointment.
  * @param {string} appointment The id of the appointment.
- * @returns {Promise<{appointment: object, doctor: object, clinic: object, extra: {date: SimpleDate, time: Time}}>} An object containing all the relevant data.
+ * @returns {Promise<{
+ * success: boolean,
+ * message: string,
+ * data: {appointment: object, doctor: object, clinic: object, extra: {date: SimpleDate, time: Time}}
+ * }>} An object containing all the relevant data.
  */
 async function get(appointment, context) {
 	const response = {
@@ -215,7 +219,7 @@ async function get(appointment, context) {
  * @param {{user: string, doctor: string, start: Date, end: Date}} constraints
  * @returns {Promise<object[]>} An array of appointment data.
  */
-async function getAll({user, start, end, doctor}) {
+async function getAll({user, start, end, doctor}, context) {
 	let promises = [];
 
 	let query = db;
@@ -230,8 +234,10 @@ async function getAll({user, start, end, doctor}) {
 	return query.get().then(querySnapshot => {
 		for (const snap of querySnapshot.docs) {
 			promises.push(
-				get(snap.id).then(appointment => {
-					return appointment;
+				get(snap.id, context).then(response => {
+					if (response.success) {
+						return response.data;
+					}
 				})
 			);
 		}

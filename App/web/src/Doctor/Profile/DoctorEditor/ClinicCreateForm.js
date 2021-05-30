@@ -63,10 +63,10 @@ export function ClinicCreateForm({doctor, close, success}) {
 }
 
 export function clinicCreatePopup(popupManager, doctor, success) {
-	const close = () => {popupManager.removePopup(popup)};
+	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup title="Create New Clinic" close={close}>
+		<Popup key="Create New Clinic" title="Create New Clinic" close={close}>
 			<ClinicCreateForm doctor={doctor} close={close} success={success} />
 		</Popup>;
-		popupManager.addPopup(popup);
+		popupManager.add(popup);
 }
