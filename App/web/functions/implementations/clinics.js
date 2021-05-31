@@ -3,7 +3,9 @@ const admin = require('firebase-admin');
 
 const doctors = require('./doctors');
 const secretaries = require('./secretaries');
+const appointments = require("./appointments");
 const { capitalizeAll } = require('./functions');
+const { SimpleDate } = require('./SimpleDate');
 
 /**
  * Convenience global variable for accessing the Admin Firestore object.
@@ -380,42 +382,67 @@ async function getAllCities() {
  * @param {{clinic: string, start: Date, end: Date}} constraints
  * @returns {Promise<object[]>} An array of appointment data.
  */
- async function getAppointments({clinic, start, end}) {
-	let promises = [];
+async function getAppointments(clinic, start, end, context) {
+	const response = {
+		success: false,
+		message: "",
+		data: []
+	}
 
-	promises.push(db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
+	return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
 		let doctor_promises = [];
 
 		for (const doctor_snapshot of doctor_snapshots.docs) {
 			let query = db.collection("doctors").doc(doctor_snapshot.id).collection("appointments");
+			const startDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(start).toDate());
+			const endDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(end).toDate());
 
 			if (start || end ) query = query.orderBy("start");
-			if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
-			if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
+			if (start) query = query.startAt(startDate);
+			if (end) query = query.endAt(endDate);
 			
 			doctor_promises.push(query.get().then(querySnapshot => {
 				const appointment_promises = [];
 
 				for (const snap of querySnapshot.docs) {
 					appointment_promises.push(
-						appointments.get(snap.id).then(appointment => {
+						appointments.get(snap.id, context).then(appointment => {
 							return appointment;
 						})
 					);
 				}
 		
 				return Promise.all(appointment_promises).then(results => {
+					const appointments = [];
+
+					for (const result of results) {
+						appointments.push(result.data);
+					}
+
 					// Array of the doctor's appointments:
-					return results;
+					return appointments;
 				});
 			}));
 		}
 
 		return Promise.all(doctor_promises).then(results => {
+			for (const result of results) {
+				response.data = response.data.concat(result);
+			}
+
+			// response.data.sort((a, b) => {
+			// 	return a.appointment.start > b.appointment.start ? 1 : a.appointment.start < b.appointment.start ? -1 : 0;
+			// });
+
+			/**@todo a more nuanced response  */
+			if (response.data.length > 0) {
+				response.success = true;
+			}
+
 			// Array of arrays of the appointments of each doctor:
-			return results;
-		})
-	}));
+			return response;
+		});
+	});
 }
 
 

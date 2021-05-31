@@ -1,6 +1,7 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Button } from '../Common/Components/Button';
 import { Card } from "../Common/Components/Card"
 import { Page } from "../Common/Components/Page";
 import { getPictureURL } from "../Common/functions";
@@ -95,6 +96,13 @@ export function SecretaryClinicPage() {
 	if (doctorCards) {
 		display = (
 			<>
+				<div className="Home buttonGrid">
+					<Button label="New Appointment" />
+					<Button label="Appointment Calendar" />
+					<Button label="Work Agenda" link={"/specific/secretary/clinics/agenda/" + clinic} />
+					<Button label="Work Schedules" />
+				</div>
+
 				<div className="headerbar">
 					<h2>Doctors</h2>
 				</div>

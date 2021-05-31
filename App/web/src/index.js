@@ -28,6 +28,7 @@ import { SecretaryClinicPage } from './Secretary/SecretaryClinicPage';
 import { SecretaryDoctorAppointmentsPage } from './Secretary/SecretaryDoctorAppointmentsPage';
 import { AppointmentPage } from './Doctor/AppointmentPage';
 import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
+import { SecretaryAgendaPage } from './Secretary/SecretaryAgendaPage';
 
 /**
  * URL Scheme:
@@ -102,6 +103,9 @@ ReactDOM.render(
 				</Route>
 				<Route path="/specific/secretary/clinics/view/:clinic">
 					<SecretaryClinicPage />
+				</Route>
+				<Route path="/specific/secretary/clinics/agenda/:clinic">
+					<SecretaryAgendaPage />
 				</Route>
 				<Route path="/specific/secretary/clinics/:clinic/:doctor">
 					<SecretaryDoctorAppointmentsPage />

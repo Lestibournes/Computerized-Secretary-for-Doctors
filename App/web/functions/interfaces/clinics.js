@@ -56,5 +56,5 @@ exports.getAllCities = functions.https.onCall((data, context) => {
 });
 
 exports.getAppointments = functions.https.onCall((data, context) => {
-	return clinics.getAppointments(data.clinic, data.start, data.end);
+	return clinics.getAppointments(data.clinic, data.start, data.end, context);
 });
