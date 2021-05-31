@@ -8,7 +8,7 @@ import { Field, useField } from "formik";
 	const [field, meta] = useField(props);
 
 	const options = [];
-	options.push(<option key={label} value={""}>{"<None>"}</option>);
+	options.push(<option key={label} value={""}>{"All"}</option>);
 
 	for (const option of props.options) {
 		options.push(<option key={option.id} value={option.id}>{option.label}</option>);

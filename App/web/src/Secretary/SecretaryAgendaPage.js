@@ -10,14 +10,17 @@ import { server } from '../Common/server';
 
 import * as Yup from 'yup';
 import { TextInput } from '../Common/Components/TextInput';
+import { Select } from '../Common/Components/Select';
 import { Form, Formik } from 'formik';
 import { Button } from '../Common/Components/Button';
 
 export function SecretaryAgendaPage() {
-	const { doctor, clinic } = useParams(); //The ID of the doctor.
+	const { clinic } = useParams(); //The ID of the doctor.
 	const [clinicData, setClinicData] = useState();
+	const [doctors, setDoctors] = useState([]);
 
-	const [range, setRange] = useState({
+	const [searchPrameters, setSearchParameters] = useState({
+		doctor: "",
 		start: new SimpleDate(),
 		end: new SimpleDate().getNextDay()
 	});
@@ -29,15 +32,24 @@ export function SecretaryAgendaPage() {
 	
 	useEffect(() => {
 		if (clinic) {
-			server.clinics.getAppointments({clinic: clinic, start: range.start.toObject(), end: range.end.toObject()}).then(response => {
+			server.clinics.getAppointments({
+				clinic: clinic,
+				doctor: searchPrameters.doctor ? searchPrameters.doctor : null,
+				start: searchPrameters.start.toObject(),
+				end: searchPrameters.end.toObject()
+			}).then(response => {
 				setAppointments(response.data.data);
 			});
 
 			server.clinics.get({id: clinic}).then(results => {
 				setClinicData(results.data);
 			});
+
+			server.clinics.getAllDoctors({clinic: clinic}).then(response => {
+				setDoctors(response.data);
+			});
 		}
-  }, [clinic, range]);
+  }, [clinic, searchPrameters]);
 
 	useEffect(() => {
 		if (appointments) {
@@ -99,8 +111,9 @@ export function SecretaryAgendaPage() {
 			<>
 				<Formik
 					initialValues={{
-						start: range.start.toInputString(),
-						end: range.end.toInputString()
+						doctor: searchPrameters.doctor,
+						start: searchPrameters.start.toInputString(),
+						end: searchPrameters.end.toInputString()
 					}}
 					validationSchema={Yup.object({
 						start: Yup.date(),
@@ -113,7 +126,8 @@ export function SecretaryAgendaPage() {
 						const start = new SimpleDate(values.start);
 						const end = new SimpleDate(values.end);
 
-						setRange({
+						setSearchParameters({
+							doctor: values.doctor,
 							start: start,
 							end: end
 						});
@@ -121,6 +135,18 @@ export function SecretaryAgendaPage() {
 				>
 					<Form>
 						<div className="searchBar">
+							<Select
+								label="Doctor"
+								name="doctor"
+								options={
+									doctors.map(doctor => {
+										return {
+											id: doctor.doctor.id,
+											label: doctor.user.fullName
+										}
+									})
+								}
+							/>
 							<TextInput
 								label="Start"
 								name="start"
@@ -137,8 +163,9 @@ export function SecretaryAgendaPage() {
 						</div>
 					</Form>
 				</Formik>
-				<div className="cardList">{results}</div>
-				{searching ? <h3>Searching...</h3> : results.length > 0 ? results.length : <h3>There are no appointments in the specified time range.</h3>}
+				<div className="cardList">
+					{searching ? <h3>Searching...</h3> : results.length > 0 ? results : <h3>There are no appointments in the specified time range.</h3>}
+				</div>
 			</>;
 		title = clinicData.name;
 		subtitle = "Agenda";

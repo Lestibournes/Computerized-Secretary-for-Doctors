@@ -96,6 +96,12 @@ ReactDOM.render(
 					<AppointmentPage />
 				</Route>
 
+				{/* Clinics */}
+				<Route path="/specific/doctor/clinics/view/:clinic">
+					<SecretaryClinicPage />
+				</Route>
+
+
 				{/* Secretaries */}
 
 				<Route path="/specific/secretary/profile">
