@@ -27,21 +27,29 @@ export function AppointmentPage() {
 	useEffect(() => {
 		if (appointment) {
 			server.appointments.get({id: appointment}).then(results => {
-				setAppointmentData(results.data);
+				if (results.data.success) {
+					const data = results.data.data;
 
-				server.doctors.getData({id: results.data.appointment.doctor}).then(results => {
-					setDoctorData(results.data);
-				});
+					setAppointmentData(data);
+	
+					server.doctors.getData({id: data.appointment.doctor}).then(doctor_results => {
+						setDoctorData(doctor_results.data);
+					});
+					
+					server.clinics.get({id: data.appointment.clinic}).then(clinic_results => {
+						setClinicData(clinic_results.data);
+					});
+	
+					getPictureURL(data.appointment.patient).then(url => {
+						setImage(url);
+					});
+	
+					setArrived(data.appointment.arrived);
+				}
+				else {
+					error(popupManager, results.data.message);
+				}
 				
-				server.clinics.get({id: results.data.appointment.clinic}).then(results => {
-					setClinicData(results.data);
-				});
-
-				getPictureURL(results.data.appointment.patient).then(url => {
-					setImage(url);
-				});
-
-				setArrived(results.data.appointment.arrived);
 			});
 		}
 	}, [appointment]);

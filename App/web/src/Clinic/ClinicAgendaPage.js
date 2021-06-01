@@ -14,7 +14,7 @@ import { Select } from '../Common/Components/Select';
 import { Form, Formik } from 'formik';
 import { Button } from '../Common/Components/Button';
 
-export function SecretaryAgendaPage() {
+export function ClinicAgendaPage() {
 	const { clinic } = useParams(); //The ID of the doctor.
 	const [clinicData, setClinicData] = useState();
 	const [doctors, setDoctors] = useState([]);

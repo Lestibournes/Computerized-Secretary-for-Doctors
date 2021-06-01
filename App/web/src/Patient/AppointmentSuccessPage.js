@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Page } from '../Common/Components/Page';
 import { Time, SimpleDate } from '../Common/classes';
 import { server } from '../Common/server';
+import { error } from '../Common/functions';
 
 export function AppointmentSuccessPage() {
 	const { appointment } = useParams(); //The ID of the doctor and clinic.
@@ -14,13 +15,21 @@ export function AppointmentSuccessPage() {
 	const [date, setDate] = useState();
 	const [time, setTime] = useState()
 
+	const [popupManager, setPopupManager] = useState({});
+
 	useEffect(() => {
 		server.appointments.get({id: appointment}).then(response => {
-			setAppointment(response.data.appointment);
-			setDate(SimpleDate.fromObject(response.data.extra.date));
-			setTime(Time.fromObject(response.data.extra.time));
-			setDoctor(response.data.doctor);
-			setClinic(response.data.clinic);
+			if (response.data.success) {
+				const data = response.data.data;
+				setAppointment(data.appointment);
+				setDate(SimpleDate.fromObject(data.extra.date));
+				setTime(Time.fromObject(data.extra.time));
+				setDoctor(data.doctor);
+				setClinic(data.clinic);
+			}
+			else {
+				error(popupManager, response.data.message);
+			}
 		});
   }, [appointment]);
 
@@ -47,7 +56,7 @@ export function AppointmentSuccessPage() {
 		</p>
 	}
 	return (
-		<Page title="Make an Appointment" subtitle="Success!">
+		<Page title="Make an Appointment" subtitle="Success!" popupManager={popupManager}>
 			{display}
 		</Page>
 	);

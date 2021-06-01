@@ -391,7 +391,6 @@ async function getAppointments({clinic, doctor, start, end, context}) {
 
 	return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
 		let doctor_promises = [];
-		console.log(doctor);
 
 		for (const doctor_snapshot of doctor_snapshots.docs) {
 			if ((doctor && doctor_snapshot.id === doctor) || !doctor) {

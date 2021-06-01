@@ -18,17 +18,17 @@ import { HomePage } from './Common/HomePage';
 import { AppointmentSuccessPage } from './Patient/AppointmentSuccessPage';
 import { AppointmentListPage } from './Patient/AppointmentListPage';
 import { AppointmentDeletedPage } from './Patient/AppointmentDeletedPage';
-import { AppointmentCalendarPage } from './Doctor/AppointmentCalendarPage';
+import { AppointmentCalendarPage } from './Calendar/AppointmentCalendarPage';
 import { DoctorEditor } from './Doctor/Profile/DoctorEditor/DoctorEditor'
 import { ClinicEditor } from './Doctor/Profile/ClinicEditor/ClinicEditor';
 import { ScheduleEditor } from './Doctor/Profile/ClinicEditor/ScheduleEditor';
 import { SetAppointmentPage } from './Patient/SetAppointmentPage';
 import { SecretaryProfilePage } from './Secretary/SecretaryProfilePage';
-import { SecretaryClinicPage } from './Secretary/SecretaryClinicPage';
+import { ClinicPage } from './Clinic/ClinicPage';
 import { SecretaryDoctorAppointmentsPage } from './Secretary/SecretaryDoctorAppointmentsPage';
 import { AppointmentPage } from './Doctor/AppointmentPage';
 import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
-import { SecretaryAgendaPage } from './Secretary/SecretaryAgendaPage';
+import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
 
 /**
  * URL Scheme:
@@ -98,7 +98,16 @@ ReactDOM.render(
 
 				{/* Clinics */}
 				<Route path="/specific/doctor/clinics/view/:clinic">
-					<SecretaryClinicPage />
+					<ClinicPage />
+				</Route>
+				<Route path="/specific/clinics/appointments/agenda/:clinic">
+					<ClinicAgendaPage />
+				</Route>
+				<Route path="/specific/clinic/appointments/calendar/:clinic">
+					<AppointmentCalendarPage />
+				</Route>
+				<Route path="/specific/secretary/appointments/view/:appointment">
+					<AppointmentPage />
 				</Route>
 
 
@@ -108,10 +117,7 @@ ReactDOM.render(
 					<SecretaryProfilePage />
 				</Route>
 				<Route path="/specific/secretary/clinics/view/:clinic">
-					<SecretaryClinicPage />
-				</Route>
-				<Route path="/specific/secretary/clinics/agenda/:clinic">
-					<SecretaryAgendaPage />
+					<ClinicPage />
 				</Route>
 				<Route path="/specific/secretary/clinics/:clinic/:doctor">
 					<SecretaryDoctorAppointmentsPage />

@@ -56,7 +56,6 @@ export function SetAppointmentPage() {
 	const [popupManager, setPopupManager] = useState({});
 
 	useEffect(() => {
-		console.log(appointment)
 		if (appointment) {
 			server.appointments.get({id: appointment}).then(results => {
 				if (results.data.success) {

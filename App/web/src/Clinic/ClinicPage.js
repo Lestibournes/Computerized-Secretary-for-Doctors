@@ -17,7 +17,7 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 * A button to go to a search page to find existing doctors and invite them to join the clinic.
 */
 
-export function SecretaryClinicPage() {
+export function ClinicPage() {
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
 
@@ -98,8 +98,8 @@ export function SecretaryClinicPage() {
 			<>
 				<div className="Home buttonGrid">
 					<Button label="New Appointment" />
-					<Button label="Appointment Calendar" />
-					<Button label="Work Agenda" link={"/specific/secretary/clinics/agenda/" + clinic} />
+					<Button label="Appointment Calendar" link={"/specific/clinic/appointments/calendar/" + clinic} />
+					<Button label="Work Agenda" link={"/specific/clinics/appointments/agenda/" + clinic} />
 					<Button label="Work Schedules" />
 				</div>
 

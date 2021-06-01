@@ -134,7 +134,6 @@ export function ScheduleEditor() {
 	}, [typesData, minimum]);
 
 	useEffect(() => {
-		console.log("loading...", schedule);
 		if (schedule) {
 			const temp_cards = [];
 	
