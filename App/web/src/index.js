@@ -29,6 +29,7 @@ import { SecretaryDoctorAppointmentsPage } from './Secretary/SecretaryDoctorAppo
 import { AppointmentPage } from './Doctor/AppointmentPage';
 import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
 import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
+import { ClinicSchedulesPage } from './Clinic/ClinicSchedulesPage';
 
 /**
  * URL Scheme:
@@ -108,6 +109,9 @@ ReactDOM.render(
 				</Route>
 				<Route path="/specific/secretary/appointments/view/:appointment">
 					<AppointmentPage />
+				</Route>
+				<Route path="/specific/clinics/schedules/:clinic">
+					<ClinicSchedulesPage />
 				</Route>
 
 

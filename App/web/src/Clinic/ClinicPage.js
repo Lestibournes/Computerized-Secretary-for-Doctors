@@ -28,93 +28,21 @@ export function ClinicPage() {
 		if (clinic) {
 			server.clinics.get({id: clinic}).then(clinic_data => {
 				setData(clinic_data.data);
-
-				server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
-					setDoctorsData(doctors_data.data);
-				});
 			});
 		}
 	}, [clinic]);
 
-
-	useEffect(() => {
-		if (doctorsData) {
-			const promises = [];
-
-			for (const doctor of doctorsData) {
-				promises.push(getPictureURL(doctor.user.id).then(url => {
-					doctor.image = url;
-
-					const card = (<Card
-						key={doctor.doctor.id}
-						title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (♚ owner)" : "")}
-						body=
-							{doctor.fields.length > 0 ?
-								doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-								: ""))
-							: "No specializations specified"}
-						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
-						image={doctor.image}
-						link={"/specific/secretary/clinics/" + clinic + "/" + doctor.doctor.id}
-					/>);
 	
-					return {
-						name: doctor.user.lastName + doctor.user.firstName,
-						id: doctor.doctor.id,
-						component: card
-					};
-				}));
-			}
-
-			Promise.all(promises).then(cards => {
-				cards.sort((a, b) => {
-					if (a.id === data.owner) {
-						return -1;
-					};
-		
-					if (b.id === data.owner) {
-						return 1;
-					};
-	
-					if (a.name === b.name) {
-						return 0;
-					}
-					else if (a.name < b.name) {
-						return -1;
-					}
-					else {
-						return 1;
-					}
-				});
-				
-				setDoctorCards(cards.map(card => card.component));
-			});
-		}
-	}, [doctorsData, data, clinic]);
-	
-	let display;
-	if (doctorCards) {
-		display = (
-			<>
-				<div className="Home buttonGrid">
-					<Button label="New Appointment" />
-					<Button label="Appointment Calendar" link={"/specific/clinic/appointments/calendar/" + clinic} />
-					<Button label="Work Agenda" link={"/specific/clinics/appointments/agenda/" + clinic} />
-					<Button label="Work Schedules" />
-				</div>
-
-				<div className="headerbar">
-					<h2>Doctors</h2>
-				</div>
-				<div className="cardList">
-					{doctorCards}
-				</div>
-			</>
-		);
-	}
+	let display = (
+		<div className="Home buttonGrid">
+			<Button label="Appointment Calendar" link={"/specific/clinic/appointments/calendar/" + clinic} />
+			<Button label="Appointment List" link={"/specific/clinics/appointments/agenda/" + clinic} />
+			<Button label="Work Schedules" link={"/specific/clinics/schedules/" + clinic} />
+		</div>
+	);
 
 	return (
-		<Page title={data?.name}>
+		<Page title={data?.name + " Clinic"} subtitle={"Management"}>
 			{display}
 		</Page>
 	);
