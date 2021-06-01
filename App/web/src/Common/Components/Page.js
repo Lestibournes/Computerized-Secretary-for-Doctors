@@ -15,7 +15,6 @@ export function Page({unprotected, title, subtitle, popupManager, children}) {
 	useEffect(() => {
 		if (popupManager) {
 			popupManager.add = (popup) => {
-				console.log(popup.key);
 				if (!popups.has(popup.key)) {
 					const popup_map = new Map();
 

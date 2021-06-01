@@ -48,8 +48,9 @@ export function CalendarWeek(props) {
 
 	const headers = [];
 	
+	let date = props.date.getSunday().getPreviousDay();
 	const days = props.appointments.map((day, index) => {
-		const date = new SimpleDate(props.date.year, props.date.month, props.date.getSunday().day + index);
+		date = date.getNextDay();
 
 		headers.push(
 			<div key={"header " + date.dayname} className="calendarDayHeader" style={{width: day_width, left: day_width * index}}>

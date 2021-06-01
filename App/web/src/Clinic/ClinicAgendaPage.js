@@ -138,6 +138,10 @@ export function ClinicAgendaPage() {
 							<Select
 								label="Doctor"
 								name="doctor"
+								default={{
+									value: "",
+									label: "All"
+								}}
 								options={
 									doctors.map(doctor => {
 										return {
