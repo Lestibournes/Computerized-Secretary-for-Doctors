@@ -254,7 +254,7 @@ export function AppointmentCalendarPage() {
 									}
 								/>
 								<div className="buttonBar">
-									<Button type="submit" label="Search" />
+									<Button type="submit" label="Select" />
 								</div>
 							</div>
 						</Form>

@@ -30,6 +30,8 @@ import { AppointmentPage } from './Doctor/AppointmentPage';
 import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
 import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
 import { ClinicSchedulesPage } from './Clinic/ClinicSchedulesPage';
+import { UserDetails } from './User/UserDetails';
+import { UserProfilePage } from './User/UserProfilePage';
 
 /**
  * URL Scheme:
@@ -53,6 +55,9 @@ ReactDOM.render(
 				</Route>
 				<Route path="/general/register">
 					<RegisterPage />
+				</Route>
+				<Route path="/general/users/profile">
+					<UserProfilePage />
 				</Route>
 
 				{/* Patients */}

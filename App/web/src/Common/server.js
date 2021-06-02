@@ -1,4 +1,4 @@
-import { fb } from "../init";
+import { db, fb } from "../init";
 
 // import { fn } from "../init";
 export const fn = fb.functions();
@@ -81,4 +81,13 @@ export const server = {
 		updatePicture: fn.httpsCallable("users-updatePicture"),
 		update: fn.httpsCallable("users-update"),
 	},
+}
+
+export const events = {
+	appointments: {
+		arrival: (appointment, callback) => {
+			return db.collection("appointments").doc(appointment).onSnapshot(callback);
+			// Next: have an element in the UI use this, such as a notification area in the page header.
+		}
+	}
 }

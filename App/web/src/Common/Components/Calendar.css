@@ -20,7 +20,7 @@
 .calendarDay {
 	position: absolute;
 	display: block;
-	font-size: xx-small;
+	font-size: var(--font-size-f);
 	border: 1px solid var(--control-background);
 }
 
@@ -29,7 +29,7 @@
 	display: block;
 	border-radius: var(--radius);
 	padding: var(--padding);
-	font-size: xx-small;
+	font-size: var(--font-size-f);
 	cursor: pointer;
 	text-decoration: none;
 }
@@ -40,7 +40,7 @@
 	place-content: center left;
 	height: 1px;
 	background-color: var(--control-background);
-	font-size: xx-small;
+	font-size: var(--font-size-f);
 	text-align: right;
 }
 

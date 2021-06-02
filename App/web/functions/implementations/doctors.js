@@ -98,7 +98,13 @@ async function getAllClinics(doctor, city) {
 		};
 
 		return Promise.all(clinic_promises).then(clinics => {
-			return clinics;
+			const results = [];
+			
+			for (const clinic of clinics) {
+				if (clinic) results.push(clinic);
+			}
+
+			return results;
 		});
 	});
 }

@@ -4,6 +4,7 @@ import { Redirect } from "react-router";
 import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
+import { server } from "../server";
 
 export function Page({unprotected, title, subtitle, popupManager, children}) {
 	const auth = useAuth();
@@ -11,6 +12,11 @@ export function Page({unprotected, title, subtitle, popupManager, children}) {
 	
 	const [popups, setPopups] = useState(new Map());
 	const [pops, setPops] = useState([]);
+
+	const [open, setOpen] = useState(false);
+	
+	const [name, setName] = useState();
+	const [email, setEmail] = useState();
 
 	useEffect(() => {
 		if (popupManager) {
@@ -88,6 +94,11 @@ export function Page({unprotected, title, subtitle, popupManager, children}) {
 		return unsubscribe;
 	}, [auth, unprotected]);
 
+	useEffect(() => {
+		setName(auth?.name?.full);
+		setEmail(auth?.user?.email);
+	}, [auth])
+
 	return (
 		<>
 			<div className="Page">
@@ -95,19 +106,27 @@ export function Page({unprotected, title, subtitle, popupManager, children}) {
 				<div className="mainHeader">
 					<Link to="/general/" className="title">CSFPD</Link>
 					<div>
-						{auth.user ? 
-						<>
-							{auth.name.first ? auth.name.first + " " : null}
-							{auth.name.last ? auth.name.last + " " : null}
-							{auth.user ? "<" + auth.user.email + ">" : null}
-							<Button type="cancel" action={auth.logout} label="Log out" />
-						</>
-						: null}
+					{name && email ?
+						<div className={"dropdown" + (!open ? " hidden" : "")}>
+							<div className={"label"} onClick={() => setOpen(!open)}>
+								{name + " <" + email + ">"}
+							</div>
+							<div className={"menu"}>
+								<div>
+									Notifications
+								</div>
+								<Link to={"/general/users/profile"}>Profile</Link>
+								<div onClick={auth.logout}>
+									Log Out
+								</div>
+							</div>
+						</div>
+					: ""}
 					</div>
 				</div>
 				{title ? <h1>{title}</h1> : ""}
 				{subtitle ? <h2>{subtitle}</h2> : ""}
-				{children ? children : <h3>Loading...</h3>}
+				{children ? (auth ? children : <h3>Loading...</h3>) : ""}
 			</div>
 			{pops ? pops : ""}
 		</>

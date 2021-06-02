@@ -5,22 +5,24 @@
 	--warning-color: rgb(219, 112, 147);
 	--warning-color-hover: #e28da9;
 	--warning-color-pressed: #af5a76;
-	--radius: 5px;
-	--margin: 15px;
-	--margin-small: 5px;
+	--radius: 0.5rem;
+	--margin: 1rem;
+	--margin-small: 0.5rem;
 	--highlight: rgb(0, 128, 128);
 	--highlight-pale: rgb(0, 166.4, 166.4);
 	--highlight-dark: rgb(0, 100, 100);
-	--font-size-f: 12px;
-	--font-size-e: 16px;
-	--font-size-d: 20px;
-	--font-size-c: 24px;
-	--font-size-b: 36px;
-	--font-size-a: 48px;
+	--font-size-h: 0.25rem; /* xx-small */
+	--font-size-g: 0.5rem; /* x-small */
+	--font-size-f: 0.75rem; /* small */
+	--font-size-e: 1rem; /* normal */
+	--font-size-d: 1.5rem; /* large */
+	--font-size-c: 2rem; /* h3 */
+	--font-size-b: 2.5rem; /* h2 */
+	--font-size-a: 3rem; /* h1 */
 	--control-background: lightgray;
 	--control-background-pressed: gray;
 	--control-background-hover: rgb(229.5, 229.5, 229.5);
-	--control-padding: 1em;
-	--padding: 5px;
-	--border-width: 5px;
+	--control-padding: 1rem;
+	--padding: 0.5rem;
+	--border-width: 0.25rem;
 }

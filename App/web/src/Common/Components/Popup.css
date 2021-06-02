@@ -39,7 +39,7 @@
 
 .Popup .buttons .Button {
 	color: var(--color);
-	font-size: xx-small;
+	font-size: var(--font-size-g);
 	padding: 0.5em;
 	border: 1px solid var(--control-background-pressed);
 }

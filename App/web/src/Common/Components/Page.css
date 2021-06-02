@@ -4,51 +4,6 @@
 	gap: var(--margin);
 }
 
-.mainHeader {
-	color: var(--highlight);
-	margin-bottom: var(--margin);
-	display: grid;
-	grid-template-columns: 0fr 1fr auto;
-	column-gap: var(--margin);
-}
-
-.mainHeader .title {
-	font-size: var(--font-size-a);
-	display: grid;
-	place-items: center start;
-	text-decoration: none;
-	color: var(--highlight);
-	font-weight: bold;
-}
-
-.mainHeader .section {
-	font-size: var(--font-size-c);
-	display: grid;
-	place-items: center end;
-}
-
-.mainHeader nav {
-	display: flex;
-	place-items: center start;
-	column-gap: var(--margin);
-}
-
-.mainHeader div:last-child {
-	place-self: center end;
-	display: flex;
-	place-items: center end;
-	column-gap: var(--margin);
-}
-
-.mainHeader .button {
-	border: none;
-	border-radius: var(--radius);
-	font-size: var(--font-size-e);
-	padding: var(--control-padding);
-}
-
-/*********************************/
-
 .Page .Input {
 	grid-template-columns: auto 1fr;
 }
@@ -70,4 +25,107 @@
 	width: 100%;
 	max-width: unset;
 	max-height: 100%;
+}
+
+/*********************************/
+
+.mainHeader {
+	display: flex;
+	flex-direction: column;
+}
+
+.mainHeader .title {
+	font-size: var(--font-size-a);
+	text-decoration: none;
+	color: var(--highlight);
+	font-weight: bold;
+}
+
+.mainHeader .title:hover {
+	color: var(--highlight-pale);
+}
+
+.mainHeader .title:active {
+	color: var(--highlight-dark);
+}
+
+.dropdown {
+	background-color: var(--control-background);
+	cursor: pointer;
+	border-radius: var(--radius);
+	overflow: hidden;
+}
+
+.dropdown .label {
+	padding: var(--padding);
+	transition: background-color 0.3s;
+}
+
+.dropdown .label::after {
+	content: " ⏶";
+	float: right;
+	margin-left: var(--margin-small);
+}
+
+.dropdown.hidden .label::after {
+	content: " ⏷";
+}
+
+.dropdown .label:hover {
+	background-color: var(--control-background-hover);
+}
+
+.dropdown .label:active {
+	background-color: var(--control-background-pressed);
+	color: var(--alt-color);
+}
+
+.dropdown .menu {
+	max-height: 200px;
+	transition: max-height 1s ease-in-out;
+}
+.dropdown.hidden .menu {
+	max-height: 0px;
+	overflow: hidden;
+}
+.dropdown .menu > * {
+	background-color: var(--control-background);
+	cursor: pointer;
+	padding: var(--padding);
+	transition: background-color 0.3s;
+}
+
+.dropdown .menu > *:hover {
+	background-color: var(--control-background-hover);
+}
+
+.dropdown .menu > *:active {
+	background-color: var(--control-background-pressed);
+	color: var(--alt-color);
+}
+
+.dropdown .menu a {
+	text-decoration: none;
+	color: var(--color);
+	display: block;
+}
+
+@media screen and (min-width: 500px) {
+	.mainHeader {
+		flex-direction: row;
+		place-items: center;
+	}
+
+	.mainHeader .title {
+		width: 100%;
+	}
+	
+	.dropdown {
+		width: max-content;
+		position: absolute;
+		top: 0rem;
+		right: 0rem;
+		margin-right: 1rem;
+		margin-top: 1.75rem;
+	}
 }
