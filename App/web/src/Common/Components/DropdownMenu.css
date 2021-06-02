@@ -71,6 +71,7 @@
 
 @media screen and (min-width: 500px) {	
 	.dropdown {
+		width: max-content;
 		position: relative;
 		display: inline-block;
 		overflow: visible;
@@ -83,7 +84,6 @@
 
 	.dropdown .menu {
 		position: absolute;
-		z-index: 1;
 		width: 100%;
 		transition: all 300ms ease-in-out;
 	}

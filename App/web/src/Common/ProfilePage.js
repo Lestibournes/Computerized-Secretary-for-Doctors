@@ -8,6 +8,8 @@ import { DoctorEditor } from "../Doctor/Profile/DoctorEditor/DoctorEditor";
 import { SecretaryEditor } from "../Doctor/Profile/ClinicEditor/SecretaryEditor";
 import { Route } from "react-router";
 import { UserProfilePage } from "../User/UserProfilePage";
+import { DropdownMenu } from "./Components/DropdownMenu";
+import { Link } from "react-router-dom";
 
 export function ProfilePage() {
 	const auth = useAuth();
@@ -15,11 +17,11 @@ export function ProfilePage() {
 
 	return (
 		<Page title="My Profile" popupManager={popupManager}>
-			<div className="Home buttonGrid">
-				<Button link="/general/profile/user" label="User" />
-				<Button link="/general/profile/doctor" label="Doctor" />
-				<Button link="/general/profile/secretary" label="Secretary" />
-			</div>
+			<DropdownMenu label="Select Profile">
+				<Link to="/general/profile/user">User</Link>
+				<Link to="/general/profile/doctor">Doctor</Link>
+				<Link to="/general/profile/secretary">Secretary</Link>
+			</DropdownMenu>
 			<Route
 				component={({ match }) =>
 					<div>
