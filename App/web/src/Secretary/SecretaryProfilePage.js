@@ -75,15 +75,6 @@ export function SecretaryProfilePage() {
 		display = (
 			<>
 				<div className="headerbar">
-					<h2>Details</h2> <Button label="Edit" action={() => setEditData(true)} />
-				</div>
-				<div className="table">
-					<b>Photo</b> <img src={image} alt={secretary.fullName} />
-					<b>Name:</b> <span>{secretary.fullName}</span>
-					<b>Sex:</b> <span>{secretary.sex ? capitalizeAll(secretary.sex) : "Not specified"}</span>
-				</div>
-				
-				<div className="headerbar">
 					<h2>Clinics</h2>
 				</div>
 				<div className="cardList">
@@ -119,16 +110,6 @@ export function SecretaryProfilePage() {
 			>
 				<div>You already have a secretary profile</div>
 			</Popup>
-		: ""}
-		
-		{editData ? 
-			<UserEditForm
-				user={secretary.user}
-				image={image}
-				close={() => {
-					loadData(auth.user.uid).then(() => setEditData(false));
-				}}
-			/>
 		: ""}
 	</>;
 

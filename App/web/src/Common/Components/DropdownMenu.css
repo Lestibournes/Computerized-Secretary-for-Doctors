@@ -1,0 +1,90 @@
+
+.dropdown {
+	background-color: var(--control-background);
+	cursor: pointer;
+	border-radius: var(--radius);
+	overflow: hidden;
+	transition: border-radius 300ms ease-in-out;
+}
+
+.dropdown .label {
+	padding: var(--padding);
+	transition: background-color 300ms;
+	border-radius: inherit;
+}
+
+.dropdown.open .label {
+	border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.dropdown .label::after {
+	content: " ⏷";
+	float: right;
+	margin-left: var(--margin-small);
+}
+
+.dropdown.open .label::after {
+	content: " ⏶";
+}
+
+.dropdown .label:hover {
+	background-color: var(--control-background-hover);
+}
+
+.dropdown .label:active {
+	background-color: var(--control-background-pressed);
+	color: var(--alt-color);
+}
+
+.dropdown .menu {
+	max-height: 0px;
+	overflow: hidden;
+	transition: max-height 300ms ease-in-out;
+}
+
+.dropdown.open .menu {
+	max-height: 200px;
+	border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.dropdown .menu > * {
+	background-color: var(--control-background);
+	cursor: pointer;
+	padding: var(--padding);
+	transition: background-color 300ms;
+}
+
+.dropdown .menu > *:hover {
+	background-color: var(--control-background-hover);
+}
+
+.dropdown .menu > *:active {
+	background-color: var(--control-background-pressed);
+	color: var(--alt-color);
+}
+
+.dropdown .menu a {
+	text-decoration: none;
+	color: var(--color);
+	display: block;
+}
+
+@media screen and (min-width: 500px) {	
+	.dropdown {
+		position: relative;
+		display: inline-block;
+		overflow: visible;
+		border-radius: var(--radius);
+	}
+	
+	.dropdown.open {
+		border-radius: var(--radius) var(--radius) 0 0;
+	}
+
+	.dropdown .menu {
+		position: absolute;
+		z-index: 1;
+		width: 100%;
+		transition: all 300ms ease-in-out;
+	}
+}

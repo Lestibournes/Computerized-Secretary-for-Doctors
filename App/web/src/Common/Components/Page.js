@@ -5,6 +5,7 @@ import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
 import { server } from "../server";
+import { DropdownMenu } from "./DropdownMenu";
 
 export function Page({unprotected, title, subtitle, popupManager, children}) {
 	const auth = useAuth();
@@ -105,24 +106,19 @@ export function Page({unprotected, title, subtitle, popupManager, children}) {
 				{redirect ? <Redirect to={redirect} /> : null }
 				<div className="mainHeader">
 					<Link to="/general/" className="title">CSFPD</Link>
-					<div>
 					{name && email ?
-						<div className={"dropdown" + (!open ? " hidden" : "")}>
-							<div className={"label"} onClick={() => setOpen(!open)}>
-								{name + " <" + email + ">"}
-							</div>
-							<div className={"menu"}>
+						<div>
+							<DropdownMenu label={name + " <" + email + ">"}>
 								<div>
 									Notifications
 								</div>
-								<Link to={"/general/users/profile"}>Profile</Link>
+								<Link to={"/general/profile"}>Profile</Link>
 								<div onClick={auth.logout}>
 									Log Out
 								</div>
-							</div>
+							</DropdownMenu>
 						</div>
 					: ""}
-					</div>
 				</div>
 				{title ? <h1>{title}</h1> : ""}
 				{subtitle ? <h2>{subtitle}</h2> : ""}

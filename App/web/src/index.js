@@ -32,6 +32,7 @@ import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
 import { ClinicSchedulesPage } from './Clinic/ClinicSchedulesPage';
 import { UserDetails } from './User/UserDetails';
 import { UserProfilePage } from './User/UserProfilePage';
+import { ProfilePage } from './Common/ProfilePage';
 
 /**
  * URL Scheme:
@@ -56,9 +57,21 @@ ReactDOM.render(
 				<Route path="/general/register">
 					<RegisterPage />
 				</Route>
-				<Route path="/general/users/profile">
-					<UserProfilePage />
+				<Route path="/general/profile">
+					<ProfilePage />
 				</Route>
+				{/* <Route path="/general/profile/user">
+					<ProfilePage />
+				</Route>
+				<Route path="/general/profile/doctor">
+					<ProfilePage />
+				</Route>
+				<Route path="/general/profile/secretary">
+					<ProfilePage />
+				</Route> */}
+				{/* <Route path="/general/users/profile">
+					<UserProfilePage />
+				</Route> */}
 
 				{/* Patients */}
 

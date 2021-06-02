@@ -128,8 +128,6 @@ export function DoctorEditor() {
 	if (doctor && clinicCards) {
 		display = (
 			<>
-				<UserDetails data={doctor.user} popupManager={popupManager} />
-				
 				<div className="headerbar">
 					<h2>Specializations</h2>
 					<Button label="+"
