@@ -40,7 +40,7 @@ export function Page({unprotected, title, subtitle, children}) {
 			<div className="Page">
 				{redirect ? <Redirect to={redirect} /> : null }
 				<header className="main">
-					<Link to="/general/" className="title">CSFPD</Link>
+					<Link to="/" className="title">CSFPD</Link>
 					{name && email ?
 						<div>
 							<DropdownMenu label={name + " <" + email + ">"}>

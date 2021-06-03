@@ -30,8 +30,6 @@ import { AppointmentPage } from './Doctor/AppointmentPage';
 import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
 import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
 import { ClinicSchedulesPage } from './Clinic/ClinicSchedulesPage';
-import { UserDetails } from './User/UserDetails';
-import { UserProfilePage } from './User/UserProfilePage';
 import { ProfilePage } from './Common/ProfilePage';
 import { ProvidePopups } from './Common/Components/Page';
 
@@ -49,8 +47,9 @@ ReactDOM.render(
 
 					{/* General */}
 
-					<Redirect exact from="/" to="/general/" />
-					<Route exact path="/general/">
+					<Redirect exact from="/" to="/general/home" />
+					<Redirect exact from="/general" to="/general/home" />
+					<Route path="/general/home">
 						<HomePage />
 					</Route>
 					<Route path="/general/login">
@@ -70,9 +69,6 @@ ReactDOM.render(
 					</Route>
 					<Route path="/general/profile/secretary">
 						<ProfilePage />
-					</Route> */}
-					{/* <Route path="/general/users/profile">
-						<UserProfilePage />
 					</Route> */}
 
 					{/* Patients */}
