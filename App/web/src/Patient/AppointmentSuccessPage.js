@@ -1,7 +1,7 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Page } from '../Common/Components/Page';
+import { Page, usePopups } from '../Common/Components/Page';
 import { Time, SimpleDate } from '../Common/classes';
 import { server } from '../Common/server';
 import { error } from '../Common/functions';
@@ -15,7 +15,7 @@ export function AppointmentSuccessPage() {
 	const [date, setDate] = useState();
 	const [time, setTime] = useState()
 
-	const [popupManager, setPopupManager] = useState({});
+	const popupManager = usePopups();
 
 	useEffect(() => {
 		server.appointments.get({id: appointment}).then(response => {
@@ -56,7 +56,7 @@ export function AppointmentSuccessPage() {
 		</p>
 	}
 	return (
-		<Page title="Make an Appointment" subtitle="Success!" popupManager={popupManager}>
+		<Page title="Make an Appointment" subtitle="Success!">
 			{display}
 		</Page>
 	);

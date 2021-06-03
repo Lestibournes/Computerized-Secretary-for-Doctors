@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../../Common/Components/Button";
-import { Page } from "../../../Common/Components/Page";
+import { Page, usePopups } from "../../../Common/Components/Page";
 
 import { server } from '../../../Common/server';
 import { capitalize, error, getPictureURL } from '../../../Common/functions';
@@ -31,7 +31,7 @@ export function SecretaryEditor() {
 	const [image, setImage] = useState(null);
 	
 	const [redirect, setRedirect] = useState(null); //Where to redirect to in case the doctor is removed from the clinic.
-	const [popupManager, setPopupManager] = useState({});
+	const popupManager = usePopups();
 
 	useEffect(() => {
 		if (secretary) {
@@ -78,7 +78,7 @@ export function SecretaryEditor() {
 	}
 
 	return (
-		<Page title="Edit Secretary" subtitle={subtitle} popupManager={popupManager}>
+		<Page title="Edit Secretary" subtitle={subtitle}>
 			{display}
 		</Page>
 	);

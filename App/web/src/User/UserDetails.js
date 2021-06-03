@@ -3,15 +3,22 @@ import { useEffect, useState } from "react";
 import { Button } from "../Common/Components/Button";
 import { capitalizeAll, getPictureURL } from "../Common/functions";
 import { server } from "../Common/server";
-import { UserEditPopup } from "./UserEditForm";
+import { userEditPopup } from "./UserEditForm";
+import { usePopups } from "../Common/Components/Page";
 
-export function UserDetails({user, data, popupManager}) {
+export function UserDetails({user, data}) {
 	const auth = useAuth();
+	const popupManager = usePopups();
 
 	const [userID, setUserID] = useState();
 	const [userData, setUserData] = useState();
 	const [image, setImage] = useState();
 
+
+	useEffect(() => {
+		popupManager.clear();
+	}, []);
+	
 	// Fetch the current user's id if and ID has not been provided in the props:
 	useEffect(() => {
 		if (user) {
@@ -51,25 +58,28 @@ export function UserDetails({user, data, popupManager}) {
 	if (userID && userData) {
 		return (
 			<>
-				<div className="headerbar">
-					<h2>Details</h2>
-					<Button
-						label="Edit"
-						action={() => UserEditPopup(popupManager, userID, userData, image, () => {
-							server.users.get({user: userID}).then(response => {
-								getPictureURL(userID).then(url => {
-									setImage(url);
-								});
-								setUserData(response.data);
-							})
-						})}
-					/>
-				</div>
-				<div className="table">
-					<b>Photo</b> <img src={image} alt={userData.fullName} />
-					<b>Name:</b> <span>{userData.fullName}</span>
-					<b>Sex:</b> <span>{userData.sex ? capitalizeAll(userData.sex) : "Not specified"}</span>
-				</div>
+				<h2>User Profile</h2>
+				<section>
+					<header>
+						<h3>Details</h3>
+						<Button
+							label="Edit"
+							action={() => userEditPopup(popupManager, userID, userData, image, () => {
+								server.users.get({user: userID}).then(response => {
+									getPictureURL(userID).then(url => {
+										setImage(url);
+									});
+									setUserData(response.data);
+								})
+							})}
+						/>
+					</header>
+					<div className="table">
+						<b>Photo</b> <img src={image} alt={userData.fullName} />
+						<b>Name:</b> <span>{userData.fullName}</span>
+						<b>Sex:</b> <span>{userData.sex ? capitalizeAll(userData.sex) : "Not specified"}</span>
+					</div>
+				</section>
 			</>
 		);
 	}

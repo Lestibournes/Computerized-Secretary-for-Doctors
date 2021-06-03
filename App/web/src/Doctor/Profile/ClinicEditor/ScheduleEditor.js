@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../../Common/Components/Button";
-import { Page } from "../../../Common/Components/Page";
+import { Page, usePopups } from "../../../Common/Components/Page";
 import { Card } from '../../../Common/Components/Card';
 
 import { Time } from '../../../Common/classes';
@@ -46,7 +46,7 @@ export function ScheduleEditor() {
 	const [shiftCards, setShiftCards] = useState();
 	const [typeCards, setTypeCards] = useState();
 
-	const [popupManager, setPopupManager] = useState({});
+	const popupManager = usePopups();
 
 	useEffect(() => {
 		if (clinic && doctor) {
@@ -237,7 +237,7 @@ export function ScheduleEditor() {
 	}
 
 	return (
-		<Page title={"Edit Schedule"} subtitle={subtitle} popupManager={popupManager}>
+		<Page title={"Edit Schedule"} subtitle={subtitle}>
 			{display}
 		</Page>
 	);

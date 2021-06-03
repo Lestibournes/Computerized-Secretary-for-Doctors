@@ -6,7 +6,7 @@ import { useAuth } from "../Common/Auth";
 import { Slot, Time, SimpleDate } from "../Common/classes";
 import { CalendarWeek } from "../Common/Components/CalendarWeek";
 import { Button } from '../Common/Components/Button';
-import { Page } from '../Common/Components/Page';
+import { Page, usePopups } from '../Common/Components/Page';
 import { server } from "../Common/server";
 import { Popup } from "../Common/Components/Popup";
 import { useParams } from "react-router";
@@ -28,6 +28,7 @@ function debounce(fn, ms) {
 
 export function AppointmentCalendarPage() {
 	const auth = useAuth();
+	const popupManager = usePopups();
 
 	const { clinic } = useParams();
 	const [doctors, setDoctors] = useState([]);
@@ -36,7 +37,6 @@ export function AppointmentCalendarPage() {
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState();
 	const [minimum, setMinimum] = useState(60);
-	const [popupManager, setPopupManager] = useState({});
 
 	const [dimensions, setDimensions] = useState({ 
 		height: window.innerHeight,
@@ -287,7 +287,7 @@ export function AppointmentCalendarPage() {
 			</>;
 
 	return (
-		<Page title="Work Calendar" popupManager={popupManager}>
+		<Page title="Work Calendar">
 			{display}
 		</Page>
 	);

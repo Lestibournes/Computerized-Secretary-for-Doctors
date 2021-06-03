@@ -29,42 +29,45 @@
 
 /*********************************/
 
-.mainHeader {
+header {
 	display: flex;
 	flex-direction: column;
+	place-items: unset;
+	gap: var(--margin);
 }
 
-.mainHeader .title {
+section header {
+	flex-direction: row;
+}
+
+header .title {
 	font-size: var(--font-size-a);
 	text-decoration: none;
 	color: var(--highlight);
 	font-weight: bold;
 }
 
-.mainHeader .title:hover {
+header .title:hover {
 	color: var(--highlight-pale);
 }
 
-.mainHeader .title:active {
+header .title:active {
 	color: var(--highlight-dark);
 }
 
 @media screen and (min-width: 500px) {
-	.mainHeader {
+	header {
 		flex-direction: row;
 		place-items: center;
+		gap: var(--margin)
 	}
 
-	.mainHeader > * {
+	header.main > * {
 		width: 100%;
 	}
-
-	.mainHeader > div {
+	
+	header.main > div {
 		display: flex;
 		place-content: flex-end;
-	}
-
-	.mainHeader .dropdown {
-		width: max-content;
 	}
 }

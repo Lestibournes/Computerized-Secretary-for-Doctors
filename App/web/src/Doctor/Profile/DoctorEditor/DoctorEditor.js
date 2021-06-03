@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card } from "../../../Common/Components/Card";
 import { Button } from "../../../Common/Components/Button";
 
-import { Page } from "../../../Common/Components/Page";
+import { Page, usePopups } from "../../../Common/Components/Page";
 import { clinicCreatePopup } from "./ClinicCreateForm";
 import { createProfilePopup } from "./CreateProfile";
 import { capitalizeAll, getPictureURL } from "../../../Common/functions";
@@ -51,6 +51,11 @@ It would be good to add some kind of notification widget to easily show new memb
 
 export function DoctorEditor() {
 	const auth = useAuth();
+	const popupManager = usePopups();
+
+	useEffect(() => {
+		popupManager.clear();
+	}, []);
 
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
@@ -85,8 +90,6 @@ export function DoctorEditor() {
 	const [image, setImage] = useState(null);
 	const [clinicCards, setClinicCards] = useState(null);
 	const [clinics, setClinics] = useState();
-
-	const [popupManager, setPopupManager] = useState({});
 
 	useEffect(() => {
 		if (doctor) {
@@ -128,66 +131,67 @@ export function DoctorEditor() {
 	if (doctor && clinicCards) {
 		display = (
 			<>
-				<div className="headerbar">
-					<h2>Specializations</h2>
-					<Button label="+"
-						action={() => {
-							selectSpecializationPopup(
+				<h2>Doctor Profile</h2>
+				<section>
+					<header>
+						<h3>Specializations</h3>
+						<Button label="+"
+							action={() => {
+								selectSpecializationPopup(
+									popupManager,
+									doctor.fields,
+									specialization => {
+										server.doctors.addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
+										.then(() => {
+											loadData(auth.user.uid);
+										});
+									}
+								);
+							}}
+						/>
+					</header>
+					<div class="item-list">
+						{
+							doctor.fields.length > 0 ?
+								doctor.fields.map(field => 
+								<div
+									key={field.id}
+									className="removable-item"
+								>
+									<Button
+										label="-"
+										action={() => removeSpecializationPopup(popupManager, doctor.doctor.id, field.id, () => loadData(doctor.user.id))}
+									/>
+									<span>{capitalizeAll(field.id)}</span>
+								</div>)
+								:
+								"No specializations specified"
+						}
+					</div>
+				</section>
+				<section>
+					<header>
+						<h3>Clinics</h3> <Button label="+" action={() => {
+							clinicCreatePopup(
 								popupManager,
-								doctor.fields,
-								specialization => {
-									server.doctors.addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
-									.then(() => {
-										loadData(auth.user.uid);
+								doctor.doctor.id, 
+								clinic_id => {
+									server.clinics.get({id: clinic_id}).then(response => {
+										const new_clinics = [...clinics];
+										new_clinics.push(response.data);
+										setClinics(new_clinics);
 									});
 								}
 							);
-						}}
-					/>
-				</div>
-				<div>
-					{
-						doctor.fields.length > 0 ?
-							doctor.fields.map(field => 
-							<div
-								key={field.id}
-								className="headerbar"
-							>
-								<span>{capitalizeAll(field.id)}</span>
-								<Button
-									label="-"
-									action={() => removeSpecializationPopup(popupManager, doctor.doctor.id, field.id, () => loadData(doctor.user.id))}
-								/>
-							</div>)
-							:
-							"No specializations specified"
-					}
-				</div>
-				<div className="headerbar">
-					<h2>Clinics</h2> <Button label="+" action={() => {
-						clinicCreatePopup(
-							popupManager,
-							doctor.doctor.id, 
-							clinic_id => {
-								server.clinics.get({id: clinic_id}).then(response => {
-									const new_clinics = [...clinics];
-									new_clinics.push(response.data);
-									setClinics(new_clinics);
-								});
-							}
-						);
-					}} />
-				</div>
-				<div className="cardList">
-					{clinicCards}
-				</div>
+						}} />
+					</header>
+					<div className="cardList">
+						{clinicCards}
+					</div>
+				</section>
 			</>
 		);
 	}
 
-	return (
-		<Page title="Doctor Profile" popupManager={popupManager}>
-			{display}
-		</Page>
-	);
+	return display ? display : "";
 }

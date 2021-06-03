@@ -6,13 +6,13 @@ import { useAuth } from "./Auth";
 import { Redirect } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
 import { Button } from './Components/Button';
-import { Page } from './Components/Page';
+import { Page, usePopups } from './Components/Page';
 import { Popup } from './Components/Popup';
 import { error } from './functions';
 
 export function LoginPage() {
 	const auth = useAuth();
-	const [popupManager, setPopupManager] = useState({});
+	const popupManager = usePopups();
 	
 	const popup = 
 		<Popup title="Login">
@@ -72,7 +72,7 @@ export function LoginPage() {
 	return (
 		<>
 			{auth.user ? <Redirect to="/general/" /> : null }
-			<Page unprotected popupManager={popupManager} />
+			<Page unprotected />
 		</>
 	);
 }

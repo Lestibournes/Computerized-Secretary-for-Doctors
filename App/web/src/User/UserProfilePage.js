@@ -1,16 +1,15 @@
 import { useAuth } from "../Common/Auth";
 import { useState } from "react";
 
-import { Page } from "../Common/Components/Page";
+import { Page, usePopups } from "../Common/Components/Page";
 import { UserDetails } from "../User/UserDetails";
-import { Button } from "../Common/Components/Button";
 
 export function UserProfilePage() {
 	const auth = useAuth();
-	const [popupManager, setPopupManager] = useState({});
+	const popupManager = usePopups();
 
 	return (
-		<Page title="My Profile" popupManager={popupManager}>
+		<Page title="My Profile">
 			{/* <div className="Home buttonGrid">
 				<Button link="/general/users/profile" label="User" />
 				<Button link="/specific/doctor/profile" label="Doctor" />

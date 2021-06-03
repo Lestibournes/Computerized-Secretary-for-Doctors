@@ -7,7 +7,7 @@ import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../Common/Components/Button";
 import { SelectList } from "../Common/Components/SelectList";
 import { SelectDate } from "../Common/Components/SelectDate";
-import { Page } from "../Common/Components/Page";
+import { Page, usePopups } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
 import { Popup } from '../Common/Components/Popup';
 import { capitalizeAll, capitalize, error, compareByName } from '../Common/functions';
@@ -53,7 +53,7 @@ export function SetAppointmentPage() {
 	const [doctor_data, setDoctorData] = useState(null);
 	const [clinic_data, setClinicData] = useState(null);
 
-	const [popupManager, setPopupManager] = useState({});
+	const popupManager = usePopups();
 
 	useEffect(() => {
 		if (appointment) {

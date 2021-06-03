@@ -4,7 +4,7 @@ import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
-import { Page } from "../../../Common/Components/Page";
+import { Page, usePopups } from "../../../Common/Components/Page";
 import { ClinicEditForm, clinicEditPopup } from "./ClinicEditForm";
 import { SelectDoctorForm, selectDoctorPopup } from "./SelectDoctor";
 import { getPictureURL } from "../../../Common/functions";
@@ -51,7 +51,7 @@ export function ClinicEditor() {
 
 	const [redirect, setRedirect] = useState(null);
 
-	const [popupManager, setPopupManager] = useState({});
+	const popupManager = usePopups();
 
 	useEffect(() => {
 		if (clinic) {
@@ -231,7 +231,7 @@ export function ClinicEditor() {
 	}
 
 	return (
-		<Page title="Edit Clinic" popupManager={popupManager}>
+		<Page title="Edit Clinic">
 			{display}
 		</Page>
 	);

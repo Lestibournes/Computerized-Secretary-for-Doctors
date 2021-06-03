@@ -2,7 +2,7 @@
 import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/classes";
 import { SimpleDate } from "../Common/classes";
-import { Page } from '../Common/Components/Page';
+import { Page, usePopups } from '../Common/Components/Page';
 import { capitalizeAll, error, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
@@ -22,7 +22,7 @@ export function AppointmentPage() {
 	const [image, setImage] = useState(null); // The url of the patient's profile picture.
 	const [arrived, setArrived] = useState(false); // The patient's arrival status.
 
-	const [popupManager, setPopupManager] = useState({});
+	const popupManager = usePopups();
 	
 	useEffect(() => {
 		if (appointment) {
@@ -107,7 +107,7 @@ export function AppointmentPage() {
 	}
 	
 	return (
-		<Page title={title} subtitle={subtitle} popupManager={popupManager}>
+		<Page title={title} subtitle={subtitle}>
 			{display}
 		</Page>
 	);

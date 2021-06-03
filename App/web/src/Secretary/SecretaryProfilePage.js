@@ -2,13 +2,11 @@ import { useAuth } from "../Common/Auth";
 import { useEffect, useState } from "react";
 
 import { Card } from "../Common/Components/Card";
-import { Button } from "../Common/Components/Button";
 import { Popup } from "../Common/Components/Popup";
 
-import { Page } from "../Common/Components/Page";
+import { usePopups } from "../Common/Components/Page";
 import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
-import { UserEditForm } from "../Doctor/Profile/UserEditor/UserEditForm";
-import { capitalizeAll, getPictureURL } from "../Common/functions";
+import { getPictureURL } from "../Common/functions";
 import { server } from "../Common/server";
 
 function generateClinicCards(secretary, clinics) {
@@ -31,6 +29,11 @@ function generateClinicCards(secretary, clinics) {
 
 export function SecretaryProfilePage() {
 	const auth = useAuth();
+	const popupManager = usePopups();
+
+	useEffect(() => {
+		popupManager.clear();
+	}, []);
 
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
@@ -57,7 +60,6 @@ export function SecretaryProfilePage() {
 	const [clinics, setClinics] = useState(null);
 	const [createProfile, setCreateProfile] = useState(false);
 	const [alreadyExists, setAlreadyExists] = useState(false);
-	const [editData, setEditData] = useState(false);
 
 	useEffect(() => {
 		if (secretary) {
@@ -74,6 +76,7 @@ export function SecretaryProfilePage() {
 	if (secretary && clinics) {
 		display = (
 			<>
+				<h1>Secretary Profile</h1>
 				<div className="headerbar">
 					<h2>Clinics</h2>
 				</div>
@@ -114,9 +117,9 @@ export function SecretaryProfilePage() {
 	</>;
 
 	return (
-			<Page title="Secretary Profile">
+			<>
 				{popups}
 				{display}
-			</Page>
+			</>
 	);
 }

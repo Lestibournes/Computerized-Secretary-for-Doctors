@@ -103,7 +103,7 @@ export function UserEditForm({popupManager, user, data, image, close, success}) 
 	);
 }
 
-export function UserEditPopup(popupManager, user, data, image, success) {
+export function userEditPopup(popupManager, user, data, image, success) {
 	const close = () => {
 		popupManager.remove(popup);
 	};
