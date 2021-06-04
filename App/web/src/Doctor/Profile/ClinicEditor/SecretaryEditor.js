@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../../Common/Components/Button";
-import { Page, usePopups } from "../../../Common/Components/Page";
+import { Page } from "../../../Common/Components/Page";
 
 import { server } from '../../../Common/server';
 import { capitalize, error, getPictureURL } from '../../../Common/functions';
 import { Popup } from '../../../Common/Components/Popup';
+import { usePopups } from '../../../Common/Popups';
 
 export function SecretaryEditor() {
 	const auth = useAuth();

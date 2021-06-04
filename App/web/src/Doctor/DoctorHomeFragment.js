@@ -6,7 +6,7 @@ export function DoctorHomeFragment() {
 			<h2>Doctor</h2>
 			<div className="Home buttonGrid">
 				<Button link="/specific/doctor/appointments/calendar" label="Work Calendar" />
-				<Button link="/specific/doctor/profile" label="Profile" />
+				<Button link="/specific/doctor/appointments/list" label="Work Agenda" />
 			</div>
 		</>
 	);

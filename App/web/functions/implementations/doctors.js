@@ -222,6 +222,7 @@ async function removeSpecialization(doctor, specialization) {
 /**
  * Get all of the appointments of the specified doctor within the specified time range.
  * Start and end times are optional. If they are not specified then there will not be a limit on start and end times.
+ * @todo Use the code from clinics.getAppointments.
  * @param {{doctor: string, clinic: string, start: object, end: object}} constraints
  * @returns {Promise<object[]>} An array of appointment data.
  */

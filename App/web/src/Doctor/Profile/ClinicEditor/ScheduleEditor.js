@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../../Common/Components/Button";
-import { Page, usePopups } from "../../../Common/Components/Page";
+import { Page } from "../../../Common/Components/Page";
 import { Card } from '../../../Common/Components/Card';
 
 import { Time } from '../../../Common/classes';
@@ -14,6 +14,7 @@ import { capitalize, compareByName, error } from '../../../Common/functions';
 import { MinimumFormPopup } from './MinimumFormPopup';
 import { TypeFormPopup } from './TypeFormPopup';
 import { SimpleDate } from "../../../Common/classes";
+import { usePopups } from '../../../Common/Popups';
 
 export function ScheduleEditor() {
 	const auth = useAuth();
@@ -41,7 +42,6 @@ export function ScheduleEditor() {
 	
 	const [redirect, setRedirect] = useState(null); //Where to redirect to in case the doctor is removed from the clinic.
 
-	const [shiftEditor, setShiftEditor] = useState(null);
 	const [schedule, setSchedule] = useState(null);
 	const [shiftCards, setShiftCards] = useState();
 	const [typeCards, setTypeCards] = useState();

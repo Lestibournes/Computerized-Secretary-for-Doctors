@@ -7,11 +7,12 @@ import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../Common/Components/Button";
 import { SelectList } from "../Common/Components/SelectList";
 import { SelectDate } from "../Common/Components/SelectDate";
-import { Page, usePopups } from "../Common/Components/Page";
+import { Page } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
 import { Popup } from '../Common/Components/Popup';
 import { capitalizeAll, capitalize, error, compareByName } from '../Common/functions';
 import { server } from '../Common/server';
+import { usePopups } from '../Common/Popups';
 
 /**
  * @todo
@@ -48,7 +49,6 @@ export function SetAppointmentPage() {
 
 	const [success, setSuccess] = useState(null);
 	const [deleted, setDeleted] = useState(null);
-	const [confirmDelete, setConfirmDelete] = useState(false);
 
 	const [doctor_data, setDoctorData] = useState(null);
 	const [clinic_data, setClinicData] = useState(null);

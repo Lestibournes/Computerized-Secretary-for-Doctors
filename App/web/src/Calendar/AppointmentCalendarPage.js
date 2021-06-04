@@ -6,14 +6,14 @@ import { useAuth } from "../Common/Auth";
 import { Slot, Time, SimpleDate } from "../Common/classes";
 import { CalendarWeek } from "../Common/Components/CalendarWeek";
 import { Button } from '../Common/Components/Button';
-import { Page, usePopups } from '../Common/Components/Page';
+import { Page } from '../Common/Components/Page';
 import { server } from "../Common/server";
 import { Popup } from "../Common/Components/Popup";
 import { useParams } from "react-router";
 import { Select } from "../Common/Components/Select";
 import { Form, Formik } from "formik";
 import * as Yup from 'yup';
-import { error } from "../Common/functions";
+import { usePopups } from "../Common/Popups";
 
 function debounce(fn, ms) {
   let timer

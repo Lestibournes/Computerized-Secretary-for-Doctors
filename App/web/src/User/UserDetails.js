@@ -4,7 +4,7 @@ import { Button } from "../Common/Components/Button";
 import { capitalizeAll, getPictureURL } from "../Common/functions";
 import { server } from "../Common/server";
 import { userEditPopup } from "./UserEditForm";
-import { usePopups } from "../Common/Components/Page";
+import { usePopups } from "../Common/Popups";
 
 export function UserDetails({user, data}) {
 	const auth = useAuth();

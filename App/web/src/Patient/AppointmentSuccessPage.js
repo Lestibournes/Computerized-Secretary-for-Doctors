@@ -1,10 +1,11 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Page, usePopups } from '../Common/Components/Page';
+import { Page } from '../Common/Components/Page';
 import { Time, SimpleDate } from '../Common/classes';
 import { server } from '../Common/server';
 import { error } from '../Common/functions';
+import { usePopups } from '../Common/Popups';
 
 export function AppointmentSuccessPage() {
 	const { appointment } = useParams(); //The ID of the doctor and clinic.

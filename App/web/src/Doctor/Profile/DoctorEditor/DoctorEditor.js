@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { Card } from "../../../Common/Components/Card";
 import { Button } from "../../../Common/Components/Button";
 
-import { Page, usePopups } from "../../../Common/Components/Page";
 import { clinicCreatePopup } from "./ClinicCreateForm";
 import { createProfilePopup } from "./CreateProfile";
 import { capitalizeAll, getPictureURL } from "../../../Common/functions";
 import { selectSpecializationPopup, removeSpecializationPopup } from "./SelectSpecialization";
 import { server } from "../../../Common/server";
-import { UserDetails } from "../../../User/UserDetails";
+import { usePopups } from "../../../Common/Popups";
 
 /**
 @todo

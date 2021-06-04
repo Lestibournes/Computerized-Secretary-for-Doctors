@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { Card } from "../Common/Components/Card";
 import { Popup } from "../Common/Components/Popup";
 
-import { usePopups } from "../Common/Components/Page";
 import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
 import { getPictureURL } from "../Common/functions";
 import { server } from "../Common/server";
+import { usePopups } from "../Common/Popups";
 
 function generateClinicCards(secretary, clinics) {
 	const clinics_list = [];
@@ -27,7 +27,7 @@ function generateClinicCards(secretary, clinics) {
 	return clinics_list;
 }
 
-export function SecretaryProfilePage() {
+export function SecretaryProfileFragment() {
 	const auth = useAuth();
 	const popupManager = usePopups();
 
@@ -76,9 +76,9 @@ export function SecretaryProfilePage() {
 	if (secretary && clinics) {
 		display = (
 			<>
-				<h1>Secretary Profile</h1>
+				<h2>Secretary</h2>
 				<div className="headerbar">
-					<h2>Clinics</h2>
+					<h3>Clinics</h3>
 				</div>
 				<div className="cardList">
 					{clinics}

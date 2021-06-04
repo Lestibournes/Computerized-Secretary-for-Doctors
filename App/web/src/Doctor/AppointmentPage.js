@@ -2,12 +2,12 @@
 import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/classes";
 import { SimpleDate } from "../Common/classes";
-import { Page, usePopups } from '../Common/Components/Page';
+import { Page } from '../Common/Components/Page';
 import { capitalizeAll, error, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
-import { Popup } from '../Common/Components/Popup';
 import { server } from '../Common/server';
+import { usePopups } from '../Common/Popups';
 
 export function AppointmentPage() {
 	/**

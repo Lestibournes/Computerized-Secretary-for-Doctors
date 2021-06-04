@@ -23,7 +23,6 @@ import { DoctorEditor } from './Doctor/Profile/DoctorEditor/DoctorEditor'
 import { ClinicEditor } from './Doctor/Profile/ClinicEditor/ClinicEditor';
 import { ScheduleEditor } from './Doctor/Profile/ClinicEditor/ScheduleEditor';
 import { SetAppointmentPage } from './Patient/SetAppointmentPage';
-import { SecretaryProfilePage } from './Secretary/SecretaryProfilePage';
 import { ClinicPage } from './Clinic/ClinicPage';
 import { SecretaryDoctorAppointmentsPage } from './Secretary/SecretaryDoctorAppointmentsPage';
 import { AppointmentPage } from './Doctor/AppointmentPage';
@@ -31,7 +30,8 @@ import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
 import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
 import { ClinicSchedulesPage } from './Clinic/ClinicSchedulesPage';
 import { ProfilePage } from './Common/ProfilePage';
-import { ProvidePopups } from './Common/Components/Page';
+import { DoctorAgendaPage } from './Doctor/DoctorAgendaPage';
+import { ProvidePopups } from './Common/Popups';
 
 /**
  * URL Scheme:
@@ -61,19 +61,10 @@ ReactDOM.render(
 					<Route path="/general/profile">
 						<ProfilePage />
 					</Route>
-					{/* <Route path="/general/profile/user">
-						<ProfilePage />
-					</Route>
-					<Route path="/general/profile/doctor">
-						<ProfilePage />
-					</Route>
-					<Route path="/general/profile/secretary">
-						<ProfilePage />
-					</Route> */}
 
 					{/* Patients */}
 
-					<Route exact path="/general/searchDoctors">
+					<Route exact path="/general/doctors/search">
 						<SearchDoctorsPage />
 					</Route>
 					<Route path="/specific/:doctor/user/appointments/create/:clinic">
@@ -96,6 +87,9 @@ ReactDOM.render(
 
 					<Route path="/specific/doctor/appointments/calendar">
 						<AppointmentCalendarPage />
+					</Route>
+					<Route path="/specific/doctor/appointments/list">
+						<DoctorAgendaPage />
 					</Route>
 					<Route path="/specific/doctor/profile">
 						<DoctorEditor />
@@ -133,9 +127,6 @@ ReactDOM.render(
 
 					{/* Secretaries */}
 
-					<Route path="/specific/secretary/profile">
-						<SecretaryProfilePage />
-					</Route>
 					<Route path="/specific/secretary/clinics/view/:clinic">
 						<ClinicPage />
 					</Route>

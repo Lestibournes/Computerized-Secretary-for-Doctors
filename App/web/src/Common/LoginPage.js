@@ -1,14 +1,15 @@
 //Reactjs:
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "./Auth";
 import { Redirect } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
 import { Button } from './Components/Button';
-import { Page, usePopups } from './Components/Page';
+import { Page } from './Components/Page';
 import { Popup } from './Components/Popup';
 import { error } from './functions';
+import { usePopups } from './Popups';
 
 export function LoginPage() {
 	const auth = useAuth();

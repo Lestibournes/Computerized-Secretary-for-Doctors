@@ -4,12 +4,13 @@ import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from "../../../Common/Components/Card"
-import { Page, usePopups } from "../../../Common/Components/Page";
-import { ClinicEditForm, clinicEditPopup } from "./ClinicEditForm";
-import { SelectDoctorForm, selectDoctorPopup } from "./SelectDoctor";
+import { Page } from "../../../Common/Components/Page";
+import { clinicEditPopup } from "./ClinicEditForm";
+import { selectDoctorPopup } from "./SelectDoctor";
 import { getPictureURL } from "../../../Common/functions";
-import { SelectSecretaryForm, selectSecretaryPopup } from './SelectSecretary';
+import { selectSecretaryPopup } from './SelectSecretary';
 import { server } from '../../../Common/server';
+import { usePopups } from '../../../Common/Popups';
 
 /**
 @todo
@@ -47,7 +48,6 @@ export function ClinicEditor() {
 	
 	const [secretariesData, setSecretariesData] = useState();
 	const [secretaryCards, setSecretaryCards] = useState();
-	const [showSecretarySelector, setShowSecretarySelector] = useState(false);
 
 	const [redirect, setRedirect] = useState(null);
 
