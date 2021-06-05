@@ -89,5 +89,16 @@ export const events = {
 			return db.collection("appointments").doc(appointment).onSnapshot(callback);
 			// Next: have an element in the UI use this, such as a notification area in the page header.
 		}
+	},
+	doctors: {
+		arrival: (doctor, callback) => {
+			db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(appointment => {
+				appointment.docChanges().forEach(change => {
+					if (change.type === "modified") {
+						callback(change.doc.data());
+					}
+				});
+			});
+		}
 	}
 }

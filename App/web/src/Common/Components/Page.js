@@ -5,6 +5,7 @@ import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
 import { DropdownMenu } from "./DropdownMenu";
 import { usePopups } from "../Popups";
+import { events, server } from "../server";
 
 export function Page({unprotected, title, subtitle, children}) {
 	const auth = useAuth();
@@ -14,6 +15,7 @@ export function Page({unprotected, title, subtitle, children}) {
 	
 	const [name, setName] = useState();
 	const [email, setEmail] = useState();
+	const [doctor, setDoctor] = useState(null);
 
 	useEffect(() => {
 		popupManager.clear();
@@ -24,8 +26,33 @@ export function Page({unprotected, title, subtitle, children}) {
 			if (!unprotected && !status) setRedirect("/general/login");
 		});
 
+		if (auth.user && doctor === null) {
+			server.doctors.getID({user: auth.user.uid}).then(response => {
+				if (response.data) {
+					server.doctors.getData({id: response.data}).then(results => {
+						setDoctor(results.data);
+					});
+				}
+				else {
+					setDoctor(false);
+				}
+			});
+		}
+
 		return unsubscribe;
-	}, [auth, unprotected]);
+	}, [auth, doctor, unprotected]);
+
+	useEffect(() => {
+		if (doctor) {
+			return events.doctors.arrival(doctor.doctor.id, appointment => {
+				if (appointment.arrived) {
+					server.users.get({user: appointment.patient}).then(response => {
+						alert(response.data.fullName + " is here");
+					});
+				}
+			});
+		}
+	}, [doctor])
 
 	useEffect(() => {
 		setName(auth?.name?.full);
