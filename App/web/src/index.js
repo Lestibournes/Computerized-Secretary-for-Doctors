@@ -24,7 +24,6 @@ import { ClinicEditor } from './Doctor/Profile/ClinicEditor/ClinicEditor';
 import { ScheduleEditor } from './Doctor/Profile/ClinicEditor/ScheduleEditor';
 import { SetAppointmentPage } from './Patient/SetAppointmentPage';
 import { ClinicPage } from './Clinic/ClinicPage';
-import { SecretaryDoctorAppointmentsPage } from './Secretary/SecretaryDoctorAppointmentsPage';
 import { AppointmentPage } from './Doctor/AppointmentPage';
 import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
 import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
@@ -129,9 +128,6 @@ ReactDOM.render(
 
 					<Route path="/specific/secretary/clinics/view/:clinic">
 						<ClinicPage />
-					</Route>
-					<Route path="/specific/secretary/clinics/:clinic/:doctor">
-						<SecretaryDoctorAppointmentsPage />
 					</Route>
 					<Route path="/specific/secretary/appointments/view/:appointment">
 						<AppointmentPage />

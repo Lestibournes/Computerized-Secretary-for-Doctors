@@ -1,5 +1,6 @@
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
+const functions = require('firebase-functions');
 
 const doctors = require('./doctors');
 const secretaries = require('./secretaries');
@@ -379,8 +380,12 @@ async function getAllCities() {
 /**
  * Get all of the appointments of all the doctors of the specified clinic within the specified time range.
  * Start and end times are optional. If they are not specified then there will not be a limit on start and end times.
- * @param {{clinic: string, start: Date, end: Date}} constraints
- * @returns {Promise<object[]>} An array of appointment data.
+ * @param {{clinic: string, doctor: string, start: Date, end: Date, context: functions.https.CallableContext}} constraints
+ * @returns {Promise<{
+ * success: boolean,
+ * message: string,
+ * data: object[]
+ * }>} Whether the data was successfully retrieved, an error message if not, and the appointment data in an array.
  */
 async function getAppointments({clinic, doctor, start, end, context}) {
 	const response = {
@@ -394,7 +399,7 @@ async function getAppointments({clinic, doctor, start, end, context}) {
 
 		for (const doctor_snapshot of doctor_snapshots.docs) {
 			if ((doctor && doctor_snapshot.id === doctor) || !doctor) {
-				let query = db.collection("doctors").doc(doctor_snapshot.id).collection("appointments");
+				let query = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snapshot.id).collection("appointments");
 				const startDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(start).toDate());
 				const endDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(end).toDate());
 	
@@ -440,6 +445,9 @@ async function getAppointments({clinic, doctor, start, end, context}) {
 			/**@todo a more nuanced response  */
 			if (response.data.length > 0) {
 				response.success = true;
+			}
+			else {
+				response.message = "No appointments found";
 			}
 
 			// Array of arrays of the appointments of each doctor:

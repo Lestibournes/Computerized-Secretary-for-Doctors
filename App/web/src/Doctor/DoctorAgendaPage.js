@@ -4,7 +4,7 @@ import { Time } from "../Common/classes";
 import { Card } from '../Common/Components/Card';
 import { SimpleDate } from "../Common/classes";
 import { Page } from '../Common/Components/Page';
-import { capitalizeAll, getPictureURL } from '../Common/functions';
+import { capitalizeAll, error, getPictureURL } from '../Common/functions';
 import { server } from '../Common/server';
 
 import * as Yup from 'yup';
@@ -12,10 +12,15 @@ import { TextInput } from '../Common/Components/TextInput';
 import { Form, Formik } from 'formik';
 import { Button } from '../Common/Components/Button';
 import { useAuth } from '../Common/Auth';
+import { Select } from '../Common/Components/Select';
+import { usePopups } from '../Common/Popups';
 
 export function DoctorAgendaPage() {
 	const auth = useAuth();
+	const popups = usePopups();
+
 	const [doctor, setDoctor] = useState();
+	const [clinics, setClinics] = useState();
 
 	const [searchPrameters, setSearchParameters] = useState({
 		clinic: "",
@@ -30,10 +35,21 @@ export function DoctorAgendaPage() {
 
 	useEffect(() => {
 		if (auth?.user) {
-			return server.doctors.getID({user: auth.user.uid}).then(response => {
+			server.doctors.getID({user: auth.user.uid}).then(response => {
 				if (response.data) {
-					return server.doctors.getData({id: response.data}).then(results => {
-						return setDoctor(results.data);
+					server.doctors.getData({id: response.data}).then(results => {
+						setDoctor(results.data);
+
+						const clinics = [];
+
+						for (const clinic of results.data.clinics) {
+							if (clinic.id) clinics.push({
+								value: clinic.id,
+								label: clinic.name
+							});
+						}
+
+						setClinics(clinics);
 					});
 				}
 			});
@@ -43,11 +59,13 @@ export function DoctorAgendaPage() {
 	useEffect(() => {
 		if (doctor) {
 			server.doctors.getAppointments({
+				doctor: doctor.doctor.id,
 				clinic: searchPrameters.clinic ? searchPrameters.clinic : null,
 				start: searchPrameters.start.toObject(),
 				end: searchPrameters.end.toObject()
 			}).then(response => {
-				setAppointments(response.data.data);
+				if (response.data.success) setAppointments(response.data.data);
+				else error(popups, response.data.message);
 			});
 		}
   }, [doctor, searchPrameters]);
@@ -77,7 +95,6 @@ export function DoctorAgendaPage() {
 
 					const date = SimpleDate.fromObject(appointment.extra.date);
 					const time = Time.fromObject(appointment.extra.time);
-					const doctor = appointment.doctor;
 					const clinic = appointment.clinic;
 
 					return (
@@ -107,12 +124,12 @@ export function DoctorAgendaPage() {
 	let subtitle;
 	let title;
 
-	if (doctor) {
+	if (doctor && clinics) {
 			display =
 			<>
 				<Formik
 					initialValues={{
-						doctor: searchPrameters.doctor,
+						clinic: searchPrameters.clinic,
 						start: searchPrameters.start.toInputString(),
 						end: searchPrameters.end.toInputString()
 					}}
@@ -128,7 +145,7 @@ export function DoctorAgendaPage() {
 						const end = new SimpleDate(values.end);
 
 						setSearchParameters({
-							doctor: values.doctor,
+							clinic: values.clinic,
 							start: start,
 							end: end
 						});
@@ -136,6 +153,12 @@ export function DoctorAgendaPage() {
 				>
 					<Form>
 						<div className="searchBar">
+							<Select
+								label="Clinic"
+								name="clinic"
+								default={{label: "All", value: ""}}
+								options={clinics}
+							/>
 							<TextInput
 								label="Start"
 								name="start"

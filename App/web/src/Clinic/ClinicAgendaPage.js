@@ -145,7 +145,7 @@ export function ClinicAgendaPage() {
 								options={
 									doctors.map(doctor => {
 										return {
-											id: doctor.doctor.id,
+											value: doctor.doctor.id,
 											label: doctor.user.fullName
 										}
 									})
