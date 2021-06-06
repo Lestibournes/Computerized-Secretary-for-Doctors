@@ -18,6 +18,7 @@ const db = admin.firestore();
  * Check if the current user is authorized to modify the given doctor's work schedule.
  * @param {string} clinic The id of the clinic
  * @param {string} doctor The id of the doctor
+ * @todo Implement it or delete it.
  * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
  * @returns {Promise<boolean>}
  */

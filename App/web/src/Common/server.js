@@ -81,6 +81,12 @@ export const server = {
 		updatePicture: fn.httpsCallable("users-updatePicture"),
 		update: fn.httpsCallable("users-update"),
 	},
+
+	links: {
+		get: fn.httpsCallable("links-get"),
+		register: fn.httpsCallable("links-register"),
+		isAvailable: fn.httpsCallable("links-isAvailable"),
+	},
 }
 
 export const events = {
