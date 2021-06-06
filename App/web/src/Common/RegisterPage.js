@@ -6,7 +6,6 @@ import { useAuth } from "./Auth";
 import { Link, Redirect } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
 import { Button } from './Components/Button';
-import { Page } from './Components/Page';
 import { Popup } from './Components/Popup';
 import { usePopups } from './Popups';
 

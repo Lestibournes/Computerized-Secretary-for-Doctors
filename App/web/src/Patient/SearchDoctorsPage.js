@@ -125,7 +125,6 @@ export function SearchDoctorsPage() {
 					if (values.field) data.field = values.field;
 
 					server.doctors.search(data).then((result) => {
-						console.log(result.data);
 						setDoctors(result.data);
 					});
 				}}

@@ -21,14 +21,11 @@ function useProvidePopups() {
 	const [popupArray, setPopupArray] = useState([]);
 
 	useEffect(() => {
-		console.log(popups);
-		// console.log("Refreshing...");
 		// Update the display of the popups:
 		const popup_array = [];
 		
 		for (const entry of popups) {
 			popup_array.push(entry[1]);
-			// console.log(entry[0]);
 		}
 
 		setPopupArray(popup_array);
@@ -37,7 +34,6 @@ function useProvidePopups() {
 	const add = (popup) => {
 		// Only allow 1 popup to be added per key. If the key is already used, don't add the popup.
 		if (!popups.has(popup.key)) {
-			console.log("New Popup Received!", popup);
 			const popup_map = new Map(popups);
 			popup_map.set(popup.key, popup);
 			setPopups(popup_map);
