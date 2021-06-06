@@ -1,5 +1,6 @@
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
+const functions = require('firebase-functions');
 
 /**
  * Convenience global variable for accessing the Admin Firestore object.
@@ -9,6 +10,7 @@ const db = admin.firestore();
 const specializations = require('./specializations');
 
 const appointments = require('./appointments');
+const clinics = require('./clinics');
 
 const stringContains = require('./functions').stringContains;
 
@@ -98,7 +100,13 @@ async function getAllClinics(doctor, city) {
 		};
 
 		return Promise.all(clinic_promises).then(clinics => {
-			return clinics;
+			const results = [];
+			
+			for (const clinic of clinics) {
+				if (clinic) results.push(clinic);
+			}
+
+			return results;
 		});
 	});
 }
@@ -216,38 +224,87 @@ async function removeSpecialization(doctor, specialization) {
 /**
  * Get all of the appointments of the specified doctor within the specified time range.
  * Start and end times are optional. If they are not specified then there will not be a limit on start and end times.
- * @param {{doctor: string, clinic: string, start: object, end: object}} constraints
- * @returns {Promise<object[]>} An array of appointment data.
+ * @todo Use the code from clinics.getAppointments.
+ * @param {string} doctor the requested doctor id.
+ * @param {string} clinic the requested clinic id.
+ * If not null, then it will fetch only the appointments the doctor has at that particular clinic.
+ * @param {{year: number, month: number, day: number}} start the start date.
+ * @param {{year: number, month: number, day: number}} end the end date.
+ * @param {functions.https.CallableContext} context
+ * @returns {Promise<{
+ * success: boolean,
+ * message: string,
+ * data: object[]
+ * }>} Whether the data was successfully retrieved, an error message if not, and the appointment data in an array.
  */
- async function getAppointments(doctor, clinic, start, end) {
-	let promises = [];
-
-	let query = db;
-
+async function getAppointments(doctor, clinic, start, end, context) {
 	if (clinic) {
-		query = query.collection("clinics").doc(clinic);
+		return clinics.getAppointments({clinic, doctor, start, end, context});
 	}
 
-	query = query.collection("doctors").doc(doctor).collection("appointments");
+	const response = {
+		success: false,
+		message: "",
+		data: []
+	}
 
-	console.log(start, SimpleDate.fromObject(start).day, SimpleDate.fromObject(start).toDate())
-	if (start || end ) query = query.orderBy("start");
-	if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
-	if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
-
-	return query.get().then(querySnapshot => {
-		for (const snap of querySnapshot.docs) {
-			promises.push(
-				appointments.get(snap.id).then(appointment => {
-					return appointment;
-				})
-			);
+	return getID(context.auth.uid).then(current_doctor_id => {
+		if (current_doctor_id === doctor) {
+			let query = db.collection("doctors").doc(doctor).collection("appointments");
+			const startDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(start).toDate());
+			const endDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(end).toDate());
+		
+			if (start || end ) query = query.orderBy("start");
+			if (start) query = query.startAt(startDate);
+			if (end) query = query.endAt(endDate);
+		
+			
+			return query.get().then(appointment_snapshots => {
+				const appointment_promises = [];
+		
+				for (const snap of appointment_snapshots.docs) {
+					appointment_promises.push(
+						appointments.get(snap.id, context).then(appointment => {
+							return appointment;
+						})
+					);
+				}
+		
+				return Promise.all(appointment_promises).then(results => {
+					for (const result of results) {
+						response.data.push(result.data);
+					}
+		
+					response.success = true;
+					return response;
+				});
+			});
 		}
 
-		return Promise.all(promises).then(results => {
-			return results;
-		});
-	});
+		response.message = "You are not authorized to view this data";
+		return response;
+	})
+
+
+	// let query = db.collection("doctors").doc(doctor).collection("appointments");
+
+	// if (start || end ) query = query.orderBy("start");
+	// if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
+	// if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
+
+	// return query.get().then(querySnapshot => {
+	// 	for (const snap of querySnapshot.docs) {
+	// 		promises.push(
+	// 			appointments.get(snap.id).then(appointment => {
+	// 				return appointment;
+	// 			})
+	// 		);
+	// 	}
+
+	// 	return Promise.all(promises).then(results => {
+	// 		return results;
+	// 	});
+	// });
 }
 
 exports.getData = getData;

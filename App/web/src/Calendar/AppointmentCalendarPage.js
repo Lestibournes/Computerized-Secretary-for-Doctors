@@ -9,6 +9,11 @@ import { Button } from '../Common/Components/Button';
 import { Page } from '../Common/Components/Page';
 import { server } from "../Common/server";
 import { Popup } from "../Common/Components/Popup";
+import { useParams } from "react-router";
+import { Select } from "../Common/Components/Select";
+import { Form, Formik } from "formik";
+import * as Yup from 'yup';
+import { usePopups } from "../Common/Popups";
 
 function debounce(fn, ms) {
   let timer
@@ -23,17 +28,15 @@ function debounce(fn, ms) {
 
 export function AppointmentCalendarPage() {
 	const auth = useAuth();
+	const popupManager = usePopups();
 
+	const { clinic } = useParams();
+	const [doctors, setDoctors] = useState([]);
 	const [doctor, setDoctor] = useState(null);
-	const [date, setDate] = useState(new SimpleDate());
+	const [date, setDate] = useState(new SimpleDate()); // Default date: today.
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState();
 	const [minimum, setMinimum] = useState(60);
-	const [colors, setColors] = useState({
-		"new patient": 120,
-		"regular": 240,
-		"follow up": 360
-	});
 
 	const [dimensions, setDimensions] = useState({ 
 		height: window.innerHeight,
@@ -54,9 +57,17 @@ export function AppointmentCalendarPage() {
 
 		return () => window.removeEventListener('resize', debouncedHandleResize);
 	});
+
+	useEffect(() => {
+		if (clinic) {
+			server.clinics.getAllDoctors({clinic: clinic}).then(response => {
+				setDoctors(response.data);
+			});
+		}
+	}, [clinic]);
 	
 	useEffect(() => {
-		if (auth.user && !doctor) {
+		if (auth.user && doctor === null && !clinic) {
 			// Check if the current user is a doctor, and if he is, fetch his doctor id/ref:
 			server.users.get({user: auth.user.uid}).then(user => {
 				if (user.data.doctor) {
@@ -64,9 +75,12 @@ export function AppointmentCalendarPage() {
 						setDoctor(doctor_data.data);
 					})
 				}
+				else {
+					setDoctor(false);
+				}
 			});
 		}
-	}, [auth.user, doctor]);
+	}, [auth.user, doctor, clinic]);
 
 	useEffect(() => {
 		if (doctor && date) {
@@ -173,47 +187,107 @@ export function AppointmentCalendarPage() {
 				// setMinimum(minimum);
 			});
 		}
-	}, [doctor, date, colors]);
+		else {
+			setSchedule(null);
+		}
+	}, [doctor, date]);
 
-	let popups = 
-	<>
-		{schedule === false ?
+	if (schedule === false) {
+		popupManager.add(
 			<Popup close={() => {window.history.back()}}>
 				You need to create a work schedule before viewing your appointment calendar.
 			</Popup>
-		: ""}
-	</>
+		);
+	}
+
+	if (doctor === false) {
+		popupManager.add(
+			<Popup close={() => {window.history.back()}}>
+				You need to be a doctor to view your work calendar.
+			</Popup>
+		);
+	}
 
 	let display;
 	
-	if (schedule) {
 		display = 
-			<div className="Calendar" id="display">
-				<div className="buttonBar">
-				<Button action={() => {
-						setDate(new SimpleDate());
-						}} label="Today" />
-					<Button action={() => {
-						setDate(date.getPreviousWeek());
-						}} label="<" />
-					<Button action={() => {
-						setDate(date.getNextWeek());
-						}} label=">" />
-					<h3>{date.monthname + " " + date.year}</h3>
-				</div>
-				<CalendarWeek
-					date={date}
-					appointments={appointments}
-					schedule={schedule}
-					minimum={minimum}
-					width={dimensions.width}
-					height={960}
-				/>
-			</div>;
-	}
+			<>
+				{clinic ?
+					<Formik
+						initialValues={{
+							doctor: doctor
+						}}
+						validationSchema={Yup.object({
+						})}
+						onSubmit={async (values, { setSubmitting }) => {
+							setSubmitting(true);
+							
+							if (values.doctor) {
+								for (const doc of doctors) {
+									if (doc.doctor.id === values.doctor) {
+										setDoctor(doc);
+										break;
+									}
+								}
+							}
+							else {
+								setDoctor(null);
+							}
+						}}
+					>
+						<Form>
+							<div className="searchBar">
+								<Select
+									label="Doctor"
+									name="doctor"
+									default={{
+										value: "",
+										label: ""
+									}}
+									options={
+										doctors.map(doctor => {
+											return {
+												id: doctor.doctor.id,
+												label: doctor.user.fullName
+											}
+										})
+									}
+								/>
+								<div className="buttonBar">
+									<Button type="submit" label="Select" />
+								</div>
+							</div>
+						</Form>
+					</Formik>
+				: ""}
+				{schedule ?
+					<div className="Calendar" id="display">
+						<div className="buttonBar">
+						<Button action={() => {
+								setDate(new SimpleDate());
+								}} label="Today" />
+							<Button action={() => {
+								setDate(date.getPreviousWeek());
+								}} label="<" />
+							<Button action={() => {
+								setDate(date.getNextWeek());
+								}} label=">" />
+							<h3>{date.monthname + " " + date.year}</h3>
+						</div>
+						<CalendarWeek
+							date={date}
+							appointments={appointments}
+							schedule={schedule}
+							minimum={minimum}
+							width={dimensions.width}
+							height={960}
+						/>
+					</div>
+				: ""}
+			</>;
 
 	return (
-		<Page title="Work Calendar" popups={popups}>
+		<Page title="Work Calendar">
 			{display}
 		</Page>
 	);

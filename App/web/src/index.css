@@ -54,3 +54,16 @@ option:disabled {
 	width: auto;
 	height: auto;
 }
+
+.removable-item {
+	display: flex;
+	flex-direction: row;
+	gap: var(--margin);
+	place-items: center;
+}
+
+.item-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--margin)
+}

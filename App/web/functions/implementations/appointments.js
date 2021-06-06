@@ -15,6 +15,7 @@ const schedules = require("./schedules");
 const users = require("./users");
 const secretaries = require("./secretaries");
 
+const NAME = "appointments";
 /**
  * @todo Make the 2 classes files identical and get rid of the redundancy:
  */
@@ -50,7 +51,7 @@ async function getAppointments(doctor, clinic, date) {
 		for (const appointment_snap of appointment_snaps.docs) {
 			const start_time = Time.fromDate(appointment_snap.data().start.toDate());
 			const end_time = start_time.incrementMinutes(appointment_snap.data().duration);
-	
+
 			appointments.push(new Slot(start_time, end_time));
 		}
 
@@ -72,7 +73,7 @@ function appointmentCollides(appointments, slot) {
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -106,56 +107,109 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 	});
 }
 
+async function checkModifyPermission(appointment, context) {
+	return db.collection("appointments").doc(appointment).get().then(appointment_data => {
+		// Check if the user trying to modify the appointment is the patient:
+		if (appointment_data.data().patient === context.auth.uid) {
+			return true;
+		}
+
+		// Check if the user trying to modify the appointment is the doctor:
+		return doctors.getID(context.auth.uid).then(doctor_id => {
+			if (appointment_data.data().doctor === doctor_id) return true;
+
+			// Check if the user trying to modify the appointment is the owner of the clinic:
+			return clinics.isOwner(appointment_data.data().clinic, doctor_id).then(owner => {
+				if (owner) return true;
+
+				// Check if the user trying to modify the appointment is a secretary of the clinic:
+				return secretaries.getID(context.auth.uid).then(secretary_id => {
+					clinics.hasSecretary(appointment_data.data().clinic, secretary_id).then(exists => {
+						if (exists) return true;
+
+						// If the current user is neither the patient, nor the doctor, nor the owner of the clinic, nor a secretary at the clinic:
+						return false;
+					})
+				});
+			})
+		});
+	});
+}
+
 // API implementation code:
 
 /**
  * Get all the data of the appointment.
- * @param {string} id The id of the appointment.
- * @returns {Promise<{appointment: object, doctor: object, clinic: object, extra: {date: SimpleDate, time: Time}}>} An object containing all the relevant data.
+ * @param {string} appointment The id of the appointment.
+ * @returns {Promise<{
+ * success: boolean,
+ * message: string,
+ * data: {appointment: object, doctor: object, clinic: object, extra: {date: SimpleDate, time: Time}}
+ * }>} An object containing all the relevant data.
  */
-async function get(id) {
-	return db.collection("appointments").doc(id).get().then(appointment_snap => {
-		const promises = [];
-
-		let data = {
-			appointment: null,
-			doctor: null,
-			clinic: null,
-			patient: null,
-			extra: {
-				date: null,
-				time: null
-			}
-		};
-
-		data.appointment = appointment_snap.data();
-		data.appointment.id = id;
-
-		promises.push(
-			doctors.getData(data.appointment.doctor).then(doctor => {
-				data.doctor = doctor;
-			})
-		);
+async function get(appointment, context) {
+	const response = {
+		success: false,
+		message: "",
+		data: null
+	}
 	
-		promises.push(
-			clinics.get(data.appointment.clinic).then(clinic => {
-				data.clinic = clinic;
-			})
-		);
+	return db.collection("appointments").doc(appointment).get().then(appointment_snap => {
+		if (appointment_snap.exists) {
+			return checkModifyPermission(appointment, context).then(allowed => {
+				if (allowed) {
+					const promises = [];
+			
+					let data = {
+						appointment: null,
+						doctor: null,
+						clinic: null,
+						patient: null,
+						extra: {
+							date: null,
+							time: null
+						}
+					};
+			
+					data.appointment = appointment_snap.data();
+					data.appointment.id = appointment;
+			
+					promises.push(
+						doctors.getData(data.appointment.doctor).then(doctor => {
+							data.doctor = doctor;
+						})
+					);
+			
+					promises.push(
+						clinics.get(data.appointment.clinic).then(clinic => {
+							data.clinic = clinic;
+						})
+					);
+			
+					promises.push(
+						users.get(data.appointment.patient).then(user => {
+							data.patient = user;
+						})
+					);
+			
+					const date = new Date(data.appointment.start.toDate());
+					data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
+					data.extra.date = new SimpleDate(date).toObject();
+			
+					return Promise.all(promises).then(results => {
+						response.success = true;
+						response.data = data;
+						return response;
+					});
+				}
+		
+				response.message = "You do not have permission to view this appointment";
+				return response;
+			});
+		}
 
-		promises.push(
-			users.get(data.appointment.patient).then(user => {
-				data.patient = user;
-			})
-		);
-
-		const date = new Date(data.appointment.start.toDate());
-		data.extra.time = new Time(date.getUTCHours(), date.getUTCMinutes());
-		data.extra.date = new SimpleDate(date).toObject();
-	
-		return Promise.all(promises).then(results => {
-			return data;
-		});
+		response.message = "The requested appointment was not found";
+		return response;
 	});
 }
 
@@ -165,14 +219,14 @@ async function get(id) {
  * @param {{user: string, doctor: string, start: Date, end: Date}} constraints
  * @returns {Promise<object[]>} An array of appointment data.
  */
-async function getAll({user, start, end, doctor}) {
+async function getAll({user, start, end, doctor}, context) {
 	let promises = [];
 
 	let query = db;
 
 	if (user) query = query.collection("users").doc(user).collection("appointments");
 	else if (doctor) query = query.collection("doctors").doc(doctor).collection("appointments");
-	
+
 	if (start || end ) query = query.orderBy("start");
 	if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
 	if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
@@ -180,8 +234,10 @@ async function getAll({user, start, end, doctor}) {
 	return query.get().then(querySnapshot => {
 		for (const snap of querySnapshot.docs) {
 			promises.push(
-				get(snap.id).then(appointment => {
-					return appointment;
+				get(snap.id, context).then(response => {
+					if (response.success) {
+						return response.data;
+					}
 				})
 			);
 		}
@@ -204,11 +260,11 @@ async function getAll({user, start, end, doctor}) {
  */
 async function getAvailable(doctor, clinic, date, type) {
 	// The time from the server is in UTC with no timezone offset data.
-	
+
 	date = new SimpleDate(date.year, date.month, date.day);
 
 	const available = [];
-	
+
 	// First get all of the booked time ranges:
 	return getAppointments(doctor, clinic, date).then(appointments => {
 		return schedules.get(clinic, doctor).then(schedule => {
@@ -218,20 +274,20 @@ async function getAvailable(doctor, clinic, date, type) {
 						const start = Time.fromObject(shift.start);
 						const end = Time.fromObject(shift.end);
 						const shift_slot = new Slot(start, end);
-						
+
 						let current_slot = new Slot(start, start.incrementMinutes(response.minutes));
-						
+
 						while (shift_slot.contains(current_slot)) {
 							// If the current time slot doesn't collide with the occupied time slots:
 							if (!appointmentCollides(appointments, current_slot)) {
 								available.push(current_slot);
 							}
-		
+
 							current_slot = new Slot(current_slot.start.incrementMinutes(response.minimum),
 								current_slot.end.incrementMinutes(response.minimum))
 						}
 					}
-		
+
 					return available;
 				}
 			});
@@ -269,15 +325,15 @@ async function add(doctor, clinic, patient, date, time, type) {
 	if (!doctor) {
 		response.messages.push("Missing doctor");
 	}
-	
+
 	if (!clinic) {
 		response.messages.push("Missing clinic");
 	}
-	
+
 	if (!patient) {
 		response.messages.push("Missing patient");
 	}
-	
+
 	if (!date) {
 		response.messages.push("Missing date");
 	}
@@ -294,21 +350,21 @@ async function add(doctor, clinic, patient, date, time, type) {
 			 */
 			const simpleTime = Time.fromObject(time);
 			const currentTime = new Time();
-	
+
 			if (simpleTime.compare(currentTime) < 0) {
 				response.messages.push("The time must be in the future.")
 			}
 		}
 	}
-	
+
 	if (!time) {
 		response.messages.push("Missing time");
 	}
-	
+
 	if (!type) {
 		response.messages.push("Missing type");
 	}
-	
+
 	if (response.messages.length == 0) {
 		const start = new Date(date.year, date.month, date.day, time.hours, time.minutes);
 		date = new SimpleDate(date.year, date.month, date.day);
@@ -358,82 +414,101 @@ async function add(doctor, clinic, patient, date, time, type) {
  * @param {SimpleDate} date The date of the appointment
  * @param {Time} time The time of the appointment
  * @param {string} type The type of appointment
+ * @param {functions.https.CallableContext} context
  * @returns {Promise<{id: string, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
  */
-async function edit(appointment, date, time, type) {
-	let response = {
-		id: null,
-		messages: []
-	};
-
-	if (!appointment) {
-		response.messages.push("Missing appointment");
-	}
-	
-	if (!date && !time && !type) {
-		response.messages.push("no change requested");
-	}
-	
-	if (response.messages.length == 0) {
-		// Use existing data as default value. Override with new data:
-		const old_data = await db.collection("appointments").doc(appointment).get().then(snapshot => {return snapshot.data()});
-		const old_date = new Date(old_data.start.toDate());
-		const old_time = new Time(old_date.getUTCHours(), old_date.getUTCMinutes());
-
-		let new_date = new SimpleDate(old_date.getUTCFullYear(), old_date.getUTCMonth(), old_date.getUTCDate());
-		let new_time = new Time(old_time.hours, old_time.minutes);
-		let new_type = old_data.type;
-
-		if (date) {
-			new_date = new SimpleDate(date.year, date.month, date.day);
+async function edit(appointment, date, time, type, context) {
+	return checkModifyPermission(appointment, context).then(allowed => {
+		const response = {
+			success: false,
+			message: "",
+			id: null
 		}
 
-		if (time) {
-			new_time = new Time(time.hours, time.minutes);
-		}
+		if (allowed) {
+			if (!appointment) {
+				response.message = "Missing appointment";
+				return response;
+			}
 
-		if (type) {
-			new_type = type;
-		}
+			if (!date && !time && !type) {
+				response.message = "no change requested";
+				return response;
+			}
 
-		const new_data = {
-			start: new Date(new_date.year, new_date.month, new_date.day, new_time.hours, new_time.minutes),
-			type: new_type
-		}
+			// Use existing data as default value. Override with new data:
+			return db.collection("appointments").doc(appointment).get().then(old_data => {
+				const old_date = new Date(old_data.data().start.toDate());
+				const old_time = new Time(old_date.getUTCHours(), old_date.getUTCMinutes());
 
-		// Create the slot object for checking the availability of the new time:
-		// What if the new time is the same as the old time?
+				let new_date = new SimpleDate(old_date.getUTCFullYear(), old_date.getUTCMonth(), old_date.getUTCDate());
+				let new_time = new Time(old_time.hours, old_time.minutes);
+				let new_type = old_data.data().type;
 
-		const start_time = new Time(new_time.hours, new_time.minutes);
-		const end_time = start_time.incrementMinutes(old_data.duration);
-		const slot = new Slot(start_time, end_time);
+				if (date) {
+					new_date = new SimpleDate(date.year, date.month, date.day);
+				}
 
-		/**
-		 * @todo Instead, check if the new time is available under the assumption that the current time is not taken, since there are appointments of various lengths
-		 * and so the time slots can overlap, so if an appointment is 30 minutes and you want to move it 15 minutes earlier you'll get that it's unvailable.
-		 *  */
-		const unchanged = (new_date.compare(new SimpleDate(old_date.getUTCFullYear(), old_date.getUTCMonth(), old_date.getUTCDate())) === 0 && new_time.compare(old_time) === 0);
-		const available = await isAvailable(old_data.doctor, old_data.clinic, new_date, slot, new_type);
+				if (time) {
+					new_time = new Time(time.hours, time.minutes);
+				}
 
-		if (unchanged || available) {
-			await db.collection("appointments").doc(appointment).update(new_data)
-			.then(value => {
-				db.collection("users").doc(old_data.patient).collection("appointments").doc(appointment).update(new_data);
-				db.collection("doctors").doc(old_data.doctor).collection("appointments").doc(appointment).update(new_data);
-				db.collection("clinics").doc(old_data.clinic).collection("doctors").doc(old_data.doctor).collection("appointments").doc(appointment).update(new_data);
-				response.id = appointment;
-			})
-			.catch(reason => {
-				console.error(reason);
-				response.messages.push("Updating the appointment failed");
+				if (type) {
+					new_type = type;
+				}
+
+				const new_data = {
+					start: new Date(new_date.year, new_date.month, new_date.day, new_time.hours, new_time.minutes),
+					type: new_type
+				}
+
+				// Create the slot object for checking the availability of the new time:
+				// What if the new time is the same as the old time?
+
+				const start_time = new Time(new_time.hours, new_time.minutes);
+				const end_time = start_time.incrementMinutes(old_data.data().duration);
+				const slot = new Slot(start_time, end_time);
+
+				/**
+				 * @todo Instead, check if the new time is available under the assumption that the current time is not taken, since there are appointments of various lengths
+				 * and so the time slots can overlap, so if an appointment is 30 minutes and you want to move it 15 minutes earlier you'll get that it's unvailable.
+				 *  */
+				const unchanged = (new_date.compare(new SimpleDate(old_date.getUTCFullYear(), old_date.getUTCMonth(), old_date.getUTCDate())) === 0 && new_time.compare(old_time) === 0);
+
+				return isAvailable(old_data.data().doctor, old_data.data().clinic, new_date, slot, new_type).then(available => {
+					if (unchanged) {
+						response.message = "You have not made any changes";
+						return response;
+					}
+
+					if (!available) {
+						response.message = "The requested time is unavailable";
+						return response;
+					}
+
+					const promises = [];
+					promises.push(db.collection("appointments").doc(appointment).update(new_data));
+					promises.push(db.collection("users").doc(old_data.data().patient).collection("appointments").doc(appointment).update(new_data));
+					promises.push(db.collection("doctors").doc(old_data.data().doctor).collection("appointments").doc(appointment).update(new_data));
+					promises.push(db.collection("clinics").doc(old_data.data().clinic).collection("doctors").doc(old_data.data().doctor).collection("appointments").doc(appointment).update(new_data));
+
+					return Promise.all(promises).then(() => {
+						response.success = true;
+						response.id = appointment;
+						return response;
+					});
+					// .catch(reason => {
+					// 	response.message = "Updating the appointment failed";
+					// 	return response;
+					// });
+				});
 			});
 		}
 		else {
-			response.messages.push("The new requested time is unavailable");
+			response.message = "You are not authorized to perform this action";
+			return response;
 		}
-	}
-
-	return response;
+	})
 }
 
 /**
@@ -441,40 +516,42 @@ async function edit(appointment, date, time, type) {
  * @todo use session tokens to verify that the user canceling the appointment
  * is the user for which the appointment has been made.
  * @param {string} appointment The id of the appointment
+ * @param {functions.https.CallableContext} context
  * @returns {Promise<{success: boolean, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
  */
-async function cancel(appointment) {
+async function cancel(appointment, context) {
 	const response = {
 		success: false,
-		messages: []
+		message: ""
 	};
 
-	let user_appointment;
-	let doctor_appointment;
-	let clinic_appointment;
-	let general_appointment = db.collection("appointments").doc(appointment);
-
-	await general_appointment.get().then(snapshot => {
-		if (snapshot.exists) {
-			user_appointment = db.collection("users").doc(snapshot.data().patient).collection("appointments").doc(appointment);
-			doctor_appointment = db.collection("doctors").doc(snapshot.data().doctor).collection("appointments").doc(appointment);
-			clinic_appointment = db.collection("clinics").doc(snapshot.data().clinic).collection("doctors").doc(snapshot.data().doctor).collection("appointments").doc(appointment);
+	return checkModifyPermission(appointment, context).then(allowed => {
+		if (allowed) {
+			let general_appointment = db.collection("appointments").doc(appointment);
+			
+			return general_appointment.get().then(appointment_snap => {
+				if (appointment_snap.exists) {
+					const promises = [];
+					
+					promises.push(db.collection("users").doc(appointment_snap.data().patient).collection("appointments").doc(appointment).delete());
+					promises.push(db.collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
+					promises.push(db.collection("clinics").doc(appointment_snap.data().clinic).collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
+					promises.push(general_appointment.delete());
+	
+					Promise.all(promises).then(() => {
+						response.success = true;
+						return response;
+					})
+				}
+	
+				response.message = "The appointment does not exist";
+				return response;
+			});
 		}
+
+		response.message = "You do not have the right to delete this appointment";
+		return response;
 	});
-
-	if (user_appointment) {
-		await general_appointment.delete();
-		await user_appointment.delete();
-		await doctor_appointment.delete()
-		await clinic_appointment.delete();
-
-		response.success = true;
-	}
-	else {
-		response.messages.push("appointment doesn't exist");
-	}
-
-	return response;
 }
 /**
  * 
@@ -488,14 +565,14 @@ function arrived(data, context) {
 		success: false,
 		messages: ""
 	}
-	
+
 	// Fetch the secretary ID of the current user:
 	return secretaries.getID(context.auth.uid).then(secretary => {
 		// If the user has a secretary profile:
 		if (secretary) {
 			// Fetch the appointment data:
 			return db.collection("appointments").doc(data.appointment).get().then(appointment_snapshot => {
-	
+
 				// Check if the current user works as a secretary in the clinic that the appointment is for:
 				return clinics.hasSecretary(appointment_snapshot.data().clinic, secretary).then(secretarty_exits => {
 					if (secretarty_exits) {

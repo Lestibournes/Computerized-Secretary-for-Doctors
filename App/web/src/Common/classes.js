@@ -206,7 +206,15 @@ export class Slot {
 	 */
 	constructor(...args) {
 		if (args.length === 3 || args.length === 2) this.#date = new Date(...args);
-		if (args.length === 1) this.#date = args[0];
+		if (args.length === 1) {
+			if (args[0] instanceof Date) {
+				this.#date = args[0]
+			}
+			else if (typeof args[0] === 'string' || args[0] instanceof String) {
+				let parts = args[0].split("-");
+				this.#date = new Date(parts[0], parts[1] - 1, parts[2]);
+			}
+		};
 		if (args.length === 0) this.#date = new Date();
 	}
 
@@ -389,5 +397,9 @@ export class Slot {
 	
 	toString() {
 		return (this.day < 10 ? "0" : "") + this.day + "/" + (this.month < 9 ? "0" : "") + (this.month + 1) + "/" + this.year;
+	}
+
+	toInputString() {
+		return this.year + "-" + (this.month < 9 ? "0" : "") + (this.month + 1) + "-" + (this.day < 10 ? "0" : "") + this.day;
 	}
 }

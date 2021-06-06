@@ -32,5 +32,5 @@ exports.removeSpecialization = functions.https.onCall((data, context) => {
 });
 
 exports.getAppointments = functions.https.onCall((data, context) => {
-	return doctors.getAppointments(data.doctor, data.clinic, data.start, data.end);
+	return doctors.getAppointments(data.doctor, data.clinic, data.start, data.end, context);
 });

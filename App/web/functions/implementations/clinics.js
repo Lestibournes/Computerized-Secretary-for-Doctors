@@ -1,9 +1,12 @@
 // The Firebase Admin SDK to access Cloud Firestore.
 const admin = require('firebase-admin');
+const functions = require('firebase-functions');
 
 const doctors = require('./doctors');
 const secretaries = require('./secretaries');
+const appointments = require("./appointments");
 const { capitalizeAll } = require('./functions');
+const { SimpleDate } = require('./SimpleDate');
 
 /**
  * Convenience global variable for accessing the Admin Firestore object.
@@ -377,45 +380,80 @@ async function getAllCities() {
 /**
  * Get all of the appointments of all the doctors of the specified clinic within the specified time range.
  * Start and end times are optional. If they are not specified then there will not be a limit on start and end times.
- * @param {{clinic: string, start: Date, end: Date}} constraints
- * @returns {Promise<object[]>} An array of appointment data.
+ * @param {{clinic: string, doctor: string, start: Date, end: Date, context: functions.https.CallableContext}} constraints
+ * @returns {Promise<{
+ * success: boolean,
+ * message: string,
+ * data: object[]
+ * }>} Whether the data was successfully retrieved, an error message if not, and the appointment data in an array.
  */
- async function getAppointments({clinic, start, end}) {
-	let promises = [];
+async function getAppointments({clinic, doctor, start, end, context}) {
+	const response = {
+		success: false,
+		message: "",
+		data: []
+	}
 
-	promises.push(db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
+	return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
 		let doctor_promises = [];
 
 		for (const doctor_snapshot of doctor_snapshots.docs) {
-			let query = db.collection("doctors").doc(doctor_snapshot.id).collection("appointments");
-
-			if (start || end ) query = query.orderBy("start");
-			if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
-			if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
+			if ((doctor && doctor_snapshot.id === doctor) || !doctor) {
+				let query = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snapshot.id).collection("appointments");
+				const startDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(start).toDate());
+				const endDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(end).toDate());
+	
+				if (start || end ) query = query.orderBy("start");
+				if (start) query = query.startAt(startDate);
+				if (end) query = query.endAt(endDate);
+	
+				
+				doctor_promises.push(query.get().then(querySnapshot => {
+					const appointment_promises = [];
+	
+					for (const snap of querySnapshot.docs) {
+						appointment_promises.push(
+							appointments.get(snap.id, context).then(appointment => {
+								return appointment;
+							})
+						);
+					}
 			
-			doctor_promises.push(query.get().then(querySnapshot => {
-				const appointment_promises = [];
-
-				for (const snap of querySnapshot.docs) {
-					appointment_promises.push(
-						appointments.get(snap.id).then(appointment => {
-							return appointment;
-						})
-					);
-				}
-		
-				return Promise.all(appointment_promises).then(results => {
-					// Array of the doctor's appointments:
-					return results;
-				});
-			}));
+					return Promise.all(appointment_promises).then(results => {
+						const appointments = [];
+	
+						for (const result of results) {
+							appointments.push(result.data);
+						}
+	
+						// Array of the doctor's appointments:
+						return appointments;
+					});
+				}));
+			}
 		}
 
 		return Promise.all(doctor_promises).then(results => {
+			for (const result of results) {
+				response.data = response.data.concat(result);
+			}
+
+			// response.data.sort((a, b) => {
+			// 	return a.appointment.start > b.appointment.start ? 1 : a.appointment.start < b.appointment.start ? -1 : 0;
+			// });
+
+			/**@todo a more nuanced response  */
+			if (response.data.length > 0) {
+				response.success = true;
+			}
+			else {
+				response.message = "No appointments found";
+			}
+
 			// Array of arrays of the appointments of each doctor:
-			return results;
-		})
-	}));
+			return response;
+		});
+	});
 }
 
 

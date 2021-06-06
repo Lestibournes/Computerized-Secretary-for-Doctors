@@ -4,13 +4,11 @@ import { useAuth } from "../../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../../Common/Components/Button";
 import { Page } from "../../../Common/Components/Page";
-import { Card } from '../../../Common/Components/Card';
 
-import { Time } from '../../../Common/classes';
 import { server } from '../../../Common/server';
-import { capitalize, compareByName, error, getPictureURL } from '../../../Common/functions';
+import { capitalize, getPictureURL } from '../../../Common/functions';
 import { Popup } from '../../../Common/Components/Popup';
-import { UserEditPopup } from '../../../User/UserEditForm';
+import { usePopups } from '../../../Common/Popups';
 
 export function SecretaryEditor() {
 	const auth = useAuth();
@@ -34,7 +32,7 @@ export function SecretaryEditor() {
 	const [image, setImage] = useState(null);
 	
 	const [redirect, setRedirect] = useState(null); //Where to redirect to in case the doctor is removed from the clinic.
-	const [popups, setPopups] = useState([]);
+	const popupManager = usePopups();
 
 	useEffect(() => {
 		if (secretary) {
@@ -43,34 +41,6 @@ export function SecretaryEditor() {
 			});
 		}
 	}, [secretary]);
-
-	function addPopup(popup) {
-		let exists = false;
-
-		for (const old_popup of popups) {
-			if (old_popup.key === popup.key) {
-				exists = true;
-			}
-		}
-
-		if (!exists) {
-			const new_popups = [...popups];
-			new_popups.push(popup);
-			setPopups(new_popups);
-		}
-	}
-
-	function removePopup(popup) {
-		const new_popups = [];
-
-		for (const p of popups) {
-			if (p !== popup) {
-				new_popups.push(p);
-			}
-		}
-
-		setPopups(new_popups);
-	}
 
 	useEffect(() => {
 		if (clinic) {
@@ -93,7 +63,7 @@ export function SecretaryEditor() {
 				{redirect ? <Redirect to={redirect} /> : ""}
 				<div className="headerbar">
 					<h2>Details</h2><span><Button label="Remove" action={() => {
-						removeSecretaryPopup(addPopup, removePopup, clinic, secretaryData, () => {
+						RemoveSecretaryPopup(popupManager, clinic, secretaryData, () => {
 							setRedirect("/specific/doctor/clinics/edit/" + clinic);
 						})
 					}} /></span>
@@ -103,20 +73,21 @@ export function SecretaryEditor() {
 					<b>Name:</b> <span>{secretaryData.fullName}</span>
 					<b>Sex:</b> <span>{secretaryData.sex ? capitalize(secretaryData.sex) : "Not specified"}</span>
 				</div>
+				{oops}
 			</>
 		);
 	}
 
 	return (
-		<Page title="Edit Secretary" subtitle={subtitle} popups={popups.concat(oops)}>
+		<Page title="Edit Secretary" subtitle={subtitle}>
 			{display}
 		</Page>
 	);
 }
 
-export function removeSecretaryPopup(addPopup, removePopup, clinic, secretaryData, success) {
+export function RemoveSecretaryPopup(popupManager, clinic, secretaryData, success) {
 	const close = () => {
-		removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -132,20 +103,12 @@ export function removeSecretaryPopup(addPopup, removePopup, clinic, secretaryDat
 			<Button label="Cancel" type="okay" action={close} />
 			<Button label="Yes" type="cancel" action={() => {
 				server.clinics.removeSecretary({clinic: clinic, secretary: secretaryData.id}).then(response => {
-					if (response.data.success) {
-						success();
-					}
-					else {
-						error(addPopup, removePopup,
-							<div>
-								{response.data.message}
-							</div>
-						);
-					}
+					if (response.data.success) success();
+					else popupManager.error(response.data.message)
 				})
 			}} />
 		</div>
 	</Popup>;
 
-	addPopup(popup);
+	popupManager.add(popup);
 }

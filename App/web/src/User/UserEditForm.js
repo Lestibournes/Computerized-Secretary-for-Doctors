@@ -9,16 +9,16 @@ import { RadioInput } from "../Common/Components/RadioInput";
 import { PictureInput } from "../Common/Components/PictureInput";
 import { server } from "../Common/server";
 
-export function UserEditForm({addPopup, removePopup, user, image, close, success}) {
+export function UserEditForm({popupManager, user, data, image, close, success}) {
 	const [selectedImage, setSelectedImage] = useState(image);
 	const [file, setFile] = useState(null);
 
 	return (
 		<Formik
 			initialValues={{
-				firstName: user.firstName,
-				lastName: user.lastName,
-				sex: String((user.sex && user.sex.toLowerCase() === "male") ? "Male" : "Female")
+				firstName: data.firstName,
+				lastName: data.lastName,
+				sex: String((data.sex && data.sex.toLowerCase() === "male") ? "Male" : "Female")
 			}}
 			validationSchema={Yup.object({
 				firstName: Yup.string(),
@@ -31,7 +31,7 @@ export function UserEditForm({addPopup, removePopup, user, image, close, success
 				const promises = [];
 				
 				if (file) {
-					promises.push(server.users.updatePicture({id: user.id}).then(response => {
+					promises.push(server.users.updatePicture({id: user}).then(response => {
 						storage.child(response.data).put(file);
 					}));
 				}
@@ -44,7 +44,7 @@ export function UserEditForm({addPopup, removePopup, user, image, close, success
 
 				if (values.sex) updates.sex = values.sex.toLowerCase();
 
-				promises.push(server.users.update({id: user.id, changes: updates}));
+				promises.push(server.users.update({id: user, changes: updates}));
 
 				Promise.all(promises).then(results => {
 					success();
@@ -82,7 +82,7 @@ export function UserEditForm({addPopup, removePopup, user, image, close, success
 						callback={file => {
 							setFile(file);
 
-							var temp = storage.child("users/" + user.id + "/pictures/temp");
+							var temp = storage.child("users/" + user + "/pictures/temp");
 							temp.put(file).then(() => {
 								temp.getDownloadURL().then(url => {
 									setSelectedImage(url);
@@ -103,23 +103,23 @@ export function UserEditForm({addPopup, removePopup, user, image, close, success
 	);
 }
 
-export function UserEditPopup(addPopup, removePopup, user, image, success) {
+export function userEditPopup(popupManager, user, data, image, success) {
 	const close = () => {
-		removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
 	<Popup
-		key="DeleteType"
-		title="Delete Type"
+		key="Edit User Profile"
+		title="Edit User Profile"
 		close={close}
 	>
 		<UserEditForm
-			addPopup={addPopup} removePopup={removePopup}
+			popupManager={popupManager}
 			success={success} close={close}
-			user={user} image={image}
+			user={user} data={data} image={image}
 		/>
 	</Popup>;
 
-	addPopup(popup);
+	popupManager.add(popup);
 }

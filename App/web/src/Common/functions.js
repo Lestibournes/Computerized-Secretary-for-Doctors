@@ -39,33 +39,6 @@ export function capitalizeAll(text) {
 	return text[0].toUpperCase() + text.substring(1);
 }
 
-/**
- * 
- * @param {() => []} getPopups A function to get array that holds the Page's displayed popups.
- * @param {([]) => {}} setPopups A function to update the Page's displayed popups.
- * @param {string} title The title of the popup.
- * @param {*} body JSX of the Popup body.
- */
-export function error(addPopup, removePopup, body) {
-	const close = () => {
-		removePopup(popup);
-	};
-
-	const popup = 
-	<Popup
-		key={Math.random()}
-		title="Error"
-		close={close}
-	>
-		{body}
-		<div className="buttonBar">
-			<Button label="Close" action={close} />
-		</div>
-	</Popup>;
-
-	addPopup(popup);
-}
-
 export function compareByName(a, b) {
 	return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
 }

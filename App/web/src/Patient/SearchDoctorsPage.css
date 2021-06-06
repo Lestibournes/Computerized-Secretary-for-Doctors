@@ -1,0 +1,50 @@
+
+.Page Form .searchBar {
+	display: flex;
+	flex-direction: column;
+	gap: var(--margin);
+}
+
+.Page Form .searchBar {
+	width: 100%;
+}
+
+.Page Form .searchBar .Input {
+	display: flex;
+	flex-direction: row;
+	gap: var(--margin);
+}
+
+.Page Form .searchBar .Input > * {
+	width: 100%;
+}
+
+.Page Form .searchBar .Input > :first-child {
+	width: 50%;
+}
+
+
+.Page Form .searchBar .buttonBar {
+	width: 100%;
+	height: unset;
+	place-items: unset;
+	place-content: flex-end;
+	place-self: unset;
+}
+
+/* @media screen and (min-width: 600px) {
+	.Page Form .searchBar .buttonBar {
+		grid-column: span 2;
+	}
+} */
+
+@media screen and (min-width: 863px) {
+	.Page Form .searchBar {
+		flex-direction: row;
+	}
+
+	.Page Form .searchBar .buttonBar {
+		width: min-content;
+		place-content: unset;
+	}
+}

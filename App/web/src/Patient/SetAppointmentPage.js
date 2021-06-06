@@ -10,8 +10,9 @@ import { SelectDate } from "../Common/Components/SelectDate";
 import { Page } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
 import { Popup } from '../Common/Components/Popup';
-import { capitalizeAll, capitalize, error, compareByName } from '../Common/functions';
+import { capitalizeAll, capitalize, compareByName } from '../Common/functions';
 import { server } from '../Common/server';
+import { usePopups } from '../Common/Popups';
 
 /**
  * @todo
@@ -48,54 +49,24 @@ export function SetAppointmentPage() {
 
 	const [success, setSuccess] = useState(null);
 	const [deleted, setDeleted] = useState(null);
-	const [confirmDelete, setConfirmDelete] = useState(false);
 
 	const [doctor_data, setDoctorData] = useState(null);
 	const [clinic_data, setClinicData] = useState(null);
 
-	const [problem, setProblem] = useState(null);
-
-
-	const [popups, setPopups] = useState([]);
-
-	function addPopup(popup) {
-		let exists = false;
-
-		for (const old_popup of popups) {
-			if (old_popup.key === popup.key) {
-				exists = true;
-			}
-		}
-
-		if (!exists) {
-			const new_popups = [...popups];
-			new_popups.push(popup);
-			setPopups(new_popups);
-		}
-	}
-
-	function removePopup(popup) {
-		const new_popups = [];
-
-		for (const p of popups) {
-			if (p !== popup) {
-				new_popups.push(p);
-			}
-		}
-
-		setPopups(new_popups);
-	}
-
+	const popupManager = usePopups();
 
 	useEffect(() => {
 		if (appointment) {
 			server.appointments.get({id: appointment}).then(results => {
-				setData(results.data);
-				setDoctorID(results.data.doctor.doctor.id);
-				setClinicID(results.data.clinic.id);
-				setType(results.data.appointment.type);
-				setDate(SimpleDate.fromObject(results.data.extra.date));
-				setTime(Time.fromObject(results.data.extra.time));
+				if (results.data.success) {
+					setData(results.data.data);
+					setDoctorID(results.data.data.doctor.doctor.id);
+					setClinicID(results.data.data.clinic.id);
+					setType(results.data.data.appointment.type);
+					setDate(SimpleDate.fromObject(results.data.data.extra.date));
+					setTime(Time.fromObject(results.data.data.extra.time));
+				}
+				else popupManager.error(results.data.message)
 			});
 		}
 		else if (doctor && clinic && !doctorID && !clinicID) {
@@ -168,13 +139,7 @@ export function SetAppointmentPage() {
 					types.sort(compareByName);
 					setTypesData(types);
 				}
-				else {
-					error(addPopup, removePopup,
-						<div>
-							{response.data.message}
-						</div>
-					);
-				}
+				else popupManager.error(response.data.message)
 			});
 		}
 	}, [clinicID, doctorID]);
@@ -187,23 +152,6 @@ export function SetAppointmentPage() {
 	for (const type of typesData) {
 		if (type.name) types.push(type.name);
 	}
-
-	let oops =
-	<>
-		{confirmDelete ?
-			<ConfirmDelete
-				appointment={appointment}
-				close={() => setConfirmDelete(false)}
-				success={() => setDeleted(true)}
-			/>
-		: ""}
-
-		{problem ?
-			<Popup title="Error" close={() => setProblem(false)}>
-				<div>{problem}</div>
-			</Popup>
-		: ""}
-	</>;
 
 	let subtitle;
 	let display;
@@ -264,19 +212,11 @@ export function SetAppointmentPage() {
 								new_data.type = values.type;
 							}
 							
-							server.appointments.edit(new_data)
-							.then(response => {
-								if (response.data.messages.length > 0) {
-									setProblem(response.data.messages.map(message => {
-										return <p>{capitalize(message)}</p>;
-									}));
-								}
-
-								setSuccess(response.data.id);
+							server.appointments.edit(new_data).then(response => {
+								if (response.data.success) setSuccess(response.data.id);
+								else popupManager.error(response.data.message)
 							})
-							.catch(reason => {
-								setProblem(capitalize(reason));
-							});
+							.catch(reason => popupManager.error(reason))
 						}
 						else {
 							// Set the appointment on the server:
@@ -290,52 +230,54 @@ export function SetAppointmentPage() {
 							})
 							.then(response => {
 								if (response.data.messages.length > 0) {
-									setProblem(response.data.messages.map(message => {
-										return <p>{capitalize(message)}</p>;
-									}));
+									popupManager.error(
+										response.data.messages.map(message => {
+											return <p>{capitalize(message)}</p>;
+										})
+									);
 								}
 
 								setSuccess(response.data.id);
 							})
-							.catch(reason => {
-								setProblem(capitalize(reason));
-							});
+							.catch(reason => popupManager.error(capitalize(reason)))
 						}
 					}}
 				>
 					<Form>
 						{/* Put appointment-making widgets here. */}
 						<div className="pickers">
-							<SelectList
-								label="Appointment Type"
-								name="type"
-								options={types}
-								selected={type}
-								onClick={(index) => setType(index)}
-							/>
-							<SelectDate
-								name="date"
-								selected={date}
-								onClick={(date) => {
-									setDate(date);
-								}}
-							/>
-							<SelectList
-								label="Time Slot"
-								name="time"
-								options={times}
-								selected={time}
-								onClick={(time) => setTime(time)}
-							/>
-						</div>
-						<div className="buttonBar">
-							{appointment ? 
-								<Button
-									type="cancel"
-									action={() => setConfirmDelete(true)}
-								label="Delete" />
-							: ""}
-							<Button type="submit" label="Submit" />
+							<div className="widgets">
+								<SelectList
+									label="Appointment Type"
+									name="type"
+									options={types}
+									selected={type}
+									onClick={(index) => setType(index)}
+								/>
+								<SelectDate
+									name="date"
+									selected={date}
+									onClick={(date) => {
+										setDate(date);
+									}}
+								/>
+								<SelectList
+									label="Time Slot"
+									name="time"
+									options={times}
+									selected={time}
+									onClick={(time) => setTime(time)}
+								/>
+							</div>
+							<div className="buttonBar">
+								{appointment ? 
+									<Button
+										type="cancel"
+										action={() => ConfirmDeletePopup(popupManager, appointment,() => setDeleted(true))}
+									label="Delete" />
+								: ""}
+								<Button type="submit" label="Submit" />
+							</div>
 						</div>
 					</Form>
 				</Formik>
@@ -345,33 +287,30 @@ export function SetAppointmentPage() {
 	}
 
 	return (
-		<Page title={appointment ? "Change Your Appointment" : "Make an Appointment"} subtitle={subtitle} popups={popups.concat(oops)}>
+		<Page title={appointment ? "Modify Appointment" : "Make an Appointment"} subtitle={subtitle} popupManager={popupManager} >
 			{display}
 		</Page>
 	);
 }
 
-function ConfirmDelete({appointment, close, success}) {
-	const [problem, setProblem] = useState(null);
+function ConfirmDeletePopup(popupManager, appointment, success) {
+		const close = () => {
+			popupManager.remove(popup);
+		}
 
-	return (
-		<Popup title="Confirm Deletion" close={close}>
-			<p>Are you sure you wish to delete this shift?</p>
+		const popup = <Popup key="Confirm Appointment Deletion" title="Confirm Deletion" close={close}>
+			<p>Are you sure you wish to delete this appointment?</p>
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.appointments.cancel({appointment: appointment}).then(response => {
-						if (!response.data.success) {setProblem(response.data.message)}
+						if (!response.data.success) popupManager.error(capitalize(response.data.message))
 						else success();
 					});
 				}} />
 				<Button type="okay" label="Cancel" action={close} />
-				{problem ?
-					<Popup title="Error" close={() => setProblem(false)}>
-						<div>{problem}</div>
-					</Popup>
-				: ""}
 			</div>
 		</Popup>
-	);
+
+		popupManager.add(popup)
 }

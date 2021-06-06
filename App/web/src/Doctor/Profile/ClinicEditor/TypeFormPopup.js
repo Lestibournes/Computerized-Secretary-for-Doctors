@@ -4,7 +4,6 @@ import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
-import { error } from "../../../Common/functions";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -21,9 +20,9 @@ import { error } from "../../../Common/functions";
  * 					duration: number
  * 				}) => {}} success Callback for after updating the appointment type.
  */
- export function TypeFormPopup(addPopup, removePopup, clinic, doctor, type, name, duration, success) {
+ export function TypeFormPopup(popupManager, clinic, doctor, type, name, duration, success) {
 	const close = () => {
-		removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -63,7 +62,7 @@ import { error } from "../../../Common/functions";
 							});
 							close();
 						}
-						else error(addPopup, removePopup, response.data.message);
+						else popupManager.error(response.data.message)
 					});
 				}
 				else {
@@ -76,7 +75,7 @@ import { error } from "../../../Common/functions";
 							});
 							close();
 						}
-						else error(addPopup, removePopup, response.data.message);
+						else popupManager.error(response.data.message)
 					});
 				}
 			}}
@@ -89,7 +88,7 @@ import { error } from "../../../Common/functions";
 				<div className="buttonBar">
 					{type ? 
 						<Button type="cancel" label="Delete" action={() => {
-							TypeDeletePopup(addPopup, removePopup, clinic, doctor, type, name, duration, (result) => {
+							TypeDeletePopup(popupManager, clinic, doctor, type, name, duration, (result) => {
 								success(result);
 								close();
 							})
@@ -102,7 +101,7 @@ import { error } from "../../../Common/functions";
 		</Formik>
 	</Popup>;
 
-	addPopup(popup);
+	popupManager.add(popup);
 }
 
 
@@ -115,9 +114,9 @@ import { error } from "../../../Common/functions";
  * @param {string} type The id of the appointment type.
  * @param {({id: string}) => {}} success Callback for after updating the appointment type.
  */
-export function TypeDeletePopup(addPopup, removePopup, clinic, doctor, type, name, duration, success) {
+export function TypeDeletePopup(popupManager, clinic, doctor, type, name, duration, success) {
 	const close = () => {
-		removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -145,12 +144,12 @@ export function TypeDeletePopup(addPopup, removePopup, clinic, doctor, type, nam
 						});
 						close();
 					}
-					else error(addPopup, removePopup, response.data.message);
+					else popupManager.error(response.data.message)
 				});
 			}}
 			/>
 		</div>
 	</Popup>;
 
-	addPopup(popup);
+	popupManager.add(popup);
 }

@@ -6,8 +6,8 @@ import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
-import { Popup } from '../Common/Components/Popup';
 import { server } from '../Common/server';
+import { usePopups } from '../Common/Popups';
 
 export function AppointmentPage() {
 	/**
@@ -22,38 +22,37 @@ export function AppointmentPage() {
 	const [image, setImage] = useState(null); // The url of the patient's profile picture.
 	const [arrived, setArrived] = useState(false); // The patient's arrival status.
 
-	const [message, setMessage] = useState(); // A message to be displayed in a popup.
+	const popupManager = usePopups();
 	
 	useEffect(() => {
 		if (appointment) {
 			server.appointments.get({id: appointment}).then(results => {
-				setAppointmentData(results.data);
+				if (results.data.success) {
+					const data = results.data.data;
 
-				server.doctors.getData({id: results.data.appointment.doctor}).then(results => {
-					setDoctorData(results.data);
-				});
+					setAppointmentData(data);
+	
+					server.doctors.getData({id: data.appointment.doctor}).then(doctor_results => {
+						setDoctorData(doctor_results.data);
+					});
+					
+					server.clinics.get({id: data.appointment.clinic}).then(clinic_results => {
+						setClinicData(clinic_results.data);
+					});
+	
+					getPictureURL(data.appointment.patient).then(url => {
+						setImage(url);
+					});
+	
+					setArrived(data.appointment.arrived);
+				}
+				else {
+					popupManager.error(results.data.message);
+				}
 				
-				server.clinics.get({id: results.data.appointment.clinic}).then(results => {
-					setClinicData(results.data);
-				});
-
-				getPictureURL(results.data.appointment.patient).then(url => {
-					setImage(url);
-				});
-
-				setArrived(results.data.appointment.arrived);
 			});
 		}
 	}, [appointment]);
-
-	const popups =
-	<>
-		{message ? 
-			<Popup title={message.title} close={() => setMessage(null)}>
-				{message.body}
-			</Popup>
-		: ""}
-	</>;
 
 	let display;
 	let subtitle;
@@ -66,24 +65,27 @@ export function AppointmentPage() {
 		<>
 			<div className="headerbar">
 				<h3>Patient Details</h3>
-				<Button
-					type={arrived ? "okay" : ""}
-					label="Arrived"
-					action={() => {
-						server.appointments.arrived({appointment: appointment}).then(response => {
-							if (response.data.success) {
-								setArrived(response.data.current);
-							}
-							else {
-								// Display error message popup.
-								setMessage({
-									title: "Error",
-									message: response.data.message
-								});
-							}
-						});
-					}}
-				/>
+				<div className="buttonBar">
+					<Button
+						label="Edit"
+						link={"/specific/secretary/appointments/edit/" + appointment}
+					/>
+					<Button
+						type={arrived ? "okay" : ""}
+						label="Arrived"
+						action={() => {
+							server.appointments.arrived({appointment: appointment}).then(response => {
+								if (response.data.success) {
+									setArrived(response.data.current);
+								}
+								else {
+									// Display error message popup.
+									popupManager.error(response.data.message);
+								}
+							});
+						}}
+					/>
+				</div>
 			</div>
 			<div className="table">
 				<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
@@ -105,7 +107,7 @@ export function AppointmentPage() {
 	}
 	
 	return (
-		<Page title={title} subtitle={subtitle} popups={popups}>
+		<Page title={title} subtitle={subtitle}>
 			{display}
 		</Page>
 	);

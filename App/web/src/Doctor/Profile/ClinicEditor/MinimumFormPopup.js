@@ -4,7 +4,6 @@ import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
-import { error } from "../../../Common/functions";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -15,9 +14,9 @@ import { error } from "../../../Common/functions";
  * @param {number} minimum The current minimum appointment duration.
  * @param {(minimum: number) => {}} success Callback for after updating the minimum.
  */
- export function MinimumFormPopup(addPopup, removePopup, clinic, doctor, minimum, success) {
+ export function MinimumFormPopup(popupManager, clinic, doctor, minimum, success) {
 	const close = () => {
-		removePopup(popup);
+		popupManager.remove(popup);
 	};
 
 	const popup = 
@@ -45,7 +44,7 @@ import { error } from "../../../Common/functions";
 						success(values.minimum);
 						close();
 					}
-					else error(addPopup, removePopup, response.data.message);
+					else popupManager.error(response.data.message)
 				});
 			}}
 		>
@@ -61,5 +60,5 @@ import { error } from "../../../Common/functions";
 		</Formik>
 	</Popup>;
 
-	addPopup(popup);
+	popupManager.add(popup);
 }

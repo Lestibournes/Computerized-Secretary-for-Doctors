@@ -7,12 +7,14 @@ import { Page } from "../../../Common/Components/Page";
 import { Card } from '../../../Common/Components/Card';
 
 import { Time } from '../../../Common/classes';
-import { ShiftEditForm } from './ShiftEditForm';
+import { shiftEditPopup } from './ShiftEditForm';
 import { server } from '../../../Common/server';
-import { compareByName, error } from '../../../Common/functions';
+import { capitalize, compareByName } from '../../../Common/functions';
 
 import { MinimumFormPopup } from './MinimumFormPopup';
 import { TypeFormPopup } from './TypeFormPopup';
+import { SimpleDate } from "../../../Common/classes";
+import { usePopups } from '../../../Common/Popups';
 
 export function ScheduleEditor() {
 	const auth = useAuth();
@@ -40,51 +42,17 @@ export function ScheduleEditor() {
 	
 	const [redirect, setRedirect] = useState(null); //Where to redirect to in case the doctor is removed from the clinic.
 
-	const [shiftEditor, setShiftEditor] = useState(null);
 	const [schedule, setSchedule] = useState(null);
-	const [cards, setCards] = useState();
+	const [shiftCards, setShiftCards] = useState();
+	const [typeCards, setTypeCards] = useState();
 
-	const [popups, setPopups] = useState([]);
-
-	function addPopup(popup) {
-		let exists = false;
-
-		for (const old_popup of popups) {
-			if (old_popup.key === popup.key) {
-				exists = true;
-			}
-		}
-
-		if (!exists) {
-			const new_popups = [...popups];
-			new_popups.push(popup);
-			setPopups(new_popups);
-		}
-	}
-
-	function removePopup(popup) {
-		const new_popups = [];
-
-		for (const p of popups) {
-			if (p !== popup) {
-				new_popups.push(p);
-			}
-		}
-
-		setPopups(new_popups);
-	}
+	const popupManager = usePopups();
 
 	useEffect(() => {
 		if (clinic && doctor) {
 			server.schedules.getMinimum({clinic: clinic, doctor: doctor}).then(response => {
 				if (response.data.success) setMinimum(response.data.minimum);
-				else {
-					error(addPopup, removePopup,
-						<div>
-							{response.data.message}
-						</div>
-					);
-				}
+				else popupManager.error(response.data.message)
 			});
 
 			server.schedules.getTypes({clinic: clinic, doctor: doctor}).then(response => {
@@ -100,13 +68,7 @@ export function ScheduleEditor() {
 					types.sort(compareByName);
 					setTypesData(types);
 				}
-				else {
-					error(addPopup, removePopup,
-						<div>
-							{response.data.message}
-						</div>
-					);
-				}
+				else popupManager.error(response.data.message)
 			});
 
 			server.clinics.get({id: clinic}).then(clinic_data => {
@@ -122,6 +84,42 @@ export function ScheduleEditor() {
 			});
 		}
 	}, [clinic, doctor]);
+
+	useEffect(() => {
+		if (typesData) {
+			const cards = typesData.map(type => {
+				return(
+					<Card
+						key={type.id}
+						title={type.name}
+						body={type.duration * minimum + " Minutes"}
+						action={() => {
+							TypeFormPopup(popupManager, clinic, doctor, type.id, type.name, type.duration,
+								new_type => {
+									const new_types = [];
+
+									for (const old_type of typesData) {
+										if (old_type.id !== new_type.id) {
+											new_types.push(old_type);
+										}
+									}
+
+									if (new_type.name) {
+										new_types.push(new_type);
+									}
+
+									new_types.sort(compareByName);
+
+									setTypesData(new_types);
+								}
+							);
+						}}
+					/>)
+			});
+
+			setTypeCards(cards);
+		}
+	}, [typesData, minimum]);
 
 	useEffect(() => {
 		if (schedule) {
@@ -143,13 +141,12 @@ export function ScheduleEditor() {
 							key={shift.id}
 							title={Time.fromObject(shift.start).toString() +
 							" - " + Time.fromObject(shift.end).toString()}
-							action={() => setShiftEditor({
-								shift: shift.id,
-								day: shift.day,
-								start: shift.start,
-								end: shift.end,
-								min: shift.min
-							})}
+							action={() => {
+								shiftEditPopup(
+									popupManager, clinic, doctor, shift.id, shift.day, shift.start, shift.end,
+									result => updateSchedule(popupManager, result).then(data => setSchedule(data))
+								)
+							}}
 						/>
 					)
 				}
@@ -157,61 +154,14 @@ export function ScheduleEditor() {
 				temp_cards.push(temp_day);
 			}
 	
-			setCards(temp_cards);
+			setShiftCards(temp_cards);
 		}
 	}, [schedule]);
 
 	let subtitle;
 	let display;
 
-	const oops = [];
-
-	if (shiftEditor !== null) {
-		oops.push(
-			<ShiftEditForm
-				key="ShiftEditForm"
-				doctor={doctor}
-				clinic={clinic}
-				{...shiftEditor}
-				close={() => setShiftEditor(null)}
-				success={data => {
-					if (data.shift) {
-						server.schedules.edit(data).then(result => {
-							if (result.data.success) {
-								server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
-									setSchedule(response.data);
-									setShiftEditor(null);
-								});
-							}
-	
-							else {
-								error(addPopup, removePopup, 
-								<div>
-									{result.data.message}
-								</div>)
-							}
-						});
-					}
-					else {
-						server.schedules.add(data).then(() => {
-							server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
-								setSchedule(response.data);
-								setShiftEditor(null);
-							});
-						});
-					}
-				}}
-				deleted={() => {
-					server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
-						setSchedule(response.data);
-						setShiftEditor(null);
-					});
-				}}
-			/>
-		)
-	}
-	
-	if (clinicData && doctorData && cards) {
+	if (clinicData && doctorData && shiftCards) {
 		subtitle = doctorData.user.fullName +" at " + clinicData.name;
 
 		display = (
@@ -220,14 +170,14 @@ export function ScheduleEditor() {
 				<div className="headerbar">
 					<span><b>Minimum duration:</b> {minimum} minutes.</span>
 					<Button label="Edit" action={() => {
-						MinimumFormPopup(addPopup, removePopup, clinic, doctor, minimum, minimum => setMinimum(minimum));
+						MinimumFormPopup(popupManager, clinic, doctor, minimum, minimum => setMinimum(minimum));
 					}} />
 				</div>
 
 				<div className="headerbar">
 					<h2>Appointment Types</h2>
 					<Button label="+" action={() => {
-						TypeFormPopup(addPopup, removePopup, clinic, doctor, null, null, null,
+						TypeFormPopup(popupManager, clinic, doctor, null, null, null,
 							new_type => {
 								const new_types = [...typesData];
 
@@ -243,96 +193,48 @@ export function ScheduleEditor() {
 					}} />
 				</div>
 				<div className="cardList">
-					{
-						typesData ? typesData.map(type => {
-							return(
-								<Card
-									key={type.id}
-									title={type.name}
-									body={type.duration * minimum + " Minutes"}
-									action={() => {
-										TypeFormPopup(addPopup, removePopup, clinic, doctor, type.id, type.name, type.duration,
-											new_type => {
-												const new_types = [];
-
-												for (const old_type of typesData) {
-													if (old_type.id !== new_type.id) {
-														new_types.push(old_type);
-													}
-												}
-
-												if (new_type.name) {
-													new_types.push(new_type);
-												}
-
-												new_types.sort(compareByName);
-
-												setTypesData(new_types);
-											}
-										);
-									}}
-								/>)
-						})
-						: ""
-					}
+					{typeCards}
 				</div>
 
 				<h2>Shift Schedule</h2>
-				<div className="headerbar">
-					<h3>Sunday</h3> <Button label="+" action={() => setShiftEditor({day: 0})} />
-				</div>
-				<div className="cardList">
-					{cards[0]}
-				</div>
-
-				<div className="headerbar">
-					<h3>Monday</h3> <Button label="+" action={() => setShiftEditor({day: 1})} />
-				</div>
-				<div className="cardList">
-					{cards[1]}
-				</div>
-
-				<div className="headerbar">
-					<h3>Tuesday</h3> <Button label="+" action={() => setShiftEditor({day: 2})} />
-				</div>
-				<div className="cardList">
-					{cards[2]}
-				</div>
-
-				<div className="headerbar">
-					<h3>Wednesday</h3> <Button label="+" action={() => setShiftEditor({day: 3})} />
-				</div>
-				<div className="cardList">
-					{cards[3]}
-				</div>
-
-				<div className="headerbar">
-					<h3>Thursday</h3> <Button label="+" action={() => setShiftEditor({day: 4})} />
-				</div>
-				<div className="cardList">
-					{cards[4]}
-				</div>
-
-				<div className="headerbar">
-					<h3>Friday</h3> <Button label="+" action={() => setShiftEditor({day: 5})} />
-				</div>
-				<div className="cardList">
-					{cards[5]}
-				</div>
-
-				<div className="headerbar">
-					<h3>Saturday</h3> <Button label="+" action={() => setShiftEditor({day: 6})} />
-				</div>
-				<div className="cardList">
-					{cards[6]}
-				</div>
+				{
+					SimpleDate.day_names.map((name, number) => {
+						return (
+							<>
+								<div className="headerbar">
+									<h3>{capitalize(name)}</h3>
+									<Button
+										label="+"
+										action={() => {
+											shiftEditPopup(
+												popupManager, clinic, doctor, null, number, null, null,
+												result => updateSchedule(popupManager, result).then(data => setSchedule(data))
+											)
+										}}
+									/>
+								</div>
+								<div className="cardList">
+									{shiftCards[number]}
+								</div>
+							</>
+						);
+					})
+				}
 			</>
 		);
 	}
 
 	return (
-		<Page title={"Edit Schedule"} subtitle={subtitle} popups={popups.concat(oops)}>
+		<Page title={"Edit Schedule"} subtitle={subtitle}>
 			{display}
 		</Page>
 	);
+}
+
+async function updateSchedule(popupManager, result) {
+	if (!result.success) popupManager.error(result.message)
+
+	return server.schedules.get({doctor: result.data.doctor, clinic: result.data.clinic}).then(response => {
+		return response.data;
+	});
 }

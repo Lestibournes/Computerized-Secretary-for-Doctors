@@ -4,45 +4,78 @@
 	gap: var(--margin);
 }
 
-.mainHeader {
-	color: var(--highlight);
-	margin-bottom: var(--margin);
-	display: grid;
-	grid-template-columns: 0fr 1fr auto;
-	column-gap: var(--margin);
+.Page .Input {
+	grid-template-columns: auto 1fr;
 }
 
-.mainHeader .title {
+/* For fat picker widgets like selecting from a list, or selecting a date */
+.Page Form .pickers {
+	display: flex;
+	flex-direction: column;
+	gap: var(--margin);
+	max-width: 25rem;
+}
+
+.Page Form .widgets {
+	display: flex;
+	flex-direction: column;
+	gap: var(--margin);
+}
+
+.Page Form .widgets > * {
+	height: 25rem;
+}
+
+@media screen and (min-width: 79rem) {
+	.Page Form .widgets {
+		flex-direction: row;
+	}
+
+	.Page Form .pickers {
+		max-width: min-content;
+	}
+}
+/*********************************/
+
+header {
+	display: flex;
+	flex-direction: column;
+	place-items: unset;
+	gap: var(--margin);
+}
+
+section header {
+	flex-direction: row;
+}
+
+header .title {
 	font-size: var(--font-size-a);
-	display: grid;
-	place-items: center start;
 	text-decoration: none;
 	color: var(--highlight);
 	font-weight: bold;
 }
 
-.mainHeader .section {
-	font-size: var(--font-size-c);
-	display: grid;
-	place-items: center end;
+header .title:hover {
+	color: var(--highlight-pale);
 }
 
-.mainHeader nav {
-	display: flex;
-	place-items: center start;
-	column-gap: var(--margin);
+header .title:active {
+	color: var(--highlight-dark);
 }
 
-.mainHeader div:last-child {
-	place-self: center end;
-	display: flex;
-	place-items: center end;
-	column-gap: var(--margin);
-}
+@media screen and (min-width: 500px) {
+	header {
+		flex-direction: row;
+		place-items: center;
+		gap: var(--margin)
+	}
 
-.mainHeader .button {
-	border: none;
-	border-radius: var(--radius);
-	font-size: var(--font-size-e);
-	padding: var(--control-padding);
+	header.main > * {
+		width: 100%;
+	}
+	
+	header.main > div {
+		display: flex;
+		place-content: flex-end;
+	}
 }

@@ -1,6 +1,7 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Button } from '../Common/Components/Button';
 import { Card } from "../Common/Components/Card"
 import { Page } from "../Common/Components/Page";
 import { getPictureURL } from "../Common/functions";
@@ -15,8 +16,7 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 * A list of pending membership requests with the option to accept or reject them.
 * A button to go to a search page to find existing doctors and invite them to join the clinic.
 */
-
-export function SecretaryClinicPage() {
+export function ClinicSchedulesPage() {
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
 
@@ -54,7 +54,7 @@ export function SecretaryClinicPage() {
 							: "No specializations specified"}
 						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
 						image={doctor.image}
-						link={"/specific/secretary/clinics/" + clinic + "/" + doctor.doctor.id}
+						link={"/specific/doctor/clinics/schedule/edit/" + clinic + "/" + doctor.doctor.id}
 					/>);
 	
 					return {
@@ -95,9 +95,6 @@ export function SecretaryClinicPage() {
 	if (doctorCards) {
 		display = (
 			<>
-				<div className="headerbar">
-					<h2>Doctors</h2>
-				</div>
 				<div className="cardList">
 					{doctorCards}
 				</div>
@@ -106,7 +103,7 @@ export function SecretaryClinicPage() {
 	}
 
 	return (
-		<Page title={data?.name}>
+		<Page title={data?.name} subtitle={"Schedules"}>
 			{display}
 		</Page>
 	);

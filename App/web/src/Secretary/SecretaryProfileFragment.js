@@ -2,14 +2,12 @@ import { useAuth } from "../Common/Auth";
 import { useEffect, useState } from "react";
 
 import { Card } from "../Common/Components/Card";
-import { Button } from "../Common/Components/Button";
 import { Popup } from "../Common/Components/Popup";
 
-import { Page } from "../Common/Components/Page";
 import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
-import { UserEditForm } from "../Doctor/Profile/UserEditor/UserEditForm";
-import { capitalizeAll, getPictureURL } from "../Common/functions";
+import { getPictureURL } from "../Common/functions";
 import { server } from "../Common/server";
+import { usePopups } from "../Common/Popups";
 
 function generateClinicCards(secretary, clinics) {
 	const clinics_list = [];
@@ -29,8 +27,13 @@ function generateClinicCards(secretary, clinics) {
 	return clinics_list;
 }
 
-export function SecretaryProfilePage() {
+export function SecretaryProfileFragment() {
 	const auth = useAuth();
+	const popupManager = usePopups();
+
+	useEffect(() => {
+		popupManager.clear();
+	}, []);
 
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
@@ -57,7 +60,6 @@ export function SecretaryProfilePage() {
 	const [clinics, setClinics] = useState(null);
 	const [createProfile, setCreateProfile] = useState(false);
 	const [alreadyExists, setAlreadyExists] = useState(false);
-	const [editData, setEditData] = useState(false);
 
 	useEffect(() => {
 		if (secretary) {
@@ -74,17 +76,9 @@ export function SecretaryProfilePage() {
 	if (secretary && clinics) {
 		display = (
 			<>
+				<h2>Secretary</h2>
 				<div className="headerbar">
-					<h2>Details</h2> <Button label="Edit" action={() => setEditData(true)} />
-				</div>
-				<div className="table">
-					<b>Photo</b> <img src={image} alt={secretary.fullName} />
-					<b>Name:</b> <span>{secretary.fullName}</span>
-					<b>Sex:</b> <span>{secretary.sex ? capitalizeAll(secretary.sex) : "Not specified"}</span>
-				</div>
-				
-				<div className="headerbar">
-					<h2>Clinics</h2>
+					<h3>Clinics</h3>
 				</div>
 				<div className="cardList">
 					{clinics}
@@ -120,22 +114,12 @@ export function SecretaryProfilePage() {
 				<div>You already have a secretary profile</div>
 			</Popup>
 		: ""}
-		
-		{editData ? 
-			<UserEditForm
-				user={secretary.user}
-				image={image}
-				close={() => {
-					loadData(auth.user.uid).then(() => setEditData(false));
-				}}
-			/>
-		: ""}
 	</>;
 
 	return (
-			<Page title="Secretary Profile">
+			<>
 				{popups}
 				{display}
-			</Page>
+			</>
 	);
 }

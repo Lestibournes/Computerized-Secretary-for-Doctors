@@ -130,7 +130,7 @@ export function SearchDoctorsPage() {
 				}}
 			>
 				<Form>
-					<div className="widgets">
+					<div className="searchBar">
 						<TextInput
 							label="Name"
 							name="name"
@@ -139,9 +139,9 @@ export function SearchDoctorsPage() {
 						/>
 						<Select label="City" name="city" options={cities}/>
 						<Select label="Specialization" name="field" options={fields}/>
-					</div>
-					<div className="buttonBar">
-						<Button type="submit" label="Search" />
+						<div className="buttonBar">
+							<Button type="submit" label="Search" />
+						</div>
 					</div>
 				</Form>
 			</Formik>

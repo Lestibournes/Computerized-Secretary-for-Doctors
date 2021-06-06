@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { fb } from "../init";
-
-const db = fb.firestore();
+import {server} from "./server";
 
 // User authentication services:
 
@@ -21,18 +20,35 @@ export const useAuth = () => {
 // The actual authentication services:
 function useProvideAuth() {
 	const [user, setUser] = useState(null);
-	const [name, setName] = useState({first: null, last: null});
+	const [name, setName] = useState({first: null, last: null, full: null});
 	
 	/**
 	 * Log the user in with email and password.
-	 * @param {string} email 
-	 * @param {string} password 
+	 * @param {string} email
+	 * @param {string} password
+	 * @returns {Promise<{
+	 * 	success: boolean,
+	 * 	message: string,
+	 * 	user: firebase.default.User
+	 * }>}
 	 */
 	const login = (email, password) => {
-		return fb.auth().signInWithEmailAndPassword(email, password).then((response) => {
+		const result = {
+			success: false,
+			message: "",
+			user: null,
+		}
+		
+		return fb.auth().signInWithEmailAndPassword(email, password).then(response => {
+			result.success = true;
+			result.user = response.user;
+			
 			setUser(response.user);
-			return response.user;
-		});
+			return response;
+		}).catch(error => {
+			result.message = error.message;
+			return result;
+		})
 	};
 
 	/**
@@ -50,17 +66,38 @@ function useProvideAuth() {
 	 * @param {string} lastName 
 	 * @param {string} email Must be unique (no other user with the same exact email)
 	 * @param {string} password 
+	 * @returns {Promise<{
+	 * 	success: boolean,
+	 * 	message: string,
+	 * 	user: firebase.default.User
+	 * }>}
 	 */
-	const register = (firstName, lastName, email, password) => {
-		return fb.auth().createUserWithEmailAndPassword(email, password).then((response) => {
-			setUser(response.user);
+	const register = async (firstName, lastName, email, password) => {
+		const result = {
+			success: false,
+			message: "",
+			user: null,
+		}
 
-			db.collection("users").doc(response.user.uid).set({
-				firstName: firstName,
-				lastName: lastName
+		return fb.auth().createUserWithEmailAndPassword(email, password).then(create_response => {
+			result.user = create_response.user;
+			setUser(result.user);
+			
+			return server.users.add({user: result.user.uid, firstName: firstName, lastName: lastName}).then(add_response => {
+				if (add_response.data.success) {
+					result.success = true;
+					return result;
+				}
+				else {
+					result.message = add_response.data.message;
+				}
+			}).catch(reason => {
+				result.message = "Could not create user profile";
+				return result;
 			});
-
-			return response.user;
+		}).catch(reason => {
+			result.message = "Could not register user";
+			return result;
 		});
 	};
 
@@ -98,20 +135,12 @@ function useProvideAuth() {
 			if (user) {
 				setUser(user);
 
-				db.collection("users").doc(user.uid).onSnapshot((doc) => {
-					if (doc.data()) {
-						setName({
-							first: doc.data().firstName,
-							last: doc.data().lastName
-						})
-					}
-					else {
-						setName({
-							first: null,
-							last: null
-						})
-					}
-				});
+				server.users.get({user: user.uid}).then(response => {
+					setName({
+						first: response.data.firstName,
+						last: response.data.lastName,
+						full: response.data.firstName + " " + response.data.lastName})
+				})
 			}
 			else {
 				setUser(null);
