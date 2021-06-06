@@ -4,7 +4,6 @@ import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
-import { error } from "../../../Common/functions";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -63,7 +62,7 @@ import { error } from "../../../Common/functions";
 							});
 							close();
 						}
-						else error(popupManager, response.data.message);
+						else popupManager.error(response.data.message)
 					});
 				}
 				else {
@@ -76,7 +75,7 @@ import { error } from "../../../Common/functions";
 							});
 							close();
 						}
-						else error(popupManager, response.data.message);
+						else popupManager.error(response.data.message)
 					});
 				}
 			}}
@@ -145,7 +144,7 @@ export function TypeDeletePopup(popupManager, clinic, doctor, type, name, durati
 						});
 						close();
 					}
-					else error(popupManager, response.data.message);
+					else popupManager.error(response.data.message)
 				});
 			}}
 			/>

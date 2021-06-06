@@ -4,7 +4,7 @@ import { Time } from "../Common/classes";
 import { Card } from '../Common/Components/Card';
 import { SimpleDate } from "../Common/classes";
 import { Page } from '../Common/Components/Page';
-import { capitalizeAll, error, getPictureURL } from '../Common/functions';
+import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { server } from '../Common/server';
 
 import * as Yup from 'yup';
@@ -65,7 +65,7 @@ export function DoctorAgendaPage() {
 				end: searchPrameters.end.toObject()
 			}).then(response => {
 				if (response.data.success) setAppointments(response.data.data);
-				else error(popups, response.data.message);
+				else popups.error(response.data.message)
 			});
 		}
   }, [doctor, searchPrameters]);

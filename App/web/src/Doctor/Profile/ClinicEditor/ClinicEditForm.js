@@ -1,11 +1,9 @@
 import { Form, Formik } from "formik";
 import * as Yup from 'yup';
-import { useState } from "react";
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { server } from "../../../Common/server";
-import { error } from "../../../Common/functions";
 
 export function ClinicEditForm({popupManager, clinic, doctor, name, city, address, close, success, deleted}) {
 	return (
@@ -27,7 +25,7 @@ export function ClinicEditForm({popupManager, clinic, doctor, name, city, addres
 				setSubmitting(true);
 				server.clinics.edit({id: clinic, doctor: doctor, name: values.name, city: values.city, address: values.address})
 				.then(response => {
-					if (!response.data.success) {error(popupManager, <div>{response.data.message}</div>)}
+					if (!response.data.success) popupManager.error(response.data.message)
 					else {success()}
 				});
 			}}
@@ -80,7 +78,7 @@ export function ClinicDeleteForm({popupManager, clinic, doctor, close, success})
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.clinics.delete({id: clinic, doctor: doctor}).then(response => {
-						if (!response.data.success) {error(popupManager, <div>{response.data.message}</div>)}
+						if (!response.data.success) popupManager.error(response.data.message)
 						else {success()}
 					});
 				}} />

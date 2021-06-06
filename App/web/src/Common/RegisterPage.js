@@ -3,12 +3,11 @@ import React, { useEffect } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "./Auth";
-import { Redirect } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
 import { Button } from './Components/Button';
 import { Page } from './Components/Page';
 import { Popup } from './Components/Popup';
-import { error } from './functions';
 import { usePopups } from './Popups';
 
 export function RegisterPage() {
@@ -16,7 +15,7 @@ export function RegisterPage() {
 	const popupManager = usePopups();
 	
 	const popup =
-		<Popup title="Register">
+		<Popup key="Register" title="Register">
 			<Formik
 				initialValues={{
 					fname: "",
@@ -47,19 +46,12 @@ export function RegisterPage() {
 					setSubmitting(true);
 
 					auth.register(values.fname, values.lname, values.email, values.password).then(response => {
-						if (!response.success) {
-							error(popupManager,
-								<div>
-									{response.message}
-								</div>
-							)
-						}
+						if (!response.success) popupManager.error(response.message);
 					});
 				}}
 			>
 				<Form>
 					<div className="widgets">
-
 						<TextInput
 							label="First Name"
 							name="fname"
@@ -98,13 +90,17 @@ export function RegisterPage() {
 		</Popup>;
 	
 	useEffect(() => {
-		if (popupManager.add) popupManager.add(popup);
-	}, [popupManager.add]);
+		popupManager.clear();
+	}, []);
 
 	return (
 		<>
 			{auth.user ? <Redirect to="/general/" /> : null }
-			<Page unprotected />
+			<header className="main">
+				<Link to="/" className="title">CSFPD</Link>
+			</header>
+			{popup}
+			{popupManager.popups}
 		</>
 	);
 }

@@ -53,10 +53,6 @@ export function DoctorEditor() {
 	const popupManager = usePopups();
 
 	useEffect(() => {
-		popupManager.clear();
-	}, []);
-
-	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) loadData(auth.user.uid);
 		});
@@ -149,7 +145,7 @@ export function DoctorEditor() {
 							}}
 						/>
 					</header>
-					<div class="item-list">
+					<div className="item-list">
 						{
 							doctor.fields.length > 0 ?
 								doctor.fields.map(field => 

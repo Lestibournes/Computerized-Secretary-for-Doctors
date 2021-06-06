@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom';
 import { Page } from '../Common/Components/Page';
 import { Time, SimpleDate } from '../Common/classes';
 import { server } from '../Common/server';
-import { error } from '../Common/functions';
 import { usePopups } from '../Common/Popups';
 
 export function AppointmentSuccessPage() {
@@ -29,7 +28,7 @@ export function AppointmentSuccessPage() {
 				setClinic(data.clinic);
 			}
 			else {
-				error(popupManager, response.data.message);
+				popupManager.error(response.data.message)
 			}
 		});
   }, [appointment]);

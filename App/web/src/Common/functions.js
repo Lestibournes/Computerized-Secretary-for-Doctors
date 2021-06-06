@@ -39,32 +39,6 @@ export function capitalizeAll(text) {
 	return text[0].toUpperCase() + text.substring(1);
 }
 
-/**
- * 
- * @param {{addPopup: () => {}, removePopup: () => {}}} popupManager an object that controls the display of popups in the current page.
- * @param {string} title The title of the popup.
- * @param {*} body JSX of the Popup body.
- */
-export function error(popupManager, body) {
-	const close = () => {
-		popupManager.remove(popup);
-	};
-
-	const popup = 
-	<Popup
-		key={Math.random()}
-		title="Error"
-		close={close}
-	>
-		{body}
-		<div className="buttonBar">
-			<Button label="Close" action={close} />
-		</div>
-	</Popup>;
-
-	popupManager.add(popup);
-}
-
 export function compareByName(a, b) {
 	return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
 }

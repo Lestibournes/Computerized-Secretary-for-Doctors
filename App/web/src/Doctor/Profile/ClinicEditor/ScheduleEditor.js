@@ -9,7 +9,7 @@ import { Card } from '../../../Common/Components/Card';
 import { Time } from '../../../Common/classes';
 import { shiftEditPopup } from './ShiftEditForm';
 import { server } from '../../../Common/server';
-import { capitalize, compareByName, error } from '../../../Common/functions';
+import { capitalize, compareByName } from '../../../Common/functions';
 
 import { MinimumFormPopup } from './MinimumFormPopup';
 import { TypeFormPopup } from './TypeFormPopup';
@@ -52,13 +52,7 @@ export function ScheduleEditor() {
 		if (clinic && doctor) {
 			server.schedules.getMinimum({clinic: clinic, doctor: doctor}).then(response => {
 				if (response.data.success) setMinimum(response.data.minimum);
-				else {
-					error(popupManager,
-						<div>
-							{response.data.message}
-						</div>
-					);
-				}
+				else popupManager.error(response.data.message)
 			});
 
 			server.schedules.getTypes({clinic: clinic, doctor: doctor}).then(response => {
@@ -74,13 +68,7 @@ export function ScheduleEditor() {
 					types.sort(compareByName);
 					setTypesData(types);
 				}
-				else {
-					error(popupManager,
-						<div>
-							{response.data.message}
-						</div>
-					);
-				}
+				else popupManager.error(response.data.message)
 			});
 
 			server.clinics.get({id: clinic}).then(clinic_data => {
@@ -244,12 +232,7 @@ export function ScheduleEditor() {
 }
 
 async function updateSchedule(popupManager, result) {
-	if (!result.success) {
-		error(popupManager, 
-			<div>
-			{result.message}
-		</div>)
-	}
+	if (!result.success) popupManager.error(result.message)
 
 	return server.schedules.get({doctor: result.data.doctor, clinic: result.data.clinic}).then(response => {
 		return response.data;

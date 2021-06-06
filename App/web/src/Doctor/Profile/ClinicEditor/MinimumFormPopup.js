@@ -4,7 +4,6 @@ import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
-import { error } from "../../../Common/functions";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -45,7 +44,7 @@ import { error } from "../../../Common/functions";
 						success(values.minimum);
 						close();
 					}
-					else error(popupManager, response.data.message);
+					else popupManager.error(response.data.message)
 				});
 			}}
 		>

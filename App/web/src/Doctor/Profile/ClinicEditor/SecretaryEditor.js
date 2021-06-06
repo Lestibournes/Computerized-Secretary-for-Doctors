@@ -6,7 +6,7 @@ import { Button } from "../../../Common/Components/Button";
 import { Page } from "../../../Common/Components/Page";
 
 import { server } from '../../../Common/server';
-import { capitalize, error, getPictureURL } from '../../../Common/functions';
+import { capitalize, getPictureURL } from '../../../Common/functions';
 import { Popup } from '../../../Common/Components/Popup';
 import { usePopups } from '../../../Common/Popups';
 
@@ -103,16 +103,8 @@ export function RemoveSecretaryPopup(popupManager, clinic, secretaryData, succes
 			<Button label="Cancel" type="okay" action={close} />
 			<Button label="Yes" type="cancel" action={() => {
 				server.clinics.removeSecretary({clinic: clinic, secretary: secretaryData.id}).then(response => {
-					if (response.data.success) {
-						success();
-					}
-					else {
-						error(popupManager,
-							<div>
-								{response.data.message}
-							</div>
-						);
-					}
+					if (response.data.success) success();
+					else popupManager.error(response.data.message)
 				})
 			}} />
 		</div>

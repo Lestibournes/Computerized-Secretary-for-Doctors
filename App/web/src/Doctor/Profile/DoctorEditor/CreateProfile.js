@@ -1,6 +1,5 @@
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
-import { error } from "../../../Common/functions";
 import { server } from "../../../Common/server";
 
 export function createProfilePopup(popupManager, user, success) {
@@ -15,12 +14,7 @@ export function createProfilePopup(popupManager, user, success) {
 					<Button type="okay" action={() => {
 						server.doctors.create({user: user}).then(response => {
 							if (response.data.success) success(response.data.doctor);
-							else {
-								error(
-									popupManager,
-									<div>You already have a doctor profile</div>
-								);
-							}
+							else popupManager.error("You already have a doctor profile");
 						});
 					}} label="Yes" />
 				</div>

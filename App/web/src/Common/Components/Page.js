@@ -1,5 +1,5 @@
 import "./Page.css";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Redirect } from "react-router";
 import { useAuth } from "../Auth";
 import { Link } from "react-router-dom";
@@ -83,7 +83,7 @@ export function Page({unprotected, title, subtitle, children}) {
 				{subtitle ? <h2>{subtitle}</h2> : ""}
 				{children ? (auth ? children : <h3>Loading...</h3>) : ""}
 			</div>
-			{/* {popups ? popups : ""} */}
+
 			{popupManager.popups}
 		</>
 	);

@@ -3,7 +3,7 @@ import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/classes";
 import { SimpleDate } from "../Common/classes";
 import { Page } from '../Common/Components/Page';
-import { capitalizeAll, error, getPictureURL } from '../Common/functions';
+import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
 import { server } from '../Common/server';
@@ -47,7 +47,7 @@ export function AppointmentPage() {
 					setArrived(data.appointment.arrived);
 				}
 				else {
-					error(popupManager, results.data.message);
+					popupManager.error(results.data.message);
 				}
 				
 			});
@@ -80,7 +80,7 @@ export function AppointmentPage() {
 								}
 								else {
 									// Display error message popup.
-									error(popupManager, response.data.message);
+									popupManager.error(response.data.message);
 								}
 							});
 						}}

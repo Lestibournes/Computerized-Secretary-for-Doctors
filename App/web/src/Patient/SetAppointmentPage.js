@@ -10,7 +10,7 @@ import { SelectDate } from "../Common/Components/SelectDate";
 import { Page } from "../Common/Components/Page";
 import { SimpleDate, Time } from '../Common/classes';
 import { Popup } from '../Common/Components/Popup';
-import { capitalizeAll, capitalize, error, compareByName } from '../Common/functions';
+import { capitalizeAll, capitalize, compareByName } from '../Common/functions';
 import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 
@@ -66,9 +66,7 @@ export function SetAppointmentPage() {
 					setDate(SimpleDate.fromObject(results.data.data.extra.date));
 					setTime(Time.fromObject(results.data.data.extra.time));
 				}
-				else {
-					error(popupManager, results.data.message);
-				}
+				else popupManager.error(results.data.message)
 			});
 		}
 		else if (doctor && clinic && !doctorID && !clinicID) {
@@ -141,13 +139,7 @@ export function SetAppointmentPage() {
 					types.sort(compareByName);
 					setTypesData(types);
 				}
-				else {
-					error(popupManager,
-						<div>
-							{response.data.message}
-						</div>
-					);
-				}
+				else popupManager.error(response.data.message)
 			});
 		}
 	}, [clinicID, doctorID]);
@@ -221,23 +213,10 @@ export function SetAppointmentPage() {
 							}
 							
 							server.appointments.edit(new_data).then(response => {
-								if (response.data.success) {
-									setSuccess(response.data.id);
-								}
-								else {
-
-									error(popupManager,
-										<div>
-											{response.data.message}
-										</div>);
-								}
+								if (response.data.success) setSuccess(response.data.id);
+								else popupManager.error(response.data.message)
 							})
-							.catch(reason => {
-								error(popupManager,
-									<div>
-										{reason}
-									</div>);
-							});
+							.catch(reason => popupManager.error(reason))
 						}
 						else {
 							// Set the appointment on the server:
@@ -251,22 +230,16 @@ export function SetAppointmentPage() {
 							})
 							.then(response => {
 								if (response.data.messages.length > 0) {
-									error(popupManager,
-										<div>
-											{response.data.messages.map(message => {
-												return <p>{capitalize(message)}</p>;
-											})}
-										</div>);
+									popupManager.error(
+										response.data.messages.map(message => {
+											return <p>{capitalize(message)}</p>;
+										})
+									);
 								}
 
 								setSuccess(response.data.id);
 							})
-							.catch(reason => {
-								error(popupManager,
-									<div>
-										{capitalize(reason)}
-									</div>);
-							});
+							.catch(reason => popupManager.error(capitalize(reason)))
 						}
 					}}
 				>
@@ -331,12 +304,7 @@ function ConfirmDeletePopup(popupManager, appointment, success) {
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.appointments.cancel({appointment: appointment}).then(response => {
-						if (!response.data.success) {
-							error(popupManager,
-								<div>
-									{capitalize(response.data.message)}
-								</div>);
-							}
+						if (!response.data.success) popupManager.error(capitalize(response.data.message))
 						else success();
 					});
 				}} />

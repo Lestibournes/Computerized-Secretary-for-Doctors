@@ -6,7 +6,6 @@ import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { Time } from "../../../Common/classes";
-import { error } from "../../../Common/functions";
 
 export function ShiftEditForm({popupManager, clinic, doctor, shift, day, start, end, close, success, deleted}) {
 	let deletable = start && end;
@@ -93,7 +92,7 @@ function ConfirmDeleteForm({popupManager, clinic, doctor, shift, close, success}
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.schedules.delete({clinic: clinic, doctor: doctor, shift: shift}).then(response => {
-						if (!response.data.success) {error(popupManager, response.data.message)}
+						if (!response.data.success) popupManager.error(response.data.message)
 						else {
 							success({
 								data: {clinic: clinic, doctor: doctor},
