@@ -208,7 +208,7 @@ export function AppointmentCalendarPage() {
 
 	if (schedule === false) {
 		popupManager.add(
-			<Popup close={() => {window.history.back()}}>
+			<Popup key="WorkScheduleWarning" close={() => {window.history.back()}}>
 				You need to create a work schedule before viewing your appointment calendar.
 			</Popup>
 		);
@@ -216,7 +216,7 @@ export function AppointmentCalendarPage() {
 
 	if (doctor === false) {
 		popupManager.add(
-			<Popup close={() => {window.history.back()}}>
+			<Popup key="DoctorWarning" close={() => {window.history.back()}}>
 				You need to be a doctor to view your work calendar.
 			</Popup>
 		);

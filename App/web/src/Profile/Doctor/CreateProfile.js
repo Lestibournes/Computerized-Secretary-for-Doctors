@@ -6,7 +6,7 @@ export function createProfilePopup(popupManager, user, success) {
 	const close = () => popupManager.remove(popup);
 	
 	const popup =
-		<Popup title="Create Profile" close={close}>
+		<Popup key="Create Doctor Profile" title="Create Doctor Profile" close={close}>
 			<div className="center">
 				<h2>Would you like to register as a doctor?</h2>
 				<div className="buttonBar">

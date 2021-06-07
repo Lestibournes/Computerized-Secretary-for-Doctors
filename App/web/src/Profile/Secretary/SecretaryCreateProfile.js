@@ -4,7 +4,7 @@ import { server } from "../../Common/server";
 
 export function SecretaryCreateProfile({user, success, failure, close}) {
 	return (
-		<Popup title="Create Profile" close={close}>
+		<Popup key="Create Secretary Profile" title="Create Secretary Profile" close={close}>
 			<div className="center">
 				<h2>Would you like to register as a secretary?</h2>
 				<div className="buttonBar">
