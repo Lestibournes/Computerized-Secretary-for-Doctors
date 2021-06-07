@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Page } from '../Common/Components/Page';
-import { Time, SimpleDate } from '../Common/classes';
+import { Time } from "../Common/Classes/Time";
+import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 

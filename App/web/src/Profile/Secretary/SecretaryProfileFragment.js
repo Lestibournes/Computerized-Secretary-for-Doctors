@@ -1,13 +1,13 @@
-import { useAuth } from "../Common/Auth";
+import { useAuth } from "../../Common/Auth";
 import { useEffect, useState } from "react";
 
-import { Card } from "../Common/Components/Card";
-import { Popup } from "../Common/Components/Popup";
+import { Card } from "../../Common/Components/Card";
+import { Popup } from "../../Common/Components/Popup";
 
 import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
-import { getPictureURL } from "../Common/functions";
-import { server } from "../Common/server";
-import { usePopups } from "../Common/Popups";
+import { getPictureURL } from "../../Common/functions";
+import { server } from "../../Common/server";
+import { usePopups } from "../../Common/Popups";
 
 function generateClinicCards(secretary, clinics) {
 	const clinics_list = [];

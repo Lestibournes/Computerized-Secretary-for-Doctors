@@ -1,6 +1,6 @@
 import { Field, useField, useFormikContext } from "formik";
 import { useEffect } from "react";
-import { SimpleDate } from "../classes";
+import { SimpleDate } from "../Classes/SimpleDate";
 import { Button } from "./Button";
 import "./SelectDate.css";
 

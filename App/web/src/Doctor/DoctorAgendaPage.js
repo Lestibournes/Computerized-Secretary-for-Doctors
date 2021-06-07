@@ -1,8 +1,8 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { Time } from "../Common/classes";
+import { Time } from "../Common/Classes/Time";
+import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
-import { SimpleDate } from "../Common/classes";
 import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { server } from '../Common/server';

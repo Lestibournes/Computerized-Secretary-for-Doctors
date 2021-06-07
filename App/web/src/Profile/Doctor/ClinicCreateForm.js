@@ -1,10 +1,10 @@
-import { Button } from "../../../Common/Components/Button";
-import { Popup } from "../../../Common/Components/Popup";
+import { Button } from "../../Common/Components/Button";
+import { Popup } from "../../Common/Components/Popup";
 
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { TextInput } from '../../../Common/Components/TextInput';
-import { server } from "../../../Common/server";
+import { TextInput } from '../../Common/Components/TextInput';
+import { server } from "../../Common/server";
 
 export function ClinicCreateForm({doctor, close, success}) {
 	return (

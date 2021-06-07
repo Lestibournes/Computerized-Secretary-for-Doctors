@@ -1,5 +1,5 @@
 import './Calendar.css';
-import {Time, SimpleDate } from "../classes";
+import { Time } from "../Common/Classes/Time";
 import { CalendarDay } from './CalendarDay';
 
 /*

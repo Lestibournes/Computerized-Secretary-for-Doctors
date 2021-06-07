@@ -1,6 +1,6 @@
-import { Button } from "../../../Common/Components/Button";
-import { Popup } from "../../../Common/Components/Popup";
-import { server } from "../../../Common/server";
+import { Button } from "../../Common/Components/Button";
+import { Popup } from "../../Common/Components/Popup";
+import { server } from "../../Common/server";
 
 export function createProfilePopup(popupManager, user, success) {
 	const close = () => popupManager.remove(popup);

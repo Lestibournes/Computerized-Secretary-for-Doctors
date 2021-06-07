@@ -8,7 +8,8 @@ import { Button } from "../Common/Components/Button";
 import { SelectList } from "../Common/Components/SelectList";
 import { SelectDate } from "../Common/Components/SelectDate";
 import { Page } from "../Common/Components/Page";
-import { SimpleDate, Time } from '../Common/classes';
+import { Time } from "../Common/Classes/Time";
+import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Popup } from '../Common/Components/Popup';
 import { capitalizeAll, capitalize, compareByName } from '../Common/functions';
 import { server } from '../Common/server';
@@ -273,7 +274,7 @@ export function SetAppointmentPage() {
 								{appointment ? 
 									<Button
 										type="cancel"
-										action={() => ConfirmDeletePopup(popupManager, appointment,() => setDeleted(true))}
+										action={() => ConfirmDeletePopup(popupManager, appointment, () => setDeleted(true))}
 									label="Delete" />
 								: ""}
 								<Button type="submit" label="Submit" />
@@ -304,6 +305,7 @@ function ConfirmDeletePopup(popupManager, appointment, success) {
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.appointments.cancel({appointment: appointment}).then(response => {
+						console.log(response.data);
 						if (!response.data.success) popupManager.error(capitalize(response.data.message))
 						else success();
 					});

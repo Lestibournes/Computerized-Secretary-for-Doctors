@@ -6,14 +6,15 @@ import { Button } from "../../../Common/Components/Button";
 import { Page } from "../../../Common/Components/Page";
 import { Card } from '../../../Common/Components/Card';
 
-import { Time } from '../../../Common/classes';
+import { Time } from "../../../Common/Classes/Time";
+import { SimpleDate } from "../../../Common/Classes/SimpleDate";
+
 import { shiftEditPopup } from './ShiftEditForm';
 import { server } from '../../../Common/server';
 import { capitalize, compareByName } from '../../../Common/functions';
 
 import { MinimumFormPopup } from './MinimumFormPopup';
 import { TypeFormPopup } from './TypeFormPopup';
-import { SimpleDate } from "../../../Common/classes";
 import { usePopups } from '../../../Common/Popups';
 
 export function ScheduleEditor() {

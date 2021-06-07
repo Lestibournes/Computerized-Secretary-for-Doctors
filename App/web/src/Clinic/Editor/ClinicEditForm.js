@@ -1,9 +1,9 @@
 import { Form, Formik } from "formik";
 import * as Yup from 'yup';
-import { Button } from "../../../Common/Components/Button";
-import { Popup } from "../../../Common/Components/Popup";
-import { TextInput } from "../../../Common/Components/TextInput";
-import { server } from "../../../Common/server";
+import { Button } from "../../Common/Components/Button";
+import { Popup } from "../../Common/Components/Popup";
+import { TextInput } from "../../Common/Components/TextInput";
+import { server } from "../../Common/server";
 
 export function ClinicEditForm({popupManager, clinic, doctor, name, city, address, close, success, deleted}) {
 	return (

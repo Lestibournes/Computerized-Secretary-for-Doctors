@@ -1,7 +1,7 @@
 //Reactjs:
 import { React, useEffect, useState } from 'react';
-import { Time } from "../Common/classes";
-import { SimpleDate } from "../Common/classes";
+import { Time } from "../Common/Classes/Time";
+import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';

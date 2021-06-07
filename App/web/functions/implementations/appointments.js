@@ -538,7 +538,7 @@ async function cancel(appointment, context) {
 					promises.push(db.collection("clinics").doc(appointment_snap.data().clinic).collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
 					promises.push(general_appointment.delete());
 	
-					Promise.all(promises).then(() => {
+					return Promise.all(promises).then(() => {
 						response.success = true;
 						return response;
 					})

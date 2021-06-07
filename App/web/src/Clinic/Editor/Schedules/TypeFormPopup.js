@@ -27,8 +27,8 @@ import { TextInput } from "../../../Common/Components/TextInput";
 
 	const popup = 
 	<Popup
-		key={(type ? "EditType" + type : "NewType")}
-		title={(type ? "Edit Type" : "Add Type")}
+		key={(type ? "EditAppointmentType" + type : "NewAppointmentType")}
+		title={(type ? "Edit Appointment Type" : "Add Appointment Type")}
 		close={close}
 	>
 		<Formik
@@ -121,8 +121,8 @@ export function TypeDeletePopup(popupManager, clinic, doctor, type, name, durati
 
 	const popup = 
 	<Popup
-		key="DeleteType"
-		title="Delete Type"
+		key="DeleteAppointmentType"
+		title="Delete Appointment Type"
 		close={close}
 	>
 		<div className="widgets">

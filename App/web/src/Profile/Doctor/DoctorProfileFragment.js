@@ -1,15 +1,15 @@
-import { useAuth } from "../../../Common/Auth";
+import { useAuth } from "../../Common/Auth";
 import { useEffect, useState } from "react";
 
-import { Card } from "../../../Common/Components/Card";
-import { Button } from "../../../Common/Components/Button";
+import { Card } from "../../Common/Components/Card";
+import { Button } from "../../Common/Components/Button";
 
 import { clinicCreatePopup } from "./ClinicCreateForm";
 import { createProfilePopup } from "./CreateProfile";
-import { capitalizeAll, getPictureURL } from "../../../Common/functions";
+import { capitalizeAll, getPictureURL } from "../../Common/functions";
 import { selectSpecializationPopup, removeSpecializationPopup } from "./SelectSpecialization";
-import { server } from "../../../Common/server";
-import { usePopups } from "../../../Common/Popups";
+import { server } from "../../Common/server";
+import { usePopups } from "../../Common/Popups";
 
 /**
 @todo
@@ -48,7 +48,7 @@ For each shift, select start and end time or remove the shift.
 It would be good to add some kind of notification widget to easily show new membership requests, private messages from clients, or whatever else.
 */
 
-export function DoctorEditor() {
+export function DoctorProfileFragment() {
 	const auth = useAuth();
 	const popupManager = usePopups();
 

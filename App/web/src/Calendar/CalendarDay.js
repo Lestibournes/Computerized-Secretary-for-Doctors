@@ -1,4 +1,4 @@
-import { Time } from "../classes";
+import { Time } from "../Common/Classes/Time";
 import { CalendarItem } from "./CalendarItem";
 
 export function CalendarDay(props) {

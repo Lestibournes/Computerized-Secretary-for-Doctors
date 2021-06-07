@@ -1,11 +1,10 @@
-import { Field, Form, Formik } from "formik";
+import { Form, Formik } from "formik";
 import * as Yup from 'yup';
-import { useState } from "react";
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
-import { Time } from "../../../Common/classes";
+import { Time } from "../../../Common/Classes/Time";
 
 export function ShiftEditForm({popupManager, clinic, doctor, shift, day, start, end, close, success, deleted}) {
 	let deletable = start && end;
@@ -118,7 +117,7 @@ export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, 
 
 	const close = () => {popupManager.remove(popup)};
 	const popup =
-		<Popup title={title} close={close}>
+		<Popup key="title" title={title} close={close}>
 			<ShiftEditForm
 				popupManager={popupManager}
 				clinic={clinic}

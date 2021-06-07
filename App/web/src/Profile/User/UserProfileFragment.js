@@ -1,12 +1,12 @@
-import { useAuth } from "../Common/Auth";
+import { useAuth } from "../../Common/Auth";
 import { useEffect, useState } from "react";
-import { Button } from "../Common/Components/Button";
-import { capitalizeAll, getPictureURL } from "../Common/functions";
-import { server } from "../Common/server";
+import { Button } from "../../Common/Components/Button";
+import { capitalizeAll, getPictureURL } from "../../Common/functions";
+import { server } from "../../Common/server";
 import { userEditPopup } from "./UserEditForm";
-import { usePopups } from "../Common/Popups";
+import { usePopups } from "../../Common/Popups";
 
-export function UserDetails({user, data}) {
+export function UserProfileFragment({user, data}) {
 	const auth = useAuth();
 	const popupManager = usePopups();
 

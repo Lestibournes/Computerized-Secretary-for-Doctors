@@ -3,8 +3,10 @@ import "./AppointmentCalendarPage.css";
 //Reactjs:
 import { React, useEffect, useState } from 'react';
 import { useAuth } from "../Common/Auth";
-import { Slot, Time, SimpleDate } from "../Common/classes";
-import { CalendarWeek } from "../Common/Components/CalendarWeek";
+import { Time } from "../Common/Classes/Time";
+import { Slot } from "../Common/Classes/Slot";
+import { SimpleDate } from "../Common/Classes/SimpleDate";
+import { CalendarWeek } from "./CalendarWeek";
 import { Button } from '../Common/Components/Button';
 import { Page } from '../Common/Components/Page';
 import { server } from "../Common/server";
@@ -33,6 +35,7 @@ export function AppointmentCalendarPage() {
 	const { clinic } = useParams();
 	const [doctors, setDoctors] = useState([]);
 	const [doctor, setDoctor] = useState(null);
+	const [options, setOptions] = useState();
 	const [date, setDate] = useState(new SimpleDate()); // Default date: today.
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState();
@@ -62,6 +65,17 @@ export function AppointmentCalendarPage() {
 		if (clinic) {
 			server.clinics.getAllDoctors({clinic: clinic}).then(response => {
 				setDoctors(response.data);
+
+				const doctor_options = [];
+
+				for (const doctor_data of response.data) {
+					doctor_options.push({
+						value: doctor_data.doctor.id,
+						label: doctor_data.user.fullName
+					})
+				}
+
+				setOptions(doctor_options);
 			});
 		}
 	}, [clinic]);
@@ -212,10 +226,10 @@ export function AppointmentCalendarPage() {
 	
 		display = 
 			<>
-				{clinic ?
+				{clinic && options ?
 					<Formik
 						initialValues={{
-							doctor: doctor
+							doctor: doctor ? doctor : ""
 						}}
 						validationSchema={Yup.object({
 						})}
@@ -244,14 +258,7 @@ export function AppointmentCalendarPage() {
 										value: "",
 										label: ""
 									}}
-									options={
-										doctors.map(doctor => {
-											return {
-												id: doctor.doctor.id,
-												label: doctor.user.fullName
-											}
-										})
-									}
+									options={options}
 								/>
 								<div className="buttonBar">
 									<Button type="submit" label="Select" />

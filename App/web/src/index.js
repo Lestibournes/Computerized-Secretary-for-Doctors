@@ -14,21 +14,21 @@ import {
 	Route,
 	Redirect
 } from "react-router-dom";
-import { HomePage } from './Common/HomePage';
+import { HomePage } from './Home/HomePage';
 import { AppointmentSuccessPage } from './Patient/AppointmentSuccessPage';
 import { AppointmentListPage } from './Patient/AppointmentListPage';
 import { AppointmentDeletedPage } from './Patient/AppointmentDeletedPage';
 import { AppointmentCalendarPage } from './Calendar/AppointmentCalendarPage';
-import { DoctorEditor } from './Doctor/Profile/DoctorEditor/DoctorEditor'
-import { ClinicEditor } from './Doctor/Profile/ClinicEditor/ClinicEditor';
-import { ScheduleEditor } from './Doctor/Profile/ClinicEditor/ScheduleEditor';
+import { DoctorProfileFragment } from './Profile/Doctor/DoctorProfileFragment'
+import { ClinicEditor } from './Clinic/Editor/ClinicEditor';
+import { ScheduleEditor } from './Clinic/Editor/Schedules/ScheduleEditor';
 import { SetAppointmentPage } from './Patient/SetAppointmentPage';
 import { ClinicPage } from './Clinic/ClinicPage';
 import { AppointmentPage } from './Doctor/AppointmentPage';
-import { SecretaryEditor } from "./Doctor/Profile/ClinicEditor/SecretaryEditor";
+import { SecretaryEditor } from "./Clinic/Editor/SecretaryEditor";
 import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
 import { ClinicSchedulesPage } from './Clinic/ClinicSchedulesPage';
-import { ProfilePage } from './Common/ProfilePage';
+import { ProfilePage } from './Profile/ProfilePage';
 import { DoctorAgendaPage } from './Doctor/DoctorAgendaPage';
 import { ProvidePopups } from './Common/Popups';
 
@@ -91,7 +91,7 @@ ReactDOM.render(
 						<DoctorAgendaPage />
 					</Route>
 					<Route path="/specific/doctor/profile">
-						<DoctorEditor />
+						<DoctorProfileFragment />
 					</Route>
 					<Route path="/specific/doctor/clinics/create">
 						<ClinicEditor />

@@ -1,16 +1,16 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
-import { useAuth } from "../../../Common/Auth";
+import { useAuth } from "../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
-import { Button } from "../../../Common/Components/Button";
-import { Card } from "../../../Common/Components/Card"
-import { Page } from "../../../Common/Components/Page";
+import { Button } from "../../Common/Components/Button";
+import { Card } from "../../Common/Components/Card"
+import { Page } from "../../Common/Components/Page";
 import { clinicEditPopup } from "./ClinicEditForm";
 import { selectDoctorPopup } from "./SelectDoctor";
-import { getPictureURL } from "../../../Common/functions";
+import { getPictureURL } from "../../Common/functions";
 import { selectSecretaryPopup } from './SelectSecretary';
-import { server } from '../../../Common/server';
-import { usePopups } from '../../../Common/Popups';
+import { server } from '../../Common/server';
+import { usePopups } from '../../Common/Popups';
 
 /**
 @todo

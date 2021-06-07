@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { Button } from "../../../Common/Components/Button";
-import { Card } from "../../../Common/Components/Card"
-import { TextInput } from '../../../Common/Components/TextInput';
-import { Popup } from '../../../Common/Components/Popup';
-import { getPictureURL } from '../../../Common/functions';
-import { server } from '../../../Common/server';
+import { Button } from "../../Common/Components/Button";
+import { Card } from "../../Common/Components/Card"
+import { TextInput } from '../../Common/Components/TextInput';
+import { Popup } from '../../Common/Components/Popup';
+import { getPictureURL } from '../../Common/functions';
+import { server } from '../../Common/server';
 
 export function SelectDoctorForm({close, success}) {
 	const [cards, setCards] = useState([]);

@@ -1,13 +1,13 @@
 import { Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { useState } from "react";
-import { Button } from "../Common/Components/Button";
-import { Popup } from "../Common/Components/Popup";
-import { TextInput } from "../Common/Components/TextInput";
-import { storage } from "../init";
-import { RadioInput } from "../Common/Components/RadioInput";
-import { PictureInput } from "../Common/Components/PictureInput";
-import { server } from "../Common/server";
+import { Button } from "../../Common/Components/Button";
+import { Popup } from "../../Common/Components/Popup";
+import { TextInput } from "../../Common/Components/TextInput";
+import { storage } from "../../init";
+import { RadioInput } from "../../Common/Components/RadioInput";
+import { PictureInput } from "../../Common/Components/PictureInput";
+import { server } from "../../Common/server";
 
 export function UserEditForm({popupManager, user, data, image, close, success}) {
 	const [selectedImage, setSelectedImage] = useState(image);

@@ -1,12 +1,12 @@
-import { useAuth } from "./Auth";
+import { useAuth } from "../Common/Auth";
 import { useState } from "react";
 
-import { Page } from "./Components/Page";
-import { UserDetails } from "../User/UserDetails";
-import { DoctorEditor } from "../Doctor/Profile/DoctorEditor/DoctorEditor";
-import { SecretaryProfileFragment } from "../Secretary/SecretaryProfileFragment";
+import { Page } from "../Common/Components/Page";
+import { UserProfileFragment } from "./User/UserProfileFragment";
+import { DoctorProfileFragment } from "./Doctor/DoctorProfileFragment";
+import { SecretaryProfileFragment } from "./Secretary/SecretaryProfileFragment";
 import { Route } from "react-router";
-import { DropdownMenu } from "./Components/DropdownMenu";
+import { DropdownMenu } from "../Common/Components/DropdownMenu";
 import { Link } from "react-router-dom";
 
 export function ProfilePage() {
@@ -27,8 +27,8 @@ export function ProfilePage() {
 			<Route
 				component={({ match }) =>
 					<>
-						<Route path={match.path + "/user"} component={UserDetails} />
-						<Route path={match.path + "/doctor"} component={DoctorEditor} />
+						<Route path={match.path + "/user"} component={UserProfileFragment} />
+						<Route path={match.path + "/doctor"} component={DoctorProfileFragment} />
 						<Route path={match.path + "/secretary"} component={SecretaryProfileFragment} />
 					</>
 				}

@@ -35,11 +35,21 @@ export function SearchDoctorsPage() {
 
 	useEffect(() => {
 		server.clinics.getAllCities().then(response => {
-			setCities(response.data);
+			setCities(response.data.map(city => {
+				return {
+					value: city.id,
+					label: city.label
+				}
+			}));
 		});
 
 		server.specializations.getAll().then(response => {
-			setFields(response.data);
+			setFields(response.data.map(specialization => {
+				return {
+					value: specialization.id,
+					label: specialization.label
+				}
+			}));
 		});
 	}, []);
 

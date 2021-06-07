@@ -61,6 +61,11 @@ header .title:hover {
 
 header .title:active {
 	color: var(--highlight-dark);
+	z-index: 100;
+}
+
+.Page header.main .dropdown .menu {
+	z-index: 2;
 }
 
 @media screen and (min-width: 500px) {

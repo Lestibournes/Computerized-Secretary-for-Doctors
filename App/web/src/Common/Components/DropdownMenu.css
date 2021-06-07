@@ -41,6 +41,7 @@
 	max-height: 0px;
 	overflow: hidden;
 	transition: max-height 300ms ease-in-out;
+	z-index: 1;
 }
 
 .dropdown.open .menu {
