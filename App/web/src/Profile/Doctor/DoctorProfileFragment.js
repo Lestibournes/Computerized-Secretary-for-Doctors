@@ -10,6 +10,8 @@ import { capitalizeAll, getPictureURL } from "../../Common/functions";
 import { selectSpecializationPopup, removeSpecializationPopup } from "./SelectSpecialization";
 import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
+import { linkEditPopup, LINK_TYPES } from "../../Landing/LinkEdit";
+import { Link } from "react-router-dom";
 
 /**
 @todo
@@ -127,6 +129,29 @@ export function DoctorProfileFragment() {
 		display = (
 			<>
 				<h2>Doctor Profile</h2>
+				<section>
+					<header>
+						<h2>Link</h2>
+						<Button label="Edit"
+							action={() => {
+								linkEditPopup(
+									popupManager,
+									doctor.doctor.link,
+									LINK_TYPES.DOCTOR,
+									doctor.doctor.id,
+									() => {
+										server.doctors.getData({id: doctor.doctor.id}).then(doctor_data => {
+											setDoctor(doctor_data.data);
+										});
+									}
+								)
+							}}
+						/>
+					</header>
+					{doctor?.doctor?.link ? <div className="table">
+						<b>Name:</b> <Link to={"/" + doctor.doctor.link} >{doctor.doctor.link}</Link>
+					</div> : ""}
+				</section>
 				<section>
 					<header>
 						<h3>Specializations</h3>

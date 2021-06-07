@@ -1,7 +1,7 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../Common/Auth";
-import { Redirect, useParams } from 'react-router-dom';
+import { Link, Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { Page } from "../../Common/Components/Page";
@@ -11,7 +11,7 @@ import { getPictureURL } from "../../Common/functions";
 import { selectSecretaryPopup } from './SelectSecretary';
 import { server } from '../../Common/server';
 import { usePopups } from '../../Common/Popups';
-
+import { linkEditPopup, LINK_TYPES } from "../../Landing/LinkEdit";
 /**
 @todo
 Edit clinic page:
@@ -161,71 +161,105 @@ export function ClinicEditor() {
 		display = (
 			<>
 				{redirect ? <Redirect to={redirect} /> : ""}
-				<div className="headerbar">
-					<h2>Details</h2>
-					<Button label="Edit"
-						action={() => {
-							clinicEditPopup(
-								popupManager,
-								clinic,
-								doctor.doctor.id,
-								data.name,
-								data.city,
-								data.address,
-								() => setRedirect("/specific/doctor/profile"),
-								() => {
-									server.clinics.get({id: clinic}).then(clinic_data => {
-										setData(clinic_data.data);
-									});
-								}
-							)
-						}}
-					/>
-				</div>
-				{data ? <div className="table">
-					<b>Name:</b> <span>{data.name}</span>
-					<b>Address:</b> <span>{data.city}, {data.address}</span>
-				</div> : "Loading..."}
-
-				<div className="headerbar">
-					<h2>Doctors</h2>
-					<Button label="+"
-						action={() => {
-							selectDoctorPopup(
-								popupManager,
-								selected => {
-									server.clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
-										server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
-											setDoctorsData(doctors_data.data);
+				<section>
+					<header>
+						<h2>Details</h2>
+						<Button label="Edit"
+							action={() => {
+								clinicEditPopup(
+									popupManager,
+									clinic,
+									doctor.doctor.id,
+									data.name,
+									data.city,
+									data.address,
+									() => setRedirect("/specific/doctor/profile"),
+									() => {
+										server.clinics.get({id: clinic}).then(clinic_data => {
+											setData(clinic_data.data);
 										});
-									});
-								}
-							);
-						}} />
-				</div>
-				<div className="cardList">
-					{doctorCards}
-				</div>
+									}
+								)
+							}}
+						/>
+					</header>
+					{data ?
+						<div className="table">
+							<b>Name:</b> <span>{data.name}</span>
+							<b>Address:</b> <span>{data.city}, {data.address}</span>
+						</div>
+					: "Loading..."}
+				</section>
 
-				<div className="headerbar">
-					<h2>Secretaries</h2>
-					<Button label="+"
-						action={() => {
-							selectSecretaryPopup(
-								popupManager,
-								selected => {
-									server.clinics.addSecretary({clinic: clinic, requester: doctor.doctor.id, secretary: selected}).then(() => {
-										server.clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
-											setSecretariesData(secretaries_data.data);
+				<section>
+					<header>
+						<h2>Link</h2>
+						<Button label="Edit"
+							action={() => {
+								linkEditPopup(
+									popupManager,
+									data.link,
+									LINK_TYPES.CLINIC,
+									clinic,
+									() => {
+										server.clinics.get({id: clinic}).then(clinic_data => {
+											setData(clinic_data.data);
 										});
-									});
-								}
-							)
-						}} />
-				</div>
-				<div className="cardList">
-					{secretaryCards}
-				</div>
+									}
+								)
+							}}
+						/>
+					</header>
+					{data.link ?
+						<div className="table">
+							<b>Name:</b> <Link to={"/" + data.link} >{data.link}</Link>
+						</div>
+					: ""}
+				</section>
+				
+				<section>
+					<header>
+						<h2>Doctors</h2>
+						<Button label="+"
+							action={() => {
+								selectDoctorPopup(
+									popupManager,
+									selected => {
+										server.clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
+											server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
+												setDoctorsData(doctors_data.data);
+											});
+										});
+									}
+								);
+							}} />
+					</header>
+					<div className="cardList">
+						{doctorCards}
+					</div>
+				</section>
+
+				<section>
+					<header>
+						<h2>Secretaries</h2>
+						<Button label="+"
+							action={() => {
+								selectSecretaryPopup(
+									popupManager,
+									selected => {
+										server.clinics.addSecretary({clinic: clinic, requester: doctor.doctor.id, secretary: selected}).then(() => {
+											server.clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
+												setSecretariesData(secretaries_data.data);
+											});
+										});
+									}
+								)
+							}} />
+					</header>
+					<div className="cardList">
+						{secretaryCards}
+					</div>
+				</section>
 			</>
 		);
 	}

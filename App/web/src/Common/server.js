@@ -83,7 +83,8 @@ export const server = {
 	},
 
 	links: {
-		get: fn.httpsCallable("links-get"),
+		getLink: fn.httpsCallable("links-getLink"),
+		getTarget: fn.httpsCallable("links-getTarget"),
 		register: fn.httpsCallable("links-register"),
 		isAvailable: fn.httpsCallable("links-isAvailable"),
 	},

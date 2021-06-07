@@ -31,6 +31,11 @@ export function SecretaryProfileFragment() {
 	const auth = useAuth();
 	const popupManager = usePopups();
 
+	const [secretary, setSecretary] = useState(null);
+	const [clinics, setClinics] = useState(null);
+	const [createProfile, setCreateProfile] = useState(false);
+	const [alreadyExists, setAlreadyExists] = useState(false);
+
 	useEffect(() => {
 		popupManager.clear();
 	}, []);
@@ -55,20 +60,9 @@ export function SecretaryProfileFragment() {
 			}
 		});
 	}
-	const [secretary, setSecretary] = useState(null);
-	const [image, setImage] = useState(null);
-	const [clinics, setClinics] = useState(null);
-	const [createProfile, setCreateProfile] = useState(false);
-	const [alreadyExists, setAlreadyExists] = useState(false);
 
 	useEffect(() => {
-		if (secretary) {
-			setClinics(generateClinicCards(secretary.id, secretary.clinics));
-
-			getPictureURL(secretary.user.id).then(url => {
-				setImage(url);
-			});
-		}
+		if (secretary) setClinics(generateClinicCards(secretary.id, secretary.clinics));
 	}, [secretary]);
 
 	let display = <h2>Loading...</h2>;
@@ -77,12 +71,14 @@ export function SecretaryProfileFragment() {
 		display = (
 			<>
 				<h2>Secretary</h2>
-				<div className="headerbar">
-					<h3>Clinics</h3>
-				</div>
-				<div className="cardList">
-					{clinics}
-				</div>
+				<section>
+					<header>
+						<h3>Clinics</h3>
+					</header>
+					<div className="cardList">
+						{clinics}
+					</div>
+				</section>
 			</>
 		);
 	}

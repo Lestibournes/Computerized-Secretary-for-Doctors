@@ -27,6 +27,7 @@ export function ProfilePage() {
 			<Route
 				component={({ match }) =>
 					<>
+						<Route exact path={match.path + "/"} component={UserProfileFragment} />
 						<Route path={match.path + "/user"} component={UserProfileFragment} />
 						<Route path={match.path + "/doctor"} component={DoctorProfileFragment} />
 						<Route path={match.path + "/secretary"} component={SecretaryProfileFragment} />

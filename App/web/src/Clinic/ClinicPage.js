@@ -2,9 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
-import { Card } from "../Common/Components/Card"
 import { Page } from "../Common/Components/Page";
-import { getPictureURL } from "../Common/functions";
 import { server } from '../Common/server';
 
 /**
@@ -20,9 +18,6 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 export function ClinicPage() {
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
-
-	const [doctorsData, setDoctorsData] = useState();
-	const [doctorCards, setDoctorCards] = useState();
 
 	useEffect(() => {
 		if (clinic) {

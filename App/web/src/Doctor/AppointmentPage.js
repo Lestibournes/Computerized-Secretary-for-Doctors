@@ -63,46 +63,49 @@ export function AppointmentPage() {
 		subtitle = "Dr. " + doctorData.user.fullName + "'s Appointment";
 		display = 
 		<>
-			<div className="headerbar">
-				<h3>Patient Details</h3>
-				<div className="buttonBar">
-					<Button
-						label="Edit"
-						link={"/specific/secretary/appointments/edit/" + appointment}
-					/>
-					<Button
-						type={arrived ? "okay" : ""}
-						label="Arrived"
-						action={() => {
-							server.appointments.arrived({appointment: appointment}).then(response => {
-								if (response.data.success) {
-									setArrived(response.data.current);
-								}
-								else {
-									// Display error message popup.
-									popupManager.error(response.data.message);
-								}
-							});
-						}}
-					/>
+			<section>
+				<header>
+					<h3>Patient Details</h3>
+						<Button
+							label="Edit"
+							link={"/specific/secretary/appointments/edit/" + appointment}
+						/>
+						<Button
+							type={arrived ? "okay" : ""}
+							label="Arrived"
+							action={() => {
+								server.appointments.arrived({appointment: appointment}).then(response => {
+									if (response.data.success) {
+										setArrived(response.data.current);
+									}
+									else {
+										// Display error message popup.
+										popupManager.error(response.data.message);
+									}
+								});
+							}}
+						/>
+				</header>
+				<div className="table">
+					<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
+					<b>Name:</b> <span>{appointmentData.patient.fullName}</span>
+					<b>Sex:</b> <span>{appointmentData.patient.sex ? capitalizeAll(appointmentData.patient.sex) : "Not specified"}</span>
 				</div>
-			</div>
-			<div className="table">
-				<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
-				<b>Name:</b> <span>{appointmentData.patient.fullName}</span>
-				<b>Sex:</b> <span>{appointmentData.patient.sex ? capitalizeAll(appointmentData.patient.sex) : "Not specified"}</span>
-			</div>
-			<div className="headerbar">
-				<h3>Appointment Details</h3>
-			</div>
-			<div className="table">
-				<b>Start:</b> <span>{
-				SimpleDate.fromObject(appointmentData.extra.date).toString() + " " + 
-				Time.fromObject(appointmentData.extra.time).toString()
-				}</span>
-				<b>Duration:</b> <span>{appointmentData.appointment.duration} minutes</span>
-				<b>Type:</b> <span>{capitalizeAll(appointmentData.appointment.type)}</span>
-			</div>
+			</section>
+
+			<section>
+				<header>
+					<h3>Appointment Details</h3>
+				</header>
+				<div className="table">
+					<b>Start:</b> <span>{
+					SimpleDate.fromObject(appointmentData.extra.date).toString() + " " + 
+					Time.fromObject(appointmentData.extra.time).toString()
+					}</span>
+					<b>Duration:</b> <span>{appointmentData.appointment.duration} minutes</span>
+					<b>Type:</b> <span>{capitalizeAll(appointmentData.appointment.type)}</span>
+				</div>
+			</section>
 		</>;
 	}
 	

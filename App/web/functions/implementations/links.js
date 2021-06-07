@@ -37,8 +37,8 @@ function checkPermission(type, id, context) {
 	// Check if the type is valid and if the current user has the right permissions:
 	if (type === CLINIC) {
 		return clinics.get(id).then(clinic_data => {
-			return doctors.getID(context.auth.uid).then(doctor_data => {
-				if (doctor_data.doctor.id === clinic_data.owner) {
+			return doctors.getID(context.auth.uid).then(doctor_id => {
+				if (doctor_id === clinic_data.owner) {
 					response.success = true;
 					response.allowed = true;
 					return response;
@@ -124,7 +124,7 @@ function register(name, type, id, context) {
 			// Check if the name is available:
 			return isAvailable(name).then(available => {
 				if (available) {
-					return get(type, id).then(response => {
+					return getLink(type, id).then(response => {
 						// If the clinic/doctor already has a link, delete it:
 						if (response.success) {
 							// Register the new link:
@@ -193,7 +193,7 @@ function register(name, type, id, context) {
  * link: string
  * }} The resule of the operation: whether it was successful, ther error message if it was not, and the requested data (the link name) if it was retrieved.
  */
-function get(type, id) {
+function getLink(type, id) {
 	const response = {
 		success: false,
 		message: "",
@@ -231,6 +231,26 @@ function get(type, id) {
 	return response;
 }
 
+function getTarget(name) {
+	const response = {
+		success: false,
+		message: "",
+		target: null
+	}
+
+	return db.collection(NAME).doc(name).get().then(link_snap => {
+		if (!link_snap.exists) {
+			response.message = "The requested link does not exist";
+			return response;
+		}
+
+		response.success = true;
+		response.target = link_snap.data();
+		return response;
+	})
+}
+
 exports.isAvailable = isAvailable;
 exports.register = register;
-exports.get = get;
+exports.getLink = getLink;
+exports.getTarget = getTarget;

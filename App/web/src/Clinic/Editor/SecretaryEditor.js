@@ -52,8 +52,6 @@ export function SecretaryEditor() {
 
 	let subtitle;
 	let display;
-
-	const oops = [];
 	
 	if (clinicData && secretaryData) {
 		subtitle = secretaryData.fullName +" at " + clinicData.name;
@@ -61,19 +59,21 @@ export function SecretaryEditor() {
 		display = (
 			<>
 				{redirect ? <Redirect to={redirect} /> : ""}
-				<div className="headerbar">
-					<h2>Details</h2><span><Button label="Remove" action={() => {
-						RemoveSecretaryPopup(popupManager, clinic, secretaryData, () => {
-							setRedirect("/specific/doctor/clinics/edit/" + clinic);
-						})
-					}} /></span>
-				</div>
-				<div className="table">
-					<b>Photo</b> <img src={image} alt={secretaryData.fullName} />
-					<b>Name:</b> <span>{secretaryData.fullName}</span>
-					<b>Sex:</b> <span>{secretaryData.sex ? capitalize(secretaryData.sex) : "Not specified"}</span>
-				</div>
-				{oops}
+				<section>
+					<header>
+						<h2>Details</h2>
+						<Button label="Remove" action={() => {
+							removeSecretaryPopup(popupManager, clinic, secretaryData, () => {
+								setRedirect("/specific/doctor/clinics/edit/" + clinic);
+							})
+						}} />
+					</header>
+					<div className="table">
+						<b>Photo</b> <img src={image} alt={secretaryData.fullName} />
+						<b>Name:</b> <span>{secretaryData.fullName}</span>
+						<b>Sex:</b> <span>{secretaryData.sex ? capitalize(secretaryData.sex) : "Not specified"}</span>
+					</div>
+				</section>
 			</>
 		);
 	}
@@ -85,7 +85,7 @@ export function SecretaryEditor() {
 	);
 }
 
-export function RemoveSecretaryPopup(popupManager, clinic, secretaryData, success) {
+export function removeSecretaryPopup(popupManager, clinic, secretaryData, success) {
 	const close = () => {
 		popupManager.remove(popup);
 	};

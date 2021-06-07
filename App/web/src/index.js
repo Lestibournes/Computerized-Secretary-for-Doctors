@@ -31,6 +31,7 @@ import { ClinicSchedulesPage } from './Clinic/ClinicSchedulesPage';
 import { ProfilePage } from './Profile/ProfilePage';
 import { DoctorAgendaPage } from './Doctor/DoctorAgendaPage';
 import { ProvidePopups } from './Common/Popups';
+import { Link } from './Landing/Link';
 
 /**
  * URL Scheme:
@@ -139,6 +140,13 @@ ReactDOM.render(
 						<SecretaryEditor />
 					</Route>
 
+					{/* Links */}
+					<Route exact path="/:link">
+						<Link />
+					</Route>
+					<Route path="/:link/:clinic/:doctor">
+						<SetAppointmentPage />
+					</Route>
 				</Switch>
 			</Router>
 		</ProvidePopups>

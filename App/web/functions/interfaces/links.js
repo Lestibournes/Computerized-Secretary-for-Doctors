@@ -11,6 +11,10 @@ exports.register = functions.https.onCall((data, context) => {
 	return links.register(data.name, data.type, data.id, context);
 });
 
-exports.get = functions.https.onCall((data, context) => {
-	return links.get(data.type, data.id);
+exports.getLink = functions.https.onCall((data, context) => {
+	return links.getLink(data.type, data.id);
+});
+
+exports.getTarget = functions.https.onCall((data, context) => {
+	return links.getTarget(data.name);
 });

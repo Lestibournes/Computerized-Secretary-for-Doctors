@@ -68,9 +68,9 @@ export function Page({unprotected, title, subtitle, children}) {
 					{name && email ?
 						<div>
 							<DropdownMenu label={name + " <" + email + ">"}>
-								<div>
+								{/* <div>
 									Notifications
-								</div>
+								</div> */}
 								<Link to={"/general/profile"}>Profile</Link>
 								<div onClick={auth.logout}>
 									Log Out

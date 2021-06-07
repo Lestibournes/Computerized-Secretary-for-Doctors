@@ -168,59 +168,69 @@ export function ScheduleEditor() {
 		display = (
 			<>
 				{redirect ? <Redirect to={redirect} /> : ""}
-				<div className="headerbar">
-					<span><b>Minimum duration:</b> {minimum} minutes.</span>
-					<Button label="Edit" action={() => {
-						MinimumFormPopup(popupManager, clinic, doctor, minimum, minimum => setMinimum(minimum));
-					}} />
-				</div>
+				<section>
+					<header>
+						<b>Minimum duration:</b> {minimum} minutes.
+						<Button label="Edit" action={() => {
+							MinimumFormPopup(popupManager, clinic, doctor, minimum, minimum => setMinimum(minimum));
+						}} />
+					</header>
+				</section>
 
-				<div className="headerbar">
-					<h2>Appointment Types</h2>
-					<Button label="+" action={() => {
-						TypeFormPopup(popupManager, clinic, doctor, null, null, null,
-							new_type => {
-								const new_types = [...typesData];
+				<section>
+					<header>
+						<h2>Appointment Types</h2>
+						<Button label="+" action={() => {
+							TypeFormPopup(popupManager, clinic, doctor, null, null, null,
+								new_type => {
+									const new_types = [...typesData];
 
-								if (new_type.name) {
-									new_types.push(new_type);
+									if (new_type.name) {
+										new_types.push(new_type);
+									}
+
+									new_types.sort(compareByName);
+
+									setTypesData(new_types);
 								}
+							);
+						}} />
+					</header>
+					<div className="cardList">
+						{typeCards}
+					</div>
+				</section>
 
-								new_types.sort(compareByName);
-
-								setTypesData(new_types);
-							}
-						);
-					}} />
-				</div>
-				<div className="cardList">
-					{typeCards}
-				</div>
-
-				<h2>Shift Schedule</h2>
-				{
-					SimpleDate.day_names.map((name, number) => {
-						return (
-							<>
-								<div className="headerbar">
-									<h3>{capitalize(name)}</h3>
-									<Button
-										label="+"
-										action={() => {
-											shiftEditPopup(
-												popupManager, clinic, doctor, null, number, null, null,
-												result => updateSchedule(popupManager, result).then(data => setSchedule(data))
-											)
-										}}
-									/>
-								</div>
-								<div className="cardList">
-									{shiftCards[number]}
-								</div>
-							</>
-						);
-					})
-				}
+				<section>
+					<header>
+						<h2>Shift Schedule</h2>
+					</header>
+					{
+						SimpleDate.day_names.map((name, number) => {
+							return (
+								<>
+									<section>
+										<header>
+											<h3>{capitalize(name)}</h3>
+											<Button
+												label="+"
+												action={() => {
+													shiftEditPopup(
+														popupManager, clinic, doctor, null, number, null, null,
+														result => updateSchedule(popupManager, result).then(data => setSchedule(data))
+													)
+												}}
+											/>
+										</header>
+										<div className="cardList">
+											{shiftCards[number]}
+										</div>
+									</section>
+								</>
+							);
+						})
+					}
+				</section>
 			</>
 		);
 	}
