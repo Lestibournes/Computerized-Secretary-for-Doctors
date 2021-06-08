@@ -4,12 +4,12 @@ const admin = require('firebase-admin');
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const db = admin.firestore();
+const fsdb = admin.firestore();
 
 const NAME = "fields";
 
 async function search(text) {
-	return db.collection(NAME).get().then(response => {
+	return fsdb.collection(NAME).get().then(response => {
 		const specializations = [];
 
 		for (let doc of response.docs) {
@@ -26,7 +26,7 @@ async function search(text) {
 
 async function getAll() {
 	
-	return db.collection(NAME).get().then(spec_snaps => {
+	return fsdb.collection(NAME).get().then(spec_snaps => {
 		let specializations = [];
 
 		spec_snaps.forEach(spec => {
@@ -43,7 +43,7 @@ async function getAll() {
 }
 
 async function create(name) {
-	return db.collection(NAME).doc(name).create({
+	return fsdb.collection(NAME).doc(name).create({
 		exists: true
 	});
 }

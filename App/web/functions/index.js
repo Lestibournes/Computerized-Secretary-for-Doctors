@@ -12,7 +12,7 @@ admin.initializeApp(
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const db = admin.firestore();
+const fsdb = admin.firestore();
 
 // Public interface of server functions:
 

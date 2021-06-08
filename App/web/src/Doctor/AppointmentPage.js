@@ -6,7 +6,7 @@ import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
-import { server } from '../Common/server';
+import { events, server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 
 export function AppointmentPage() {
@@ -44,12 +44,13 @@ export function AppointmentPage() {
 						setImage(url);
 					});
 	
-					setArrived(data.appointment.arrived);
+					return events.appointments.arrival(appointment, data => {
+						setArrived(data.arrived);
+					});
 				}
 				else {
 					popupManager.error(results.data.message);
 				}
-				
 			});
 		}
 	}, [appointment]);

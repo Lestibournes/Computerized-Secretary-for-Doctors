@@ -11,7 +11,7 @@ const { SimpleDate } = require('./SimpleDate');
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const db = admin.firestore();
+const fsdb = admin.firestore();
 
 
 /**
@@ -35,7 +35,7 @@ const db = admin.firestore();
  * @returns the data of the requested clinic.
  */
 async function get(id) {
-	return db.collection("clinics").doc(id).get().then(clinic_snap => {
+	return fsdb.collection("clinics").doc(id).get().then(clinic_snap => {
 		const clinic = clinic_snap.data();
 		clinic.id = clinic_snap.id;
 
@@ -51,16 +51,16 @@ async function get(id) {
  * @param {string} address The street and building number where the clinic is located.
  */
 async function add(doctor, name, city, address) {
-	return db.collection("clinics").add({
+	return fsdb.collection("clinics").add({
 		name: name,
 		city: city,
 		address: address,
 		owner: doctor
 	}).then(clinicRef => {
 		return clinicRef.collection("doctors").doc(doctor).set({exists: true}).then(() => {
-			return db.collection("doctors").doc(doctor).collection("clinics").doc(clinicRef.id).set({exists: true}).then(() => {
-				return db.collection("cities").doc(city).set({exists: true}).then(() => {
-					return db.collection("cities").doc(city).collection("clinics").doc(clinicRef.id).set({exists: true}).then(() => {
+			return fsdb.collection("doctors").doc(doctor).collection("clinics").doc(clinicRef.id).set({exists: true}).then(() => {
+				return fsdb.collection("cities").doc(city).set({exists: true}).then(() => {
+					return fsdb.collection("cities").doc(city).collection("clinics").doc(clinicRef.id).set({exists: true}).then(() => {
 						return clinicRef.id;
 					});
 				});
@@ -79,14 +79,14 @@ async function add(doctor, name, city, address) {
  * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
 async function edit(clinic, doctor, name, city, address) {
-	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+	return fsdb.collection("clinics").doc(clinic).get().then(clinic_snap => {
 		const response = {
 			success: false,
 			message: ""
 		};
 
 		if (clinic_snap.data().owner === doctor) {
-			return db.collection("clinics").doc(clinic).update({
+			return fsdb.collection("clinics").doc(clinic).update({
 				name: name,
 				city: city,
 				address: address
@@ -108,7 +108,7 @@ async function edit(clinic, doctor, name, city, address) {
  * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
 async function eliminate(clinic, doctor) {
-	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+	return fsdb.collection("clinics").doc(clinic).get().then(clinic_snap => {
 		const response = {
 			success: false,
 			message: ""
@@ -118,16 +118,16 @@ async function eliminate(clinic, doctor) {
 
 		if (clinic_snap.data().owner === doctor) {
 			// Go over all of the clinic's doctors and remove the clinic from their profile:
-			promises.push(db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
+			promises.push(fsdb.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
 				const doctor_promises = [];
 
 				for (const doctor_snap of doctor_snaps.docs) {
 					doctor_promises.push(
-						db.collection("doctors").doc(doctor_snap.id).collection("clinics").doc(clinic).delete()
+						fsdb.collection("doctors").doc(doctor_snap.id).collection("clinics").doc(clinic).delete()
 					);
 
 					doctor_promises.push(
-						db.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snap.id).delete()
+						fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snap.id).delete()
 					);
 				}
 
@@ -137,16 +137,16 @@ async function eliminate(clinic, doctor) {
 			}));
 
 			// Go over all of the clinic's secretaries and remove the clinic from their profile:
-			promises.push(db.collection("clinics").doc(clinic).collection("secretaries").get().then(secretary_snaps => {
+			promises.push(fsdb.collection("clinics").doc(clinic).collection("secretaries").get().then(secretary_snaps => {
 				const secretary_promises = [];
 
 				for (const secretary_snap of secretary_snaps.docs) {
 					secretary_promises.push(
-						db.collection("secretaries").doc(secretary_snap.id).collection("clinics").doc(clinic).delete()
+						fsdb.collection("secretaries").doc(secretary_snap.id).collection("clinics").doc(clinic).delete()
 					);
 
 					secretary_promises.push(
-						db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary_snap.id).delete()
+						fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary_snap.id).delete()
 					);
 				}
 
@@ -156,11 +156,11 @@ async function eliminate(clinic, doctor) {
 			}));
 			
 			// Delete the clinic:
-			promises.push(db.collection("clinics").doc(clinic).delete());
+			promises.push(fsdb.collection("clinics").doc(clinic).delete());
 
 			// Remove the clinic from the city:
 			promises.push(
-				db.collection("cities").doc(clinic_snap.data().city).collection("clinics").doc(clinic).delete()
+				fsdb.collection("cities").doc(clinic_snap.data().city).collection("clinics").doc(clinic).delete()
 			);
 
 			return Promise.all(promises).then(results => {
@@ -185,7 +185,7 @@ async function eliminate(clinic, doctor) {
  * @returns {Promise<{doctor: object, user: object, clinics: object[], fields: string[]}[]>} The data of the requested doctors.
  */
  async function getAllDoctors(clinic) {
-	return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
+	return fsdb.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
 		const promises = [];
 
 		for (const doctor of doctor_snaps.docs) {
@@ -204,15 +204,15 @@ async function eliminate(clinic, doctor) {
  * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
 async function addDoctor(clinic, requester, doctor) {
-	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+	return fsdb.collection("clinics").doc(clinic).get().then(clinic_snap => {
 		const response = {
 			success: false,
 			message: ""
 		};
 
 		if (clinic_snap.data().owner === requester || doctor === requester) {
-			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).set({exists: true}).then(() => {
-				return db.collection("doctors").doc(doctor).collection("clinics").doc(clinic).set({exists: true}).then(() => {
+			return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).set({exists: true}).then(() => {
+				return fsdb.collection("doctors").doc(doctor).collection("clinics").doc(clinic).set({exists: true}).then(() => {
 					response.success = true;
 					return response;
 				})
@@ -230,15 +230,15 @@ async function addDoctor(clinic, requester, doctor) {
  * @param {string} doctor The id of the doctor.
  */
  async function removeDoctor(clinic, requester, doctor) {
-	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+	return fsdb.collection("clinics").doc(clinic).get().then(clinic_snap => {
 		const response = {
 			success: false,
 			message: ""
 		};
 
 		if (clinic_snap.data().owner === requester || doctor === requester) {
-			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).delete().then(() => {
-				db.collection("doctors").doc(doctor).collection("clinics").doc(clinic).delete().then(() => {
+			fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).delete().then(() => {
+				fsdb.collection("doctors").doc(doctor).collection("clinics").doc(clinic).delete().then(() => {
 					response.success = true;
 					return response;
 				});
@@ -263,7 +263,7 @@ async function addDoctor(clinic, requester, doctor) {
  * }[]>} The data of the requested secretaries.
  */
  async function getAllSecretaries(clinic) {
-	return db.collection("clinics").doc(clinic).collection("secretaries").get().then(secretary_snaps => {
+	return fsdb.collection("clinics").doc(clinic).collection("secretaries").get().then(secretary_snaps => {
 		const promises = [];
 
 		for (const secretary of secretary_snaps.docs) {
@@ -283,15 +283,15 @@ async function addDoctor(clinic, requester, doctor) {
  * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
 async function addSecretary(clinic, requester, secretary) {
-	return db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+	return fsdb.collection("clinics").doc(clinic).get().then(clinic_snap => {
 		const response = {
 			success: false,
 			message: ""
 		};
 
 		if (clinic_snap.data().owner === requester || secretary === requester) {
-			return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).set({exists: true}).then(() => {
-				return db.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).set({exists: true}).then(() => {
+			return fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).set({exists: true}).then(() => {
+				return fsdb.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).set({exists: true}).then(() => {
 					response.success = true;
 					return response;
 				})
@@ -320,8 +320,8 @@ async function removeSecretary(clinic, secretary, context) {
 		return isOwner(clinic, doctor_id).then(isOwner => {
 			return secretaries.getID(context.auth.uid).then(secretary_id => {
 				if (isOwner || secretary_id === secretary) {
-					return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete().then(() => {
-						return db.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).delete().then(() => {
+					return fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete().then(() => {
+						return fsdb.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).delete().then(() => {
 							response.success = true;
 							return response;
 						});
@@ -342,7 +342,7 @@ async function removeSecretary(clinic, secretary, context) {
  * @returns {Promise<boolean>}
  */
 async function hasSecretary(clinic, secretary) {
-	return db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).get().then(secretary_snapshot => {
+	return fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).get().then(secretary_snapshot => {
 		return secretary_snapshot.exists;
 	});
 }
@@ -354,7 +354,7 @@ async function hasSecretary(clinic, secretary) {
  * @returns {Promise<boolean>}
  */
  async function isOwner(clinic, doctor) {
-	return db.collection("clinics").doc(clinic).get().then(clinic_snapshot => {
+	return fsdb.collection("clinics").doc(clinic).get().then(clinic_snapshot => {
 		return doctor === clinic_snapshot.data().owner;
 	});
 }
@@ -364,7 +364,7 @@ async function hasSecretary(clinic, secretary) {
  * @returns {Promise<{id: string, label: string}[]>} the ids and display names of all the cities.
  */
 async function getAllCities() {
-	return db.collection("cities").get().then(city_snaps => {
+	return fsdb.collection("cities").get().then(city_snaps => {
 		let cities = [];
 		
 		for (const city_snap of city_snaps.docs) {
@@ -395,12 +395,12 @@ async function getAppointments({clinic, doctor, start, end, context}) {
 		data: []
 	}
 
-	return db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
+	return fsdb.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
 		let doctor_promises = [];
 
 		for (const doctor_snapshot of doctor_snapshots.docs) {
 			if ((doctor && doctor_snapshot.id === doctor) || !doctor) {
-				let query = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snapshot.id).collection("appointments");
+				let query = fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snapshot.id).collection("appointments");
 				const startDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(start).toDate());
 				const endDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(end).toDate());
 	
@@ -439,9 +439,9 @@ async function getAppointments({clinic, doctor, start, end, context}) {
 				response.data = response.data.concat(result);
 			}
 
-			// response.data.sort((a, b) => {
-			// 	return a.appointment.start > b.appointment.start ? 1 : a.appointment.start < b.appointment.start ? -1 : 0;
-			// });
+			response.data.sort((a, b) => {
+				return a.appointment.start > b.appointment.start ? 1 : a.appointment.start < b.appointment.start ? -1 : 0;
+			});
 
 			/**@todo a more nuanced response  */
 			if (response.data.length > 0) {

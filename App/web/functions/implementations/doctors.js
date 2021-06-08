@@ -5,7 +5,7 @@ const functions = require('firebase-functions');
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const db = admin.firestore();
+const fsdb = admin.firestore();
 
 const specializations = require('./specializations');
 
@@ -26,7 +26,7 @@ const SimpleDate = require('./SimpleDate').SimpleDate;
  * @returns {Promise<{doctor: object, user: object, clinics: object[] ,fields: object[]}>} The data of the requested doctor.
  */
 async function getData(doctor, field, city) {
-	return db.collection("doctors").doc(doctor).get().then(doctor_snapshot => {
+	return fsdb.collection("doctors").doc(doctor).get().then(doctor_snapshot => {
 		const result = {
 			doctor: null, // The doctor data.
 			user: null, // The user data.
@@ -41,7 +41,7 @@ async function getData(doctor, field, city) {
 
 		// Get the user data from refs:
 		promises.push(
-			db.collection("users").doc(result.doctor.user).get().then(user_snapshot => {
+			fsdb.collection("users").doc(result.doctor.user).get().then(user_snapshot => {
 				result.user = user_snapshot.data();
 				result.user.id = user_snapshot.id;
 				result.user.fullName = user_snapshot.data().firstName + " " + user_snapshot.data().lastName;
@@ -50,7 +50,7 @@ async function getData(doctor, field, city) {
 		
 		// Get the field data for the given doctor:
 		promises.push(
-			db.collection("doctors").doc(doctor).collection(specializations.NAME).get().then(spec_snaps => {
+			fsdb.collection("doctors").doc(doctor).collection(specializations.NAME).get().then(spec_snaps => {
 				for (let spec of spec_snaps.docs) {
 					// Check if the field is unspecified or is a match:
 					if ((field && stringContains(spec.id, field)) || !field) {
@@ -83,12 +83,12 @@ async function getData(doctor, field, city) {
  */
 async function getAllClinics(doctor, city) {
 	// Get the clinic data for the given doctor:
-	return db.collection("doctors").doc(doctor).collection("clinics").get().then(clinic_snaps => {
+	return fsdb.collection("doctors").doc(doctor).collection("clinics").get().then(clinic_snaps => {
 		const clinic_promises = [];
 
 		for (const clinic_snap of clinic_snaps.docs) {
 			clinic_promises.push(
-				db.collection("clinics").doc(clinic_snap.id).get().then(clinic_snapshot => {
+				fsdb.collection("clinics").doc(clinic_snap.id).get().then(clinic_snapshot => {
 					// Check if the city is unspecified or is a match:
 					if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
 						let clinic_data = clinic_snapshot.data();
@@ -122,15 +122,15 @@ async function create(user) {
 		success: false
 	};
 
-	return db.collection("users").doc(user).get().then(user_snap => {
+	return fsdb.collection("users").doc(user).get().then(user_snap => {
 		if (!user_snap.data().doctor) {
 			// If the user doesn't have a doctor profile then create a profile:
-			return db.collection("doctors").add({
+			return fsdb.collection("doctors").add({
 				user: user,
 				approved: false
 			}).then(doctor_ref => {
 				// Add the doctor profile to the user:
-				return db.collection("users").doc(user).update({
+				return fsdb.collection("users").doc(user).update({
 					doctor: doctor_ref.id
 				}).then(() => {
 					result.doctor = doctor_ref.id
@@ -161,7 +161,7 @@ async function search(name, field, city) {
 	// Fetch the data of all the doctor documents:
 	const promises = [];
 	
-	return db.collection("doctors").get().then(doctor_snapshots => {
+	return fsdb.collection("doctors").get().then(doctor_snapshots => {
 		doctor_snapshots.forEach(snapshot => {
 			promises.push(getData(snapshot.id, field, city));
 		});
@@ -189,7 +189,7 @@ async function search(name, field, city) {
  * Null if he doesn't have one.
  */
 async function getID(user) {
-	return db.collection("users").doc(user).get().then(user_snap => {
+	return fsdb.collection("users").doc(user).get().then(user_snap => {
 		if (user_snap.data().doctor) return user_snap.data().doctor;
 
 		return null;
@@ -202,9 +202,9 @@ async function getID(user) {
  * @param {string} specialization the name of the specialization, which also serves as its id.
  */
 async function addSpecialization(doctor, specialization) {
-	return db.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).set({exists: true})
+	return fsdb.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).set({exists: true})
 	.then(() => {
-		return db.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).set({exists: true});
+		return fsdb.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).set({exists: true});
 	});
 }
 
@@ -214,9 +214,9 @@ async function addSpecialization(doctor, specialization) {
  * @param {string} specialization the name of the specialization, which also serves as its id.
  */
 async function removeSpecialization(doctor, specialization) {
-	return db.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).delete()
+	return fsdb.collection(specializations.NAME).doc(specialization).collection("doctors").doc(doctor).delete()
 	.then(() => {
-		return db.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).delete();
+		return fsdb.collection("doctors").doc(doctor).collection(specializations.NAME).doc(specialization).delete();
 	});
 }
 
@@ -250,7 +250,7 @@ async function getAppointments(doctor, clinic, start, end, context) {
 
 	return getID(context.auth.uid).then(current_doctor_id => {
 		if (current_doctor_id === doctor) {
-			let query = db.collection("doctors").doc(doctor).collection("appointments");
+			let query = fsdb.collection("doctors").doc(doctor).collection("appointments");
 			const startDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(start).toDate());
 			const endDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(end).toDate());
 		

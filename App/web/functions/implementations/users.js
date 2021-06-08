@@ -4,17 +4,17 @@ const admin = require('firebase-admin');
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const db = admin.firestore();
+const fsdb = admin.firestore();
 
 async function add(user, firstName, lastName, context) {
-	db.collection("users").doc(user).set({
+	fsdb.collection("users").doc(user).set({
 		firstName: firstName,
 		lastName: lastName
 	});
 }
 
 async function get(user) {
-	return db.collection("users").doc(user).get().then(user_snap => {
+	return fsdb.collection("users").doc(user).get().then(user_snap => {
 		const data = user_snap.data();
 		data.id = user_snap.id;
 		data.fullName = data.firstName + " " + data.lastName;
@@ -25,7 +25,7 @@ async function get(user) {
 async function getPicture(id) {
 	let location;
 
-	await db.collection("users").doc(id).get().then(user_snap => {
+	await fsdb.collection("users").doc(id).get().then(user_snap => {
 		if (user_snap.data().image) {
 			location = "users/" + id + "/pictures/" + user_snap.data().image;
 		}
@@ -43,13 +43,13 @@ async function getPicture(id) {
 async function updatePicture(id) {
 	let current = 1;
 
-	await db.collection("users").doc(id).get().then(user_snap => {
+	await fsdb.collection("users").doc(id).get().then(user_snap => {
 		if (user_snap.data().image) {
 			current = user_snap.data().image;
 		}
 	});
 
-	await db.collection("users").doc(id).update({
+	await fsdb.collection("users").doc(id).update({
 		image: (current + 1)
 	});
 
@@ -57,7 +57,7 @@ async function updatePicture(id) {
 }
 
 async function update(id, changes) {
-	db.collection("users").doc(id).update(changes);
+	fsdb.collection("users").doc(id).update(changes);
 }
 
 exports.add = add;

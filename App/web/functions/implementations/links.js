@@ -6,7 +6,7 @@ const functions = require('firebase-functions');
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const db = admin.firestore();
+const fsdb = admin.firestore();
 
 const stringContains = require('./functions').stringContains;
 
@@ -85,7 +85,7 @@ function checkPermission(type, id, context) {
  * @returns {boolean}
  */
 function isAvailable(name) {
-	return db.collection(NAME).doc(name).get().then(link_snap => {
+	return fsdb.collection(NAME).doc(name).get().then(link_snap => {
 		return !link_snap.exists;
 	});
 }
@@ -128,19 +128,19 @@ function register(name, type, id, context) {
 						// If the clinic/doctor already has a link, delete it:
 						if (response.success) {
 							// Register the new link:
-							return db.collection(NAME).doc(name).delete().then(() => {
-								return db.collection(NAME).doc(name).set({
+							return fsdb.collection(NAME).doc(name).delete().then(() => {
+								return fsdb.collection(NAME).doc(name).set({
 									type: type,
 									id: id
 								}).then(() => {
 									if (type === DOCTOR) {
-										return db.collection("doctors").doc(id).update({link: name}).then(() => {
+										return fsdb.collection("doctors").doc(id).update({link: name}).then(() => {
 											response.success = true;
 											return response;
 										});
 									}
 
-									return db.collection("clinics").doc(id).update({link: name}).then(() => {
+									return fsdb.collection("clinics").doc(id).update({link: name}).then(() => {
 										response.success = true;
 										return response;
 									});
@@ -149,18 +149,18 @@ function register(name, type, id, context) {
 						}
 		
 						// If the doctor/clinic doesn't have a link, register a new one directly:
-						return db.collection(NAME).doc(name).set({
+						return fsdb.collection(NAME).doc(name).set({
 							type: type,
 							id: id
 						}).then(() => {
 							if (type === DOCTOR) {
-								return db.collection("doctors").doc(id).update({link: name}).then(() => {
+								return fsdb.collection("doctors").doc(id).update({link: name}).then(() => {
 									response.success = true;
 									return response;
 								});
 							}
 
-							return db.collection("clinics").doc(id).update({link: name}).then(() => {
+							return fsdb.collection("clinics").doc(id).update({link: name}).then(() => {
 								response.success = true;
 								return response;
 							});
@@ -238,7 +238,7 @@ function getTarget(name) {
 		target: null
 	}
 
-	return db.collection(NAME).doc(name).get().then(link_snap => {
+	return fsdb.collection(NAME).doc(name).get().then(link_snap => {
 		if (!link_snap.exists) {
 			response.message = "The requested link does not exist";
 			return response;

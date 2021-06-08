@@ -7,7 +7,7 @@ const admin = require('firebase-admin');
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const db = admin.firestore();
+const fsdb = admin.firestore();
 
 const doctors = require("./doctors");
 const clinics = require("./clinics");
@@ -40,7 +40,7 @@ async function getAppointments(doctor, clinic, date) {
 	const start_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day));
 	const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
 
-	return db.collection("appointments").orderBy("start")
+	return fsdb.collection("appointments").orderBy("start")
 	.where("start", ">=", start_day)
 	.where("start", "<", end_day)
 	.where("clinic", "==", clinic)
@@ -108,7 +108,7 @@ async function isAvailable(doctor, clinic, date, slot, type) {
 }
 
 async function checkModifyPermission(appointment, context) {
-	return db.collection("appointments").doc(appointment).get().then(appointment_data => {
+	return fsdb.collection("appointments").doc(appointment).get().then(appointment_data => {
 		// Check if the user trying to modify the appointment is the patient:
 		if (appointment_data.data().patient === context.auth.uid) {
 			return true;
@@ -154,7 +154,7 @@ async function get(appointment, context) {
 		data: null
 	}
 	
-	return db.collection("appointments").doc(appointment).get().then(appointment_snap => {
+	return fsdb.collection("appointments").doc(appointment).get().then(appointment_snap => {
 		if (appointment_snap.exists) {
 			return checkModifyPermission(appointment, context).then(allowed => {
 				if (allowed) {
@@ -222,7 +222,7 @@ async function get(appointment, context) {
 async function getAll({user, start, end, doctor}, context) {
 	let promises = [];
 
-	let query = db;
+	let query = fsdb;
 
 	if (user) query = query.collection("users").doc(user).collection("appointments");
 	else if (doctor) query = query.collection("doctors").doc(doctor).collection("appointments");
@@ -384,11 +384,11 @@ async function add(doctor, clinic, patient, date, time, type) {
 				duration: typeData.minutes,
 				type: type
 			};
-			await db.collection("appointments").add(appointment)
+			await fsdb.collection("appointments").add(appointment)
 			.then(value => {
-				db.collection("users").doc(patient).collection("appointments").doc(value.id).set(appointment);
-				db.collection("doctors").doc(doctor).collection("appointments").doc(value.id).set(appointment);
-				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("appointments").doc(value.id).set(appointment);
+				fsdb.collection("users").doc(patient).collection("appointments").doc(value.id).set(appointment);
+				fsdb.collection("doctors").doc(doctor).collection("appointments").doc(value.id).set(appointment);
+				fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("appointments").doc(value.id).set(appointment);
 				response.id = value.id;
 			})
 			.catch(reason => {
@@ -437,7 +437,7 @@ async function edit(appointment, date, time, type, context) {
 			}
 
 			// Use existing data as default value. Override with new data:
-			return db.collection("appointments").doc(appointment).get().then(old_data => {
+			return fsdb.collection("appointments").doc(appointment).get().then(old_data => {
 				const old_date = new Date(old_data.data().start.toDate());
 				const old_time = new Time(old_date.getUTCHours(), old_date.getUTCMinutes());
 
@@ -487,10 +487,10 @@ async function edit(appointment, date, time, type, context) {
 					}
 
 					const promises = [];
-					promises.push(db.collection("appointments").doc(appointment).update(new_data));
-					promises.push(db.collection("users").doc(old_data.data().patient).collection("appointments").doc(appointment).update(new_data));
-					promises.push(db.collection("doctors").doc(old_data.data().doctor).collection("appointments").doc(appointment).update(new_data));
-					promises.push(db.collection("clinics").doc(old_data.data().clinic).collection("doctors").doc(old_data.data().doctor).collection("appointments").doc(appointment).update(new_data));
+					promises.push(fsdb.collection("appointments").doc(appointment).update(new_data));
+					promises.push(fsdb.collection("users").doc(old_data.data().patient).collection("appointments").doc(appointment).update(new_data));
+					promises.push(fsdb.collection("doctors").doc(old_data.data().doctor).collection("appointments").doc(appointment).update(new_data));
+					promises.push(fsdb.collection("clinics").doc(old_data.data().clinic).collection("doctors").doc(old_data.data().doctor).collection("appointments").doc(appointment).update(new_data));
 
 					return Promise.all(promises).then(() => {
 						response.success = true;
@@ -527,15 +527,15 @@ async function cancel(appointment, context) {
 
 	return checkModifyPermission(appointment, context).then(allowed => {
 		if (allowed) {
-			let general_appointment = db.collection("appointments").doc(appointment);
+			let general_appointment = fsdb.collection("appointments").doc(appointment);
 			
 			return general_appointment.get().then(appointment_snap => {
 				if (appointment_snap.exists) {
 					const promises = [];
 					
-					promises.push(db.collection("users").doc(appointment_snap.data().patient).collection("appointments").doc(appointment).delete());
-					promises.push(db.collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
-					promises.push(db.collection("clinics").doc(appointment_snap.data().clinic).collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
+					promises.push(fsdb.collection("users").doc(appointment_snap.data().patient).collection("appointments").doc(appointment).delete());
+					promises.push(fsdb.collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
+					promises.push(fsdb.collection("clinics").doc(appointment_snap.data().clinic).collection("doctors").doc(appointment_snap.data().doctor).collection("appointments").doc(appointment).delete());
 					promises.push(general_appointment.delete());
 	
 					return Promise.all(promises).then(() => {
@@ -571,18 +571,18 @@ function arrived(data, context) {
 		// If the user has a secretary profile:
 		if (secretary) {
 			// Fetch the appointment data:
-			return db.collection("appointments").doc(data.appointment).get().then(appointment_snapshot => {
+			return fsdb.collection("appointments").doc(data.appointment).get().then(appointment_snapshot => {
 
 				// Check if the current user works as a secretary in the clinic that the appointment is for:
 				return clinics.hasSecretary(appointment_snapshot.data().clinic, secretary).then(secretarty_exits => {
 					if (secretarty_exits) {
 						// If the current user is authorized, then toggle the patient's arrival status:
 						const update = {arrived: appointment_snapshot.data().arrived ? false : true}
-						return db.collection("appointments").doc(data.appointment).update(update)
+						return fsdb.collection("appointments").doc(data.appointment).update(update)
 						.then(value => {
-							return db.collection("users").doc(appointment_snapshot.data().patient).collection("appointments").doc(data.appointment).update(update).then(() => {
-								return db.collection("doctors").doc(appointment_snapshot.data().doctor).collection("appointments").doc(data.appointment).update(update).then(() => {
-									return db.collection("clinics").doc(appointment_snapshot.data().clinic)
+							return fsdb.collection("users").doc(appointment_snapshot.data().patient).collection("appointments").doc(data.appointment).update(update).then(() => {
+								return fsdb.collection("doctors").doc(appointment_snapshot.data().doctor).collection("appointments").doc(data.appointment).update(update).then(() => {
+									return fsdb.collection("clinics").doc(appointment_snapshot.data().clinic)
 														.collection("doctors").doc(appointment_snapshot.data().doctor)
 														.collection("appointments").doc(data.appointment).update(update)
 														.then(() => {

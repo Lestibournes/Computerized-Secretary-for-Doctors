@@ -76,8 +76,6 @@ export function ClinicAgendaPage() {
 
 					const date = SimpleDate.fromObject(appointment.extra.date);
 					const time = Time.fromObject(appointment.extra.time);
-					const doctor = appointment.doctor;
-					const clinic = appointment.clinic;
 
 					return (
 						<Card
@@ -86,8 +84,8 @@ export function ClinicAgendaPage() {
 							image={appointment.image}
 							altText={appointment.patient.fullName}
 							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}
-							body={capitalizeAll(appointment.appointment.type)}
-							footer={doctor.user.fullName}
+							body={<><b>Appointment Type:</b> {capitalizeAll(appointment.appointment.type)}</>}
+							footer={<><b>Doctor:</b> {appointment.doctor.user.fullName}</>}
 						/>
 					);
 				});

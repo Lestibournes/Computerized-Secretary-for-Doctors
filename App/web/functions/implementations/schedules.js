@@ -9,7 +9,7 @@ const { Time } = require('./Time');
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const db = admin.firestore();
+const fsdb = admin.firestore();
 
 const secretaries = require("./secretaries");
 const doctors = require("./doctors");
@@ -53,7 +53,7 @@ async function checkModifyPermission(clinic, doctor, context) {
 					if (secretary_exists) return true;
 
 					// if the clinic has the doctor and he is the same as the current user:
-					return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).get().then(doctor_snapshot => {
+					return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).get().then(doctor_snapshot => {
 						if (doctor_snapshot.exists && doctor === doctor_id) return true;
 
 						// If the current user is neither the owner of the clinic, nor a secretary, nor the doctor that the shift belongs to:
@@ -83,7 +83,7 @@ async function checkModifyPermission(clinic, doctor, context) {
  * The second level the shifts within each day, with 1 slot object per shift.
  */
 async function get(clinic, doctor) {
-	return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).get()
+	return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).get()
 	.then(shift_snaps => {
 		const days = [];
 
@@ -122,7 +122,7 @@ async function add(clinic, doctor, day, start, end, context) {
 
 	return checkModifyPermission(clinic, doctor, context).then(allowed => {
 		if (allowed) {
-			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).add({
+			return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).add({
 				day: day,
 				start: start,
 				end: end,
@@ -159,7 +159,7 @@ async function edit(clinic, doctor, shift, day, start, end, context) {
 
 	return checkModifyPermission(clinic, doctor, context).then(allowed => {
 		if (allowed) {
-			const shift_ref = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).doc(shift);
+			const shift_ref = fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).doc(shift);
 			
 			return shift_ref.get().then(shift_snapshot => {
 				if (shift_snapshot.exists) {
@@ -204,7 +204,7 @@ async function remove(clinic, doctor, shift, context) {
 
 	return checkModifyPermission(clinic, doctor, context).then(allowed => {
 		if (allowed) {
-			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).doc(shift).delete()
+			return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection(NAME).doc(shift).delete()
 			.then(() => {
 				response.success = true;
 				return response;
@@ -244,7 +244,7 @@ async function addType(clinic, doctor, name, duration, context) {
 
 	return checkModifyPermission(clinic, doctor, context).then(allowed => {
 		if (allowed) {
-			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types")
+			return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types")
 			.add({
 				name: name,
 				duration: duration
@@ -292,7 +292,7 @@ async function editType(clinic, doctor, type, name, duration, context) {
 
 	return checkModifyPermission(clinic, doctor, context).then(allowed => {
 		if (allowed) {
-			const type_ref = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type);
+			const type_ref = fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type);
 			return type_ref.get().then(type_snap => {
 				if (type_snap.exists) {
 					return type_ref.update({
@@ -341,7 +341,7 @@ async function deleteType(clinic, doctor, type, context) {
 
 	return checkModifyPermission(clinic, doctor, context).then(allowed => {
 		if (allowed) {
-			const type_ref = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type);
+			const type_ref = fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type);
 			return type_ref.get().then(type_snap => {
 				if (type_snap.exists) {
 					return type_ref.delete().then(() => {
@@ -386,7 +386,7 @@ async function getTypes(clinic, doctor) {
 		message: ""
 	};
 
-	return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").get()
+	return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").get()
 		.then(type_snaps => {
 			for (const type_snap of type_snaps.docs) {
 				const data = type_snap.data();
@@ -483,7 +483,7 @@ async function setMinimum(clinic, doctor, minimum, context) {
 
 	return checkModifyPermission(clinic, doctor, context).then(allowed => {
 		if (allowed) {
-			return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).update({
+			return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).update({
 				minimum: minimum
 			}).then(() => {
 				response.success = true;
@@ -520,7 +520,7 @@ async function getMinimum(clinic, doctor) {
 		message: ""
 	};
 
-	return db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).get().then(snap => {
+	return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).get().then(snap => {
 		response.success = true;
 		response.minimum = snap.data().minimum ? snap.data().minimum : 0;
 		return response;
