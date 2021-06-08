@@ -42,3 +42,34 @@ export function capitalizeAll(text) {
 export function compareByName(a, b) {
 	return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
 }
+
+function showNotification(content, target) {
+	var notification = new Notification(content);
+		notification.onclick = function(event) {
+			event.preventDefault(); // prevent the browser from focusing the Notification's tab
+			window.location = target;
+		}
+}
+
+export function notify(content, target) {
+	// Let's check if the browser supports notifications
+	if (!("Notification" in window)) {
+		alert(content);
+	}
+	
+	// Let's check whether notification permissions have already been granted
+	else if (Notification.permission === "granted") {
+		// If it's okay let's create a notification
+		showNotification(content, target);
+	}
+	
+	// Otherwise, we need to ask the user for permission
+	else if (Notification.permission !== "denied") {
+		Notification.requestPermission().then(function (permission) {
+			// If the user accepts, let's create a notification
+			if (permission === "granted") {
+				showNotification(content, target);
+			}
+		});
+	}
+}

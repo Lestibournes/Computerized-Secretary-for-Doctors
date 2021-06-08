@@ -6,6 +6,9 @@ import { Link } from "react-router-dom";
 import { DropdownMenu } from "./DropdownMenu";
 import { usePopups } from "../Popups";
 import { events, server } from "../server";
+import { Time } from "../Classes/Time";
+import { SimpleDate } from "../Classes/SimpleDate";
+import { notify } from "../functions";
 
 export function Page({unprotected, title, subtitle, children}) {
 	const auth = useAuth();
@@ -44,10 +47,16 @@ export function Page({unprotected, title, subtitle, children}) {
 
 	useEffect(() => {
 		if (doctor) {
-			return events.doctors.arrival(doctor.doctor.id, appointment => {
-				if (appointment.arrived) {
-					server.users.get({user: appointment.patient}).then(response => {
-						alert(response.data.fullName + " is here");
+			return events.doctors.arrival(doctor.doctor.id, (appointment_id, arrived) => {
+				if (arrived) {
+					server.appointments.get({id: appointment_id}).then(response => {
+						const data = response.data.data;
+						notify(
+							"Patient " + data.patient.fullName +
+							" has arrived for " + (data.patient.sex === "male" ? "his " : "her ") +
+							SimpleDate.fromObject(data.extra.date) + " " +
+							Time.fromObject(data.extra.time).toString() +
+							" appointment.", "/specific/doctor/appointments/details/" + appointment_id);
 					});
 				}
 			});

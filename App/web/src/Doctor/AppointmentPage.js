@@ -43,9 +43,11 @@ export function AppointmentPage() {
 					getPictureURL(data.appointment.patient).then(url => {
 						setImage(url);
 					});
-	
-					return events.appointments.arrival(appointment, data => {
-						setArrived(data.arrived);
+					
+					setArrived(data.appointment.arrived);
+
+					return events.appointments.arrival(appointment, (appointment_id, arrived) => {
+						setArrived(arrived);
 					});
 				}
 				else {
@@ -76,12 +78,12 @@ export function AppointmentPage() {
 							label="Arrived"
 							action={() => {
 								server.appointments.arrived({appointment: appointment}).then(response => {
-									if (response.data.success) {
-										setArrived(response.data.current);
-									}
-									else {
+									if (!response.data.success) {
 										// Display error message popup.
 										popupManager.error(response.data.message);
+									}
+									else {
+										// setArrived(response.data.current);
 									}
 								});
 							}}

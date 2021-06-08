@@ -13,7 +13,6 @@ const { SimpleDate } = require('./SimpleDate');
  */
 const fsdb = admin.firestore();
 
-
 /**
  * Check if the current user is authorized to modify the given doctor's work schedule.
  * @param {string} clinic The id of the clinic
