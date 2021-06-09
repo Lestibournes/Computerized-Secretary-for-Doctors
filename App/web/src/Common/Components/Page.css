@@ -64,6 +64,15 @@ header .title:active {
 	z-index: 100;
 }
 
+section header {
+	display: flex;
+	flex-direction: row;
+}
+
+section header > *:first-child {
+	width: 100%;
+}
+
 .Page header.main .dropdown .menu {
 	z-index: 2;
 }

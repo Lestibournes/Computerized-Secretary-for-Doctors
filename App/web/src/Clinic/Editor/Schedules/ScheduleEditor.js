@@ -170,7 +170,7 @@ export function ScheduleEditor() {
 				{redirect ? <Redirect to={redirect} /> : ""}
 				<section>
 					<header>
-						<b>Minimum duration:</b> {minimum} minutes.
+						<span><b>Minimum duration:</b> {minimum} minutes.</span>
 						<Button label="Edit" action={() => {
 							MinimumFormPopup(popupManager, clinic, doctor, minimum, minimum => setMinimum(minimum));
 						}} />
