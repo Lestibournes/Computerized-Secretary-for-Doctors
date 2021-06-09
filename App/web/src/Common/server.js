@@ -90,46 +90,59 @@ export const server = {
 	},
 }
 
-
 const cache = {
 	appointments: new Map(),
 }
 
 export const events = {
 	appointments: {
-		/**
+		arrival: {
+			cache: new Map(),
+
+			/**
 		 * For watching changes in the patient arrival status for one specific appointment.
 		 * @param {string} appointment the id of the appointment.
-		 * @param {() => {}} callback 
+		 * @param {(appointment: string, arrived: [boolean, string]) => {}} callback 
 		 * @returns unsubscribe function.
 		 */
-		arrival: (appointment, callback) => {
-			return db.collection("appointments").doc(appointment).onSnapshot(snapshot => {
-				if (cache.appointments.has(appointment) && snapshot.data().arrived !== cache.appointments.get(appointment).arrived) {
-					callback(appointment, snapshot.data().arrived);
-				}
-				else if (!cache.appointments.has(appointment)) cache.appointments.set(appointment, snapshot.data());
-			});
+			listen: (appointment, callback) => {
+				return db.collection("appointments").doc(appointment).onSnapshot(snapshot => {
+					if (!events.appointments.arrival.cache.has(appointment)) {
+						events.appointments.arrival.cache.set(appointment, snapshot.data());
+					}
+	
+					if (snapshot.data().arrived !== events.appointments.arrival.cache.get(appointment)?.arrived) {
+						callback(appointment, snapshot.data().arrived);
+						events.appointments.arrival.cache.set(appointment, snapshot.data());
+					}
+				});
+			}
 		}
 	},
 	doctors: {
-		/**
-		 * For watching changes in the patient arrival status for one all of the doctor's appointments.
-		 * @param {string} doctor the id of the doctor who's patient arrivals are to be listened for.
-		 * @param {(appointment_id: string, arrived: boolean)} callback 
-		 * @returns unsubscribe function.
-		 */
-		arrival: (doctor, callback) => {
-			return db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(appointments => {
-				appointments.docChanges().forEach(change => {
-					if (change.type === "modified" &&
-							change.doc.data().arrived !== cache.appointments.get(change.doc.id).arrived) {
-						callback(change.doc.id, change.doc.data().arrived);
-					}
-
-					cache.appointments.set(change.doc.id, change.doc.data());
+		arrival: {
+			cache: new Map(),
+			/**
+			 * For watching changes in the patient arrival status for one all of the doctor's appointments.
+			 * @param {string} doctor the id of the doctor who's patient arrivals are to be listened for.
+			 * @param {(appointment_id: string, arrived: boolean)} callback 
+			 * @returns unsubscribe function.
+			 */
+			listen: (doctor, callback) => {
+				return db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(appointments => {
+					appointments.docChanges().forEach(change => {
+						if (change.type === "added") {
+							events.doctors.arrival.cache.set(change.doc.id, change.doc.data());
+						}
+	
+						if (change.type === "modified" &&
+								change.doc.data().arrived !== events.doctors.arrival.cache.get(change.doc.id).arrived) {
+							callback(change.doc.id, change.doc.data().arrived);
+							events.doctors.arrival.cache.set(change.doc.id, change.doc.data());
+						}
+					});
 				});
-			});
+			}
 		}
 	}
 }

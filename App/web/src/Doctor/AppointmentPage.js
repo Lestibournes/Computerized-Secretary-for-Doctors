@@ -26,7 +26,7 @@ export function AppointmentPage() {
 	
 	useEffect(() => {
 		if (appointment) {
-			server.appointments.get({id: appointment}).then(results => {
+			return server.appointments.get({id: appointment}).then(results => {
 				if (results.data.success) {
 					const data = results.data.data;
 
@@ -46,7 +46,7 @@ export function AppointmentPage() {
 					
 					setArrived(data.appointment.arrived);
 
-					return events.appointments.arrival(appointment, (appointment_id, arrived) => {
+					return events.appointments.arrival.listen(appointment, (appointment_id, arrived) => {
 						setArrived(arrived);
 					});
 				}

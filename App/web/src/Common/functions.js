@@ -46,7 +46,6 @@ export function compareByName(a, b) {
 function showNotification(content, target) {
 	var notification = new Notification(content);
 		notification.onclick = function(event) {
-			event.preventDefault(); // prevent the browser from focusing the Notification's tab
 			window.location = target;
 		}
 }

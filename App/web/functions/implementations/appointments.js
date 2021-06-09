@@ -124,7 +124,7 @@ async function checkModifyPermission(appointment, context) {
 
 				// Check if the user trying to modify the appointment is a secretary of the clinic:
 				return secretaries.getID(context.auth.uid).then(secretary_id => {
-					clinics.hasSecretary(appointment_data.data().clinic, secretary_id).then(exists => {
+					return clinics.hasSecretary(appointment_data.data().clinic, secretary_id).then(exists => {
 						if (exists) return true;
 
 						// If the current user is neither the patient, nor the doctor, nor the owner of the clinic, nor a secretary at the clinic:
@@ -202,7 +202,7 @@ async function get(appointment, context) {
 						return response;
 					});
 				}
-		
+
 				response.message = "You do not have permission to view this appointment";
 				return response;
 			});
@@ -231,10 +231,10 @@ async function getAll({user, start, end, doctor}, context) {
 	if (start) query = query.startAt(SimpleDate.fromObject(start).toDate());
 	if (end) query = query.endAt(SimpleDate.fromObject(end).toDate());
 
-	return query.get().then(querySnapshot => {
-		for (const snap of querySnapshot.docs) {
+	return query.get().then(appointments => {
+		for (const appointment of appointments.docs) {
 			promises.push(
-				get(snap.id, context).then(response => {
+				get(appointment.id, context).then(response => {
 					if (response.success) {
 						return response.data;
 					}
@@ -577,7 +577,10 @@ function arrived(data, context) {
 				return clinics.hasSecretary(appointment_snapshot.data().clinic, secretary).then(secretarty_exits => {
 					if (secretarty_exits) {
 						// If the current user is authorized, then toggle the patient's arrival status:
-						const update = {arrived: appointment_snapshot.data().arrived ? false : true}
+						let update;
+						if (appointment_snapshot.data().arrived) update = {arrived: false};
+						else update = {arrived: context.auth.uid};
+
 						return fsdb.collection("appointments").doc(data.appointment).update(update)
 						.then(value => {
 							return fsdb.collection("users").doc(appointment_snapshot.data().patient).collection("appointments").doc(data.appointment).update(update).then(() => {

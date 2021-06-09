@@ -46,9 +46,9 @@ export function Page({unprotected, title, subtitle, children}) {
 	}, [auth, doctor, unprotected]);
 
 	useEffect(() => {
-		if (doctor) {
-			return events.doctors.arrival(doctor.doctor.id, (appointment_id, arrived) => {
-				if (arrived) {
+		if (doctor && auth?.user) {
+			return events.doctors.arrival.listen(doctor.doctor.id, (appointment_id, arrived) => {
+				if (arrived && arrived !== auth.user.uid) {
 					server.appointments.get({id: appointment_id}).then(response => {
 						const data = response.data.data;
 						notify(
@@ -61,7 +61,7 @@ export function Page({unprotected, title, subtitle, children}) {
 				}
 			});
 		}
-	}, [doctor])
+	}, [doctor, auth.user])
 
 	useEffect(() => {
 		setName(auth?.name?.full);
