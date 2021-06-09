@@ -305,7 +305,6 @@ function ConfirmDeletePopup(popupManager, appointment, success) {
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.appointments.cancel({appointment: appointment}).then(response => {
-						console.log(response.data);
 						if (!response.data.success) popupManager.error(capitalize(response.data.message))
 						else success();
 					});

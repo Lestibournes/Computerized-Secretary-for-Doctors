@@ -5,7 +5,7 @@
 	gap: var(--margin);
 }
 
-.Page Form .searchBar {
+.Page Form .searchBar > * {
 	width: 100%;
 }
 

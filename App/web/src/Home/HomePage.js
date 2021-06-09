@@ -28,7 +28,6 @@ export function HomePage() {
 				if (doctor_id.data) setDoctor(doctor_id);
 
 				server.secretaries.getID({user: auth.user.uid}).then(secretary_id => {
-					console.log(secretary_id, doctor_id);
 					if (secretary_id.data) setSecretary(secretary_id);
 
 					if (doctor_id.data) setDefaultView(DOCTOR);

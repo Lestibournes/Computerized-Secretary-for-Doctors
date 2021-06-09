@@ -107,13 +107,18 @@ export const events = {
 		 */
 			listen: (appointment, callback) => {
 				return db.collection("appointments").doc(appointment).onSnapshot(snapshot => {
-					if (!events.appointments.arrival.cache.has(appointment)) {
-						events.appointments.arrival.cache.set(appointment, snapshot.data());
+					if (snapshot.data()) {
+						if (!events.appointments.arrival.cache.has(appointment)) {
+							events.appointments.arrival.cache.set(appointment, snapshot.data());
+						}
+		
+						if (snapshot.data().arrived !== events.appointments.arrival.cache.get(appointment)?.arrived) {
+							callback(appointment, snapshot.data().arrived);
+							events.appointments.arrival.cache.set(appointment, snapshot.data());
+						}
 					}
-	
-					if (snapshot.data().arrived !== events.appointments.arrival.cache.get(appointment)?.arrived) {
-						callback(appointment, snapshot.data().arrived);
-						events.appointments.arrival.cache.set(appointment, snapshot.data());
+					else {
+						events.appointments.arrival.cache.delete(appointment);
 					}
 				});
 			}
@@ -131,6 +136,10 @@ export const events = {
 			listen: (doctor, callback) => {
 				return db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(appointments => {
 					appointments.docChanges().forEach(change => {
+						if (change.type === "removed") {
+							events.doctors.arrival.cache.delete(change.doc.id);
+						}
+
 						if (change.type === "added") {
 							events.doctors.arrival.cache.set(change.doc.id, change.doc.data());
 						}

@@ -1,0 +1,9 @@
+*.png
+*.html
+*.pdf
+*.docx
+*.zip
+
+firebase-debug.log
+
+/Design/User Data.drawio - diagrams.net_files
