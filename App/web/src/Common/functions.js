@@ -1,6 +1,4 @@
 import { fb, storage } from "../init";
-import { Button } from "./Components/Button";
-import {Popup} from "./Components/Popup";
 
 const fn = fb.functions();
 

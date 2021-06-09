@@ -1,0 +1,87 @@
+.TabbedContainer {
+	display: flex;
+	flex-direction: row;
+}
+
+.TabbedContainer .TabBar {
+	display: flex;
+	flex-direction: column;
+}
+
+.TabbedContainer .TabBar > * {
+	height: fit-content;
+	width: 3rem;
+	padding: var(--padding);
+
+	color: var(--control-background-pressed);
+	background-color: var(--control-background);
+
+	display: flex;
+	flex-direction: column;
+	gap: var(--margin);
+
+	border-radius: var(--radius) 0 0 var(--radius);
+	border: 0.1rem solid var(--control-background-pressed);
+	border-right: none;
+
+}
+
+.TabbedContainer .TabBar > * .fas {
+	font-size: 2rem;
+}
+
+.TabbedContainer .TabBar > *.selected, .TabbedContainer .TabBar > *.selected .fas {
+	background-color: var(--highlight);
+	color: var(--alt-color);
+	font-weight: bold;
+	border: none;
+}
+
+.TabbedContainer .TabBar > * > heading {
+	/* text-align: end;
+	transform: translate(calc(-50% + 1em), calc(50% + var(--padding))) rotate(-0.25turn); */
+	display: none;
+}
+
+.TabbedContainer .TabBody {
+	background-color: var(--alt-color);
+	width: 100%;
+	padding: var(--padding);
+	border-radius: 0 var(--radius) var(--radius) var(--radius);
+	border: 0.1rem solid var(--control-background);
+	min-height: 30rem;
+}
+
+@media screen and (min-width: 41.25rem) {
+	.TabbedContainer {
+		flex-direction: column;
+	}
+	
+	.TabbedContainer .TabBar {
+		flex-direction: row;
+		height: 3rem;
+	}
+	
+	.TabbedContainer .TabBar > * {
+		width: 100%;
+		height: 100%;
+
+		flex-direction: row;
+		place-items: center;
+
+		border-radius: var(--radius) var(--radius) 0 0;
+		border-right: unset;
+		border-bottom: none;
+	}
+
+	.TabbedContainer .TabBar > * > heading {
+		/* text-align: start;
+		transform: none; */
+		display: inline;
+	}
+
+	.TabbedContainer .TabBody {
+		border-radius: 0 0 var(--radius) var(--radius);
+		border: 0.1rem solid var(--control-background);
+	}
+}

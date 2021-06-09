@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
 import { events, server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
+import { TabbedContainer } from '../Common/Components/TabbedContainer';
 
 export function AppointmentPage() {
 	/**
@@ -66,13 +67,10 @@ export function AppointmentPage() {
 		subtitle = "Dr. " + doctorData.user.fullName + "'s Appointment";
 		display = 
 		<>
-			<section>
-				<header>
-					<h3>Patient Details</h3>
-						<Button
-							label="Edit"
-							link={"/specific/secretary/appointments/edit/" + appointment}
-						/>
+			<TabbedContainer>
+				<section title="Appointment Details" icon="fa-calendar-alt">
+					<header>
+						<h3>Appointment Details</h3>
 						<Button
 							type={arrived ? "okay" : ""}
 							label="Arrived"
@@ -88,27 +86,44 @@ export function AppointmentPage() {
 								});
 							}}
 						/>
-				</header>
-				<div className="table">
-					<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
-					<b>Name:</b> <span>{appointmentData.patient.fullName}</span>
-					<b>Sex:</b> <span>{appointmentData.patient.sex ? capitalizeAll(appointmentData.patient.sex) : "Not specified"}</span>
-				</div>
-			</section>
+					</header>
+					<div className="table">
+						<b>Start:</b> <span>{
+						SimpleDate.fromObject(appointmentData.extra.date).toString() + " " + 
+						Time.fromObject(appointmentData.extra.time).toString()
+						}</span>
+						<b>Duration:</b> <span>{appointmentData.appointment.duration} minutes</span>
+						<b>Type:</b> <span>{capitalizeAll(appointmentData.appointment.type)}</span>
+					</div>
+				</section>
 
-			<section>
-				<header>
-					<h3>Appointment Details</h3>
-				</header>
-				<div className="table">
-					<b>Start:</b> <span>{
-					SimpleDate.fromObject(appointmentData.extra.date).toString() + " " + 
-					Time.fromObject(appointmentData.extra.time).toString()
-					}</span>
-					<b>Duration:</b> <span>{appointmentData.appointment.duration} minutes</span>
-					<b>Type:</b> <span>{capitalizeAll(appointmentData.appointment.type)}</span>
+				<section title="Patient Information" icon="fa-info-circle">
+					<header>
+						<h3>Patient Details</h3>
+						<Button
+							label="Edit"
+							link={"/specific/secretary/appointments/edit/" + appointment}
+						/>
+					</header>
+					<div className="table">
+						<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
+						<b>Name:</b> <span>{appointmentData.patient.fullName}</span>
+						<b>Sex:</b> <span>{appointmentData.patient.sex ? capitalizeAll(appointmentData.patient.sex) : "Not specified"}</span>
+					</div>
+				</section>
+				
+				<div title="Documents" icon="fa-file-medical-alt">
+					To Do
 				</div>
-			</section>
+
+				<div title="Chat" icon="fa-comment">
+					To Do
+				</div>
+
+				<div title="Visit Notes" icon="fa-clipboard">
+					To Do
+				</div>
+			</TabbedContainer>
 		</>;
 	}
 	
