@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router"
+import { Header } from "../Common/Components/Header";
 import { server } from "../Common/server";
 import { ClinicLandingFragment } from "./ClinicLandingFragment";
 import { DoctorLandingFragment } from "./DoctorLandingFragment";
@@ -20,13 +21,14 @@ export function Link() {
 	}, [link]);
 
 	return (
-		<>
+		<div className="Page">
+			<Header link={link} />
 			{target?.type === CLINIC ?
 				<ClinicLandingFragment clinic={target.id} />
 			: ""}
 			{target?.type === DOCTOR ?
 				<DoctorLandingFragment doctor={target.id} />
 			: ""}
-		</>
+		</div>
 	)
 }

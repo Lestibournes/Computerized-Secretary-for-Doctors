@@ -8,6 +8,7 @@ import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
 import { getPictureURL } from "../../Common/functions";
 import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
+import { Loading } from "../../Common/Components/Loading";
 
 function generateClinicCards(secretary, clinics) {
 	const clinics_list = [];
@@ -65,7 +66,7 @@ export function SecretaryProfileFragment() {
 		if (secretary) setClinics(generateClinicCards(secretary.id, secretary.clinics));
 	}, [secretary]);
 
-	let display = <h2>Loading...</h2>;
+	let display = <Loading />;
 
 	if (secretary && clinics) {
 		display = (

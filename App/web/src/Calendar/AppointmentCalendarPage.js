@@ -8,7 +8,6 @@ import { Slot } from "../Common/Classes/Slot";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { CalendarWeek } from "./CalendarWeek";
 import { Button } from '../Common/Components/Button';
-import { Page } from '../Common/Components/Page';
 import { server } from "../Common/server";
 import { Popup } from "../Common/Components/Popup";
 import { useParams } from "react-router";
@@ -16,6 +15,7 @@ import { Select } from "../Common/Components/Select";
 import { Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { usePopups } from "../Common/Popups";
+import { Header } from "../Common/Components/Header";
 
 function debounce(fn, ms) {
   let timer
@@ -294,8 +294,10 @@ export function AppointmentCalendarPage() {
 			</>;
 
 	return (
-		<Page title="Work Calendar">
+		<div className="Page">
+			<Header />
+			<h1>Work Calendar</h1>
 			{display}
-		</Page>
+		</div>
 	);
 }

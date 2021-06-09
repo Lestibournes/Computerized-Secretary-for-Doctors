@@ -2,12 +2,12 @@
 import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
-import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
 import { events, server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
+import { Header } from '../Common/Components/Header';
 
 export function AppointmentPage() {
 	/**
@@ -113,8 +113,13 @@ export function AppointmentPage() {
 	}
 	
 	return (
-		<Page title={title} subtitle={subtitle}>
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>{title}</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

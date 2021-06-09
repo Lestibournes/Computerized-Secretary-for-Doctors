@@ -1,11 +1,12 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Page } from '../Common/Components/Page';
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
+import { Header } from '../Common/Components/Header';
+import { Loading } from '../Common/Components/Loading';
 
 export function AppointmentSuccessPage() {
 	const { appointment } = useParams(); //The ID of the doctor and clinic.
@@ -34,7 +35,7 @@ export function AppointmentSuccessPage() {
 		});
   }, [appointment]);
 
-	let display = <h3>Loading...</h3>;
+	let display = <Loading />;
 
 	if (appointment_data && doctor_data && clinic_data && date) {
 		display =
@@ -56,9 +57,15 @@ export function AppointmentSuccessPage() {
 			</b>
 		</p>
 	}
+
 	return (
-		<Page title="Make an Appointment" subtitle="Success!">
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>Make an Appointment</h1>
+			<h2>Success!</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

@@ -1,7 +1,7 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Card } from "../Common/Components/Card"
-import { Page } from "../Common/Components/Page";
+import { Loading } from '../Common/Components/Loading';
 import { server } from '../Common/server';
 
 /**
@@ -68,7 +68,7 @@ export function DoctorLandingFragment({doctor}) {
 		}
 	}, [clinicsData, data, doctor]);
 
-	let display = <h2>Loading...</h2>;
+	let display = <Loading />;
 	if (data && clinicCards) {
 		display = (
 			<>
@@ -90,8 +90,10 @@ export function DoctorLandingFragment({doctor}) {
 	}
 
 	return (
-		<Page>
-			{display}
-		</Page>
+		<>
+			<main>
+				{display}
+			</main>
+		</>
 	);
 }

@@ -7,13 +7,13 @@ import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../Common/Components/Button";
 import { SelectList } from "../Common/Components/SelectList";
 import { SelectDate } from "../Common/Components/SelectDate";
-import { Page } from "../Common/Components/Page";
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Popup } from '../Common/Components/Popup';
 import { capitalizeAll, capitalize, compareByName } from '../Common/functions';
 import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
+import { Header } from '../Common/Components/Header';
 
 /**
  * @todo
@@ -31,9 +31,12 @@ import { usePopups } from '../Common/Popups';
 export function SetAppointmentPage() {
 	const auth = useAuth();
 	
+	//The root of the site:
+	const { link } = useParams();
+
 	//The ID of the appointment:
 	const { appointment } = useParams();
-	
+
 	//The server data of the appointment:
 	const [data, setData] = useState();
 
@@ -288,9 +291,14 @@ export function SetAppointmentPage() {
 	}
 
 	return (
-		<Page title={appointment ? "Modify Appointment" : "Make an Appointment"} subtitle={subtitle} popupManager={popupManager} >
-			{display}
-		</Page>
+		<div className="Page">
+			<Header link={link} />
+			<h1>{appointment ? "Modify Appointment" : "Make an Appointment"}</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }
 

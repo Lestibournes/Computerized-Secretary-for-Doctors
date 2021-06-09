@@ -2,6 +2,7 @@
 
 * {
 	box-sizing: border-box;
+	margin: 0;
 }
 
 body {
@@ -19,12 +20,22 @@ code {
 		monospace;
 }
 
+main {
+	display: flex;
+	flex-direction: column;
+	gap: var(--margin);
+}
+
 /* #root {
 	height: 100vh;
 } */
 
 h1 {
 	color: var(--highlight);
+}
+
+h1, h2, h3 {
+	margin: var(--margin-small) 0 var(--margin) 0;
 }
 
 option:disabled {
@@ -45,6 +56,7 @@ option:disabled {
 	grid-template-columns: min-content max-content;
 	place-items: center start;
 	gap: var(--margin);
+	margin: 0 var(--margin) 0 var(--margin);
 }
 
 .table img {

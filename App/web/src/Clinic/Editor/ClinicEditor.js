@@ -4,7 +4,6 @@ import { useAuth } from "../../Common/Auth";
 import { Link, Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
-import { Page } from "../../Common/Components/Page";
 import { clinicEditPopup } from "./ClinicEditForm";
 import { selectDoctorPopup } from "./SelectDoctor";
 import { getPictureURL } from "../../Common/functions";
@@ -12,6 +11,8 @@ import { selectSecretaryPopup } from './SelectSecretary';
 import { server } from '../../Common/server';
 import { usePopups } from '../../Common/Popups';
 import { linkEditPopup, LINK_TYPES } from "../../Landing/LinkEdit";
+import { Header } from '../../Common/Components/Header';
+import { Loading } from '../../Common/Components/Loading';
 /**
 @todo
 Edit clinic page:
@@ -156,7 +157,7 @@ export function ClinicEditor() {
 		}
 	}, [secretariesData, data, clinic]);
 
-	let display = <h2>Loading...</h2>;
+	let display = <Loading />;
 	if (data && doctorCards && secretaryCards) {
 		display = (
 			<>
@@ -265,8 +266,13 @@ export function ClinicEditor() {
 	}
 
 	return (
-		<Page title="Edit Clinic">
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>Edit Clinic</h1>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
+
 }

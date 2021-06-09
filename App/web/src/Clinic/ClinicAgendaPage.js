@@ -3,7 +3,6 @@ import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
-import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { server } from '../Common/server';
@@ -13,6 +12,7 @@ import { TextInput } from '../Common/Components/TextInput';
 import { Select } from '../Common/Components/Select';
 import { Form, Formik } from 'formik';
 import { Button } from '../Common/Components/Button';
+import { Header } from '../Common/Components/Header';
 
 export function ClinicAgendaPage() {
 	const { clinic } = useParams(); //The ID of the doctor.
@@ -172,10 +172,15 @@ export function ClinicAgendaPage() {
 		title = clinicData.name;
 		subtitle = "Agenda";
 	}
-	
+
 	return (
-		<Page title={title} subtitle={subtitle}>
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>{title}</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
-import { Page } from "../Common/Components/Page";
+import { Header } from '../Common/Components/Header';
 import { server } from '../Common/server';
 
 /**
@@ -37,8 +37,13 @@ export function ClinicPage() {
 	);
 
 	return (
-		<Page title={data?.name + " Clinic"} subtitle={"Management"}>
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>{data?.name + " Clinic"}</h1>
+			<h2>Management</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

@@ -32,6 +32,8 @@ import { ProfilePage } from './Profile/ProfilePage';
 import { DoctorAgendaPage } from './Doctor/DoctorAgendaPage';
 import { ProvidePopups } from './Common/Popups';
 import { Link } from './Landing/Link';
+import { Notifier } from './Common/Components/Notifier';
+import { Popups } from './Common/Components/Popups';
 
 /**
  * URL Scheme:
@@ -42,6 +44,7 @@ import { Link } from './Landing/Link';
 ReactDOM.render(
 	<ProvideAuth>
 		<ProvidePopups>
+			<Notifier />
 			<Router>
 				<Switch>
 
@@ -149,6 +152,8 @@ ReactDOM.render(
 					</Route>
 				</Switch>
 			</Router>
+
+			<Popups />
 		</ProvidePopups>
 	</ProvideAuth>,
 	document.getElementById('root')

@@ -71,7 +71,7 @@
 	display: block;
 }
 
-@media screen and (min-width: 500px) {	
+@media screen and (min-width: 700px) {	
 	.dropdown {
 		width: max-content;
 		position: relative;

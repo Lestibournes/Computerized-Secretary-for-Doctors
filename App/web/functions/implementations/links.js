@@ -127,8 +127,8 @@ function register(name, type, id, context) {
 					return getLink(type, id).then(response => {
 						// If the clinic/doctor already has a link, delete it:
 						if (response.success) {
-							// Register the new link:
-							return fsdb.collection(NAME).doc(name).delete().then(() => {
+							// Delete the old link and register the new link:
+							return fsdb.collection(NAME).doc(response.link).delete().then(() => {
 								return fsdb.collection(NAME).doc(name).set({
 									type: type,
 									id: id

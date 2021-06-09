@@ -1,7 +1,7 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Card } from "../Common/Components/Card"
-import { Page } from "../Common/Components/Page";
+import { Header } from '../Common/Components/Header';
 import { getPictureURL } from '../Common/functions';
 import { server } from '../Common/server';
 
@@ -88,7 +88,6 @@ export function ClinicLandingFragment({clinic}) {
 		}
 	}, [doctorsData, data, clinic]);
 
-
 	let display, title, subtitle;
 
 	if (data && doctorCards) {
@@ -110,8 +109,12 @@ export function ClinicLandingFragment({clinic}) {
 	}
 
 	return (
-		<Page title={title} subtitle={subtitle}>
-			{display}
-		</Page>
+		<>
+			<h1>{title}</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</>
 	);
 }

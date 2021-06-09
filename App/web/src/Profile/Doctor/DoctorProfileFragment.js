@@ -84,17 +84,12 @@ export function DoctorProfileFragment() {
 	}
 
 	const [doctor, setDoctor] = useState(null);
-	const [image, setImage] = useState(null);
 	const [clinicCards, setClinicCards] = useState(null);
 	const [clinics, setClinics] = useState();
 
 	useEffect(() => {
 		if (doctor) {
 			setClinics(doctor.clinics);
-
-			getPictureURL(doctor.user.id).then(url => {
-				setImage(url);
-			});
 		}
 	}, [doctor]);
 
@@ -131,7 +126,7 @@ export function DoctorProfileFragment() {
 				<h2>Doctor Profile</h2>
 				<section>
 					<header>
-						<h2>Link</h2>
+						<h3>Link</h3>
 						<Button label="Edit"
 							action={() => {
 								linkEditPopup(
