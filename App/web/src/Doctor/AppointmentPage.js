@@ -46,7 +46,7 @@ export function AppointmentPage() {
 					
 					setArrived(data.appointment.arrived);
 
-					return events.appointments.arrival.listen(appointment, (appointment_id, arrived) => {
+					return events.appointments.arrival(appointment, (appointment_id, arrived) => {
 						setArrived(arrived);
 					});
 				}

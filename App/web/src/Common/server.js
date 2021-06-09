@@ -90,68 +90,55 @@ export const server = {
 	},
 }
 
-const cache = {
-	appointments: new Map(),
-}
-
 export const events = {
 	appointments: {
-		arrival: {
-			cache: new Map(),
-
-			/**
-		 * For watching changes in the patient arrival status for one specific appointment.
-		 * @param {string} appointment the id of the appointment.
-		 * @param {(appointment: string, arrived: [boolean, string]) => {}} callback 
-		 * @returns unsubscribe function.
-		 */
-			listen: (appointment, callback) => {
-				return db.collection("appointments").doc(appointment).onSnapshot(snapshot => {
-					if (snapshot.data()) {
-						if (!events.appointments.arrival.cache.has(appointment)) {
-							events.appointments.arrival.cache.set(appointment, snapshot.data());
-						}
-		
-						if (snapshot.data().arrived !== events.appointments.arrival.cache.get(appointment)?.arrived) {
-							callback(appointment, snapshot.data().arrived);
-							events.appointments.arrival.cache.set(appointment, snapshot.data());
-						}
+		/**
+	 * For watching changes in the patient arrival status for one specific appointment.
+	 * @param {string} appointment the id of the appointment.
+	 * @param {(appointment: string, arrived: [boolean, string]) => {}} callback 
+	 * @returns unsubscribe function.
+	 */
+		arrival: function(appointment, callback) {
+			if (!this.arrival.cache) this.arrival.cache = new Map();
+			
+			return db.collection("appointments").doc(appointment).onSnapshot(snapshot => {
+				if (snapshot.data()) {
+					if (!this.arrival.cache.has(appointment)) {
+						this.arrival.cache.set(appointment, snapshot.data());
 					}
-					else {
-						events.appointments.arrival.cache.delete(appointment);
+					
+					if (snapshot.data().arrived !== this.arrival.cache.get(appointment)?.arrived) {
+						callback(appointment, snapshot.data().arrived);
+						this.arrival.cache.set(appointment, snapshot.data());
 					}
-				});
-			}
+				}
+				else {
+					this.arrival.cache.delete(appointment);
+				}
+			});
 		}
 	},
 	doctors: {
-		arrival: {
-			cache: new Map(),
-			/**
-			 * For watching changes in the patient arrival status for one all of the doctor's appointments.
-			 * @param {string} doctor the id of the doctor who's patient arrivals are to be listened for.
-			 * @param {(appointment_id: string, arrived: boolean)} callback 
-			 * @returns unsubscribe function.
-			 */
-			listen: (doctor, callback) => {
-				return db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(appointments => {
-					appointments.docChanges().forEach(change => {
-						if (change.type === "removed") {
-							events.doctors.arrival.cache.delete(change.doc.id);
-						}
+		arrival: function(doctor, callback) {
+			if (!this.arrival.cache) this.arrival.cache = new Map();
 
-						if (change.type === "added") {
-							events.doctors.arrival.cache.set(change.doc.id, change.doc.data());
-						}
-	
-						if (change.type === "modified" &&
-								change.doc.data().arrived !== events.doctors.arrival.cache.get(change.doc.id).arrived) {
-							callback(change.doc.id, change.doc.data().arrived);
-							events.doctors.arrival.cache.set(change.doc.id, change.doc.data());
-						}
-					});
+			return db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(appointments => {
+				appointments.docChanges().forEach(change => {
+					if (change.type === "removed") {
+						this.arrival.cache.delete(change.doc.id);
+					}
+
+					if (change.type === "added") {
+						this.arrival.cache.set(change.doc.id, change.doc.data());
+					}
+
+					if (change.type === "modified" &&
+							change.doc.data().arrived !== this.arrival.cache.get(change.doc.id).arrived) {
+						callback(change.doc.id, change.doc.data().arrived);
+						this.arrival.cache.set(change.doc.id, change.doc.data());
+					}
 				});
-			}
+			});
 		}
 	}
 }

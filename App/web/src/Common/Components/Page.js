@@ -47,7 +47,7 @@ export function Page({unprotected, title, subtitle, children}) {
 
 	useEffect(() => {
 		if (doctor && auth?.user) {
-			return events.doctors.arrival.listen(doctor.doctor.id, (appointment_id, arrived) => {
+			return events.doctors.arrival(doctor.doctor.id, (appointment_id, arrived) => {
 				if (arrived && arrived !== auth.user.uid) {
 					server.appointments.get({id: appointment_id}).then(response => {
 						const data = response.data.data;
