@@ -34,6 +34,7 @@ import { ProvidePopups } from './Common/Popups';
 import { Link } from './Landing/Link';
 import { Notifier } from './Common/Components/Notifier';
 import { Popups } from './Common/Components/Popups';
+import { ProvideRoot } from './Common/Root';
 
 /**
  * URL Scheme:
@@ -43,118 +44,126 @@ import { Popups } from './Common/Components/Popups';
  */
 ReactDOM.render(
 	<ProvideAuth>
-		<ProvidePopups>
-			<Notifier />
-			<Router>
-				<Switch>
+		<ProvideRoot>
+			<ProvidePopups>
+				<Notifier />
+				<Router>
+					<Switch>
 
-					{/* General */}
+						{/* General */}
 
-					<Redirect exact from="/" to="/general/home" />
-					<Redirect exact from="/general" to="/general/home" />
-					<Route path="/general/home">
-						<HomePage />
-					</Route>
-					<Route path="/general/login">
-						<LoginPage />
-					</Route>
-					<Route path="/general/register">
-						<RegisterPage />
-					</Route>
-					<Route path="/general/profile">
-						<ProfilePage />
-					</Route>
+						<Redirect exact from="/" to="/general/home" />
+						<Redirect exact from="/general" to="/general/home" />
+						<Route path="/general/home">
+							<HomePage />
+						</Route>
+						<Route path="/general/login">
+							<LoginPage />
+						</Route>
+						<Route path="/general/register">
+							<RegisterPage />
+						</Route>
+						<Route path="/general/profile">
+							<ProfilePage />
+						</Route>
 
-					{/* Patients */}
+						{/* Patients */}
 
-					<Route exact path="/general/doctors/search">
-						<SearchDoctorsPage />
-					</Route>
-					<Route path="/specific/:doctor/user/appointments/create/:clinic">
-						<SetAppointmentPage />
-					</Route>
-					<Route path="/specific/user/appointments/success/:appointment">
-						<AppointmentSuccessPage />
-					</Route>
-					<Route path="/specific/user/appointments/deleted">
-						<AppointmentDeletedPage />
-					</Route>
-					<Route path="/specific/user/appointments/edit/:appointment">
-						<SetAppointmentPage />
-					</Route>
-					<Route path="/specific/user/appointments/list">
-						<AppointmentListPage />
-					</Route>
+						<Route exact path="/general/doctors/search">
+							<SearchDoctorsPage />
+						</Route>
+						<Route path="/specific/:doctor/user/appointments/create/:clinic">
+							<SetAppointmentPage />
+						</Route>
+						<Route path="/specific/user/appointments/success/:appointment">
+							<AppointmentSuccessPage />
+						</Route>
+						<Route path="/specific/user/appointments/deleted">
+							<AppointmentDeletedPage />
+						</Route>
+						<Route path="/specific/user/appointments/edit/:appointment">
+							<SetAppointmentPage />
+						</Route>
+						<Route path="/specific/user/appointments/list">
+							<AppointmentListPage />
+						</Route>
 
-					{/* Doctors */}
+						{/* Doctors */}
 
-					<Route path="/specific/doctor/appointments/calendar">
-						<AppointmentCalendarPage />
-					</Route>
-					<Route path="/specific/doctor/appointments/list">
-						<DoctorAgendaPage />
-					</Route>
-					<Route path="/specific/doctor/profile">
-						<DoctorProfileFragment />
-					</Route>
-					<Route path="/specific/doctor/clinics/create">
-						<ClinicEditor />
-					</Route>
-					<Route path="/specific/doctor/clinics/edit/:clinic">
-						<ClinicEditor />
-					</Route>
-					<Route path="/specific/doctor/clinics/schedule/edit/:clinic/:doctor">
-						<ScheduleEditor />
-					</Route>
-					<Route path="/specific/doctor/appointments/details/:appointment">
-						<AppointmentPage />
-					</Route>
+						<Route path="/specific/doctor/appointments/calendar">
+							<AppointmentCalendarPage />
+						</Route>
+						<Route path="/specific/doctor/appointments/list">
+							<DoctorAgendaPage />
+						</Route>
+						<Route path="/specific/doctor/profile">
+							<DoctorProfileFragment />
+						</Route>
+						<Route path="/specific/doctor/clinics/create">
+							<ClinicEditor />
+						</Route>
+						<Route path="/specific/doctor/clinics/edit/:clinic">
+							<ClinicEditor />
+						</Route>
+						<Route path="/specific/doctor/clinics/schedule/edit/:clinic/:doctor">
+							<ScheduleEditor />
+						</Route>
+						<Route path="/specific/doctor/appointments/details/:appointment">
+							<AppointmentPage />
+						</Route>
 
-					{/* Clinics */}
-					<Route path="/specific/doctor/clinics/view/:clinic">
-						<ClinicPage />
-					</Route>
-					<Route path="/specific/clinics/appointments/agenda/:clinic">
-						<ClinicAgendaPage />
-					</Route>
-					<Route path="/specific/clinic/appointments/calendar/:clinic">
-						<AppointmentCalendarPage />
-					</Route>
-					<Route path="/specific/secretary/appointments/view/:appointment">
-						<AppointmentPage />
-					</Route>
-					<Route path="/specific/clinics/schedules/:clinic">
-						<ClinicSchedulesPage />
-					</Route>
+						{/* Clinics */}
+						<Route path="/specific/doctor/clinics/view/:clinic">
+							<ClinicPage />
+						</Route>
+						<Route path="/specific/clinics/appointments/agenda/:clinic">
+							<ClinicAgendaPage />
+						</Route>
+						<Route path="/specific/clinic/appointments/calendar/:clinic">
+							<AppointmentCalendarPage />
+						</Route>
+						<Route path="/specific/secretary/appointments/view/:appointment">
+							<AppointmentPage />
+						</Route>
+						<Route path="/specific/clinics/schedules/:clinic">
+							<ClinicSchedulesPage />
+						</Route>
 
 
-					{/* Secretaries */}
+						{/* Secretaries */}
 
-					<Route path="/specific/secretary/clinics/view/:clinic">
-						<ClinicPage />
-					</Route>
-					<Route path="/specific/secretary/appointments/view/:appointment">
-						<AppointmentPage />
-					</Route>
-					<Route path="/specific/secretary/appointments/edit/:appointment">
-						<SetAppointmentPage />
-					</Route>
-					<Route path="/specific/doctor/clinics/secretary/edit/:clinic/:secretary">
-						<SecretaryEditor />
-					</Route>
+						<Route path="/specific/secretary/clinics/view/:clinic">
+							<ClinicPage />
+						</Route>
+						<Route path="/specific/secretary/appointments/view/:appointment">
+							<AppointmentPage />
+						</Route>
+						<Route path="/specific/secretary/appointments/edit/:appointment">
+							<SetAppointmentPage />
+						</Route>
+						<Route path="/specific/doctor/clinics/secretary/edit/:clinic/:secretary">
+							<SecretaryEditor />
+						</Route>
 
-					{/* Links */}
-					<Route exact path="/:link">
-						<Link />
-					</Route>
-					<Route path="/:link/:clinic/:doctor">
-						<SetAppointmentPage />
-					</Route>
-				</Switch>
-			</Router>
+						{/* Links */}
+						<Route exact path="/:link">
+							<Link />
+						</Route>
+						<Route path="/:link/:clinic/:doctor">
+							<SetAppointmentPage />
+						</Route>
+						<Route path="/:link/login">
+							<LoginPage />
+						</Route>
+						<Route path="/:link/register">
+							<RegisterPage />
+						</Route>
+					</Switch>
+				</Router>
 
-			<Popups />
-		</ProvidePopups>
+				<Popups />
+			</ProvidePopups>
+		</ProvideRoot>
 	</ProvideAuth>,
 	document.getElementById('root')
 );

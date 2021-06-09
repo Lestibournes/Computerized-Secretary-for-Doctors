@@ -1,15 +1,18 @@
 import "./Page.css";
 import { useEffect, useState } from "react";
-import { Redirect } from "react-router";
+import { Redirect, useParams } from "react-router";
 import { Link } from "react-router-dom";
 import { useAuth } from "../Auth";
 import { DropdownMenu } from "./DropdownMenu";
 import { usePopups } from "../Popups";
+import { useRoot } from "../Root";
 
-export function Header({link, unprotected}) {
+export function Header({unprotected}) {
 	const auth = useAuth();
 	const popups = usePopups()
+	const root = useRoot();
 
+	const {link} = useParams();
 	const [redirect, setRedirect] = useState(false);
 	const [name, setName] = useState();
 	const [email, setEmail] = useState();
@@ -19,12 +22,16 @@ export function Header({link, unprotected}) {
 	}, []);
 
 	useEffect(() => {
+		if (link) root.set(link);
+	}, [root, link]);
+
+	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
-			if (!unprotected && !status) setRedirect("/general/login");
+			if (!unprotected && !status) setRedirect("/" + root.get + "/login");
 		});
 
 		return unsubscribe;
-	}, [auth, unprotected]);
+	}, [auth, root, unprotected]);
 
 	useEffect(() => {
 		setName(auth?.name?.full);
@@ -34,7 +41,7 @@ export function Header({link, unprotected}) {
 	return (
 		<header className="main">
 			{redirect ? <Redirect to={redirect} /> : null }
-			<Link to={"/" + (link ? link : "")} className="title">CSFPD</Link>
+			<Link to={"/" + root.get} className="title">CSFPD</Link>
 			{name && email ?
 				<div>
 					<DropdownMenu label={name + " <" + email + ">"}>

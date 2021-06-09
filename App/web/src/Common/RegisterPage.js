@@ -3,16 +3,20 @@ import React, { useEffect } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "./Auth";
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, useParams } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
 import { Button } from './Components/Button';
 import { Popup } from './Components/Popup';
 import { usePopups } from './Popups';
+import { useRoot } from './Root';
 
 export function RegisterPage() {
 	const auth = useAuth();
-	const popupManager = usePopups();
-	
+	const popups = usePopups();
+	const root = useRoot();
+
+	const {link} = useParams();
+
 	const popup =
 		<Popup key="Register" title="Register">
 			<Formik
@@ -45,7 +49,7 @@ export function RegisterPage() {
 					setSubmitting(true);
 
 					auth.register(values.fname, values.lname, values.email, values.password).then(response => {
-						if (!response.success) popupManager.error(response.message);
+						if (!response.success) popups.error(response.message);
 					});
 				}}
 			>
@@ -81,7 +85,7 @@ export function RegisterPage() {
 						/>
 					</div>
 					<div className="buttonBar">
-						<Button link="/general/login" label="Login" />
+						<Button link={"/" + root.get + "/login"} label="Login" />
 						<Button type="submit" label="Register" />
 					</div>
 				</Form>
@@ -89,17 +93,22 @@ export function RegisterPage() {
 		</Popup>;
 	
 	useEffect(() => {
-		popupManager.clear();
+		popups.clear();
 	}, []);
+
+	useEffect(() => {
+		if (link) root.set(link);
+	}, [root, link]);
+
 
 	return (
 		<>
-			{auth.user ? <Redirect to="/general/" /> : null }
+			{auth.user ? <Redirect to={"/" + root.get} /> : null }
 			<header className="main">
-				<Link to="/" className="title">CSFPD</Link>
+				<Link to={"/" + root.get} className="title">CSFPD</Link>
 			</header>
 			{popup}
-			{popupManager.popups}
+			{popups.popups}
 		</>
 	);
 }
