@@ -3,9 +3,11 @@ import { useAuth } from "../Auth";
 import { SimpleDate } from "../Classes/SimpleDate";
 import { Time } from "../Classes/Time";
 import { notify } from "../functions";
+import { useRoot } from "../Root";
 import { events, server } from "../server";
 
 export function Notifier() {
+	const root = useRoot();
 	const auth = useAuth();
 	const [doctor, setDoctor] = useState(null);
 
@@ -35,7 +37,7 @@ export function Notifier() {
 							" has arrived for " + (data.patient.sex === "male" ? "his " : "her ") +
 							SimpleDate.fromObject(data.extra.date) + " " +
 							Time.fromObject(data.extra.time).toString() +
-							" appointment.", "/specific/doctor/appointments/details/" + appointment_id);
+							" appointment.", root.get() + "/doctor/appointments/details/" + appointment_id);
 					});
 				}
 			});

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Card } from "../Common/Components/Card"
 import { Header } from '../Common/Components/Header';
 import { getPictureURL } from '../Common/functions';
+import { useRoot } from '../Common/Root';
 import { server } from '../Common/server';
 
 /**
@@ -16,6 +17,7 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 */
 
 export function ClinicLandingFragment({clinic}) {
+	const root = useRoot();
 	const [data, setData] = useState(null);
 	
 	const [doctorsData, setDoctorsData] = useState();
@@ -51,7 +53,7 @@ export function ClinicLandingFragment({clinic}) {
 								: ""))
 							: "No specializations specified"}
 						image={doctor.image}
-						link={"/" + data.link + "/" + clinic + "/" + doctor.doctor.id}
+						link={root.get() + "/appointments/create/" + clinic + "/" + doctor.doctor.id}
 					/>);
 	
 					return {

@@ -15,10 +15,16 @@ export const useRoot = () => {
 }
 
 function useProvideRoot() {
-	const [root, setRoot] = useState("/");
+	const [root, setRoot] = useState("");
+
+	const get = () => {
+		if (root) return "/" + root;
+
+		return root;
+	};
 
 	return {
 		set: setRoot,
-		get: root
+		get
 	};
 }

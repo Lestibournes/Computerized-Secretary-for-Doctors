@@ -25,24 +25,15 @@ export function Link() {
 		}
 	}, [link]);
 
-	let display = <Loading />;
-	
-	if (root.get === link) {
-		display =
-			<>
-				<Header />
-				{target?.type === CLINIC ?
-					<ClinicLandingFragment clinic={target.id} />
-				: ""}
-				{target?.type === DOCTOR ?
-					<DoctorLandingFragment doctor={target.id} />
-				: ""}
-			</>
-	}
-
 	return (
 		<div className="Page">
-			{display}
+			<Header />
+			{target?.type === CLINIC ?
+				<ClinicLandingFragment clinic={target.id} />
+			: ""}
+			{target?.type === DOCTOR ?
+				<DoctorLandingFragment doctor={target.id} />
+			: ""}
 		</div>
 	)
 }

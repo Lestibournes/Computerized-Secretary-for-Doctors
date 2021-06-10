@@ -27,7 +27,7 @@ export function Header({unprotected}) {
 
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
-			if (!unprotected && !status) setRedirect("/" + root.get + "/login");
+			if (!unprotected && !status) setRedirect("/user/login");
 		});
 
 		return unsubscribe;
@@ -40,15 +40,15 @@ export function Header({unprotected}) {
 
 	return (
 		<header className="main">
-			{redirect ? <Redirect to={redirect} /> : null }
-			<Link to={"/" + root.get} className="title">CSFPD</Link>
+			{redirect ? <Redirect to={root.get() + redirect} /> : null }
+			<Link to={root.get()} className="title">CSFPD</Link>
 			{name && email ?
 				<div>
 					<DropdownMenu label={name + " <" + email + ">"}>
 						{/* <div>
 							Notifications
 						</div> */}
-						<Link to={"/general/profile"}>Profile</Link>
+						<Link to={root.get() + "/user/profile"}>Profile</Link>
 						<div onClick={auth.logout}>
 							Log Out
 						</div>

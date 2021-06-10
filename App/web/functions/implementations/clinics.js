@@ -2,6 +2,8 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 
+const users = require("./users");
+const permissions = require("./permissions");
 const doctors = require('./doctors');
 const secretaries = require('./secretaries');
 const appointments = require("./appointments");
@@ -77,14 +79,14 @@ async function add(doctor, name, city, address) {
  * @param {string} address The new street name and building number where the clinic is located.
  * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
-async function edit(clinic, doctor, name, city, address) {
-	return fsdb.collection("clinics").doc(clinic).get().then(clinic_snap => {
-		const response = {
-			success: false,
-			message: ""
-		};
+async function edit(clinic, name, city, address, context) {
+	const response = {
+		success: false,
+		message: ""
+	};
 
-		if (clinic_snap.data().owner === doctor) {
+	return permissions.checkPermission(permissions.CLINIC, permissions.MODIFY, clinic, context).then(allowed => {
+		if (allowed) {
 			return fsdb.collection("clinics").doc(clinic).update({
 				name: name,
 				city: city,
@@ -95,7 +97,7 @@ async function edit(clinic, doctor, name, city, address) {
 			});
 		}
 
-		response.message = "It's not your clinic.";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -173,7 +175,7 @@ async function eliminate(clinic, doctor) {
 			});
 		}
 
-		response.message = "It's not your clinic.";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -218,7 +220,7 @@ async function addDoctor(clinic, requester, doctor) {
 			})
 		}
 
-		response.message = "You don't have the right to change the clinic's doctors.";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -244,7 +246,7 @@ async function addDoctor(clinic, requester, doctor) {
 			});
 		}
 
-		response.message = "You don't have the right to change the clinic's doctors.";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -297,7 +299,7 @@ async function addSecretary(clinic, requester, secretary) {
 			})
 		}
 
-		response.message = "You don't have the right to change the clinic's secretaries.";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -327,7 +329,7 @@ async function removeSecretary(clinic, secretary, context) {
 					});
 				}
 
-				response.message = "You don't have the right to change the clinic's secretaries.";
+				response.message = permissions.DENIED;
 				return response;
 			});
 		});
@@ -341,6 +343,8 @@ async function removeSecretary(clinic, secretary, context) {
  * @returns {Promise<boolean>}
  */
 async function hasSecretary(clinic, secretary) {
+	if (!secretary) return false;
+
 	return fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).get().then(secretary_snapshot => {
 		return secretary_snapshot.exists;
 	});
@@ -394,65 +398,75 @@ async function getAppointments({clinic, doctor, start, end, context}) {
 		data: []
 	}
 
-	return fsdb.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
-		let doctor_promises = [];
-
-		for (const doctor_snapshot of doctor_snapshots.docs) {
-			if ((doctor && doctor_snapshot.id === doctor) || !doctor) {
-				let query = fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snapshot.id).collection("appointments");
-				const startDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(start).toDate());
-				const endDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(end).toDate());
-	
-				if (start || end ) query = query.orderBy("start");
-				if (start) query = query.startAt(startDate);
-				if (end) query = query.endAt(endDate);
-	
-				
-				doctor_promises.push(query.get().then(querySnapshot => {
-					const appointment_promises = [];
-	
-					for (const snap of querySnapshot.docs) {
-						appointment_promises.push(
-							appointments.get(snap.id, context).then(appointment => {
-								return appointment;
-							})
-						);
-					}
+	return permissions.checkPermission(permissions.CLINIC, permissions.VIEW, clinic, context).then(allowed => {
+		if (allowed) {
+			// Get all the doctors in the clinic:
+			return fsdb.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snapshots => {
+				let doctor_promises = [];
+		
+				for (const doctor_snapshot of doctor_snapshots.docs) {
+					// If it's the doctor we want, or if we want all the doctors:
+					if ((doctor && doctor_snapshot.id === doctor) || !doctor) {
+						// Get that doctor's appointments and filter by specified date range if specified:
+						let query = fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snapshot.id).collection("appointments");
+						const startDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(start).toDate());
+						const endDate = admin.firestore.Timestamp.fromDate(SimpleDate.fromObject(end).toDate());
 			
-					return Promise.all(appointment_promises).then(results => {
-						const appointments = [];
-	
-						for (const result of results) {
-							appointments.push(result.data);
-						}
-	
-						// Array of the doctor's appointments:
-						return appointments;
+						if (start || end ) query = query.orderBy("start");
+						if (start) query = query.startAt(startDate);
+						if (end) query = query.endAt(endDate);
+		
+						// Parallelize the fetching of the appointments by doctor:
+						doctor_promises.push(query.get().then(querySnapshot => {
+							const appointment_promises = [];
+		
+							// Fetch the data of each appointment (parallelized):
+							for (const snap of querySnapshot.docs) {
+								appointment_promises.push(appointments.get(snap.id, context));
+							}
+		
+							// Put together and return a list of all of the appointments that were successfully fetched:
+							return Promise.all(appointment_promises).then(results => {
+								const appointments = [];
+			
+								for (const result of results) {
+									if (result.success) appointments.push(result.data);
+								}
+			
+								// Array of the doctor's appointments:
+								return appointments;
+							});
+						}));
+					}
+				}
+
+				// When done, aggregate and sort the results:
+				return Promise.all(doctor_promises).then(results => {
+					for (const result of results) {
+						response.data = response.data.concat(result);
+					}
+		
+					response.data.sort((a, b) => {
+						return a.appointment.start > b.appointment.start ? 1 : a.appointment.start < b.appointment.start ? -1 : 0;
 					});
-				}));
-			}
-		}
-
-		return Promise.all(doctor_promises).then(results => {
-			for (const result of results) {
-				response.data = response.data.concat(result);
-			}
-
-			response.data.sort((a, b) => {
-				return a.appointment.start > b.appointment.start ? 1 : a.appointment.start < b.appointment.start ? -1 : 0;
+		
+					// /**@todo a more nuanced response  */
+					// if (response.data.length > 0) {
+						response.success = true;
+					// }
+					// else {
+					// 	response.message = "No appointments found";
+					// }
+		
+					// Array of arrays of the appointments of each doctor:
+					return response;
+				});
 			});
-
-			/**@todo a more nuanced response  */
-			if (response.data.length > 0) {
-				response.success = true;
-			}
-			else {
-				response.message = "No appointments found";
-			}
-
-			// Array of arrays of the appointments of each doctor:
+		}
+		else {
+			response.message = permissions.DENIED;
 			return response;
-		});
+		}
 	});
 }
 

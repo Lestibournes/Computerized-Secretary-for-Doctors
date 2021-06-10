@@ -14,6 +14,7 @@ const fsdb = admin.firestore();
 const secretaries = require("./secretaries");
 const doctors = require("./doctors");
 const clinics = require("./clinics");
+const permissions = require("./permissions");
 
 const NAME = "schedules";
 
@@ -132,7 +133,7 @@ async function add(clinic, doctor, day, start, end, context) {
 			});
 		}
 
-		response.message = "You are not authorized to perform this action";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -180,7 +181,7 @@ async function edit(clinic, doctor, shift, day, start, end, context) {
 			});
 		}
 
-		response.message = "You are not authorized to perform this action";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -215,7 +216,7 @@ async function remove(clinic, doctor, shift, context) {
 			});
 		}
 
-		response.message = "You are not authorized to perform this action";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -262,7 +263,7 @@ async function addType(clinic, doctor, name, duration, context) {
 
 		// If the current user isn't allowed to add new appointment types to this doctor at this clinic,
 		// i.e, if he's not the owner of the clinic, the owner of the doctor account, or a secretary working at the clinic:
-		response.message = "You are not authorized to perform this action";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -314,7 +315,7 @@ async function editType(clinic, doctor, type, name, duration, context) {
 
 		// If the current user isn't allowed to add new appointment types to this doctor at this clinic,
 		// i.e, if he's not the owner of the clinic, the owner of the doctor account, or a secretary working at the clinic:
-		response.message = "You are not authorized to perform this action";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -360,7 +361,7 @@ async function deleteType(clinic, doctor, type, context) {
 
 		// If the current user isn't allowed to add new appointment types to this doctor at this clinic,
 		// i.e, if he's not the owner of the clinic, the owner of the doctor account, or a secretary working at the clinic:
-		response.message = "You are not authorized to perform this action";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }
@@ -497,7 +498,7 @@ async function setMinimum(clinic, doctor, minimum, context) {
 
 		// If the current user isn't allowed to modify the minimum appointment duration of this doctor at this clinic,
 		// i.e, if he's not the owner of the clinic, the owner of the doctor account, or a secretary working at the clinic:
-		response.message = "You are not authorized to perform this action";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }

@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
+import { useRoot } from "../Common/Root";
 
 export function CalendarItem(props) {
+	const root = useRoot();
+
 	return (
-		<Link className="calendarItem" to={"/specific/doctor/appointments/details/" + props.data.appointment}
+		<Link className="calendarItem" to={root.get() + "/doctor/appointments/details/" + props.data.appointment}
 			style={{
 				color: props.display.color,
 				backgroundColor: props.display.background,

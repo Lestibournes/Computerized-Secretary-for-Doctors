@@ -14,6 +14,7 @@ import { capitalizeAll, capitalize, compareByName } from '../Common/functions';
 import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
+import { useRoot } from '../Common/Root';
 
 /**
  * @todo
@@ -30,6 +31,8 @@ import { Header } from '../Common/Components/Header';
  */
 export function SetAppointmentPage() {
 	const auth = useAuth();
+	const popupManager = usePopups();
+	const root = useRoot();
 	
 	//The root of the site:
 	const { link } = useParams();
@@ -56,8 +59,6 @@ export function SetAppointmentPage() {
 
 	const [doctor_data, setDoctorData] = useState(null);
 	const [clinic_data, setClinicData] = useState(null);
-
-	const popupManager = usePopups();
 
 	useEffect(() => {
 		if (appointment) {
@@ -285,8 +286,8 @@ export function SetAppointmentPage() {
 						</div>
 					</Form>
 				</Formik>
-				{(success ? <Redirect to={"/specific/user/appointments/success/" + success} /> : null)}
-				{(deleted ? <Redirect to={"/specific/user/appointments/deleted"} /> : null)}
+				{(success ? <Redirect to={root.get() + "/user/appointments/success/" + success} /> : null)}
+				{(deleted ? <Redirect to={root.get() + "/user/appointments/deleted"} /> : null)}
 			</>;
 	}
 

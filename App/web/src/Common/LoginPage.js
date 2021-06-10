@@ -55,7 +55,7 @@ export function LoginPage() {
 						/>
 					</div>
 					<div className="buttonBar">
-						<Button link={"/" + root.get + "/register"} label="Register" />
+						<Button link={root.get() + "/user/register"} label="Register" />
 						<Button type="submit" label="Login" />
 					</div>
 				</Form>
@@ -72,9 +72,9 @@ export function LoginPage() {
 
 	return (
 		<>
-			{auth.user ? <Redirect to={"/" + root.get} /> : null }
+			{auth.user ? <Redirect to={root.get()} /> : null }
 			<header className="main">
-				<Link to={"/" + root.get} className="title">CSFPD</Link>
+				<Link to={root.get()} className="title">CSFPD</Link>
 			</header>
 			{popup}
 			{popups.popups}

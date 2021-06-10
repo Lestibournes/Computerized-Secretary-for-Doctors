@@ -8,8 +8,10 @@ import { Button } from '../Common/Components/Button';
 import { events, server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
+import { useRoot } from '../Common/Root';
 
 export function AppointmentPage() {
+	const root = useRoot();
 	/**
 	 * @type {{appointment: string}}
 	 */
@@ -71,7 +73,7 @@ export function AppointmentPage() {
 					<h3>Patient Details</h3>
 						<Button
 							label="Edit"
-							link={"/specific/secretary/appointments/edit/" + appointment}
+							link={root.get() + "/clinic/appointments/edit/" + appointment}
 						/>
 						<Button
 							type={arrived ? "okay" : ""}

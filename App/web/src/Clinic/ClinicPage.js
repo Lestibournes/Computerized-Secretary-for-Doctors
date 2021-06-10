@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
 import { Header } from '../Common/Components/Header';
+import { useRoot } from '../Common/Root';
 import { server } from '../Common/server';
 
 /**
@@ -16,6 +17,7 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 */
 
 export function ClinicPage() {
+	const root = useRoot();
 	const { clinic } = useParams(); //The ID of clinic.
 	const [data, setData] = useState(null);
 
@@ -30,9 +32,9 @@ export function ClinicPage() {
 	
 	let display = (
 		<div className="Home buttonGrid">
-			<Button label="Appointment Calendar" link={"/specific/clinic/appointments/calendar/" + clinic} />
-			<Button label="Appointment List" link={"/specific/clinics/appointments/agenda/" + clinic} />
-			<Button label="Work Schedules" link={"/specific/clinics/schedules/" + clinic} />
+			<Button label="Appointment Calendar" link={root.get() + "/clinic/appointments/calendar/" + clinic} />
+			<Button label="Appointment List" link={root.get() + "/clinics/appointments/agenda/" + clinic} />
+			<Button label="Work Schedules" link={root.get() + "/clinics/schedules/" + clinic} />
 		</div>
 	);
 

@@ -5,7 +5,7 @@ export function SecretaryHomeFragment() {
 		<>
 			<h2>Secretary</h2>
 			<div className="Home buttonGrid">
-				<Button link="/specific/secretary/profile" label="Profile" />
+				<Button link="/secretary/profile" label="Profile" />
 			</div>
 		</>
 	);

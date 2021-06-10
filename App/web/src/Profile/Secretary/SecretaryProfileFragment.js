@@ -5,32 +5,15 @@ import { Card } from "../../Common/Components/Card";
 import { Popup } from "../../Common/Components/Popup";
 
 import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
-import { getPictureURL } from "../../Common/functions";
 import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
 import { Loading } from "../../Common/Components/Loading";
-
-function generateClinicCards(secretary, clinics) {
-	const clinics_list = [];
-		
-	for (let clinic_data of clinics) {
-		clinics_list.push(
-			<Card
-				key={clinic_data.id}
-				title={clinic_data.name}
-				body={clinic_data.city}
-				footer={clinic_data.address}
-				link={"/specific/secretary/clinics/view/" + clinic_data.id}
-			/>
-		);
-	}
-
-	return clinics_list;
-}
+import { useRoot } from "../../Common/Root";
 
 export function SecretaryProfileFragment() {
 	const auth = useAuth();
 	const popupManager = usePopups();
+	const root = useRoot();
 
 	const [secretary, setSecretary] = useState(null);
 	const [clinics, setClinics] = useState(null);
@@ -63,7 +46,24 @@ export function SecretaryProfileFragment() {
 	}
 
 	useEffect(() => {
-		if (secretary) setClinics(generateClinicCards(secretary.id, secretary.clinics));
+		if (secretary) {
+			const clinics = secretary.clinics
+			const clinics_list = [];
+		
+			for (let clinic_data of clinics) {
+				clinics_list.push(
+					<Card
+						key={clinic_data.id}
+						title={clinic_data.name}
+						body={clinic_data.city}
+						footer={clinic_data.address}
+						link={root.get() + "/clinics/view/" + clinic_data.id}
+					/>
+				);
+			}
+
+			setClinics(clinics_list)
+		};
 	}, [secretary]);
 
 	let display = <Loading />;

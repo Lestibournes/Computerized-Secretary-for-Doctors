@@ -12,6 +12,7 @@ import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
 import { linkEditPopup, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Link } from "react-router-dom";
+import { useRoot } from "../../Common/Root";
 
 /**
 @todo
@@ -53,7 +54,12 @@ It would be good to add some kind of notification widget to easily show new memb
 export function DoctorProfileFragment() {
 	const auth = useAuth();
 	const popupManager = usePopups();
+	const root = useRoot();
 
+	const [doctor, setDoctor] = useState(null);
+	const [clinicCards, setClinicCards] = useState(null);
+	const [clinics, setClinics] = useState();
+	
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) loadData(auth.user.uid);
@@ -83,10 +89,6 @@ export function DoctorProfileFragment() {
 		});
 	}
 
-	const [doctor, setDoctor] = useState(null);
-	const [clinicCards, setClinicCards] = useState(null);
-	const [clinics, setClinics] = useState();
-
 	useEffect(() => {
 		if (doctor) {
 			setClinics(doctor.clinics);
@@ -106,9 +108,9 @@ export function DoctorProfileFragment() {
 						footer={clinic_data.address}
 						link={(
 							clinic_data.owner === doctor.doctor.id ?
-							"/specific/doctor/clinics/edit/" + clinic_data.id
+							root.get() + "/clinics/edit/" + clinic_data.id
 							:
-							"/specific/doctor/clinics/view/" + clinic_data.id
+							root.get() + "/clinics/view/" + clinic_data.id
 						)}
 					/>
 				);

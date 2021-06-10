@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from "../Common/Components/Card"
 import { Loading } from '../Common/Components/Loading';
+import { useRoot } from '../Common/Root';
 import { server } from '../Common/server';
 
 /**
@@ -15,6 +16,7 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 */
 
 export function DoctorLandingFragment({doctor}) {
+	const root = useRoot();
 	const [data, setData] = useState(null);
 	
 	const [clinicsData, setClinicsData] = useState();
@@ -47,7 +49,7 @@ export function DoctorLandingFragment({doctor}) {
 							title={clinic.name}
 							body={clinic.city}
 							footer={clinic.address}
-							link={"/" + data.doctor.link + "/" + clinic.id + "/" + doctor}
+							link={root.get() + "/appointments/create/" + clinic.id + "/" + doctor}
 						/>
 				});
 			}

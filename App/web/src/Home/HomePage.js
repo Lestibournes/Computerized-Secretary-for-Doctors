@@ -43,9 +43,9 @@ export function HomePage() {
 		const menuItems = [];
 
 		if (doctor || secretary) {
-			menuItems.push(<Link to="/general/home/patient">Patient</Link>);
-			if (doctor) menuItems.push(<Link to="/general/home/doctor">Doctor</Link>);
-			if (secretary) menuItems.push(<Link to="/general/home/secretary">Secretary</Link>)
+			menuItems.push(<Link to="/home/patient">Patient</Link>);
+			if (doctor) menuItems.push(<Link to="/home/doctor">Doctor</Link>);
+			if (secretary) menuItems.push(<Link to="/home/secretary">Secretary</Link>)
 
 			setItems(menuItems);
 		}

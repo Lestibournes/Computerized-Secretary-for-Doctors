@@ -9,9 +9,11 @@ import { capitalize, getPictureURL } from '../../Common/functions';
 import { Popup } from '../../Common/Components/Popup';
 import { usePopups } from '../../Common/Popups';
 import { Header } from '../../Common/Components/Header';
+import { useRoot } from '../../Common/Root';
 
 export function SecretaryEditor() {
 	const auth = useAuth();
+	const root = useRoot();
 	
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
@@ -58,13 +60,13 @@ export function SecretaryEditor() {
 
 		display = (
 			<>
-				{redirect ? <Redirect to={redirect} /> : ""}
+				{redirect ? <Redirect to={root.get() + redirect} /> : ""}
 				<section>
 					<header>
 						<h2>Details</h2>
 						<Button label="Remove" action={() => {
 							removeSecretaryPopup(popupManager, clinic, secretaryData, () => {
-								setRedirect("/specific/doctor/clinics/edit/" + clinic);
+								setRedirect("/clinics/edit/" + clinic);
 							})
 						}} />
 					</header>

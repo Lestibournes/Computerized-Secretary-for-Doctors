@@ -5,8 +5,8 @@ export function PatientHomeFragment() {
 		<>
 			<h2>Patient</h2>
 			<div className="Home buttonGrid">
-				<Button link="/general/doctors/search" label="Make an Appointment" />
-				<Button link="/specific/user/appointments/list" label="Future Appointments" />
+				<Button link="/user/doctors/search" label="Make an Appointment" />
+				<Button link="/user/appointments/list" label="Future Appointments" />
 			</div>
 		</>
 	);

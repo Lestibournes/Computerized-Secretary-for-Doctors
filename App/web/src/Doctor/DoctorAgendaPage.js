@@ -14,8 +14,10 @@ import { useAuth } from '../Common/Auth';
 import { Select } from '../Common/Components/Select';
 import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
+import { useRoot } from '../Common/Root';
 
 export function DoctorAgendaPage() {
+	const root = useRoot();
 	const auth = useAuth();
 	const popups = usePopups();
 
@@ -100,7 +102,7 @@ export function DoctorAgendaPage() {
 					return (
 						<Card
 							key={appointment.appointment.id}
-							link={"/specific/secretary/appointments/view/" + appointment.appointment.id}
+							link={root.get() + "/doctor/appointments/details/" + appointment.appointment.id}
 							image={appointment.image}
 							altText={appointment.patient.fullName}
 							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}

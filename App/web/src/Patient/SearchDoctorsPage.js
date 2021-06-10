@@ -73,7 +73,7 @@ export function SearchDoctorsPage() {
 								return (
 								<Card
 									key={doctor.doctor.id + ", " + clinic.id}
-									link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
+									link={"/user/appointments/create/" + clinic.id +"/" + doctor.doctor.id}
 									title={doctor.user.firstName + " " + doctor.user.lastName}
 									body=
 										{doctor.fields.length > 0 ?

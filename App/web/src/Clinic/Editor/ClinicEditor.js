@@ -13,6 +13,7 @@ import { usePopups } from '../../Common/Popups';
 import { linkEditPopup, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Header } from '../../Common/Components/Header';
 import { Loading } from '../../Common/Components/Loading';
+import { useRoot } from '../../Common/Root';
 /**
 @todo
 Edit clinic page:
@@ -24,23 +25,15 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 */
 
 export function ClinicEditor() {
+	// Contexts:
 	const auth = useAuth();
-	
-	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (auth.user) {
-				server.doctors.getID({user: auth.user.uid}).then(response => {
-					server.doctors.getData({id: response.data}).then(doctor_data => {
-						setDoctor(doctor_data.data);
-					});
-				});
-			}
-		});
+	const root = useRoot();
+	const popupManager = usePopups();
 
-		return unsubscribe;
-	}, [auth]);
-
+	// Parameters:
 	const { clinic } = useParams(); //The ID of clinic.
+
+	// Components runtime data (states):
 	const [data, setData] = useState(null);
 	const [doctor, setDoctor] = useState(null);
 	
@@ -51,8 +44,22 @@ export function ClinicEditor() {
 	const [secretaryCards, setSecretaryCards] = useState();
 
 	const [redirect, setRedirect] = useState(null);
+	
+	useEffect(() => {
+		const unsubscribe = auth.isLoggedIn(status => {
+			if (auth.user) {
+				server.doctors.getID({user: auth.user.uid}).then(response => {
+					if (response.data) {
+						server.doctors.getData({id: response.data}).then(doctor_data => {
+							setDoctor(doctor_data.data);
+						});
+					}
+				});
+			}
+		});
 
-	const popupManager = usePopups();
+		return unsubscribe;
+	}, [auth]);
 
 	useEffect(() => {
 		if (clinic) {
@@ -89,7 +96,7 @@ export function ClinicEditor() {
 							: "No specializations specified"}
 						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
 						image={doctor.image}
-						link={"/specific/doctor/clinics/schedule/edit/" + clinic + "/" + doctor.doctor.id}
+						link={root.get() + "/clinics/schedule/edit/" + clinic + "/" + doctor.doctor.id}
 					/>);
 	
 					return {
@@ -138,7 +145,7 @@ export function ClinicEditor() {
 						key={secretary.id}
 						title={secretary.fullName}
 						image={secretary.image}
-						link={"/specific/doctor/clinics/secretary/edit/" + clinic + "/" + secretary.id}
+						link={root.get() + "/clinics/secretary/edit/" + clinic + "/" + secretary.id}
 					/>);
 	
 					return {
@@ -161,7 +168,7 @@ export function ClinicEditor() {
 	if (data && doctorCards && secretaryCards) {
 		display = (
 			<>
-				{redirect ? <Redirect to={redirect} /> : ""}
+				{redirect ? <Redirect to={root.get() + redirect} /> : ""}
 				<section>
 					<header>
 						<h2>Details</h2>
@@ -170,11 +177,10 @@ export function ClinicEditor() {
 								clinicEditPopup(
 									popupManager,
 									clinic,
-									doctor.doctor.id,
 									data.name,
 									data.city,
 									data.address,
-									() => setRedirect("/specific/doctor/profile"),
+									() => setRedirect("/user/profile/doctor"),
 									() => {
 										server.clinics.get({id: clinic}).then(clinic_data => {
 											setData(clinic_data.data);

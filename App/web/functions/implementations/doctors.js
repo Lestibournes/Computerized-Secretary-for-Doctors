@@ -11,6 +11,7 @@ const specializations = require('./specializations');
 
 const appointments = require('./appointments');
 const clinics = require('./clinics');
+const permissions = require("./permissions");
 
 const stringContains = require('./functions').stringContains;
 
@@ -281,7 +282,7 @@ async function getAppointments(doctor, clinic, start, end, context) {
 			});
 		}
 
-		response.message = "You are not authorized to view this data";
+		response.message = permissions.DENIED;
 		return response;
 	})
 

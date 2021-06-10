@@ -5,8 +5,11 @@ import { Route } from "react-router";
 import { DropdownMenu } from "../Common/Components/DropdownMenu";
 import { Link } from "react-router-dom";
 import { Header } from "../Common/Components/Header";
+import { useRoot } from "../Common/Root";
 
 export function ProfilePage() {
+	const root = useRoot();
+
 	return (
 		<div className="Page">
 			<Header />
@@ -14,9 +17,9 @@ export function ProfilePage() {
 				<h1>Edit Profile</h1>
 				<div>
 					<DropdownMenu label="Select Profile">
-						<Link to="/general/profile/user">User</Link>
-						<Link to="/general/profile/doctor">Doctor</Link>
-						<Link to="/general/profile/secretary">Secretary</Link>
+						<Link to={root.get() + "/user/profile/user"}>User</Link>
+						<Link to={root.get() + "/user/profile/doctor"}>Doctor</Link>
+						<Link to={root.get() + "/user/profile/secretary"}>Secretary</Link>
 					</DropdownMenu>
 				</div>
 			</header>

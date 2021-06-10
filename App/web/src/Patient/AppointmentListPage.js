@@ -56,7 +56,7 @@ export function AppointmentListPage() {
 					return (
 						<Card
 							key={appointment.appointment.id}
-							link={"/specific/user/appointments/edit/" + appointment.appointment.id}
+							link={"/user/appointments/edit/" + appointment.appointment.id}
 							image={appointment.image}
 							altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
 							title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
