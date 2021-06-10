@@ -55,6 +55,13 @@ async function checkPermission(type, action, id, context) {
 	});
 }
 
+/**
+ * Check if the current user has the right to modify the doctor's profile.
+ * Only the doctor himself may modify his profile.
+ * @param {string} id the id of the document being accessed.
+ * @param {FirebaseFirestore.DocumentData} user The user's profile data. Modified to add the id.
+ * @returns {Promise<{boolean}>}
+ */
 async function checkDoctorModifyPermission(id, user) {
 	// If the current user is the doctor:
 	return user.doctor === id;
@@ -62,8 +69,9 @@ async function checkDoctorModifyPermission(id, user) {
 
 /**
  * Check if the current user has the right to view the clinic's private information.
+ * Allowed: the owner, employees.
  * @param {string} id the id of the clinic
- * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @param {FirebaseFirestore.DocumentData} user The user's profile data. Modified to add the id.
  * @returns {Promise<{boolean}>}
  */
 async function checkClinicViewPermission(id, user) {
@@ -102,8 +110,10 @@ async function checkClinicViewPermission(id, user) {
 
 /**
  * Check if the current user has the right to view the clinic's private information.
+ * Only the owner can modify the clinic itself. This includes address, name, employees, link as well as its very existence.
+ * Perhapse it should be modularized?
  * @param {string} id the id of the clinic
- * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @param {FirebaseFirestore.DocumentData} user The user's profile data. Modified to add the id.
  * @returns {Promise<{boolean}>}
  */
 async function checkClinicModifyPermission(id, user) {
@@ -117,8 +127,9 @@ async function checkClinicModifyPermission(id, user) {
 
 /**
  * Check if the current user has the right to view the appointment.
+ * Allowed: The patient, his doctor, his coworkers, his employer, the secretaries at the clinic.
  * @param {string} id the id of the appointment
- * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
+ * @param {FirebaseFirestore.DocumentData} user The user's profile data. Modified to add the id.
  * @returns {Promise<{boolean}>}
  */
 async function checkAppointmentViewPermission(id, user) {
