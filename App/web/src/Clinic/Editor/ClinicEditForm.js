@@ -57,7 +57,6 @@ export function ClinicEditForm({popupManager, clinic, name, city, address, close
 							clinicDeletePopup(
 								popupManager,
 								clinic,
-								doctor,
 								deleted
 							)
 						}}
@@ -70,14 +69,14 @@ export function ClinicEditForm({popupManager, clinic, name, city, address, close
 	);
 }
 
-export function ClinicDeleteForm({popupManager, clinic, doctor, close, success}) {
+export function ClinicDeleteForm({popupManager, clinic, close, success}) {
 	return (
 		<div>
 			<p>Are you sure you wish to delete this clinic?</p>
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
-					server.clinics.delete({id: clinic, doctor: doctor}).then(response => {
+					server.clinics.delete({id: clinic}).then(response => {
 						if (!response.data.success) popupManager.error(response.data.message)
 						else {success()}
 					});
@@ -106,14 +105,13 @@ export function clinicEditPopup(popupManager, clinic, name, city, address, delet
 		popupManager.add(popup);
 }
 
-export function clinicDeletePopup(popupManager, clinic, doctor, success) {
+export function clinicDeletePopup(popupManager, clinic, success) {
 	const close = () => {popupManager.remove(popup)};
 	const popup =
 		<Popup key="Confirm Clinic Deletion" title="Confirm Deletion" close={close}>
 			<ClinicDeleteForm
 				popupManager={popupManager}
 				clinic={clinic}
-				doctor={doctor}
 				close={close}
 				success={success}
 			/>

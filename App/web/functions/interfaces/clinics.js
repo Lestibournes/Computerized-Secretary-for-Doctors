@@ -20,7 +20,7 @@ exports.edit = functions.https.onCall((data, context) => {
 });
 
 exports.delete = functions.https.onCall((data, context) => {
-	return clinics.delete(data.id, data.doctor);
+	return clinics.delete(data.id, context);
 });
 
 exports.getAllDoctors = functions.https.onCall((data, context) => {

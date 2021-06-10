@@ -108,75 +108,77 @@ async function edit(clinic, name, city, address, context) {
  * @param {string} doctor The doctor who is requesting the change.
  * @returns {Promise<{success: boolean, message: string}>} whether the operation succeeded, and if not, why not.
  */
-async function eliminate(clinic, doctor) {
+async function eliminate(clinic, context) {
 	return fsdb.collection("clinics").doc(clinic).get().then(clinic_snap => {
 		const response = {
 			success: false,
 			message: ""
 		};
 
-		const promises = [];
+		return permissions.checkPermission(permissions.CLINIC, permissions.MODIFY, clinic, clinic, context).then(allowed => {
+			if (allowed) {
+				const promises = [];
 
-		if (clinic_snap.data().owner === doctor) {
-			// Go over all of the clinic's doctors and remove the clinic from their profile:
-			promises.push(fsdb.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
-				const doctor_promises = [];
-
-				for (const doctor_snap of doctor_snaps.docs) {
-					doctor_promises.push(
-						fsdb.collection("doctors").doc(doctor_snap.id).collection("clinics").doc(clinic).delete()
-					);
-
-					doctor_promises.push(
-						fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snap.id).delete()
-					);
-				}
-
-				return Promise.all(doctor_promises).then(() => {
-					return true;
+				// Go over all of the clinic's doctors and remove the clinic from their profile:
+				promises.push(fsdb.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
+					const doctor_promises = [];
+	
+					for (const doctor_snap of doctor_snaps.docs) {
+						doctor_promises.push(
+							fsdb.collection("doctors").doc(doctor_snap.id).collection("clinics").doc(clinic).delete()
+						);
+	
+						doctor_promises.push(
+							fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor_snap.id).delete()
+						);
+					}
+	
+					return Promise.all(doctor_promises).then(() => {
+						return true;
+					});
+				}));
+	
+				// Go over all of the clinic's secretaries and remove the clinic from their profile:
+				promises.push(fsdb.collection("clinics").doc(clinic).collection("secretaries").get().then(secretary_snaps => {
+					const secretary_promises = [];
+	
+					for (const secretary_snap of secretary_snaps.docs) {
+						secretary_promises.push(
+							fsdb.collection("secretaries").doc(secretary_snap.id).collection("clinics").doc(clinic).delete()
+						);
+	
+						secretary_promises.push(
+							fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary_snap.id).delete()
+						);
+					}
+	
+					return Promise.all(secretary_promises).then(() => {
+						return true;
+					});
+				}));
+				
+				// Delete the clinic:
+				promises.push(fsdb.collection("clinics").doc(clinic).delete());
+	
+				// Remove the clinic from the city:
+				promises.push(
+					fsdb.collection("cities").doc(clinic_snap.data().city).collection("clinics").doc(clinic).delete()
+				);
+	
+				return Promise.all(promises).then(results => {
+					response.success = true;
+	
+					for (const result of results) {
+						if (!result) response.success = false;
+					}
+	
+					return response;
 				});
-			}));
+			}
 
-			// Go over all of the clinic's secretaries and remove the clinic from their profile:
-			promises.push(fsdb.collection("clinics").doc(clinic).collection("secretaries").get().then(secretary_snaps => {
-				const secretary_promises = [];
-
-				for (const secretary_snap of secretary_snaps.docs) {
-					secretary_promises.push(
-						fsdb.collection("secretaries").doc(secretary_snap.id).collection("clinics").doc(clinic).delete()
-					);
-
-					secretary_promises.push(
-						fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary_snap.id).delete()
-					);
-				}
-
-				return Promise.all(secretary_promises).then(() => {
-					return true;
-				});
-			}));
-			
-			// Delete the clinic:
-			promises.push(fsdb.collection("clinics").doc(clinic).delete());
-
-			// Remove the clinic from the city:
-			promises.push(
-				fsdb.collection("cities").doc(clinic_snap.data().city).collection("clinics").doc(clinic).delete()
-			);
-
-			return Promise.all(promises).then(results => {
-				response.success = true;
-
-				for (const result of results) {
-					if (!result) response.success = false;
-				}
-
-				return response;
-			});
-		}
-
-		response.message = permissions.DENIED;
-		return response;
+			response.message = permissions.DENIED;
+			return response;
+		});
 	});
 }
 

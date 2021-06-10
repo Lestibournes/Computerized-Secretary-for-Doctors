@@ -53,6 +53,7 @@ async function checkPermission(type, action, id, context) {
 }
 
 async function checkDoctorModifyPermission(id, user) {
+	// If the current user is the doctor:
 	return user.doctor === id;
 }
 
@@ -95,7 +96,6 @@ async function checkClinicViewPermission(id, user) {
 		});
 	});
 }
-
 
 /**
  * Check if the current user has the right to view the clinic's private information.
