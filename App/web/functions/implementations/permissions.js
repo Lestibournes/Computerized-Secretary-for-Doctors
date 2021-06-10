@@ -33,18 +33,21 @@ DENIED = "Permission denied";
  */
 async function checkPermission(type, action, id, context) {
 	return fsdb.collection("users").doc(context.auth.uid).get().then(user => {
+		const user_data = user.data();
+		user_data.id = context.auth.uid;
+
 		if (type === DOCTOR) {
-			if (action === MODIFY) return checkDoctorModifyPermission(id, user.data());
+			if (action === MODIFY) return checkDoctorModifyPermission(id, user_data);
 		}
 
 		if (type === CLINIC) {
-			if (action === VIEW) return checkClinicViewPermission(id, user.data());
-			if (action === MODIFY) return checkClinicModifyPermission(id, user.data());
+			if (action === VIEW) return checkClinicViewPermission(id, user_data);
+			if (action === MODIFY) return checkClinicModifyPermission(id, user_data);
 		}
 	
 		if (type === APPOINTMENT) {
 			if (action === VIEW) {
-				return checkAppointmentViewPermission(id, user.data());
+				return checkAppointmentViewPermission(id, user_data);
 			}
 		}
 	
@@ -121,11 +124,12 @@ async function checkClinicModifyPermission(id, user) {
 async function checkAppointmentViewPermission(id, user) {
 	return fsdb.collection("appointments").doc(id).get().then(appointment => {
 		// If it's his own appointments, even if he doesn't work in the clinic anymore:
-		if (appointment.data().doctor === user.doctor) {
+		if (appointment.data().doctor === user.doctor ||
+				appointment.data().patient === user.id) {
 			return true;
 		}
 
-		return checkClinicViewPermission(appointment.data().clinic, context);
+		return checkClinicViewPermission(appointment.data().clinic, user);
 	});
 }
 

@@ -178,6 +178,9 @@ ReactDOM.render(
 						<Route path="/:link/clinic/appointments/edit/:appointment">
 							<SetAppointmentPage />
 						</Route>
+						<Route path="/:link/user/appointments/success/:appointment">
+							<AppointmentSuccessPage />
+						</Route>
 						<Route path="/:link/user/appointments/deleted">
 							<AppointmentDeletedPage />
 						</Route>
