@@ -191,7 +191,7 @@ async function search(name, field, city) {
  */
 async function getID(user) {
 	return fsdb.collection("users").doc(user).get().then(user_snap => {
-		if (user_snap.data().doctor) return user_snap.data().doctor;
+		if (user_snap.exists && user_snap.data().doctor) return user_snap.data().doctor;
 
 		return null;
 	});

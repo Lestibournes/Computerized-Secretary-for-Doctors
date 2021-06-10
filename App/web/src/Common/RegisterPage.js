@@ -1,5 +1,5 @@
 //Reactjs:
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "./Auth";
@@ -16,6 +16,8 @@ export function RegisterPage() {
 	const root = useRoot();
 
 	const {link} = useParams();
+
+	const [redirect, setRedirect] = useState(false);
 
 	const popup =
 		<Popup key="Register" title="Register">
@@ -49,7 +51,10 @@ export function RegisterPage() {
 					setSubmitting(true);
 
 					auth.register(values.fname, values.lname, values.email, values.password).then(response => {
-						if (!response.success) popups.error(response.message);
+						if (response.success) setRedirect(true);
+						else {
+							popups.error(response.message);
+						}
 					});
 				}}
 			>
@@ -100,10 +105,9 @@ export function RegisterPage() {
 		if (link) root.set(link);
 	}, [root, link]);
 
-
 	return (
 		<>
-			{auth.user ? <Redirect to={root.get()} /> : null }
+			{redirect ? <Redirect to={root.get()} /> : null }
 			<header className="main">
 				<Link to={root.get()} className="title">CSFPD</Link>
 			</header>

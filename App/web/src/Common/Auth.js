@@ -85,18 +85,21 @@ function useProvideAuth() {
 			
 			return server.users.add({user: result.user.uid, firstName: firstName, lastName: lastName}).then(add_response => {
 				if (add_response.data.success) {
-					result.success = true;
-					return result;
+					return fb.auth().signOut().then(() => {
+						result.success = true;
+						return result;
+					})
 				}
 				else {
 					result.message = add_response.data.message;
 				}
 			}).catch(reason => {
-				result.message = "Could not create user profile";
+				result.message = reason;
 				return result;
 			});
 		}).catch(reason => {
 			result.message = "Could not register user";
+			console.log(reason);
 			return result;
 		});
 	};
@@ -136,11 +139,13 @@ function useProvideAuth() {
 				setUser(user);
 
 				server.users.get({user: user.uid}).then(response => {
-					setName({
-						first: response.data.firstName,
-						last: response.data.lastName,
-						full: response.data.firstName + " " + response.data.lastName})
-				})
+					if (response.data) {
+						setName({
+							first: response.data.firstName,
+							last: response.data.lastName,
+							full: response.data.firstName + " " + response.data.lastName})
+					}
+				});
 			}
 			else {
 				setUser(null);

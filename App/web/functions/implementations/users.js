@@ -7,18 +7,29 @@ const admin = require('firebase-admin');
 const fsdb = admin.firestore();
 
 async function add(user, firstName, lastName, context) {
-	fsdb.collection("users").doc(user).set({
+	response = {
+		success: false,
+		message: ""
+	}
+
+	return fsdb.collection("users").doc(user).set({
 		firstName: firstName,
 		lastName: lastName
+	}).then(() => {
+		response.success = true;
+		return response;
 	});
 }
 
 async function get(user) {
 	return fsdb.collection("users").doc(user).get().then(user_snap => {
-		const data = user_snap.data();
-		data.id = user_snap.id;
-		data.fullName = data.firstName + " " + data.lastName;
-		return data;
+		if (user_snap.exists) {
+			const data = user_snap.data();
+			data.id = user_snap.id;
+			data.fullName = data.firstName + " " + data.lastName;
+			return data;
+		}
+		else return false;
 	});
 }
 
