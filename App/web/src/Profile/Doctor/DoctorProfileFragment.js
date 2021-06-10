@@ -145,9 +145,20 @@ export function DoctorProfileFragment() {
 							}}
 						/>
 					</header>
-					{doctor?.doctor?.link ? <div className="table">
-						<b>Name:</b> <Link to={"/" + doctor.doctor.link} >{doctor.doctor.link}</Link>
-					</div> : ""}
+						{doctor?.doctor?.link ?
+							<div className="table">
+								<b>Name:</b> <Link to={"/" + doctor.doctor.link} >{doctor.doctor.link}</Link>
+							</div>
+							:
+							<div>
+								<p>
+									Create a custom direct link to share with your patients.
+								</p>
+								<p>
+									A direct link lets patients make appointments with you directly.
+								</p>
+							</div>
+						}
 				</section>
 				<section>
 					<header>

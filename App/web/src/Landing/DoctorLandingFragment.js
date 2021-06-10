@@ -71,31 +71,22 @@ export function DoctorLandingFragment({doctor}) {
 	}, [clinicsData, data, doctor]);
 
 	let display = <Loading />;
+
 	if (data && clinicCards) {
 		display = (
-			<>
-				<main>
-					<header>
-						<h1>{data ? "Dr. " + data.user.fullName : ""}</h1>
-					</header>
-				</main>
+			<main>
+				<h1>{data ? "Make An Appointment With Dr. " + data.user.fullName : ""}</h1>
 				<section>
 					<header>
-						<h2>Clinics</h2>
+						<h2>My Clinics</h2>
 					</header>
 					<div className="cardList">
 						{clinicCards}
 					</div>
 				</section>
-			</>
+			</main>
 		);
 	}
 
-	return (
-		<>
-			<main>
-				{display}
-			</main>
-		</>
-	);
+	return display;
 }

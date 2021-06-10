@@ -48,6 +48,7 @@ export function Header({unprotected}) {
 						{/* <div>
 							Notifications
 						</div> */}
+						<Link to={root.get() + "/user/appointments/list"}>My Appointments</Link>
 						<Link to={root.get() + "/user/profile"}>Profile</Link>
 						<div onClick={auth.logout}>
 							Log Out

@@ -68,7 +68,7 @@ header {
 	display: flex;
 	flex-direction: row;
 	background-color: var(--highlight-pale);
-	padding: var(--control-padding);
+	padding: var(--padding);
 	margin-top: var(--margin-small);
 	margin-bottom: var(--margin);
 	min-height: 5rem;
@@ -95,19 +95,10 @@ header.main {
 	padding: 0;
 }
 
-header.subtitle {
-	/* background-color: transparent; */
-	/* padding: 0; */
-}
-
 header.main, header.subtitle {
 	margin: 0;
 	flex-direction: column;
 	gap: var(--margin);
-}
-
-header.subtitle h1, header.subtitle h2, header.subtitle h3 {
-	/* color: var(--color); */
 }
 
 @media screen and (min-width: 700px) {

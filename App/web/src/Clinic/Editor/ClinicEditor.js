@@ -217,11 +217,20 @@ export function ClinicEditor() {
 							}}
 						/>
 					</header>
-					{data.link ?
-						<div className="table">
-							<b>Name:</b> <Link to={"/" + data.link} >{data.link}</Link>
-						</div>
-					: ""}
+					<div className="table">
+						{data.link ?
+							<><b>Name:</b> <Link to={"/" + data.link} >{data.link}</Link></>
+							:
+							<div>
+								<p>
+									Create a custom direct link to share with your patients.
+								</p>
+								<p>
+									A direct link lets patients make appointments with you directly.
+								</p>
+							</div>
+						}
+					</div>
 				</section>
 				
 				<section>

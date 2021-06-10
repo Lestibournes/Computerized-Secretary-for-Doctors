@@ -151,6 +151,9 @@ ReactDOM.render(
 						<Route path="/:link/user/profile">
 							<ProfilePage />
 						</Route>
+						<Route path="/:link/user/appointments/list">
+							<AppointmentListPage />
+						</Route>
 						<Route path="/:link/clinics/view/:clinic">
 							<ClinicPage />
 						</Route>

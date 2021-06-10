@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from "../Common/Components/Card"
 import { Header } from '../Common/Components/Header';
+import { Loading } from '../Common/Components/Loading';
 import { getPictureURL } from '../Common/functions';
 import { useRoot } from '../Common/Root';
 import { server } from '../Common/server';
@@ -90,33 +91,28 @@ export function ClinicLandingFragment({clinic}) {
 		}
 	}, [doctorsData, data, clinic]);
 
-	let display, title, subtitle;
+	let display = <Loading />;
+	let title, subtitle;
 
 	if (data && doctorCards) {
-		title = data.name + " Clinic";
-		subtitle = data.address + ", " + data.city;
+		title = "Welcome to " + data.name + " Clinic";
+		subtitle = "Located at " + data.address + ", " + data.city;
 
 		display = (
-			<>
+			<main>
+				<h1>{title}</h1>
+				<h2>{subtitle}</h2>
 				<section>
 					<header>
-						<h2>Doctors</h2>
+						<h2>Make An Appointment With Our Doctors</h2>
 					</header>
 					<div className="cardList">
 						{doctorCards}
 					</div>
 				</section>
-			</>
+			</main>
 		);
 	}
 
-	return (
-		<>
-			<h1>{title}</h1>
-			<h2>{subtitle}</h2>
-			<main>
-				{display}
-			</main>
-		</>
-	);
+	return display;
 }
