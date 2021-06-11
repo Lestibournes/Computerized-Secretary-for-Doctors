@@ -2,15 +2,17 @@
 import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
-import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
 import { events, server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { TabbedContainer } from '../Common/Components/TabbedContainer';
+import { Header } from '../Common/Components/Header';
+import { useRoot } from '../Common/Root';
 
 export function AppointmentPage() {
+	const root = useRoot();
 	/**
 	 * @type {{appointment: string}}
 	 */
@@ -102,7 +104,7 @@ export function AppointmentPage() {
 						<h3>Patient Details</h3>
 						<Button
 							label="Edit"
-							link={"/specific/secretary/appointments/edit/" + appointment}
+							link={root.get() + "/clinic/appointments/edit/" + appointment}
 						/>
 					</header>
 					<div className="table">
@@ -128,8 +130,13 @@ export function AppointmentPage() {
 	}
 	
 	return (
-		<Page title={title} subtitle={subtitle}>
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>{title}</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

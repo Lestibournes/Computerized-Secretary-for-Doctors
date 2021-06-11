@@ -1,11 +1,16 @@
 //Reactjs:
 import React from 'react';
-import { Page } from '../Common/Components/Page';
+import { Header } from '../Common/Components/Header';
 
 export function AppointmentDeletedPage() {
 	return (
-		<Page title="Make an Appointment" subtitle="Success!">
-			<p>Your appointment has been successfully deleted.</p>
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>Make an Appointment</h1>
+			<h2>Success!</h2>
+			<main>
+				<p>Your appointment has been successfully deleted.</p>
+			</main>
+		</div>
 	);
 }

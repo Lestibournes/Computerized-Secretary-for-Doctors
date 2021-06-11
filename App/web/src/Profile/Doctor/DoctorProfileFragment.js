@@ -12,6 +12,7 @@ import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
 import { linkEditPopup, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Link } from "react-router-dom";
+import { useRoot } from "../../Common/Root";
 
 /**
 @todo
@@ -53,7 +54,12 @@ It would be good to add some kind of notification widget to easily show new memb
 export function DoctorProfileFragment() {
 	const auth = useAuth();
 	const popupManager = usePopups();
+	const root = useRoot();
 
+	const [doctor, setDoctor] = useState(null);
+	const [clinicCards, setClinicCards] = useState(null);
+	const [clinics, setClinics] = useState();
+	
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) loadData(auth.user.uid);
@@ -83,18 +89,9 @@ export function DoctorProfileFragment() {
 		});
 	}
 
-	const [doctor, setDoctor] = useState(null);
-	const [image, setImage] = useState(null);
-	const [clinicCards, setClinicCards] = useState(null);
-	const [clinics, setClinics] = useState();
-
 	useEffect(() => {
 		if (doctor) {
 			setClinics(doctor.clinics);
-
-			getPictureURL(doctor.user.id).then(url => {
-				setImage(url);
-			});
 		}
 	}, [doctor]);
 
@@ -111,9 +108,9 @@ export function DoctorProfileFragment() {
 						footer={clinic_data.address}
 						link={(
 							clinic_data.owner === doctor.doctor.id ?
-							"/specific/doctor/clinics/edit/" + clinic_data.id
+							root.get() + "/clinics/edit/" + clinic_data.id
 							:
-							"/specific/doctor/clinics/view/" + clinic_data.id
+							root.get() + "/clinics/view/" + clinic_data.id
 						)}
 					/>
 				);
@@ -131,7 +128,7 @@ export function DoctorProfileFragment() {
 				<h2>Doctor Profile</h2>
 				<section>
 					<header>
-						<h2>Link</h2>
+						<h3>Link</h3>
 						<Button label="Edit"
 							action={() => {
 								linkEditPopup(
@@ -148,9 +145,20 @@ export function DoctorProfileFragment() {
 							}}
 						/>
 					</header>
-					{doctor?.doctor?.link ? <div className="table">
-						<b>Name:</b> <Link to={"/" + doctor.doctor.link} >{doctor.doctor.link}</Link>
-					</div> : ""}
+						{doctor?.doctor?.link ?
+							<div className="table">
+								<b>Name:</b> <Link to={"/" + doctor.doctor.link} >{doctor.doctor.link}</Link>
+							</div>
+							:
+							<div>
+								<p>
+									Create a custom direct link to share with your patients.
+								</p>
+								<p>
+									A direct link lets patients make appointments with you directly.
+								</p>
+							</div>
+						}
 				</section>
 				<section>
 					<header>

@@ -16,11 +16,11 @@ exports.add = functions.https.onCall((data, context) => {
 });
 
 exports.edit = functions.https.onCall((data, context) => {
-	return clinics.edit(data.id, data.doctor, data.name, data.city, data.address);
+	return clinics.edit(data.id, data.name, data.city, data.address, context);
 });
 
 exports.delete = functions.https.onCall((data, context) => {
-	return clinics.delete(data.id, data.doctor);
+	return clinics.delete(data.id, context);
 });
 
 exports.getAllDoctors = functions.https.onCall((data, context) => {

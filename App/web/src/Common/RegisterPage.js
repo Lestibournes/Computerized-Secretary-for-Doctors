@@ -1,18 +1,24 @@
 //Reactjs:
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "./Auth";
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, useParams } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
 import { Button } from './Components/Button';
 import { Popup } from './Components/Popup';
 import { usePopups } from './Popups';
+import { useRoot } from './Root';
 
 export function RegisterPage() {
 	const auth = useAuth();
-	const popupManager = usePopups();
-	
+	const popups = usePopups();
+	const root = useRoot();
+
+	const {link} = useParams();
+
+	const [redirect, setRedirect] = useState(false);
+
 	const popup =
 		<Popup key="Register" title="Register">
 			<Formik
@@ -45,7 +51,10 @@ export function RegisterPage() {
 					setSubmitting(true);
 
 					auth.register(values.fname, values.lname, values.email, values.password).then(response => {
-						if (!response.success) popupManager.error(response.message);
+						if (response.success) setRedirect(true);
+						else {
+							popups.error(response.message);
+						}
 					});
 				}}
 			>
@@ -81,7 +90,7 @@ export function RegisterPage() {
 						/>
 					</div>
 					<div className="buttonBar">
-						<Button link="/general/login" label="Login" />
+						<Button link={root.get() + "/user/login"} label="Login" />
 						<Button type="submit" label="Register" />
 					</div>
 				</Form>
@@ -89,17 +98,21 @@ export function RegisterPage() {
 		</Popup>;
 	
 	useEffect(() => {
-		popupManager.clear();
+		popups.clear();
 	}, []);
+
+	useEffect(() => {
+		if (link) root.set(link);
+	}, [root, link]);
 
 	return (
 		<>
-			{auth.user ? <Redirect to="/general/" /> : null }
+			{redirect ? <Redirect to={root.get()} /> : null }
 			<header className="main">
-				<Link to="/" className="title">CSFPD</Link>
+				<Link to={root.get()} className="title">CSFPD</Link>
 			</header>
 			{popup}
-			{popupManager.popups}
+			{popups.popups}
 		</>
 	);
 }

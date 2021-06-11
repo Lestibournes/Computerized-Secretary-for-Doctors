@@ -4,9 +4,10 @@ import { useAuth } from "../Common/Auth";
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
-import { Page } from '../Common/Components/Page';
 import { getPictureURL } from '../Common/functions';
 import { server } from '../Common/server';
+import { Header } from '../Common/Components/Header';
+import { Loading } from '../Common/Components/Loading';
 
 export function AppointmentListPage() {
 	const auth = useAuth();
@@ -55,7 +56,7 @@ export function AppointmentListPage() {
 					return (
 						<Card
 							key={appointment.appointment.id}
-							link={"/specific/user/appointments/edit/" + appointment.appointment.id}
+							link={"/user/appointments/edit/" + appointment.appointment.id}
 							image={appointment.image}
 							altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
 							title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
@@ -74,7 +75,7 @@ export function AppointmentListPage() {
 		}
 	}, [appointments]);
 
-	let display = <h3>Loading...</h3>;
+	let display = <Loading />;
 
 	if (results) {
 		if (results.length) display = <div className="cardList">{results}</div>;
@@ -82,8 +83,12 @@ export function AppointmentListPage() {
 	}
 	
 	return (
-		<Page title="My Future Appointments">
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>My Future Appointments</h1>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

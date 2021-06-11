@@ -1,9 +1,9 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../../Common/Auth";
-import { Redirect, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Header } from '../../../Common/Components/Header';
 import { Button } from "../../../Common/Components/Button";
-import { Page } from "../../../Common/Components/Page";
 import { Card } from '../../../Common/Components/Card';
 
 import { Time } from "../../../Common/Classes/Time";
@@ -19,20 +19,7 @@ import { usePopups } from '../../../Common/Popups';
 
 export function ScheduleEditor() {
 	const auth = useAuth();
-	
-	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (auth.user) {
-				server.doctors.getID({user: auth.user.uid}).then(response => {
-					server.doctors.getData({id: response.data}).then(doctor_data => {
-						setDoctorData(doctor_data.data);
-					});
-				});
-			}
-		});
-
-		return unsubscribe;
-	}, [auth]);
+	const popups = usePopups();
 
 	const { clinic, doctor } = useParams(); //The ID of clinic and doctor
 
@@ -40,20 +27,32 @@ export function ScheduleEditor() {
 	const [doctorData, setDoctorData] = useState(null);
 	const [typesData, setTypesData] = useState();
 	const [minimum, setMinimum] = useState();
-	
-	const [redirect, setRedirect] = useState(null); //Where to redirect to in case the doctor is removed from the clinic.
 
 	const [schedule, setSchedule] = useState(null);
 	const [shiftCards, setShiftCards] = useState();
 	const [typeCards, setTypeCards] = useState();
 
-	const popupManager = usePopups();
+	useEffect(() => {
+		const unsubscribe = auth.isLoggedIn(status => {
+			if (auth.user && !doctor) {
+				server.doctors.getID({user: auth.user.uid}).then(response => {
+					if (response.data) {
+						server.doctors.getData({id: response.data}).then(doctor_data => {
+							setDoctorData(doctor_data.data);
+						});
+					}
+				});
+			}
+		});
+
+		return unsubscribe;
+	}, [auth, doctor]);
 
 	useEffect(() => {
 		if (clinic && doctor) {
 			server.schedules.getMinimum({clinic: clinic, doctor: doctor}).then(response => {
 				if (response.data.success) setMinimum(response.data.minimum);
-				else popupManager.error(response.data.message)
+				else popups.error(response.data.message)
 			});
 
 			server.schedules.getTypes({clinic: clinic, doctor: doctor}).then(response => {
@@ -69,7 +68,7 @@ export function ScheduleEditor() {
 					types.sort(compareByName);
 					setTypesData(types);
 				}
-				else popupManager.error(response.data.message)
+				else popups.error(response.data.message)
 			});
 
 			server.clinics.get({id: clinic}).then(clinic_data => {
@@ -95,7 +94,7 @@ export function ScheduleEditor() {
 						title={type.name}
 						body={type.duration * minimum + " Minutes"}
 						action={() => {
-							TypeFormPopup(popupManager, clinic, doctor, type.id, type.name, type.duration,
+							TypeFormPopup(popups, clinic, doctor, type.id, type.name, type.duration,
 								new_type => {
 									const new_types = [];
 
@@ -144,8 +143,8 @@ export function ScheduleEditor() {
 							" - " + Time.fromObject(shift.end).toString()}
 							action={() => {
 								shiftEditPopup(
-									popupManager, clinic, doctor, shift.id, shift.day, shift.start, shift.end,
-									result => updateSchedule(popupManager, result).then(data => setSchedule(data))
+									popups, clinic, doctor, shift.id, shift.day, shift.start, shift.end,
+									result => updateSchedule(popups, result).then(data => setSchedule(data))
 								)
 							}}
 						/>
@@ -167,21 +166,23 @@ export function ScheduleEditor() {
 
 		display = (
 			<>
-				{redirect ? <Redirect to={redirect} /> : ""}
 				<section>
 					<header>
-						<span><b>Minimum duration:</b> {minimum} minutes.</span>
+						<h3>Minimum duration</h3>
 						<Button label="Edit" action={() => {
-							MinimumFormPopup(popupManager, clinic, doctor, minimum, minimum => setMinimum(minimum));
+							MinimumFormPopup(popups, clinic, doctor, minimum, minimum => setMinimum(minimum));
 						}} />
 					</header>
+					<div className="table">
+						<b>Amount:</b> {minimum} minutes
+					</div>
 				</section>
 
 				<section>
 					<header>
 						<h2>Appointment Types</h2>
 						<Button label="+" action={() => {
-							TypeFormPopup(popupManager, clinic, doctor, null, null, null,
+							TypeFormPopup(popups, clinic, doctor, null, null, null,
 								new_type => {
 									const new_types = [...typesData];
 
@@ -202,9 +203,7 @@ export function ScheduleEditor() {
 				</section>
 
 				<section>
-					<header>
-						<h2>Shift Schedule</h2>
-					</header>
+					<h2>Shift Schedule</h2>
 					{
 						SimpleDate.day_names.map((name, number) => {
 							return (
@@ -216,8 +215,8 @@ export function ScheduleEditor() {
 												label="+"
 												action={() => {
 													shiftEditPopup(
-														popupManager, clinic, doctor, null, number, null, null,
-														result => updateSchedule(popupManager, result).then(data => setSchedule(data))
+														popups, clinic, doctor, null, number, null, null,
+														result => updateSchedule(popups, result).then(data => setSchedule(data))
 													)
 												}}
 											/>
@@ -236,9 +235,14 @@ export function ScheduleEditor() {
 	}
 
 	return (
-		<Page title={"Edit Schedule"} subtitle={subtitle}>
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>Edit Schedule</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }
 

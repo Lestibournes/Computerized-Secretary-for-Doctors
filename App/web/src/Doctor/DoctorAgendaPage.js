@@ -3,7 +3,6 @@ import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
-import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { server } from '../Common/server';
 
@@ -14,8 +13,11 @@ import { Button } from '../Common/Components/Button';
 import { useAuth } from '../Common/Auth';
 import { Select } from '../Common/Components/Select';
 import { usePopups } from '../Common/Popups';
+import { Header } from '../Common/Components/Header';
+import { useRoot } from '../Common/Root';
 
 export function DoctorAgendaPage() {
+	const root = useRoot();
 	const auth = useAuth();
 	const popups = usePopups();
 
@@ -100,7 +102,7 @@ export function DoctorAgendaPage() {
 					return (
 						<Card
 							key={appointment.appointment.id}
-							link={"/specific/secretary/appointments/view/" + appointment.appointment.id}
+							link={root.get() + "/doctor/appointments/details/" + appointment.appointment.id}
 							image={appointment.image}
 							altText={appointment.patient.fullName}
 							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}
@@ -182,10 +184,15 @@ export function DoctorAgendaPage() {
 		title = doctor.user.fullName;
 		subtitle = "Agenda";
 	}
-	
+
 	return (
-		<Page title={title} subtitle={subtitle}>
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>{title}</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

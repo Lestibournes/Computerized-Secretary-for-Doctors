@@ -8,11 +8,10 @@ const functions = require('firebase-functions');
  */
 const fsdb = admin.firestore();
 
-const stringContains = require('./functions').stringContains;
-
 const doctors = require("./doctors");
 const clinics = require("./clinics");
 const secretaries = require("./secretaries");
+const permissions = require("./permissions");
 
 /**
  * Checks if the provided string can be used as part of a URL directory structure.
@@ -24,59 +23,18 @@ function isValidName(directory) {
 }
 
 const NAME = "links";
-const CLINIC = "clinic";
-const DOCTOR = "doctor";
 
 function checkPermission(type, id, context) {
-	const response = {
-		success: false,
-		message: "",
-		allowed: false
-	};
-
 	// Check if the type is valid and if the current user has the right permissions:
-	if (type === CLINIC) {
-		return clinics.get(id).then(clinic_data => {
-			return doctors.getID(context.auth.uid).then(doctor_id => {
-				if (doctor_id === clinic_data.owner) {
-					response.success = true;
-					response.allowed = true;
-					return response;
-				}
-				
-				return secretaries.getID(context.auth.uid).then(secretary_id => {
-					return clinics.getAllSecretaries(id).then(secretaries_data => {
-						for (const secretary of secretaries_data) {
-							if (secretary.id === secretary_id) {
-								response.success = true;
-								response.allowed = true;
-								return response;
-							}
-						}
-
-						response.success = true;
-						return response;
-					});
-				});
-			})
-		})
+	if (type === permissions.CLINIC) {
+		return permissions.checkPermission(permissions.CLINIC, permissions.MODIFY, id, context);
 	}
 
-	if (type === DOCTOR) {
-		return doctors.getID(context.auth.uid).then(doctor_id => {
-			if (id === doctor_id) {
-				response.success = true;
-				response.allowed = true;
-				return response;
-			}
-			
-			response.success = true;
-			return response;
-		})
+	if (type === permissions.DOCTOR) {
+		return permissions.checkPermission(permissions.DOCTOR, permissions.MODIFY, id, context);
 	}
 
-	response.message = "Invalid type";
-	return response;
+	return false;
 }
 
 /**
@@ -108,27 +66,27 @@ function register(name, type, id, context) {
 
 	// Check if the name for the link is valid:
 	if (!isValidName(name)) {
-		response.message("Invalid name");
+		response.message = "Invalid name";
 		return response;
 	}
 
 	// Check if the type is valid and if the current user has the right permissions:
-	if (type !== CLINIC && type !== DOCTOR) {
+	if (type !== permissions.CLINIC && type !== permissions.DOCTOR) {
 		response.message = "Invalid type";
 		return response;
 	}
 
 	// Check if the current use has permission:
-	return checkPermission(type, id, context).then(permission => {
-		if (permission.success && permission.allowed) {
+	return checkPermission(type, id, context).then(allowed => {
+		if (allowed) {
 			// Check if the name is available:
 			return isAvailable(name).then(available => {
 				if (available) {
 					return getLink(type, id).then(response => {
 						// If the clinic/doctor already has a link, delete it:
 						if (response.success) {
-							// Register the new link:
-							return fsdb.collection(NAME).doc(name).delete().then(() => {
+							// Delete the old link and register the new link:
+							return fsdb.collection(NAME).doc(response.link).delete().then(() => {
 								return fsdb.collection(NAME).doc(name).set({
 									type: type,
 									id: id
@@ -173,12 +131,7 @@ function register(name, type, id, context) {
 			});
 		}
 
-		if (!permission.success) {
-			response.message = permission.message;
-			return response;
-		}
-
-		response.message = "You do not have permission to modify this doctor's links";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }

@@ -3,15 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from "../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../Common/Components/Button";
-import { Page } from "../../Common/Components/Page";
 
 import { server } from '../../Common/server';
 import { capitalize, getPictureURL } from '../../Common/functions';
 import { Popup } from '../../Common/Components/Popup';
 import { usePopups } from '../../Common/Popups';
+import { Header } from '../../Common/Components/Header';
+import { useRoot } from '../../Common/Root';
 
 export function SecretaryEditor() {
 	const auth = useAuth();
+	const root = useRoot();
 	
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
@@ -58,13 +60,13 @@ export function SecretaryEditor() {
 
 		display = (
 			<>
-				{redirect ? <Redirect to={redirect} /> : ""}
+				{redirect ? <Redirect to={root.get() + redirect} /> : ""}
 				<section>
 					<header>
 						<h2>Details</h2>
 						<Button label="Remove" action={() => {
 							removeSecretaryPopup(popupManager, clinic, secretaryData, () => {
-								setRedirect("/specific/doctor/clinics/edit/" + clinic);
+								setRedirect("/clinics/edit/" + clinic);
 							})
 						}} />
 					</header>
@@ -79,9 +81,14 @@ export function SecretaryEditor() {
 	}
 
 	return (
-		<Page title="Edit Secretary" subtitle={subtitle}>
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>Edit Secretary</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }
 

@@ -1,7 +1,6 @@
 import "./HomePage.css";
 
 //Reactjs:
-import { Page } from "../Common/Components/Page";
 import { DropdownMenu } from "../Common/Components/DropdownMenu";
 import { Link, Route } from "react-router-dom";
 import { PatientHomeFragment } from "./PatientHomeFragment";
@@ -10,6 +9,7 @@ import { SecretaryProfileFragment } from "../Profile/Secretary/SecretaryProfileF
 import { useEffect, useState } from "react";
 import { useAuth } from "../Common/Auth";
 import { server } from "../Common/server";
+import { Header } from "../Common/Components/Header";
 
 const PATIENT = "Patient";
 const DOCTOR = "Doctor";
@@ -43,18 +43,18 @@ export function HomePage() {
 		const menuItems = [];
 
 		if (doctor || secretary) {
-			menuItems.push(<Link to="/general/home/patient">Patient</Link>);
-			if (doctor) menuItems.push(<Link to="/general/home/doctor">Doctor</Link>);
-			if (secretary) menuItems.push(<Link to="/general/home/secretary">Secretary</Link>)
+			menuItems.push(<Link to="/home/patient">Patient</Link>);
+			if (doctor) menuItems.push(<Link to="/home/doctor">Doctor</Link>);
+			if (secretary) menuItems.push(<Link to="/home/secretary">Secretary</Link>)
 
 			setItems(menuItems);
 		}
 	}, [doctor, secretary])
 
 	return (
-		<>
-		<Page>
-			<header>
+		<div className="Page">
+			<Header />
+			<header className="subtitle">
 				<h1>Welcome</h1>
 				<div>
 					{items ?
@@ -76,7 +76,6 @@ export function HomePage() {
 					}
 				/>
 			: ""}
-		</Page>
-		</>
+		</div>
 	);
 }

@@ -3,7 +3,6 @@ import { React, useEffect, useState } from 'react';
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
-import { Page } from '../Common/Components/Page';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { server } from '../Common/server';
@@ -13,8 +12,11 @@ import { TextInput } from '../Common/Components/TextInput';
 import { Select } from '../Common/Components/Select';
 import { Form, Formik } from 'formik';
 import { Button } from '../Common/Components/Button';
+import { Header } from '../Common/Components/Header';
+import { useRoot } from '../Common/Root';
 
 export function ClinicAgendaPage() {
+	const root = useRoot();
 	const { clinic } = useParams(); //The ID of the doctor.
 	const [clinicData, setClinicData] = useState();
 	const [doctors, setDoctors] = useState([]);
@@ -80,7 +82,7 @@ export function ClinicAgendaPage() {
 					return (
 						<Card
 							key={appointment.appointment.id}
-							link={"/specific/secretary/appointments/view/" + appointment.appointment.id}
+							link={root.get() + "/clinic/appointments/view/" + appointment.appointment.id}
 							image={appointment.image}
 							altText={appointment.patient.fullName}
 							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}
@@ -172,10 +174,15 @@ export function ClinicAgendaPage() {
 		title = clinicData.name;
 		subtitle = "Agenda";
 	}
-	
+
 	return (
-		<Page title={title} subtitle={subtitle}>
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>{title}</h1>
+			<h2>{subtitle}</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

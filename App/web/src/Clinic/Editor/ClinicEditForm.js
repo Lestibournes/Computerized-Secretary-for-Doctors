@@ -5,7 +5,7 @@ import { Popup } from "../../Common/Components/Popup";
 import { TextInput } from "../../Common/Components/TextInput";
 import { server } from "../../Common/server";
 
-export function ClinicEditForm({popupManager, clinic, doctor, name, city, address, close, success, deleted}) {
+export function ClinicEditForm({popupManager, clinic, name, city, address, close, success, deleted}) {
 	return (
 		<Formik
 			initialValues={{
@@ -23,7 +23,7 @@ export function ClinicEditForm({popupManager, clinic, doctor, name, city, addres
 			})}
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
-				server.clinics.edit({id: clinic, doctor: doctor, name: values.name, city: values.city, address: values.address})
+				server.clinics.edit({id: clinic, name: values.name, city: values.city, address: values.address})
 				.then(response => {
 					if (!response.data.success) popupManager.error(response.data.message)
 					else {success()}
@@ -57,7 +57,6 @@ export function ClinicEditForm({popupManager, clinic, doctor, name, city, addres
 							clinicDeletePopup(
 								popupManager,
 								clinic,
-								doctor,
 								deleted
 							)
 						}}
@@ -70,14 +69,14 @@ export function ClinicEditForm({popupManager, clinic, doctor, name, city, addres
 	);
 }
 
-export function ClinicDeleteForm({popupManager, clinic, doctor, close, success}) {
+export function ClinicDeleteForm({popupManager, clinic, close, success}) {
 	return (
 		<div>
 			<p>Are you sure you wish to delete this clinic?</p>
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
-					server.clinics.delete({id: clinic, doctor: doctor}).then(response => {
+					server.clinics.delete({id: clinic}).then(response => {
 						if (!response.data.success) popupManager.error(response.data.message)
 						else {success()}
 					});
@@ -88,14 +87,13 @@ export function ClinicDeleteForm({popupManager, clinic, doctor, close, success})
 	);
 }
 
-export function clinicEditPopup(popupManager, clinic, doctor, name, city, address, deleted, success) {
+export function clinicEditPopup(popupManager, clinic, name, city, address, deleted, success) {
 	const close = () => {popupManager.remove(popup)};
 	const popup =
 		<Popup key="Edit Details" title="Edit Details" close={close}>
 			<ClinicEditForm
 				popupManager={popupManager}
 				clinic={clinic}
-				doctor={doctor}
 				name={name}
 				city={city}
 				address={address}
@@ -107,14 +105,13 @@ export function clinicEditPopup(popupManager, clinic, doctor, name, city, addres
 		popupManager.add(popup);
 }
 
-export function clinicDeletePopup(popupManager, clinic, doctor, success) {
+export function clinicDeletePopup(popupManager, clinic, success) {
 	const close = () => {popupManager.remove(popup)};
 	const popup =
 		<Popup key="Confirm Clinic Deletion" title="Confirm Deletion" close={close}>
 			<ClinicDeleteForm
 				popupManager={popupManager}
 				clinic={clinic}
-				doctor={doctor}
 				close={close}
 				success={success}
 			/>

@@ -8,7 +8,6 @@ import { Slot } from "../Common/Classes/Slot";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { CalendarWeek } from "./CalendarWeek";
 import { Button } from '../Common/Components/Button';
-import { Page } from '../Common/Components/Page';
 import { server } from "../Common/server";
 import { Popup } from "../Common/Components/Popup";
 import { useParams } from "react-router";
@@ -16,6 +15,7 @@ import { Select } from "../Common/Components/Select";
 import { Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { usePopups } from "../Common/Popups";
+import { Header } from "../Common/Components/Header";
 
 function debounce(fn, ms) {
   let timer
@@ -103,61 +103,68 @@ export function AppointmentCalendarPage() {
 			
 			const appointment_promises = [];
 			
-			// Go day by day:
+			// Fetch the appointments day by day:
 			for (let current = date.getSunday(), day = 0; current.compare(saturday) <= 0; current = current.getNextDay(), day++) {
 				appointment_promises.push(
-					server.appointments.getAll(
+					server.doctors.getAppointments(
 						{
+							clinic: clinic,
 							doctor: doctor.doctor.id,
 							start: current.toObject(),
 							end: current.getNextDay().toObject()
 						}
 					).then(results => {
-						const day_promises = [];
-
 						const today = {
 							appointments: [],
 							day: day
 						};
-						
-						// Results holds all the appointments for 1 day.
-						// For each appointment:
-						for (const result of results.data) {
-							day_promises.push(
-								server.schedules.getTypes({clinic: result.appointment.clinic, doctor: result.appointment.doctor}).then(types_response => {
-									return server.schedules.getType({clinic: result.appointment.clinic, doctor: result.appointment.doctor, type: result.appointment.type}).then(type_response => {
-										let hue = 240; //result.appointment.duration % 360;
-	
-										if (types_response.data.success && type_response.data.success){
-											let max = 0;
-											for (const t of types_response.data.types) {
-												if (t.name && t.duration > max) max = t.duration;
-											}
 
-											hue = (360 / max) * type_response.data.duration;
-										}
-	
-										return {
-											color: "white",
-											background: "hsl(" + hue + ", 100%, 30%)",
-											duration: result.appointment.duration,
-											start: Time.fromObject(result.extra.time),
-											id: result.appointment.id,
-											name: result.patient.fullName,
-										};
-									})
-								})
-							)
-						}
-						
-						// Once all the appointments for today have been loaded:
-						return Promise.all(day_promises).then(appointments => {
-							if (appointments) {
-								today.appointments = appointments;
+						if (results.data.success) {
+							const day_promises = [];
+
+							// Results holds all the appointments for 1 day.
+							// For each appointment:
+							for (const result of results.data.data) {
+								if (result) {
+									day_promises.push(
+										server.schedules.getTypes({clinic: result.appointment.clinic, doctor: result.appointment.doctor}).then(types_response => {
+											return server.schedules.getType({clinic: result.appointment.clinic, doctor: result.appointment.doctor, type: result.appointment.type}).then(type_response => {
+												let hue = 240; //result.appointment.duration % 360;
+			
+												if (types_response.data.success && type_response.data.success){
+													let max = 0;
+													for (const t of types_response.data.types) {
+														if (t.name && t.duration > max) max = t.duration;
+													}
+		
+													hue = (360 / max) * type_response.data.duration;
+												}
+			
+												return {
+													color: "white",
+													background: "hsl(" + hue + ", 100%, 30%)",
+													duration: result.appointment.duration,
+													start: Time.fromObject(result.extra.time),
+													id: result.appointment.id,
+													name: result.patient.fullName,
+												};
+											})
+										})
+									);
+								}
 							}
-
+							
+							// Once all the appointments for today have been loaded:
+							return Promise.all(day_promises).then(appointments => {
+								if (appointments) today.appointments = appointments;
+	
+								return today;
+							})
+						}
+						else {
+							popupManager.error(results.data.message);
 							return today;
-						})
+						}
 					})
 				);
 			}
@@ -167,7 +174,13 @@ export function AppointmentCalendarPage() {
 					return a.day > b.day ? 1 : a.day < b.day ? -1 : 0;
 				});
 
-				setAppointments(week.map(day => day.appointments));
+				const calendar = [];
+
+				for (const day of week) {
+					if (day) calendar.push(day.appointments);
+					else calendar.push([]);
+				}
+				setAppointments(calendar);
 			});
 			
 			// Get the global schedule paramaters.
@@ -236,6 +249,7 @@ export function AppointmentCalendarPage() {
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
 							
+							// If the user has selected a doctor, find the doctor data for that doctor and set it:
 							if (values.doctor) {
 								for (const doc of doctors) {
 									if (doc.doctor.id === values.doctor) {
@@ -294,8 +308,10 @@ export function AppointmentCalendarPage() {
 			</>;
 
 	return (
-		<Page title="Work Calendar">
+		<div className="Page">
+			<Header />
+			<h1>Work Calendar</h1>
 			{display}
-		</Page>
+		</div>
 	);
 }

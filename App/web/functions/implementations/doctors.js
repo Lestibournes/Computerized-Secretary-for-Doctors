@@ -11,6 +11,7 @@ const specializations = require('./specializations');
 
 const appointments = require('./appointments');
 const clinics = require('./clinics');
+const permissions = require("./permissions");
 
 const stringContains = require('./functions').stringContains;
 
@@ -190,7 +191,7 @@ async function search(name, field, city) {
  */
 async function getID(user) {
 	return fsdb.collection("users").doc(user).get().then(user_snap => {
-		if (user_snap.data().doctor) return user_snap.data().doctor;
+		if (user_snap.exists && user_snap.data().doctor) return user_snap.data().doctor;
 
 		return null;
 	});
@@ -281,7 +282,7 @@ async function getAppointments(doctor, clinic, start, end, context) {
 			});
 		}
 
-		response.message = "You are not authorized to view this data";
+		response.message = permissions.DENIED;
 		return response;
 	})
 

@@ -8,9 +8,10 @@ import { TextInput } from '../Common/Components/TextInput';
 import { Card } from '../Common/Components/Card';
 import { Button } from '../Common/Components/Button';
 import { Select } from "../Common/Components/Select";
-import { Page } from "../Common/Components/Page";
 import { getPictureURL } from "../Common/functions";
 import { server } from "../Common/server";
+import { Header } from "../Common/Components/Header";
+import { Loading } from "../Common/Components/Loading";
 
 export function SearchDoctorsPage() {
 	const [cities, setCities] = useState();
@@ -72,7 +73,7 @@ export function SearchDoctorsPage() {
 								return (
 								<Card
 									key={doctor.doctor.id + ", " + clinic.id}
-									link={"/specific/" + doctor.doctor.id + "/user/appointments/create/" + clinic.id}
+									link={"/user/appointments/create/" + clinic.id +"/" + doctor.doctor.id}
 									title={doctor.user.firstName + " " + doctor.user.lastName}
 									body=
 										{doctor.fields.length > 0 ?
@@ -96,7 +97,7 @@ export function SearchDoctorsPage() {
 		}
 	}, [doctors]);
 
-	let display = <h2>Loading...</h2>;
+	let display = <Loading />;
 	let searchResults;
 
 	if (searching) {
@@ -160,8 +161,13 @@ export function SearchDoctorsPage() {
 	}
 
 	return (
-		<Page title="Make an Appointment" subtitle="Find a Doctor">
-			{display}
-		</Page>
+		<div className="Page">
+			<Header />
+			<h1>Make an Appointment</h1>
+			<h2>Find a Doctor</h2>
+			<main>
+				{display}
+			</main>
+		</div>
 	);
 }

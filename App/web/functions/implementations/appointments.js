@@ -14,6 +14,7 @@ const clinics = require("./clinics");
 const schedules = require("./schedules");
 const users = require("./users");
 const secretaries = require("./secretaries");
+const permissions = require("./permissions");
 
 const NAME = "appointments";
 /**
@@ -156,7 +157,7 @@ async function get(appointment, context) {
 	
 	return fsdb.collection("appointments").doc(appointment).get().then(appointment_snap => {
 		if (appointment_snap.exists) {
-			return checkModifyPermission(appointment, context).then(allowed => {
+			return permissions.checkPermission(permissions.APPOINTMENT, permissions.VIEW, appointment, context).then(allowed => {
 				if (allowed) {
 					const promises = [];
 			
@@ -203,7 +204,7 @@ async function get(appointment, context) {
 					});
 				}
 
-				response.message = "You do not have permission to view this appointment";
+				response.message = permissions.DENIED;
 				return response;
 			});
 		}
@@ -505,7 +506,7 @@ async function edit(appointment, date, time, type, context) {
 			});
 		}
 		else {
-			response.message = "You are not authorized to perform this action";
+			response.message = permissions.DENIED;
 			return response;
 		}
 	})
@@ -549,7 +550,7 @@ async function cancel(appointment, context) {
 			});
 		}
 
-		response.message = "You do not have the right to delete this appointment";
+		response.message = permissions.DENIED;
 		return response;
 	});
 }

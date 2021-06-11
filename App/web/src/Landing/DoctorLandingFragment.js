@@ -1,7 +1,8 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Card } from "../Common/Components/Card"
-import { Page } from "../Common/Components/Page";
+import { Loading } from '../Common/Components/Loading';
+import { useRoot } from '../Common/Root';
 import { server } from '../Common/server';
 
 /**
@@ -15,6 +16,7 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 */
 
 export function DoctorLandingFragment({doctor}) {
+	const root = useRoot();
 	const [data, setData] = useState(null);
 	
 	const [clinicsData, setClinicsData] = useState();
@@ -47,7 +49,7 @@ export function DoctorLandingFragment({doctor}) {
 							title={clinic.name}
 							body={clinic.city}
 							footer={clinic.address}
-							link={"/" + data.doctor.link + "/" + clinic.id + "/" + doctor}
+							link={root.get() + "/appointments/create/" + clinic.id + "/" + doctor}
 						/>
 				});
 			}
@@ -68,30 +70,23 @@ export function DoctorLandingFragment({doctor}) {
 		}
 	}, [clinicsData, data, doctor]);
 
-	let display = <h2>Loading...</h2>;
+	let display = <Loading />;
+
 	if (data && clinicCards) {
 		display = (
-			<>
-				<main>
-					<header>
-						<h1>{data ? "Dr. " + data.user.fullName : ""}</h1>
-					</header>
-				</main>
+			<main>
+				<h1>{data ? "Make An Appointment With Dr. " + data.user.fullName : ""}</h1>
 				<section>
 					<header>
-						<h2>Clinics</h2>
+						<h2>My Clinics</h2>
 					</header>
 					<div className="cardList">
 						{clinicCards}
 					</div>
 				</section>
-			</>
+			</main>
 		);
 	}
 
-	return (
-		<Page>
-			{display}
-		</Page>
-	);
+	return display;
 }
