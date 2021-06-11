@@ -70,9 +70,12 @@ export function AppointmentPage() {
 		display = 
 		<>
 			<TabbedContainer>
-				<section title="Appointment Details" icon="fa-calendar-alt">
-					<header>
-						<h3>Appointment Details</h3>
+				<div title="Appointment Details" icon="fa-calendar-alt">
+					<div className="tab-controls">
+						<Button
+							label="Edit"
+							link={root.get() + "/clinic/appointments/edit/" + appointment}
+						/>
 						<Button
 							type={arrived ? "okay" : ""}
 							label="Arrived"
@@ -82,13 +85,10 @@ export function AppointmentPage() {
 										// Display error message popup.
 										popupManager.error(response.data.message);
 									}
-									else {
-										// setArrived(response.data.current);
-									}
 								});
 							}}
 						/>
-					</header>
+					</div>
 					<div className="table">
 						<b>Start:</b> <span>{
 						SimpleDate.fromObject(appointmentData.extra.date).toString() + " " + 
@@ -97,25 +97,20 @@ export function AppointmentPage() {
 						<b>Duration:</b> <span>{appointmentData.appointment.duration} minutes</span>
 						<b>Type:</b> <span>{capitalizeAll(appointmentData.appointment.type)}</span>
 					</div>
-				</section>
+				</div>
 
-				<section title="Patient Information" icon="fa-info-circle">
-					<header>
-						<h3>Patient Details</h3>
-						<Button
-							label="Edit"
-							link={root.get() + "/clinic/appointments/edit/" + appointment}
-						/>
-					</header>
+				<div title="Patient Information" icon="fa-info-circle">
 					<div className="table">
 						<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
 						<b>Name:</b> <span>{appointmentData.patient.fullName}</span>
 						<b>Sex:</b> <span>{appointmentData.patient.sex ? capitalizeAll(appointmentData.patient.sex) : "Not specified"}</span>
 					</div>
-				</section>
+				</div>
 				
 				<div title="Documents" icon="fa-file-medical-alt">
-					To Do
+					<div>
+						To Do
+					</div>
 				</div>
 
 				<div title="Chat" icon="fa-comment">

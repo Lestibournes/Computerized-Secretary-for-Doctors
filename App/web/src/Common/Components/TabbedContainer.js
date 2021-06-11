@@ -10,20 +10,20 @@ export function TabbedContainer({children}) {
 	for (const index in children) {
 		tabs.push(
 			<div
-				className={(index == selectedTab ? " selected" : "")}
+				className={"tab" + (index == selectedTab ? " selected" : "")}
 				onClick={() => setSelectedTab(index)}
 			>
 				<i class={"fas " + children[index].props.icon}></i>
-				<heading>{children[index].props.title}</heading>
+				<div className="tab-title">{children[index].props.title}</div>
 			</div>
 		);
 	}
 	return (
-		<div className="TabbedContainer">
-			<div className="TabBar">
+		<div className="tab-container">
+			<div className="tab-bar">
 				{tabs}
 			</div>
-			<div className="TabBody">
+			<div className="tab-body">
 				{children[selectedTab]}
 			</div>
 		</div>

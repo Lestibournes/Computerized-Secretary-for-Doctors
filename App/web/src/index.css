@@ -84,3 +84,7 @@ option:disabled {
 	flex-direction: column;
 	gap: var(--margin)
 }
+
+.fas {
+	font-size: 2em;
+}

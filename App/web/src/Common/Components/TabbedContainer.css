@@ -1,14 +1,15 @@
-.TabbedContainer {
+.tab-container {
 	display: flex;
 	flex-direction: row;
 }
 
-.TabbedContainer .TabBar {
+/* Tabs */
+.tab-bar {
 	display: flex;
 	flex-direction: column;
 }
 
-.TabbedContainer .TabBar > * {
+.tab {
 	height: fit-content;
 	width: 3rem;
 	padding: var(--padding);
@@ -23,46 +24,55 @@
 	border-radius: var(--radius) 0 0 var(--radius);
 	border: 0.1rem solid var(--control-background-pressed);
 	border-right: none;
-
 }
 
-.TabbedContainer .TabBar > * .fas {
-	font-size: 2rem;
-}
-
-.TabbedContainer .TabBar > *.selected, .TabbedContainer .TabBar > *.selected .fas {
+.tab.selected {
 	background-color: var(--highlight);
 	color: var(--alt-color);
 	font-weight: bold;
 	border: none;
 }
 
-.TabbedContainer .TabBar > * > heading {
-	/* text-align: end;
-	transform: translate(calc(-50% + 1em), calc(50% + var(--padding))) rotate(-0.25turn); */
+.tab-title {
 	display: none;
 }
 
-.TabbedContainer .TabBody {
-	background-color: var(--alt-color);
+/* Content */
+.tab-body {
 	width: 100%;
-	padding: var(--padding);
-	border-radius: 0 var(--radius) var(--radius) var(--radius);
-	border: 0.1rem solid var(--control-background);
 	min-height: 30rem;
+	
+	padding: 0;
+
+	border-radius: 0 var(--radius) var(--radius) var(--radius);
+	border: 3px solid var(--control-background);
+}
+
+.tab-controls {
+	display: flex;
+	flex-direction: row;
+	gap: var(--margin);
+	padding: var(--margin);
+	place-content: flex-end;
+	flex-wrap: wrap;
+	background-color: var(--highlight-pale);
+}
+
+.tab-controls + * {
+	margin: var(--margin-small);
 }
 
 @media screen and (min-width: 41.25rem) {
-	.TabbedContainer {
+	.tab-container {
 		flex-direction: column;
 	}
 	
-	.TabbedContainer .TabBar {
+	.tab-bar {
 		flex-direction: row;
 		height: 3rem;
 	}
 	
-	.TabbedContainer .TabBar > * {
+	.tab {
 		width: 100%;
 		height: 100%;
 
@@ -74,14 +84,16 @@
 		border-bottom: none;
 	}
 
-	.TabbedContainer .TabBar > * > heading {
-		/* text-align: start;
-		transform: none; */
+	.tab-title {
 		display: inline;
 	}
 
-	.TabbedContainer .TabBody {
+	.tab-body {
 		border-radius: 0 0 var(--radius) var(--radius);
-		border: 0.1rem solid var(--control-background);
+		border-top: none;
+	}
+
+	.tab-controls {
+		/* float: right; */
 	}
 }

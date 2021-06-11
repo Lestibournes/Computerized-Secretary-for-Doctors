@@ -46,6 +46,14 @@
 
 header {
 	flex-direction: row;
+	display: flex;
+	flex-direction: row;
+	background-color: var(--highlight-pale);
+	padding: var(--padding);
+	margin-top: var(--margin-small);
+	margin-bottom: var(--margin);
+	min-height: 5rem;
+	margin: 0;
 }
 
 header .title {
@@ -62,16 +70,6 @@ header .title:hover {
 header .title:active {
 	color: var(--highlight-dark);
 	z-index: 100;
-}
-
-header {
-	display: flex;
-	flex-direction: row;
-	background-color: var(--highlight-pale);
-	padding: var(--padding);
-	margin-top: var(--margin-small);
-	margin-bottom: var(--margin);
-	min-height: 5rem;
 }
 
 header h1, header h2, header h3 {
