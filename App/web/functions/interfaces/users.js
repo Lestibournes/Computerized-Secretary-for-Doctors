@@ -22,3 +22,11 @@ exports.updatePicture = functions.https.onCall((data, context) => {
 exports.update = functions.https.onCall((data, context) => {
 	return users.update(data.id, data.changes);
 });
+
+exports.isDoctor = functions.https.onCall((data, context) => {
+	return users.isDoctor(data.id);
+});
+
+exports.isSecretary = functions.https.onCall((data, context) => {
+	return users.isSecretary(data.id);
+});

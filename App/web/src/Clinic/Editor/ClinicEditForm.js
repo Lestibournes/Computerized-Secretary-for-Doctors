@@ -25,8 +25,11 @@ export function ClinicEditForm({popupManager, clinic, name, city, address, close
 				setSubmitting(true);
 				server.clinics.edit({id: clinic, name: values.name, city: values.city, address: values.address})
 				.then(response => {
-					if (!response.data.success) popupManager.error(response.data.message)
-					else {success()}
+					if (response.data.success) {
+						success();
+						close();
+					}
+					else popupManager.error(response.data.message);
 				});
 			}}
 		>
@@ -77,8 +80,11 @@ export function ClinicDeleteForm({popupManager, clinic, close, success}) {
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.clinics.delete({id: clinic}).then(response => {
-						if (!response.data.success) popupManager.error(response.data.message)
-						else {success()}
+						if (response.data.success) {
+							success();
+							close();
+						}
+						else popupManager.error(response.data.message);
 					});
 				}} />
 				<Button type="okay" label="Cancel" action={close} />

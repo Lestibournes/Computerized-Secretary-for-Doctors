@@ -19,10 +19,6 @@ exports.search = functions.https.onCall((data, context) => {
 	return doctors.search(data.name, data.field, data.city);
 });
 
-exports.getID = functions.https.onCall((data, context) => {
-	return doctors.getID(data.user);
-});
-
 exports.addSpecialization = functions.https.onCall((data, context) => {
 	return doctors.addSpecialization(data.doctor, data.specialization);
 });

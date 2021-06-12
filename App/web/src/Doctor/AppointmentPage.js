@@ -83,6 +83,7 @@ export function AppointmentPage() {
 								server.appointments.arrived({appointment: appointment}).then(response => {
 									if (!response.data.success) {
 										// Display error message popup.
+										console.log(response.data);
 										popupManager.error(response.data.message);
 									}
 								});

@@ -16,21 +16,6 @@ const { SimpleDate } = require('./SimpleDate');
 const fsdb = admin.firestore();
 
 /**
- * Check if the current user is authorized to modify the given doctor's work schedule.
- * @param {string} clinic The id of the clinic
- * @param {string} doctor The id of the doctor
- * @todo Implement it or delete it.
- * @param {functions.https.CallableContext} context The function call's execution context, which provides the current user's id.
- * @returns {Promise<boolean>}
- */
- async function checkModifyPermission(clinic, context) {
-	// If the current user is the owner:
-	return doctors.getID(context.auth.uid).then(doctor_id => {
-		return clinics.isOwner(clinic, doctor_id);
-	});
-}
-
-/**
  * Get the data of a specific clinic.
  * @param {string} id the id of the requested clinic.
  * @returns the data of the requested clinic.
@@ -319,22 +304,18 @@ async function removeSecretary(clinic, secretary, context) {
 
 	// Check if the current user is the owner of the clinic:
 	// Check if the current user is the secretary being removed:
-	return doctors.getID(context.auth.uid).then(doctor_id => {
-		return isOwner(clinic, doctor_id).then(isOwner => {
-			return secretaries.getID(context.auth.uid).then(secretary_id => {
-				if (isOwner || secretary_id === secretary) {
-					return fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete().then(() => {
-						return fsdb.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).delete().then(() => {
-							response.success = true;
-							return response;
-						});
-					});
-				}
-
-				response.message = permissions.DENIED;
-				return response;
+	return isOwner(clinic, context.auth.uid).then(isOwner => {
+		if (isOwner || context.auth.uid === secretary) {
+			return fsdb.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete().then(() => {
+				return fsdb.collection("secretaries").doc(secretary).collection("clinics").doc(clinic).delete().then(() => {
+					response.success = true;
+					return response;
+				});
 			});
-		});
+		}
+
+		response.message = permissions.DENIED;
+		return response;
 	});
 }
 

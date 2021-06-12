@@ -37,9 +37,9 @@ export function DoctorAgendaPage() {
 
 	useEffect(() => {
 		if (auth?.user) {
-			server.doctors.getID({user: auth.user.uid}).then(response => {
+			server.users.isDoctor({id: auth.user.uid}).then(response => {
 				if (response.data) {
-					server.doctors.getData({id: response.data}).then(results => {
+					server.doctors.getData({id: auth.user.uid}).then(results => {
 						setDoctor(results.data);
 
 						const clinics = [];

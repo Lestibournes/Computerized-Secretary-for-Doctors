@@ -23,36 +23,40 @@ const stringContains = require('./functions').stringContains;
  */
 async function getData(secretary) {
 	return fsdb.collection("secretaries").doc(secretary).get().then(secretary_snapshot => {
-		const result = {
-			id: secretary,
-			fullName: "",
-			sex: "",
-			data: secretary_snapshot.data(), // The secretary data.
-			user: null, // The user data.
-			clinics: [], // An array of the data of all the clinics that employ this secretary.
-		};
-		
-		const promises = [];
-		// Get the user data:
-		promises.push(
-			fsdb.collection("users").doc(result.data.user).get().then(user_snapshot => {
-				result.user = user_snapshot.data();
-				result.user.id = user_snapshot.id;
-				result.fullName = user_snapshot.data().firstName + " " + user_snapshot.data().lastName;
-				result.sex = user_snapshot.data().sex;
-			})
-		);
-
-		// Get the clinic data for the given secretary:
-		promises.push(
-			getAllClinics(secretary).then(clinics => {
-				result.clinics = clinics;
-			})
-		);
+		if (secretary_snapshot.exists) {
+			const result = {
+				id: secretary,
+				fullName: "",
+				sex: "",
+				data: secretary_snapshot.data(), // The secretary data.
+				user: null, // The user data.
+				clinics: [], // An array of the data of all the clinics that employ this secretary.
+			};
+			
+			const promises = [];
+			// Get the user data:
+			promises.push(
+				fsdb.collection("users").doc(result.data.user).get().then(user_snapshot => {
+					result.user = user_snapshot.data();
+					result.user.id = user_snapshot.id;
+					result.fullName = user_snapshot.data().firstName + " " + user_snapshot.data().lastName;
+					result.sex = user_snapshot.data().sex;
+				})
+			);
 	
-		return Promise.all(promises).then(() => {
-			return result;
-		});
+			// Get the clinic data for the given secretary:
+			promises.push(
+				getAllClinics(secretary).then(clinics => {
+					result.clinics = clinics;
+				})
+			);
+		
+			return Promise.all(promises).then(() => {
+				return result;
+			});
+		}
+		
+		return null;
 	});
 }
 

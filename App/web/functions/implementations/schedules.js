@@ -44,23 +44,19 @@ Collections:
  */
 async function checkModifyPermission(clinic, doctor, context) {
 	// If the current user is the owner:
-	return doctors.getID(context.auth.uid).then(doctor_id => {
-		return clinics.isOwner(clinic, doctor_id).then(isOwner => {
-			if (isOwner) return true;
-			
-			// If the current user is a secretary:
-			return secretaries.getID(context.auth.uid).then(secretary_id => {
-				return clinics.hasSecretary(clinic, secretary_id).then(secretary_exists => {
-					if (secretary_exists) return true;
+	return clinics.isOwner(clinic, context.auth.uid).then(isOwner => {
+		if (isOwner) return true;
+		
+		// If the current user is a secretary:
+		return clinics.hasSecretary(clinic, context.auth.uid).then(secretary_exists => {
+			if (secretary_exists) return true;
 
-					// if the clinic has the doctor and he is the same as the current user:
-					return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).get().then(doctor_snapshot => {
-						if (doctor_snapshot.exists && doctor === doctor_id) return true;
+			// if the clinic has the doctor and he is the same as the current user:
+			return fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor).get().then(doctor_snapshot => {
+				if (doctor_snapshot.exists && doctor === context.auth.uid) return true;
 
-						// If the current user is neither the owner of the clinic, nor a secretary, nor the doctor that the shift belongs to:
-						return false;
-					});
-				});
+				// If the current user is neither the owner of the clinic, nor a secretary, nor the doctor that the shift belongs to:
+				return false;
 			});
 		});
 	});

@@ -116,23 +116,19 @@ async function checkModifyPermission(appointment, context) {
 		}
 
 		// Check if the user trying to modify the appointment is the doctor:
-		return doctors.getID(context.auth.uid).then(doctor_id => {
-			if (appointment_data.data().doctor === doctor_id) return true;
+		if (appointment_data.data().doctor === context.auth.uid) return true;
 
-			// Check if the user trying to modify the appointment is the owner of the clinic:
-			return clinics.isOwner(appointment_data.data().clinic, doctor_id).then(owner => {
-				if (owner) return true;
+		// Check if the user trying to modify the appointment is the owner of the clinic:
+		return clinics.isOwner(appointment_data.data().clinic, context.auth.uid).then(owner => {
+			if (owner) return true;
 
-				// Check if the user trying to modify the appointment is a secretary of the clinic:
-				return secretaries.getID(context.auth.uid).then(secretary_id => {
-					return clinics.hasSecretary(appointment_data.data().clinic, secretary_id).then(exists => {
-						if (exists) return true;
+			// Check if the user trying to modify the appointment is a secretary of the clinic:
+			return clinics.hasSecretary(appointment_data.data().clinic, context.auth.uid).then(exists => {
+				if (exists) return true;
 
-						// If the current user is neither the patient, nor the doctor, nor the owner of the clinic, nor a secretary at the clinic:
-						return false;
-					})
-				});
-			})
+				// If the current user is neither the patient, nor the doctor, nor the owner of the clinic, nor a secretary at the clinic:
+				return false;
+			});
 		});
 	});
 }
@@ -564,49 +560,40 @@ function arrived(data, context) {
 	const response = {
 		current: null,
 		success: false,
-		messages: ""
+		message: ""
 	}
+	
+	// Fetch the appointment data:
+	return fsdb.collection("appointments").doc(data.appointment).get().then(appointment_snapshot => {
 
-	// Fetch the secretary ID of the current user:
-	return secretaries.getID(context.auth.uid).then(secretary => {
-		// If the user has a secretary profile:
-		if (secretary) {
-			// Fetch the appointment data:
-			return fsdb.collection("appointments").doc(data.appointment).get().then(appointment_snapshot => {
+		// Check if the current user works as a secretary in the clinic that the appointment is for:
+		return clinics.hasSecretary(appointment_snapshot.data().clinic, context.auth.uid).then(secretarty_exits => {
+			if (secretarty_exits) {
+				// If the current user is authorized, then toggle the patient's arrival status:
+				let update;
+				if (appointment_snapshot.data().arrived) update = {arrived: false};
+				else update = {arrived: context.auth.uid};
 
-				// Check if the current user works as a secretary in the clinic that the appointment is for:
-				return clinics.hasSecretary(appointment_snapshot.data().clinic, secretary).then(secretarty_exits => {
-					if (secretarty_exits) {
-						// If the current user is authorized, then toggle the patient's arrival status:
-						let update;
-						if (appointment_snapshot.data().arrived) update = {arrived: false};
-						else update = {arrived: context.auth.uid};
-
-						return fsdb.collection("appointments").doc(data.appointment).update(update)
-						.then(value => {
-							return fsdb.collection("users").doc(appointment_snapshot.data().patient).collection("appointments").doc(data.appointment).update(update).then(() => {
-								return fsdb.collection("doctors").doc(appointment_snapshot.data().doctor).collection("appointments").doc(data.appointment).update(update).then(() => {
-									return fsdb.collection("clinics").doc(appointment_snapshot.data().clinic)
-														.collection("doctors").doc(appointment_snapshot.data().doctor)
-														.collection("appointments").doc(data.appointment).update(update)
-														.then(() => {
-										response.success = true;
-										response.current = update.arrived;
-										return response;
-									});
-								});
+				return fsdb.collection("appointments").doc(data.appointment).update(update)
+				.then(value => {
+					return fsdb.collection("users").doc(appointment_snapshot.data().patient).collection("appointments").doc(data.appointment).update(update).then(() => {
+						return fsdb.collection("doctors").doc(appointment_snapshot.data().doctor).collection("appointments").doc(data.appointment).update(update).then(() => {
+							return fsdb.collection("clinics").doc(appointment_snapshot.data().clinic)
+												.collection("doctors").doc(appointment_snapshot.data().doctor)
+												.collection("appointments").doc(data.appointment).update(update)
+												.then(() => {
+								response.success = true;
+								response.current = update.arrived;
+								return response;
 							});
 						});
-					}
-
-					response.messages = "You do not work at this clinic.";
-					return response;
+					});
 				});
-			});
-		}
+			}
 
-		response.messages = "You are not a secretary.";
-		return response;
+			response.message = permissions.DENIED;
+			return response;
+		});
 	});
 }
 

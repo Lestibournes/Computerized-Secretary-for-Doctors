@@ -33,9 +33,9 @@ export function SecretaryProfileFragment() {
 	}, [auth]);
 
 	async function loadData(user) {
-		return server.secretaries.getID({user: user}).then(response => {
+		return server.users.isSecretary({id: user}).then(response => {
 			if (response.data) {
-				return server.secretaries.getData({secretary: response.data}).then(results => {
+				return server.secretaries.getData({secretary: user}).then(results => {
 					return setSecretary(results.data);
 				});
 			}

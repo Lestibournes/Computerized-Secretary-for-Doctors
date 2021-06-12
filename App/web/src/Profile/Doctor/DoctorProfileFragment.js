@@ -69,9 +69,9 @@ export function DoctorProfileFragment() {
 	}, [auth]);
 
 	async function loadData(user) {
-		return server.doctors.getID({user: user}).then(response => {
+		return server.users.isDoctor({id: user}).then(response => {
 			if (response.data) {
-				return server.doctors.getData({id: response.data}).then(results => {
+				return server.doctors.getData({id: user}).then(results => {
 					return setDoctor(results.data);
 				});
 			}

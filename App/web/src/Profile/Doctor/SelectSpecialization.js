@@ -98,6 +98,7 @@ function CreateSpecializationForm({specialization, close, success}) {
 					setSubmitting(true);
 					server.specializations.create({name: values.specialization}).then(() => {
 						success(values.specialization);
+						close();
 					})
 				}}
 			>

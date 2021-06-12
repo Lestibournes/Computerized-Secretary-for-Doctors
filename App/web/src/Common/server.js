@@ -80,6 +80,8 @@ export const server = {
 		getPicture: fn.httpsCallable("users-getPicture"),
 		updatePicture: fn.httpsCallable("users-updatePicture"),
 		update: fn.httpsCallable("users-update"),
+		isSecretary: fn.httpsCallable("users-isSecretary"),
+		isDoctor: fn.httpsCallable("users-isDoctor"),
 	},
 
 	links: {

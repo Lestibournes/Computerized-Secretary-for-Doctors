@@ -18,7 +18,3 @@ exports.create = functions.https.onCall((data, context) => {
 exports.search = functions.https.onCall((data, context) => {
 	return secretaries.search(data.name);
 });
-
-exports.getID = functions.https.onCall((data, context) => {
-	return secretaries.getID(data.user);
-});

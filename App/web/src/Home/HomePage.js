@@ -24,14 +24,14 @@ export function HomePage() {
 
 	useEffect(() => {
 		if (auth.user) {
-			server.doctors.getID({user: auth.user.uid}).then(doctor_id => {
-				if (doctor_id.data) setDoctor(doctor_id);
+			server.users.isDoctor({id: auth.user.uid}).then(is_doctor => {
+				if (is_doctor.data) setDoctor(auth.user.uid);
 
-				server.secretaries.getID({user: auth.user.uid}).then(secretary_id => {
-					if (secretary_id.data) setSecretary(secretary_id);
+				server.users.isSecretary({id: auth.user.uid}).then(is_secretary => {
+					if (is_secretary.data) setSecretary(auth.user.uid);
 
-					if (doctor_id.data) setDefaultView(DOCTOR);
-					else if (secretary_id.data) setDefaultView(SECRETARY);
+					if (is_doctor.data) setDefaultView(DOCTOR);
+					else if (is_secretary.data) setDefaultView(SECRETARY);
 					else setDefaultView(PATIENT);
 				});
 			});

@@ -71,8 +71,22 @@ async function update(id, changes) {
 	fsdb.collection("users").doc(id).update(changes);
 }
 
+async function isDoctor(id) {
+	return fsdb.collection("users").doc(id).get().then(user_snap => {
+		return user_snap.data().doctor === id;
+	});
+}
+
+async function isSecretary(id) {
+	return fsdb.collection("users").doc(id).get().then(user_snap => {
+		return user_snap.data().secretary === id;
+	});
+}
+
 exports.add = add;
 exports.get = get;
 exports.getPicture = getPicture;
 exports.updatePicture = updatePicture;
 exports.update = update;
+exports.isDoctor = isDoctor;
+exports.isSecretary = isSecretary;

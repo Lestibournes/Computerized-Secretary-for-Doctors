@@ -91,7 +91,7 @@ function register(name, type, id, context) {
 									type: type,
 									id: id
 								}).then(() => {
-									if (type === DOCTOR) {
+									if (type === permissions.DOCTOR) {
 										return fsdb.collection("doctors").doc(id).update({link: name}).then(() => {
 											response.success = true;
 											return response;
@@ -111,7 +111,7 @@ function register(name, type, id, context) {
 							type: type,
 							id: id
 						}).then(() => {
-							if (type === DOCTOR) {
+							if (type === permissions.DOCTOR) {
 								return fsdb.collection("doctors").doc(id).update({link: name}).then(() => {
 									response.success = true;
 									return response;
@@ -153,7 +153,7 @@ function getLink(type, id) {
 		link: ""
 	};
 
-	if (type === CLINIC) {
+	if (type === permissions.CLINIC) {
 		return clinics.get(id).then(clinic_data => {
 			if (clinic_data.link) {
 				response.success = true;
@@ -166,7 +166,7 @@ function getLink(type, id) {
 			return response;
 		});
 	}
-	else if (type === DOCTOR) {
+	else if (type === permissions.DOCTOR) {
 		return doctors.getData(id).then(doctor_data => {
 			if (doctor_data.doctor.link) {
 				response.success = true;

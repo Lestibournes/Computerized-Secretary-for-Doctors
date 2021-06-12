@@ -48,9 +48,9 @@ export function ClinicEditor() {
 	useEffect(() => {
 		const unsubscribe = auth.isLoggedIn(status => {
 			if (auth.user) {
-				server.doctors.getID({user: auth.user.uid}).then(response => {
+				server.users.isDoctor({id: auth.user.uid}).then(response => {
 					if (response.data) {
-						server.doctors.getData({id: response.data}).then(doctor_data => {
+						server.doctors.getData({id: auth.user.uid}).then(doctor_data => {
 							setDoctor(doctor_data.data);
 						});
 					}
