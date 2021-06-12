@@ -8,9 +8,12 @@ import { getPictureURL } from '../Common/functions';
 import { server } from '../Common/server';
 import { Header } from '../Common/Components/Header';
 import { Loading } from '../Common/Components/Loading';
+import { useRoot } from '../Common/Root';
 
 export function AppointmentListPage() {
 	const auth = useAuth();
+	const root = useRoot();
+
 	const [appointments, setAppointments] = useState(null);
 	const [results, setResults] = useState(null);
 	
@@ -56,7 +59,7 @@ export function AppointmentListPage() {
 					return (
 						<Card
 							key={appointment.appointment.id}
-							link={"/user/appointments/edit/" + appointment.appointment.id}
+							link={root.get() + "/user/appointments/details/" + appointment.appointment.id}
 							image={appointment.image}
 							altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
 							title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}

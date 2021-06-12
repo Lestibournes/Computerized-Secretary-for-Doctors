@@ -48,6 +48,7 @@
 	border: 3px solid var(--control-background);
 }
 
+
 .tab-controls {
 	display: flex;
 	flex-direction: row;
@@ -58,8 +59,13 @@
 	background-color: var(--highlight-pale);
 }
 
-.tab-controls + * {
+/* .tab-controls + * {
 	margin: var(--margin-small);
+} */
+
+
+.tab-content {
+	padding: var(--margin);
 }
 
 @media screen and (min-width: 41.25rem) {

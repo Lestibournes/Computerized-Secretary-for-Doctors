@@ -30,6 +30,7 @@ import { ClinicAgendaPage } from './Clinic/ClinicAgendaPage';
 import { ClinicSchedulesPage } from './Clinic/ClinicSchedulesPage';
 import { ProfilePage } from './Profile/ProfilePage';
 import { DoctorAgendaPage } from './Doctor/DoctorAgendaPage';
+import { AppointmentDetailsPage } from './Patient/AppointmentDetailsPage';
 import { ProvidePopups } from './Common/Popups';
 import { Link } from './Landing/Link';
 import { Notifier } from './Common/Components/Notifier';
@@ -79,6 +80,9 @@ ReactDOM.render(
 							</Route>
 							<Route path="/user/appointments/deleted">
 								<AppointmentDeletedPage />
+							</Route>
+							<Route path="/user/appointments/details/:appointment">
+								<AppointmentDetailsPage />
 							</Route>
 							<Route path="/user/appointments/edit/:appointment">
 								<SetAppointmentPage />
@@ -153,6 +157,9 @@ ReactDOM.render(
 							</Route>
 							<Route path="/:link/user/appointments/list">
 								<AppointmentListPage />
+							</Route>
+							<Route path="/:link/user/appointments/details/:appointment">
+								<AppointmentDetailsPage />
 							</Route>
 							<Route path="/:link/clinics/view/:clinic">
 								<ClinicPage />

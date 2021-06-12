@@ -11,7 +11,7 @@ import { TabbedContainer } from '../Common/Components/TabbedContainer';
 import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
 
-export function AppointmentPage() {
+export function AppointmentDetailsPage() {
 	const root = useRoot();
 	/**
 	 * @type {{appointment: string}}
@@ -22,8 +22,7 @@ export function AppointmentPage() {
 	const [doctorData, setDoctorData] = useState();
 	const [clinicData, setClinicData] = useState();
 
-	const [image, setImage] = useState(null); // The url of the patient's profile picture.
-	const [arrived, setArrived] = useState(false); // The patient's arrival status.
+	const [image, setImage] = useState(null); // The url of the doctor's profile picture.
 
 	const popupManager = usePopups();
 	
@@ -43,14 +42,8 @@ export function AppointmentPage() {
 						setClinicData(clinic_results.data);
 					});
 	
-					getPictureURL(data.appointment.patient).then(url => {
+					getPictureURL(data.appointment.doctor).then(url => {
 						setImage(url);
-					});
-					
-					setArrived(data.appointment.arrived);
-
-					return events.appointments.arrival(appointment, (appointment_id, arrived) => {
-						setArrived(arrived);
 					});
 				}
 				else {
@@ -76,19 +69,6 @@ export function AppointmentPage() {
 							label="Edit"
 							link={root.get() + "/clinic/appointments/edit/" + appointment}
 						/>
-						<Button
-							type={arrived ? "okay" : ""}
-							label="Arrived"
-							action={() => {
-								server.appointments.arrived({appointment: appointment}).then(response => {
-									if (!response.data.success) {
-										// Display error message popup.
-										console.log(response.data);
-										popupManager.error(response.data.message);
-									}
-								});
-							}}
-						/>
 					</div>
 					<div className="table tab-content">
 						<b>Start:</b> <span>{
@@ -100,30 +80,22 @@ export function AppointmentPage() {
 					</div>
 				</div>
 
-				<div title="Patient Information" icon="fa-info-circle">
+				<div title="Doctor Information" icon="fa-info-circle">
 					<div className="table tab-content">
-						<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
-						<b>Name:</b> <span>{appointmentData.patient.fullName}</span>
-						<b>Sex:</b> <span>{appointmentData.patient.sex ? capitalizeAll(appointmentData.patient.sex) : "Not specified"}</span>
+						<b>Photo</b> <img src={image} alt={doctorData.user.fullName} />
+						<b>Name:</b> <span>{doctorData.user.fullName}</span>
+						<b>Sex:</b> <span>{doctorData.user.sex ? capitalizeAll(doctorData.user.sex) : "Not specified"}</span>
 					</div>
 				</div>
 				
 				<div title="Documents" icon="fa-file-medical-alt">
-					<div className="tab-content">
-						To Do
+					<div>
+						<div className="tab-content">To Do</div>
 					</div>
 				</div>
 
 				<div title="Chat" icon="fa-comment">
-					<div className="tab-content">
-						To Do
-					</div>
-				</div>
-
-				<div title="Visit Notes" icon="fa-clipboard">
-					<div className="tab-content">
-						To Do
-					</div>
+					<div className="tab-content">To Do</div>
 				</div>
 			</TabbedContainer>
 		</>;
