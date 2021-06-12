@@ -562,13 +562,10 @@ function arrived(data, context) {
 		success: false,
 		message: ""
 	}
-	
-	// Fetch the appointment data:
-	return fsdb.collection("appointments").doc(data.appointment).get().then(appointment_snapshot => {
-
-		// Check if the current user works as a secretary in the clinic that the appointment is for:
-		return clinics.hasSecretary(appointment_snapshot.data().clinic, context.auth.uid).then(secretarty_exits => {
-			if (secretarty_exits) {
+	return permissions.checkPermission(permissions.APPOINTMENT, permissions.MODIFY, data.appointment, context).then(allowed => {
+		if (allowed) {
+			// Fetch the appointment data:
+			return fsdb.collection("appointments").doc(data.appointment).get().then(appointment_snapshot => {
 				// If the current user is authorized, then toggle the patient's arrival status:
 				let update;
 				if (appointment_snapshot.data().arrived) update = {arrived: false};
@@ -589,11 +586,11 @@ function arrived(data, context) {
 						});
 					});
 				});
-			}
+			});
+		}
 
-			response.message = permissions.DENIED;
-			return response;
-		});
+		response.message = permissions.DENIED;
+		return response;
 	});
 }
 

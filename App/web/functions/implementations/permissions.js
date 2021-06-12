@@ -46,9 +46,8 @@ async function checkPermission(type, action, id, context) {
 		}
 	
 		if (type === APPOINTMENT) {
-			if (action === VIEW) {
-				return checkAppointmentViewPermission(id, user_data);
-			}
+			if (action === VIEW) return checkAppointmentViewPermission(id, user_data);
+			if (action === MODIFY) return checkAppointmentViewPermission(id, user_data);
 		}
 	
 		return null;

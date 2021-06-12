@@ -13,7 +13,7 @@ export function TabbedContainer({children}) {
 				className={"tab" + (index == selectedTab ? " selected" : "")}
 				onClick={() => setSelectedTab(index)}
 			>
-				<i class={"fas " + children[index].props.icon}></i>
+				<i className={"fas " + children[index].props.icon}></i>
 				<div className="tab-title">{children[index].props.title}</div>
 			</div>
 		);
