@@ -35,7 +35,6 @@ export function HomePage() {
 					else setDefaultView(PATIENT);
 				});
 			});
-
 		}
 	}, [auth]);
 

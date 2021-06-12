@@ -126,15 +126,15 @@ async function create(user) {
 	return fsdb.collection("users").doc(user).get().then(user_snap => {
 		if (!user_snap.data().doctor) {
 			// If the user doesn't have a doctor profile then create a profile:
-			return fsdb.collection("doctors").add({
+			return fsdb.collection("doctors").doc(user).set({
 				user: user,
 				approved: false
-			}).then(doctor_ref => {
+			}).then(() => {
 				// Add the doctor profile to the user:
 				return fsdb.collection("users").doc(user).update({
-					doctor: doctor_ref.id
+					doctor: user
 				}).then(() => {
-					result.doctor = doctor_ref.id
+					result.doctor = user
 					result.success = true;
 
 					return result;

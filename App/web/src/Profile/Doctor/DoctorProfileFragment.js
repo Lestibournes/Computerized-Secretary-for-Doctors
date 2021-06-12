@@ -5,8 +5,8 @@ import { Card } from "../../Common/Components/Card";
 import { Button } from "../../Common/Components/Button";
 
 import { clinicCreatePopup } from "./ClinicCreateForm";
-import { createProfilePopup } from "./CreateProfile";
-import { capitalizeAll, getPictureURL } from "../../Common/functions";
+import { createProfilePopup } from "./CreateDoctorProfile";
+import { capitalizeAll } from "../../Common/functions";
 import { selectSpecializationPopup, removeSpecializationPopup } from "./SelectSpecialization";
 import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";

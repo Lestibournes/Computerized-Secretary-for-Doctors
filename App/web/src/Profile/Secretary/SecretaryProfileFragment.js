@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card } from "../../Common/Components/Card";
 import { Popup } from "../../Common/Components/Popup";
 
-import { SecretaryCreateProfile } from "./SecretaryCreateProfile";
+import { SecretaryCreateProfile, secretaryCreateProfilePopup as secretaryCreateProfilePopup } from "./SecretaryCreateProfile";
 import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
 import { Loading } from "../../Common/Components/Loading";
@@ -40,7 +40,15 @@ export function SecretaryProfileFragment() {
 				});
 			}
 			else {
-				return setCreateProfile(true);
+				secretaryCreateProfilePopup(
+					popupManager,
+					auth.user.uid,
+					secretary => {
+						server.secretaries.getData({secretary: secretary}).then(results => {
+							setSecretary(results.data);
+						});
+					}
+				);
 			}
 		});
 	}
@@ -84,38 +92,8 @@ export function SecretaryProfileFragment() {
 		);
 	}
 
-	const popups =
-	<>
-		{createProfile && auth.user ?
-			<SecretaryCreateProfile
-				user={auth.user.uid}
-				success={secretary => {
-					setCreateProfile(false);
-					server.secretaries.getData({secretary: secretary}).then(results => {
-						setSecretary(results.data);
-					});
-				}}
-				failure={() => setAlreadyExists(true)}
-				close={() => {window.history.back()}}
-			/>
-		: ""}
-
-		{alreadyExists ?
-			<Popup
-				title="Info"
-				close={() => {
-					setAlreadyExists(false);
-					setCreateProfile(false);
-				}}
-			>
-				<div>You already have a secretary profile</div>
-			</Popup>
-		: ""}
-	</>;
-
 	return (
 			<>
-				{popups}
 				{display}
 			</>
 	);

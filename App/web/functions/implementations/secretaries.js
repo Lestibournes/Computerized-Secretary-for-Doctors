@@ -104,14 +104,14 @@ async function create(user) {
 	return fsdb.collection("users").doc(user).get().then(user_snap => {
 		if (!user_snap.data().secretary) {
 			// If the user doesn't have a secretary profile then create a profile:
-			return fsdb.collection("secretaries").add({
+			return fsdb.collection("secretaries").doc(user).set({
 				user: user
-			}).then(secretary_ref => {
+			}).then(() => {
 				// Add the secretary profile to the user:
 				return fsdb.collection("users").doc(user).update({
-					secretary: secretary_ref.id
+					secretary: user
 				}).then(() => {
-					result.secretary = secretary_ref.id
+					result.secretary = user;
 					result.success = true;
 
 					return result;
