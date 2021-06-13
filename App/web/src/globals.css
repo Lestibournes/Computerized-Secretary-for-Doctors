@@ -25,4 +25,7 @@
 	--control-padding: 1rem;
 	--padding: 0.5rem;
 	--border-width: 0.25rem;
+	--font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+		'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+		sans-serif;
 }

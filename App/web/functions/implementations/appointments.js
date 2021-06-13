@@ -594,6 +594,57 @@ function arrived(data, context) {
 	});
 }
 
+async function saveNote(id, text, context) {
+	const response = {
+		success: false,
+		message: "",
+		text: ""
+	}
+
+	// It should be only the doctor. todo.
+	// return permissions.checkPermission(permissions.APPOINTMENT, permissions.MODIFY, id, context).then(allowed => {
+
+	// })
+	const appointmentRef = fsdb.collection("appointments").doc(id);
+
+	return appointmentRef.get().then(appointment_snap => {
+		if (context.auth.uid === appointment_snap.data().doctor) {
+			const batch = fsdb.batch();
+			const update = {notes: text};
+
+			const userAppointmentRef =
+				fsdb.collection("users").doc(appointment_snap.data().patient)
+						.collection("appointments").doc(id);
+
+			const doctorAppointmentRef =
+				fsdb.collection("doctors").doc(appointment_snap.data().doctor)
+						.collection("appointments").doc(id);
+
+			const clinicAppointmentRef = 
+				fsdb.collection("clinics").doc(appointment_snap.data().clinic)
+						.collection("doctors").doc(appointment_snap.data().doctor)
+						.collection("appointments").doc(id);
+
+			batch.update(appointmentRef, update);
+			batch.update(userAppointmentRef, update);
+			batch.update(doctorAppointmentRef, update);
+			batch.update(clinicAppointmentRef, update);
+
+			return batch.commit().then(() => {
+				response.success = true;
+				response.text = text;
+				return response;
+			}).catch(reason => {
+				response.message = reason;
+				return response;
+			});
+		}
+		
+		response.message = permissions.DENIED;
+		return response;
+	});
+}
+
 exports.get = get;
 exports.getAll = getAll;
 exports.getAvailable = getAvailable;
@@ -601,3 +652,4 @@ exports.add = add;
 exports.edit = edit;
 exports.cancel = cancel;
 exports.arrived = arrived;
+exports.saveNote = saveNote;

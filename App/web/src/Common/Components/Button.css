@@ -6,17 +6,23 @@
 	border: none;
 	border-radius: var(--radius);
 	
-	display: grid;
-	place-content: center;
-
+	display: flex;
+	flex-direction: row;
+	gap: var(--margin-small);
+	
 	padding: var(--control-padding);
 	max-height: 100%;
 	height: min-content;
 	width: min-content;
 	box-sizing: border-box;
-
+	
+	place-items: center;
 	place-content: center;
 	text-align: center;
+}
+
+.Button .fas {
+	font-size: 1em;
 }
 
 .Button:hover {

@@ -62,6 +62,7 @@ option:disabled {
 	place-items: center start;
 	gap: var(--margin);
 	padding: 0 var(--padding) 0 var(--padding);
+	height: min-content;
 }
 
 .table img {
@@ -85,6 +86,26 @@ option:disabled {
 	gap: var(--margin)
 }
 
-.fas {
-	font-size: 2em;
+.controls-group {
+	background-color: aliceblue;
+	border: var(--border-width) solid var(--control-background);
+	border-radius: var(--radius);
+	display: flex;
+	flex-direction: row;
+	place-items: center;
+	gap: var(--margin-small);
+	padding: var(--padding);
+}
+
+.controls-group .Button {
+	padding: 0.5rem;
+}
+
+
+.controls-input-number {
+	width: 5rem;
+	background-color: var(--control-background);
+	border: none;
+	padding: 0.5rem;
+	border-radius: var(--radius);
 }

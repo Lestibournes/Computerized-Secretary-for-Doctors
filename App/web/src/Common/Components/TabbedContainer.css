@@ -3,6 +3,10 @@
 	flex-direction: row;
 }
 
+.tab .fas {
+	font-size: 2em;
+}
+
 /* Tabs */
 .tab-bar {
 	display: flex;
@@ -27,7 +31,7 @@
 }
 
 .tab.selected {
-	background-color: var(--highlight);
+	background-color: var(--highlight-pale);
 	color: var(--alt-color);
 	font-weight: bold;
 	border: none;
@@ -65,7 +69,11 @@
 
 
 .tab-content {
+	width: 100%;
 	padding: var(--margin);
+}
+.tab-controls {
+	place-items: center;
 }
 
 @media screen and (min-width: 41.25rem) {

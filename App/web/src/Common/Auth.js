@@ -99,7 +99,6 @@ function useProvideAuth() {
 			});
 		}).catch(reason => {
 			result.message = "Could not register user";
-			console.log(reason);
 			return result;
 		});
 	};

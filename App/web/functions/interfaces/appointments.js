@@ -36,3 +36,7 @@ exports.cancel = functions.https.onCall((data, context) => {
 exports.arrived = functions.https.onCall((data, context) => {
 	return appointments.arrived(data, context);
 });
+
+exports.saveNote = functions.https.onCall((data, context) => {
+	return appointments.saveNote(data.id, data.text, context);
+});

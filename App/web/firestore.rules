@@ -2,8 +2,73 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
-      allow read, write: if
-          request.time < timestamp.date(2021, 7, 8);
+			// Only for development purposes:
+			allow read, write: if false;
     }
+
+		match /users/{userID} {
+			// People who should be allowed to read the data: the user, any employee of a clinic where he had an appointment, any doctor he visited.
+			// Perhaps let anyone see name and sex, but date of birth, number of siblings, or other sensitive data will be stored in {userID}/private/patient and can only be viewed by the doctor.
+			allow read: if request.auth != null;
+
+			// People who should be allowed to edit the data: the user.
+			function isUser() {
+				return request.auth.uid == userID;
+			}
+
+			function isValidData() {
+				return
+				request.resource.data.firstName is string &&
+				request.resource.data.firstName.size() > 1 &&
+				request.resource.data.firstName.size() < 200 &&
+				request.resource.data.sex is string &&
+				(request.resource.data.sex == "male" ||
+				request.resource.data.sex == "female");
+			}
+
+			allow create, update: if isUser() a&& isValidData();
+
+			match /users/{userID}/private/patient {
+				function isDoctor() {
+					return exists(/databases/$(database)/documents/users/private/doctors/$(request.auth.uid));
+				}
+
+				function isValidData() {
+					return
+					request.resource.data.birthday is date &&
+					request.resource.data.birthday < now() &&
+					request.resource.data.siblings is number &&
+					request.resource.data.siblings >= 0;
+				}
+
+				allow write: if isUser() && isValidData();
+
+				allow read: if
+					isUser() ||
+					isDoctor();
+			}
+		}
+
+		match /appointments/{appID} {
+			function isAuthorized() {
+				return
+				request.auth.uid == request.resource.data.patient ||
+				request.auth.uid == request.resource.data.doctor ||
+				exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic)/private/secretaries/$(request.auth.uid));
+			}
+
+			// I'd need to make sure on the server side that appointments don't collide with each other. I don't think I can do that with security rules.
+			// That would mean that creating or updating appointments would have to go through Functions.
+			function isValidData() {
+				return
+				request.resource.data.patient is string &&
+				exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
+				request.resource.data.doctor is string &&
+				exists(/databases/$(database)/documents/users/$(request.resource.data.doctor)) &&
+				get(/databases/$(database)/documents/users/$(request.resource.data.doctor)).data.doctor == true &&
+				request.resource.data.clinic is string &&
+				exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic) &&
+			}
+		}
   }
 }

@@ -12,6 +12,7 @@ export const server = {
 		edit: fn.httpsCallable("appointments-edit"),
 		cancel: fn.httpsCallable("appointments-cancel"),
 		arrived: fn.httpsCallable("appointments-arrived"),
+		saveNote: fn.httpsCallable("appointments-saveNote"),
 	},
 
 	clinics: {

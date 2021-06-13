@@ -10,7 +10,8 @@ export function TabbedContainer({children}) {
 	for (const index in children) {
 		tabs.push(
 			<div
-				className={"tab" + (index == selectedTab ? " selected" : "")}
+				key={index}
+				className={"tab" + (index === selectedTab ? " selected" : "")}
 				onClick={() => setSelectedTab(index)}
 			>
 				<i className={"fas " + children[index].props.icon}></i>

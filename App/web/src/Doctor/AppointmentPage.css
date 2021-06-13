@@ -1,0 +1,10 @@
+.notes {
+	/* display: block; */
+	width: 100%;
+	min-height: 30rem;
+	resize: none;
+
+	font-size: 1rem;
+	line-height: 1.5;
+	border: none;
+}
