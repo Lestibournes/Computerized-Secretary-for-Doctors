@@ -20,6 +20,7 @@
 	font-size: var(--font-size-e);
 	padding: var(--control-padding);
 	border-radius: var(--radius);
+	min-width: min-content;
 }
 
 .Input input:focus {

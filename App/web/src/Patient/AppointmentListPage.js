@@ -10,20 +10,41 @@ import { Header } from '../Common/Components/Header';
 import { Loading } from '../Common/Components/Loading';
 import { useRoot } from '../Common/Root';
 
+import * as Yup from 'yup';
+import { Form, Formik } from 'formik';
+import { TextInput } from '../Common/Components/TextInput';
+import { Select } from '../Common/Components/Select';
+import { Button } from '../Common/Components/Button';
+
 export function AppointmentListPage() {
 	const auth = useAuth();
 	const root = useRoot();
 
 	const [appointments, setAppointments] = useState(null);
+	const [clinics, setClinics] = useState([]);
 	const [results, setResults] = useState(null);
 	
+	const [searchPrameters, setSearchParameters] = useState({
+		clinic: "",
+		start: new SimpleDate(),
+		end: new SimpleDate().getNextYear()
+	});
+
+	const [searching, setSearching] = useState(true);
+
 	useEffect(() => {
-		if (auth.user) {
-			server.appointments.getAll({user: auth.user.uid, start: SimpleDate.fromDate(new Date()).toObject()}).then(response => {
-				setAppointments(response.data);
+		if (auth?.user?.uid) {
+			searchPrameters.user = auth.user.uid;
+			
+			server.appointments.getAll({
+				user: auth.user.uid,
+				clinic: searchPrameters.clinic ? searchPrameters.clinic : null,
+				start: searchPrameters.start ? searchPrameters.start.toObject() : null,
+				end: searchPrameters.end ? searchPrameters.end.toObject() : null}).then(response => {
+				if (response.data) setAppointments(response.data);
 			});
 		}
-  }, [auth]);
+  }, [auth, searchPrameters]);
 
 	useEffect(() => {
 		if (appointments) {
@@ -74,21 +95,75 @@ export function AppointmentListPage() {
 
 			Promise.all(promises).then(cards => {
 				setResults(cards);
+				setSearching(false);
 			});
 		}
 	}, [appointments]);
 
-	let display = <Loading />;
+	let display =
+		<>
+			<Formik
+				initialValues={{
+					clinic: searchPrameters.clinic,
+					start: searchPrameters.start.toInputString(),
+					end: searchPrameters.end.toInputString()
+				}}
+				validationSchema={Yup.object({
+					start: Yup.date(),
+					end: Yup.date()
+				})}
+				onSubmit={async (values, { setSubmitting }) => {
+					setSubmitting(true);
+					setSearching(true);
 
-	if (results) {
-		if (results.length) display = <div className="cardList">{results}</div>;
-		else display = <h3>You don't have any upcoming appointments.</h3>
-	}
+					const start = new SimpleDate(values.start);
+					const end = new SimpleDate(values.end);
+
+					setSearchParameters({
+						clinic: values.clinic,
+						start: start,
+						end: end
+					});
+				}}
+			>
+				<Form>
+					<div className="searchBar">
+						{/* <Select
+							label="Clinic"
+							name="clinic"
+							default={{label: "All", value: ""}}
+							options={clinics}
+						/> */}
+						<TextInput
+							label="Start"
+							name="start"
+							type="date"
+						/>
+						<TextInput
+							label="End"
+							name="end"
+							type="date"
+						/>
+						<div className="buttonBar">
+							<Button type="submit" label="Search" />
+						</div>
+					</div>
+				</Form>
+			</Formik>
+			<div className="cardList">
+				{searching ? <h3>Searching...</h3> : results?.length > 0 ? results : <h3>There are no appointments in the specified time range.</h3>}
+			</div>
+		</>;
+
+	// if (results) {
+	// 	if (results.length) display = <div className="cardList">{results}</div>;
+	// 	else display = <h3>You don't have any upcoming appointments.</h3>
+	// }
 	
 	return (
 		<div className="Page">
 			<Header />
-			<h1>My Future Appointments</h1>
+			<h1>My Appointments</h1>
 			<main>
 				{display}
 			</main>
