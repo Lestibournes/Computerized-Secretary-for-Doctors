@@ -26,8 +26,7 @@ service cloud.firestore {
 				request.resource.data.firstName.size() > 1 &&
 				request.resource.data.firstName.size() < 200 &&
 				request.resource.data.sex is string &&
-				(request.resource.data.sex == "male" ||
-				request.resource.data.sex == "female");
+				request.resource.data.sex in ["male", "female"];
 			}
 
 			allow create, update: if isUser() && isValidData();
@@ -85,7 +84,39 @@ service cloud.firestore {
 					return exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.auth.uid));
 				}
 
-				allow read, write: if isPatient() || isDoctor() || isSecretary();
+				allow read, delete: if isPatient() || isDoctor() || isSecretary();
+
+				// Since the appointment time slot must not collide with other appointments,
+				// and since I don't think that that can be checked through security rules,
+				// then I will disallow creating new appointments to force new appointments to be created through Cloud Functions.
+				// Update could be allowed if it didn't change the start or end time,
+				// but that's basically the whole data, so what's the point?
+				// Also changing clinics, doctors, or patients should be prohibited.
+				// Therefor the only thing that update could change is appointment type,
+				// and only on the condition that the appointment duration stays the same.
+				allow create, update: if false;
+			}
+
+			// Notes that the doctor writes about the meeting.
+			match /notes/{noteID} {
+				function isPatient() {
+					return get(/databases/$(database)/documents/clinics/$(clinicID)/notes/$(noteID)).data.patient == request.auth.uid;
+				}
+
+				function isDoctor() {
+					return get(/databases/$(database)/documents/clinics/$(clinicID)/notes/$(noteID)).data.doctor == request.auth.uid;
+				}
+
+				function isValidData() {
+					return
+					request.resource.data.doctor == request.auth.uid &&
+					request.resource.data.patient is string &&
+					exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
+					request.resource.data.text is string
+				}
+
+				allow read: if isPatient() || isDoctor();
+				allow write if isDoctor() && isValidData();
 			}
 		}
 
