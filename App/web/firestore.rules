@@ -10,16 +10,28 @@ service cloud.firestore {
 			return request.auth != null;
 		}
 
+		function isRoot() {
+			return request.auth.uid == get(/databases/$(database)/documents/administration/roles).data.root;
+		}
+
+		function isAdministrator() {
+			return request.auth.uid in get(/databases/$(database)/documents/administration/roles).data.administrators;
+		}
+
 		match /users/{userID} {
 			// People who should be allowed to read the data: the user, any employee of a clinic where he had an appointment, any doctor he visited.
-			// Perhaps let anyone see name and sex, but date of birth, number of siblings, or other sensitive data will be stored in {userID}/private/patient and can only be viewed by the doctor.
+			// Perhaps let anyone see name and sex, but date of birth, number of siblings, or other sensitive data will be stored in {userID}/private/personal and can only be viewed by the doctor.
 			allow read: if request.auth != null;
 
 			// People who should be allowed to edit the data: just the user.
-			function isUser() {
+			function isTheUser() {
 				return request.auth.uid == userID;
 			}
 
+			function isOneOfTheDoctors() {
+				return exists(/databases/$(database)/documents/users/$(userID)/private/doctors/$(request.auth.uid));
+			}
+			
 			function isValidData() {
 				return
 				request.resource.data.firstName is string &&
@@ -29,13 +41,9 @@ service cloud.firestore {
 				request.resource.data.sex in ["male", "female"];
 			}
 
-			allow create, update: if isUser() && isValidData();
+			allow create, update: if isTheUser() && isValidData();
 
-			match /users/{userID}/private/patient {
-				function isDoctor() {
-					return exists(/databases/$(database)/documents/users/private/doctors/$(request.auth.uid));
-				}
-
+			match /private/personal {
 				function isValidData() {
 					return
 					request.resource.data.birthday is timestamp &&
@@ -44,22 +52,67 @@ service cloud.firestore {
 					request.resource.data.siblings >= 0;
 				}
 
-				allow write: if isUser() && isValidData();
+				allow read: if isTheUser() || isOneOfTheDoctors();
+				allow write: if isTheUser() && isValidData();
 
-				allow read: if
-					isUser() ||
-					isDoctor();
+				
+				match /doctors {
+					// Stores the collection of all the doctors that the user has appointments with, past and future.
+					// I suppose it will need to be maintained by a Cloud Functions effect.
+					allow read: if isTheUser()
+					allow write: if false; // Since this is automatically maintained by the server.
+				}
 			}
 		}
 
 		match /clinics/{clinicID} {
 			function isOwner() {
-				return get(/databases/$(database)/documents/clinics/$(clinicID)).data.owner == request.auth.uid;
+				return resource.data.owner == request.auth.uid;
+			}
+
+			function isSecretary() {
+				return exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.auth.uid));
+			}
+
+			function isPatient(appointmentID) {
+				return get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.patient == request.auth.uid;
+			}
+
+			function isTheDoctor(appointmentID) {
+				return get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.doctor == request.auth.uid;
+			}
+
+			function isValidData() {
+				return
+				// The name of the clinic must be of a short string:
+				request.resource.data.name is string &&
+				request.resource.data.name.size() >= 1 &&
+				request.resource.data.name.size() <= 50  &&
+				
+				// The city where the clinic is located must be a short string:
+				request.resource.data.city is string &&
+				request.resource.data.city.size() >= 1 &&
+				request.resource.data.city.size() <= 50  &&
+				
+				// The city where the clinic is located must be a short string:
+				request.resource.data.address is string &&
+				request.resource.data.address.size() >= 1 &&
+				request.resource.data.address.size() <= 50 &&
+				
+				request.resource.data.language is string &&
+				exists(/databases/$(database)/documents/languages/$(request.resource.data.language));
 			}
 
 			allow read: if isLoggedIn();
-			allow write: if isOwner();
+			allow create: if isOwner() && isValidData();
+			allow update: if 
+				isOwner() &&
+				isValidData() &&
+				// If the owner isn't changed:
+				resource.data.owner == request.resource.data.owner;
+			allow delete: if isOwner();
 
+			match /appointments/{appointmentID} {
 			// Store all the appointments only as subcollections of the clinics.
 			// This then allows to easily check if the user is a secretary of the clinic.
 			// In order to fetch all of a user's or doctor's appointments across all clinics, use collectionGroup:
@@ -71,20 +124,37 @@ service cloud.firestore {
 			// collection("clinics").doc(clinic).collection("appointments").where("patient", "==", patient)
 			// There is still the issue of what to do regarding the doctor's meeting notes.
 			// Perhaps the patient should be able to read them, but not write them.
-			match /appointments/{appointmentID} {
-				function isPatient() {
-					return get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.patient == request.auth.uid;
+
+				// Even though writing the data (create, update) is entirely up to Cloud Functions I still want to specify the requirements.
+				function isValidData() {
+					return
+					// The patient is an existing user in the system:
+					exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
+					// The doctor is registered as a doctor in the system: (Should this just be a field in the user document? Since I'm already checking if the doctor works in the clinic as a doctor, do I need to perform this check at all?)
+					exists(/databases/$(database)/documents/doctors/$(request.resource.data.doctor)) &&
+					// The patient and doctor are different people:
+					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.doctor != get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.patient &&
+					// The clinic exists in the system:(is clinic even needed as a field?)
+					exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic)) &&
+					// The doctor works for the clinic:
+					exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)) &&
+					// The start time of the appointment is in the future:
+					request.resource.data.start is timestamp &&
+					request.resource.data.start > now() &&
+					// The end time of the appointment is after the start time:
+					request.resource.data.end is timestamp &&
+					request.resource.data.end > request.resource.data.start &&
+					// The doctor offers the requested appointment type:
+					request.resource.data.type is string &&
+					request.resource.data.type in get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.types &&
+					// The duration of the appointment matches the appointment type's duration:
+					request.resource.data.end - request.resource.data.start == get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.types[request.resource.data.type].duration * get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.minimum
 				}
 
-				function isDoctor() {
-					return get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.doctor == request.auth.uid;
-				}
-
-				function isSecretary() {
-					return exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.auth.uid));
-				}
-
-				allow read, delete: if isPatient() || isDoctor() || isSecretary();
+				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary();
+				allow delete: if
+					(isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary()) &&
+					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.start > now(); //Appointments can only be deleted if they haven't occured yet.
 
 				// Since the appointment time slot must not collide with other appointments,
 				// and since I don't think that that can be checked through security rules,
@@ -95,18 +165,39 @@ service cloud.firestore {
 				// Therefor the only thing that update could change is appointment type,
 				// and only on the condition that the appointment duration stays the same.
 				allow create, update: if false;
+
+				match /messages/{messageID} {
+					// If I want to enforce correct timestamps on messages
+					// (which probably isn't necessary since it's just communication between the doctor and patient)
+					// then I can either pass message creation through a Cloud Function or (better yet?)
+					// use a Cloud Function effect to add a timestamp to each new message as it comes in.
+					// The downside of using an effect is that with live updates the other user will receive the new message before it has a timestamp,
+					// but I guess with live listening including the existing messages the timestamp will be loaded a moment later anyway.
+
+					function isSender() {
+						return request.resource.data.sender == request.auth.uid;
+					}
+
+					function isValidData() {
+						return
+						// The sender is either the doctor or patient of this appointment:
+						(request.resource.data.sender == get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.doctor ||
+						request.resource.data.sender == get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.patient) &&
+						request.resource.data.text is string &&
+						request.resource.data.text.size() > 1 &&
+						request.resource.data.text.size() < 2000 &&
+						request.resource.data.date is timestamp
+					}
+
+					allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID);
+					allow create: if isSender() && isValidData();
+				}
 			}
 
 			// Notes that the doctor writes about the meeting.
+			// The noteID should be the same as the appointmentID for easy fetching.
+			// The notes collection is kept directly beneath the clinic document so that doctors will be able to view all of their own notes using collectionGroup.
 			match /notes/{noteID} {
-				function isPatient() {
-					return get(/databases/$(database)/documents/clinics/$(clinicID)/notes/$(noteID)).data.patient == request.auth.uid;
-				}
-
-				function isDoctor() {
-					return get(/databases/$(database)/documents/clinics/$(clinicID)/notes/$(noteID)).data.doctor == request.auth.uid;
-				}
-
 				function isValidData() {
 					return
 					request.resource.data.doctor == request.auth.uid &&
@@ -115,31 +206,155 @@ service cloud.firestore {
 					request.resource.data.text is string
 				}
 
-				allow read: if isPatient() || isDoctor();
-				allow write if isDoctor() && isValidData();
+				allow read: if isPatient(noteID) || isTheDoctor(noteID);
+				allow write: if isTheDoctor(noteID) && isValidData();
+			}
+
+			// The patient's arrival status. This is an internal piece of data for the clinic that the patient doesn't need access to.
+			// The arrivalID should be the same as the appointmentID for easy fetching.
+			// This is directly beneath the clinic document so that the doctors can receive arrival notifications through listening to the collectionGroup.
+			match /arrivals/{arrivalID} {
+				function isValidData() {
+					return
+					exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(arrivalID)) &&
+					exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(arrivalID)).data.start > now() &&
+					request.resource.data.arrived is bool;
+				}
+
+				allow read: if isTheDoctor(arrivalID) || isSecretary();
+				allow write: if (isTheDoctor(arrivalID) || isSecretary()) && isValidData();
+
+				// For deletion of the appointment by the patient, use a Cloud Functions event handler (effect?).
 			}
 		}
 
-		// match /appointments/{appID} {
-		// 	function isAuthorized() {
-		// 		return
-		// 		request.auth.uid == request.resource.data.patient ||
-		// 		request.auth.uid == request.resource.data.doctor ||
-		// 		exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic)/private/secretaries/$(request.auth.uid));
-		// 	}
+		match /cities/{cityID} {
+			// The cityID is the name of the city.
+			// This is readable by all but writable by none as it's an automatically maintained index of all the cities that have clinics.
+			// Each city document has a collection of clinics that are located in it.
+			// Actually this is not needed since it's only useful for search, and search has been scrapped.
+			// Perhaps something like this could be used for providing translations of city names?
 
-		// 	// I'd need to make sure on the server side that appointments don't collide with each other. I don't think I can do that with security rules.
-		// 	// That would mean that creating or updating appointments would have to go through Functions.
-		// 	function isValidData() {
-		// 		return
-		// 		request.resource.data.patient is string &&
-		// 		exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
-		// 		request.resource.data.doctor is string &&
-		// 		exists(/databases/$(database)/documents/users/$(request.resource.data.doctor)) &&
-		// 		get(/databases/$(database)/documents/users/$(request.resource.data.doctor)).data.doctor == true &&
-		// 		request.resource.data.clinic is string &&
-		// 		exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic)) //&&
-		// 	}
-		// }
+			allow read;
+			allow write: if false;
+
+			match /clinics/{clinicID} {
+				// This is an automatically-maintained collection of all the clinics in the city.
+
+				// This function isn't used, but I want to specify the requirements anyway:
+				function isValidData() {
+					return
+					request.resource.data.exists == true &&
+					exists(/databases/$(database)/documents/clinics/$(clinicID));
+				}
+
+				allow read;
+				allow write: if false;
+			}
+		}
+
+		match /specializations/{specializationID} {
+			// This is readable by all but writable by none as it's an automatically maintained index of all the specializations that doctors have.
+			// Each specialization document has a collection of doctors that have it.
+			// Actually this is not needed since it's only useful for search, and search has been scrapped.
+			// Perhaps something like this could be used for providing translations of specialization names?
+
+			// This function isn't used, but I want to specify the requirements anyway:
+			function isValidData() {
+				return
+					request.resource.data.name is string &&
+					request.resource.data.name.size() >= 1 &&
+					request.resource.data.name.size() <= 50
+			}
+
+			allow read;
+			allow write: if false;
+
+
+			match /doctors/{doctorID} {
+				// This is an automatically-maintained collection of all the doctors who have this specialization.
+
+				// This function isn't used, but I want to specify the requirements anyway:
+				function isValidData() {
+					return
+					request.resource.data.exists == true &&
+					exists(/databases/$(database)/documents/users/$(doctorID)) &&
+					get(/databases/$(database)/documents/users/$(doctorID)).data.doctor == true;
+				}
+
+				allow read;
+				allow write: if false;
+			}
+		}
+
+		match /languages/{languageID} {
+			// Stores the system UI strings for different languages.
+			// The default display language should be chosen by user locale data.
+			// Users can override the default and manually select their own preffered language.
+			// What about translations for the user-provided data, like doctor/user names, clinic names, cities, addresses, specializations, and appointment types?
+			// Perhaps each of these objects should have a map for such strings, and the user will be able to provide the translations/translitterations in the supported languages.
+
+			// Each language document should contain:
+			// Language name
+			// Language code, which can also be used to identify the icon
+			// Icon link or other such thing, if I use and external resource for the icon
+			// A complete map mapping UI strings in the reference language (English) to their counterparts in this language.
+			// I will need a way to mark variables in the translation string so that the variables in the source string can be plugged in.
+			function isValidData() {
+				return
+				request.resource.data.name is string &&
+				request.resource.data.name.size() >= 1 &&
+				request.resource.data.name.size() <= 20 &&
+				request.resource.data.code is string &&
+				request.resource.data.code.size() == 2 &&
+				request.resource.data.strings is map;
+			}
+
+			allow read;
+			allow write: if isAdministrator();
+		}
+
+		match /administration/roles {
+			// This document holds maps of users with different administrative roles in the app.
+			// There are basically 2 roles:
+			// root, which is a single user that has the highest level of privilege.
+			// administrators, which are many, and hold all administrative privileges aside from modifying roles.
+
+			function isValidData() {
+				return 
+				exists(/databases/$(database)/documents/users/$(request.resource.data.root)) &&
+				request.resource.data.administrators is map &&
+				request.resource.data.root in request.resource.data.administrators;
+			}
+
+			allow read: if isAdministrator() || isRoot();
+			allow create, update: if isRoot() && isValidData();
+			allow delete: if false; // Explicitly stating that delete should never be allowed.
+		}
+
+		match /links/{linkID} {
+			// The id of the link is the link string itself.
+			
+			function isOwner() {
+				return
+				(request.resource.data.type == "clinic" &&
+				get(/databases/$(database)/documents/clinics/$(request.resource.data.id)).data.owner == request.auth.uid)
+				||
+				(request.resource.data.type == "doctor" &&
+				request.resource.data.id == request.auth.uid);
+			}
+
+			function isValidData() {
+				return
+				(request.resource.data.type == "clinic" &&
+				exists(/databases/$(database)/documents/clinics/$(request.resource.data.id))) ||
+				(request.resource.data.type == "doctor" &&
+				exists(/databases/$(database)/documents/doctors/$(request.resource.data.id))) &&
+				request.resource.id.matches('^[a-zA-Z0-9_]+$');
+			}
+
+			allow read;
+			allow write: if isOwner() && isValidData();
+		}
   }
 }
