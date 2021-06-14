@@ -80,21 +80,12 @@ export function ClinicDeleteForm({popupManager, clinic, close, success}) {
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
-					db.collection("clinics").doc(clinic).delete().then(value => {
+					db.collection("clinics").doc(clinic).delete().then(() => {
 						success();
 						close();
 					}).catch(reason => {
 						popupManager.error(reason);
 					});
-					// server.clinics.delete({id: clinic}).then(response => {
-					// 	if (response.data.success) {
-					// 		success();
-					// 		close();
-					// 	}
-					// 	else popupManager.error(response.data.message);
-					// }).catch(reason => {
-					// 	console.log(reason);
-					// });
 				}} />
 				<Button type="okay" label="Cancel" action={close} />
 			</div>
