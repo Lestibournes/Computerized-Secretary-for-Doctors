@@ -47,7 +47,7 @@ service cloud.firestore {
 				function isValidData() {
 					return
 					request.resource.data.birthday is timestamp &&
-					request.resource.data.birthday < now() &&
+					request.resource.data.birthday < request.time &&
 					request.resource.data.siblings is number &&
 					request.resource.data.siblings >= 0;
 				}
@@ -140,7 +140,7 @@ service cloud.firestore {
 					exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)) &&
 					// The start time of the appointment is in the future:
 					request.resource.data.start is timestamp &&
-					request.resource.data.start > now() &&
+					request.resource.data.start > request.time &&
 					// The end time of the appointment is after the start time:
 					request.resource.data.end is timestamp &&
 					request.resource.data.end > request.resource.data.start &&
@@ -154,7 +154,7 @@ service cloud.firestore {
 				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary();
 				allow delete: if
 					(isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary()) &&
-					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.start > now(); //Appointments can only be deleted if they haven't occured yet.
+					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.start > request.time; //Appointments can only be deleted if they haven't occured yet.
 
 				// Since the appointment time slot must not collide with other appointments,
 				// and since I don't think that that can be checked through security rules,
@@ -164,7 +164,7 @@ service cloud.firestore {
 				// Also changing clinics, doctors, or patients should be prohibited.
 				// Therefor the only thing that update could change is appointment type,
 				// and only on the condition that the appointment duration stays the same.
-				allow create, update: if false;
+				allow create, update: if false && isValidData();
 
 				match /messages/{messageID} {
 					// If I want to enforce correct timestamps on messages
@@ -174,6 +174,7 @@ service cloud.firestore {
 					// The downside of using an effect is that with live updates the other user will receive the new message before it has a timestamp,
 					// but I guess with live listening including the existing messages the timestamp will be loaded a moment later anyway.
 
+					// Turns out that there is a way to validate the time, which looks like this: request.resource.data.timestamp == request.time
 					function isSender() {
 						return request.resource.data.sender == request.auth.uid;
 					}
@@ -186,7 +187,7 @@ service cloud.firestore {
 						request.resource.data.text is string &&
 						request.resource.data.text.size() > 1 &&
 						request.resource.data.text.size() < 2000 &&
-						request.resource.data.date is timestamp
+						request.resource.data.timestamp == request.time;
 					}
 
 					allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID);
@@ -217,7 +218,7 @@ service cloud.firestore {
 				function isValidData() {
 					return
 					exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(arrivalID)) &&
-					exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(arrivalID)).data.start > now() &&
+					exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(arrivalID)).data.start > request.time &&
 					request.resource.data.arrived is bool;
 				}
 
@@ -249,7 +250,7 @@ service cloud.firestore {
 				}
 
 				allow read;
-				allow write: if false;
+				allow write: if false && isValidData();
 			}
 		}
 
@@ -268,7 +269,7 @@ service cloud.firestore {
 			}
 
 			allow read;
-			allow write: if false;
+			allow write: if false && isValidData();
 
 
 			match /doctors/{doctorID} {
@@ -283,7 +284,7 @@ service cloud.firestore {
 				}
 
 				allow read;
-				allow write: if false;
+				allow write: if false && isValidData();
 			}
 		}
 
@@ -311,7 +312,7 @@ service cloud.firestore {
 			}
 
 			allow read;
-			allow write: if isAdministrator();
+			allow write: if isAdministrator() && isValidData();
 		}
 
 		match /administration/roles {
