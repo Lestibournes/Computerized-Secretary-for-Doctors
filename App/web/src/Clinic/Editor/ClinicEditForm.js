@@ -4,6 +4,7 @@ import { Button } from "../../Common/Components/Button";
 import { Popup } from "../../Common/Components/Popup";
 import { TextInput } from "../../Common/Components/TextInput";
 import { server } from "../../Common/server";
+import { db } from "../../init";
 
 export function ClinicEditForm({popupManager, clinic, name, city, address, close, success, deleted}) {
 	return (
@@ -79,13 +80,21 @@ export function ClinicDeleteForm({popupManager, clinic, close, success}) {
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
-					server.clinics.delete({id: clinic}).then(response => {
-						if (response.data.success) {
-							success();
-							close();
-						}
-						else popupManager.error(response.data.message);
+					db.collection("clinics").doc(clinic).delete().then(value => {
+						success();
+						close();
+					}).catch(reason => {
+						popupManager.error(reason);
 					});
+					// server.clinics.delete({id: clinic}).then(response => {
+					// 	if (response.data.success) {
+					// 		success();
+					// 		close();
+					// 	}
+					// 	else popupManager.error(response.data.message);
+					// }).catch(reason => {
+					// 	console.log(reason);
+					// });
 				}} />
 				<Button type="okay" label="Cancel" action={close} />
 			</div>

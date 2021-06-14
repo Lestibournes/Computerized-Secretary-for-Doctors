@@ -90,11 +90,13 @@ async function getAllClinics(doctor, city) {
 		for (const clinic_snap of clinic_snaps.docs) {
 			clinic_promises.push(
 				fsdb.collection("clinics").doc(clinic_snap.id).get().then(clinic_snapshot => {
-					// Check if the city is unspecified or is a match:
-					if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
-						let clinic_data = clinic_snapshot.data();
-						clinic_data.id = clinic_snapshot.id;
-						return clinic_data;
+					if (clinic_snapshot.exists) {
+						// Check if the city is unspecified or is a match:
+						if ((city && stringContains(clinic_snapshot.data().city, city)) || !city) {
+							let clinic_data = clinic_snapshot.data();
+							clinic_data.id = clinic_snapshot.id;
+							return clinic_data;
+						}
 					}
 				})
 			);

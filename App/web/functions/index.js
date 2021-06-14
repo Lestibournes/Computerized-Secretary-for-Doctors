@@ -24,3 +24,5 @@ exports.specializations = require('./interfaces/specializations');
 exports.schedules = require('./interfaces/schedules');
 exports.secretaries = require('./interfaces/secretaries');
 exports.links = require('./interfaces/links');
+
+exports.events = require('./events');
