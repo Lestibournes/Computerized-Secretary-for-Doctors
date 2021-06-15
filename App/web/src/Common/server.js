@@ -25,10 +25,10 @@ export const server = {
 		addDoctor: fn.httpsCallable("clinics-addDoctor"),
 		removeDoctor: fn.httpsCallable("clinics-removeDoctor"),
 
-		getAllSecretaries: fn.httpsCallable("clinics-getAllSecretaries"),
-		addSecretary: fn.httpsCallable("clinics-addSecretary"),
-		removeSecretary: fn.httpsCallable("clinics-removeSecretary"),
-		hasSecretary: fn.httpsCallable("clinics-hasSecretary"),
+		// getAllSecretaries: fn.httpsCallable("clinics-getAllSecretaries"),
+		// addSecretary: fn.httpsCallable("clinics-addSecretary"),
+		// removeSecretary: fn.httpsCallable("clinics-removeSecretary"),
+		// hasSecretary: fn.httpsCallable("clinics-hasSecretary"),
 		
 		getAllCities: fn.httpsCallable("clinics-getAllCities"),
 		getAppointments: fn.httpsCallable("clinics-getAppointments"),
@@ -62,11 +62,11 @@ export const server = {
 	},
 
 	secretaries: {
-		getData: fn.httpsCallable("secretaries-getData"),
-		getAllClinics: fn.httpsCallable("secretaries-getAllClinics"),
-		create: fn.httpsCallable("secretaries-create"),
+		// getData: fn.httpsCallable("secretaries-getData"),
+		// getAllClinics: fn.httpsCallable("secretaries-getAllClinics"),
+		// create: fn.httpsCallable("secretaries-create"),
 		search: fn.httpsCallable("secretaries-search"),
-		getID: fn.httpsCallable("secretaries-getID"),
+		// getID: fn.httpsCallable("secretaries-getID"),
 	},
 
 	specializations: {
@@ -81,7 +81,7 @@ export const server = {
 		getPicture: fn.httpsCallable("users-getPicture"),
 		updatePicture: fn.httpsCallable("users-updatePicture"),
 		update: fn.httpsCallable("users-update"),
-		isSecretary: fn.httpsCallable("users-isSecretary"),
+		// isSecretary: fn.httpsCallable("users-isSecretary"),
 		isDoctor: fn.httpsCallable("users-isDoctor"),
 	},
 

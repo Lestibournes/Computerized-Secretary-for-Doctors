@@ -93,9 +93,9 @@ export function SecretaryEditor() {
 	);
 }
 
-export function removeSecretaryPopup(popupManager, clinic, secretaryData, success) {
+export function removeSecretaryPopup(popups, clinic, secretaryData, success) {
 	const close = () => {
-		popupManager.remove(popup);
+		popups.remove(popup);
 	};
 
 	const popup = 
@@ -110,13 +110,12 @@ export function removeSecretaryPopup(popupManager, clinic, secretaryData, succes
 		<div className="buttonBar">
 			<Button label="Cancel" type="okay" action={close} />
 			<Button label="Yes" type="cancel" action={() => {
-				server.clinics.removeSecretary({clinic: clinic, secretary: secretaryData.id}).then(response => {
-					if (response.data.success) success();
-					else popupManager.error(response.data.message)
-				})
+				db.collection("clinics").doc(clinic).collection("secretaries").doc(secretaryData.id).delete()
+				.then(() => success())
+				.catch(reason => popups.error(reason));
 			}} />
 		</div>
 	</Popup>;
 
-	popupManager.add(popup);
+	popups.add(popup);
 }

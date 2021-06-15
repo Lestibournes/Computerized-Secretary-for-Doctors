@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../Common/Auth";
 import { server } from "../Common/server";
 import { Header } from "../Common/Components/Header";
+import { db } from "../init";
 
 const PATIENT = "Patient";
 const DOCTOR = "Doctor";
@@ -24,16 +25,13 @@ export function HomePage() {
 
 	useEffect(() => {
 		if (auth.user) {
-			server.users.isDoctor({id: auth.user.uid}).then(is_doctor => {
-				if (is_doctor.data) setDoctor(auth.user.uid);
-
-				server.users.isSecretary({id: auth.user.uid}).then(is_secretary => {
-					if (is_secretary.data) setSecretary(auth.user.uid);
-
-					if (is_doctor.data) setDefaultView(DOCTOR);
-					else if (is_secretary.data) setDefaultView(SECRETARY);
-					else setDefaultView(PATIENT);
-				});
+			return db.collection("users").doc(auth.user.uid).onSnapshot(user_snap => {
+				if (user_snap.data().secretary) setSecretary(auth.user.uid);
+				if (user_snap.data().doctor) setDoctor(auth.user.uid);
+				
+				if (user_snap.data().doctor) setDefaultView(DOCTOR);
+				else if (user_snap.data().secretary) setDefaultView(SECRETARY);
+				else setDefaultView(PATIENT);
 			});
 		}
 	}, [auth]);
