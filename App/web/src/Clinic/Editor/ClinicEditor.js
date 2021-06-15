@@ -7,13 +7,15 @@ import { Card } from "../../Common/Components/Card"
 import { clinicEditPopup } from "./ClinicEditForm";
 import { selectDoctorPopup } from "./SelectDoctor";
 import { getPictureURL } from "../../Common/functions";
-import { selectSecretaryPopup } from './SelectSecretary';
+import { SelectSecretaryForm } from './SelectSecretary';
 import { server } from '../../Common/server';
 import { usePopups } from '../../Common/Popups';
-import { linkEditPopup, LINK_TYPES } from "../../Landing/LinkEdit";
+import { LinkEditForm, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Header } from '../../Common/Components/Header';
 import { Loading } from '../../Common/Components/Loading';
 import { useRoot } from '../../Common/Root';
+import { Popup } from '../../Common/Components/Popup';
+import { db } from '../../init';
 /**
 @todo
 Edit clinic page:
@@ -28,7 +30,7 @@ export function ClinicEditor() {
 	// Contexts:
 	const auth = useAuth();
 	const root = useRoot();
-	const popupManager = usePopups();
+	const popups = usePopups();
 
 	// Parameters:
 	const { clinic } = useParams(); //The ID of clinic.
@@ -70,9 +72,31 @@ export function ClinicEditor() {
 					setDoctorsData(doctors_data.data);
 				});
 
-				server.clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
-					setSecretariesData(secretaries_data.data);
-				});
+				db.collection("clinics").doc(clinic).collection("secretaries").onSnapshot(secretary_snaps => {
+					const promises = [];
+
+					for (const secretary_snap of secretary_snaps.docs) {
+						promises.push(db.collection("users").doc(secretary_snap.id).get().then(user_snap => {
+							const data = user_snap.data();
+							data.id = user_snap.id;
+							return data;
+						}));
+					}
+					
+					Promise.all(promises).then(secretaries_data => {
+						secretaries_data.sort((a, b) => {
+							return a.fullName > b.fullName ? 1 : a.fullName < b.fullName ? -1 : 0;
+						});
+
+						setSecretariesData(secretaries_data);
+					})
+				},
+				error => popups.error(
+				<>
+				<p>{error.code}</p>
+				<p>{error.message}</p>
+				</>)
+				);
 			});
 		}
 	}, [clinic]);
@@ -138,7 +162,7 @@ export function ClinicEditor() {
 			const promises = [];
 
 			for (const secretary of secretariesData) {
-				promises.push(getPictureURL(secretary.user.id).then(url => {
+				promises.push(getPictureURL(secretary.id).then(url => {
 					secretary.image = url;
 
 					const card = (<Card
@@ -175,7 +199,7 @@ export function ClinicEditor() {
 						<Button label="Edit"
 							action={() => {
 								clinicEditPopup(
-									popupManager,
+									popups,
 									clinic,
 									data.name,
 									data.city,
@@ -203,34 +227,43 @@ export function ClinicEditor() {
 						<h2>Link</h2>
 						<Button label="Edit"
 							action={() => {
-								linkEditPopup(
-									popupManager,
-									data.link,
-									LINK_TYPES.CLINIC,
-									clinic,
-									() => {
-										server.clinics.get({id: clinic}).then(clinic_data => {
-											setData(clinic_data.data);
-										});
-									}
-								)
+								const close = () => popups.remove(popup);
+							
+								const popup =
+									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
+										<LinkEditForm
+											link={data.link}
+											type={LINK_TYPES.CLINIC}
+											id={clinic}
+											close={close}
+											success={
+												() => {
+													server.clinics.get({id: clinic}).then(clinic_data => {
+														setData(clinic_data.data);
+													});
+												}
+											}
+										/>
+									</Popup>
+							
+								popups.add(popup);
 							}}
 						/>
 					</header>
-					<div className="table">
-						{data.link ?
+					{data.link ?
+						<div className="table">
 							<><b>Name:</b> <Link to={"/" + data.link} >{data.link}</Link></>
-							:
-							<div>
-								<p>
-									Create a custom direct link to share with your patients.
-								</p>
-								<p>
-									A direct link lets patients make appointments with you directly.
-								</p>
-							</div>
-						}
-					</div>
+						</div>
+						:
+						<div>
+							<p>
+								Create a custom direct link to share with your patients.
+							</p>
+							<p>
+								A direct link lets patients make appointments with you directly.
+							</p>
+						</div>
+					}
 				</section>
 				
 				<section>
@@ -239,7 +272,7 @@ export function ClinicEditor() {
 						<Button label="+"
 							action={() => {
 								selectDoctorPopup(
-									popupManager,
+									popups,
 									selected => {
 										server.clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
 											server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
@@ -260,16 +293,24 @@ export function ClinicEditor() {
 						<h2>Secretaries</h2>
 						<Button label="+"
 							action={() => {
-								selectSecretaryPopup(
-									popupManager,
-									selected => {
-										server.clinics.addSecretary({clinic: clinic, requester: doctor.doctor.id, secretary: selected}).then(() => {
-											server.clinics.getAllSecretaries({clinic: clinic}).then(secretaries_data => {
-												setSecretariesData(secretaries_data.data);
-											});
-										});
-									}
-								)
+								const close = () => {popups.remove(popup)};
+								
+								const popup =
+									<Popup key="Add Secretary" title="Add Secretary" close={close}>
+										<SelectSecretaryForm
+											close={close}
+											success={
+												selected => {
+													db.collection("clinics").doc(clinic).collection("secretaries").doc(selected).set({
+														user: selected,
+														clinic: clinic
+													}).catch(reason => popups.error(reason));
+												}
+											}
+										/>
+									</Popup>;
+								
+								popups.add(popup);
 							}} />
 					</header>
 					<div className="cardList">

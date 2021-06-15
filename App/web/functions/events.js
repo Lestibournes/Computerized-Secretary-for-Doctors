@@ -48,3 +48,28 @@ exports.modifySpecializations = functions.firestore.document('users/{userID}/spe
 		});
 	}
 });
+
+exports.modifyUser = functions.firestore.document('users/{userID}').onWrite((change, context) => {
+	// Get an object with the previous document value (for update or delete)
+	// If the document does not exist, it has been created (?).
+	const oldDocument = change.before.exists ? change.before.data() : null;
+
+	// Get an object with the current document value.
+	// If the document does not exist, it has been deleted.
+	const newDocument = change.after.exists ? change.after.data() : null;
+
+	// Update city index:
+	if (oldDocument.firstName !== newDocument.firstName || oldDocument.lastName !== newDocument.lastName) {
+		// It's not a delete operation, meaning it's create or update:
+		if (newDocument) {
+			// Update the user's fullName property:
+			fsdb.collection("users").doc(context.params.userID).update({fullName: newDocument.firstName + " " + newDocument.lastName});
+		}
+	}
+});
+
+// Add another listener for when an appointment is deleted. Whene that happens, delete the arrival document.
+// Or is that even needed? Past appointments can't be deleted. An arrival document without an appointment document is meaningless.
+
+// Missing triggers:
+// Patient's index of treating doctors.

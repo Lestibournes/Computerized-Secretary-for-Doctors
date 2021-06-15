@@ -10,6 +10,7 @@ import { Popup } from '../../Common/Components/Popup';
 import { usePopups } from '../../Common/Popups';
 import { Header } from '../../Common/Components/Header';
 import { useRoot } from '../../Common/Root';
+import { db } from '../../init';
 
 export function SecretaryEditor() {
 	const auth = useAuth();
@@ -38,8 +39,8 @@ export function SecretaryEditor() {
 
 	useEffect(() => {
 		if (secretary) {
-			server.secretaries.getData({secretary: secretary}).then(response => {
-				setSecretaryData(response.data);
+			db.collection("users").doc(secretary).get().then(secretary_snap => {
+				setSecretaryData(secretary_snap.data());
 			});
 		}
 	}, [secretary]);

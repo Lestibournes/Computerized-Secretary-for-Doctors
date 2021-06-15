@@ -10,9 +10,10 @@ import { capitalizeAll } from "../../Common/functions";
 import { selectSpecializationPopup, removeSpecializationPopup } from "./SelectSpecialization";
 import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
-import { linkEditPopup, LINK_TYPES } from "../../Landing/LinkEdit";
+import { LinkEditForm, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Link } from "react-router-dom";
 import { useRoot } from "../../Common/Root";
+import { Popup } from "../../Common/Components/Popup";
 
 /**
 @todo
@@ -53,7 +54,7 @@ It would be good to add some kind of notification widget to easily show new memb
 
 export function DoctorProfileFragment() {
 	const auth = useAuth();
-	const popupManager = usePopups();
+	const popups = usePopups();
 	const root = useRoot();
 
 	const [doctor, setDoctor] = useState(null);
@@ -77,7 +78,7 @@ export function DoctorProfileFragment() {
 			}
 			else {
 				createProfilePopup(
-					popupManager,
+					popups,
 					auth.user.uid,
 					doctor => {
 						server.doctors.getData({id: doctor}).then(results => {
@@ -131,17 +132,26 @@ export function DoctorProfileFragment() {
 						<h3>Link</h3>
 						<Button label="Edit"
 							action={() => {
-								linkEditPopup(
-									popupManager,
-									doctor.doctor.link,
-									LINK_TYPES.DOCTOR,
-									doctor.doctor.id,
-									() => {
-										server.doctors.getData({id: doctor.doctor.id}).then(doctor_data => {
-											setDoctor(doctor_data.data);
-										});
-									}
-								)
+								const close = () => popups.remove(popup);
+							
+								const popup =
+									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
+										<LinkEditForm
+											link={doctor.doctor.link}
+											type={LINK_TYPES.DOCTOR}
+											id={doctor.doctor.id}
+											close={close}
+											success={
+												() => {
+													server.doctors.getData({id: doctor.doctor.id}).then(doctor_data => {
+														setDoctor(doctor_data.data);
+													});
+												}
+											}
+										/>
+									</Popup>
+							
+								popups.add(popup);
 							}}
 						/>
 					</header>
@@ -166,7 +176,7 @@ export function DoctorProfileFragment() {
 						<Button label="+"
 							action={() => {
 								selectSpecializationPopup(
-									popupManager,
+									popups,
 									doctor.fields,
 									specialization => {
 										server.doctors.addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
@@ -188,7 +198,7 @@ export function DoctorProfileFragment() {
 								>
 									<Button
 										label="-"
-										action={() => removeSpecializationPopup(popupManager, doctor.doctor.id, field.id, () => loadData(doctor.user.id))}
+										action={() => removeSpecializationPopup(popups, doctor.doctor.id, field.id, () => loadData(doctor.user.id))}
 									/>
 									<span>{capitalizeAll(field.id)}</span>
 								</div>)
@@ -201,7 +211,7 @@ export function DoctorProfileFragment() {
 					<header>
 						<h3>Clinics</h3> <Button label="+" action={() => {
 							clinicCreatePopup(
-								popupManager,
+								popups,
 								doctor.doctor.id, 
 								clinic_id => {
 									server.clinics.get({id: clinic_id}).then(response => {

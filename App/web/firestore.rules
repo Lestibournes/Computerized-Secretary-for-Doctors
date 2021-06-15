@@ -89,6 +89,10 @@ service cloud.firestore {
 				return exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.auth.uid));
 			}
 
+			function isADoctor() {
+				return exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.auth.uid));
+			}
+
 			function isPatient(appointmentID) {
 				return get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.patient == request.auth.uid;
 			}
@@ -119,13 +123,37 @@ service cloud.firestore {
 			}
 
 			allow read: if isLoggedIn();
-			allow create: if isOwner() && isValidData();
+			allow create: if request.resource.data.owner == request.auth.uid && isValidData();
 			allow update: if 
 				isOwner() &&
 				isValidData() &&
 				// If the owner isn't changed:
 				resource.data.owner == request.resource.data.owner;
 			allow delete: if isOwner();
+
+			match /secretaries/{secID} {
+				function isValidData() {
+					return
+					secID == request.resource.data.user &&
+					exists(/databases/$(database)/documents/users/$(secID)) &&
+					request.resource.data.clinic == clinicID;
+				}
+
+				allow read: if isOwner() || isSecretary() || isADoctor();
+				allow write: if isOwner() && isValidData();
+			}
+
+			match /doctors/{doctorID} {
+				function isValidData() {
+					return
+					doctorID == request.resource.data.user &&
+					exists(/databases/$(database)/documents/users/$(doctorID)) &&
+					request.resource.data.clinic == clinicID;
+				}
+
+				allow read;
+				allow write: if isOwner() && isValidData();
+			}
 
 			match /appointments/{appointmentID} {
 			// Store all the appointments only as subcollections of the clinics.

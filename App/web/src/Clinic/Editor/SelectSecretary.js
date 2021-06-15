@@ -8,6 +8,7 @@ import { TextInput } from '../../Common/Components/TextInput';
 import { Popup } from '../../Common/Components/Popup';
 import { getPictureURL } from '../../Common/functions';
 import { server } from '../../Common/server';
+import { db } from '../../init';
 
 export function SelectSecretaryForm({close, success}) {
 	const [cards, setCards] = useState([]);
@@ -27,8 +28,8 @@ export function SelectSecretaryForm({close, success}) {
 				.then(async response => {
 					const secretary_cards = [];
 
-					for (let secretary of response.data) {
-						await getPictureURL(secretary.user.id).then(url => {
+					for (const secretary of response.data) {
+						await getPictureURL(secretary.id).then(url => {
 							secretary.image = url;
 						});
 

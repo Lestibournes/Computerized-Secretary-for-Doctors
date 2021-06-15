@@ -4,6 +4,7 @@ import { Button } from "../Common/Components/Button";
 
 import { Popup } from '../Common/Components/Popup';
 import { TextInput } from '../Common/Components/TextInput';
+import { usePopups } from "../Common/Popups";
 import { server } from "../Common/server";
 
 export const LINK_TYPES = {
@@ -11,7 +12,9 @@ export const LINK_TYPES = {
 	CLINIC: "clinic"
 }
 //The reason for separating the popup function and form component is that I want to be ready to switch to displaying the forms in another way than popups, such as by in-place replacement of the display. By doing it like this from the start I save effort should I change my mind later.
-export function LinkEditForm({popupManager, link, type, id, close, success}) {
+export function LinkEditForm({link, type, id, close, success}) {
+	const popups = usePopups();
+	
 	return (
 		<Formik
 			initialValues={{
@@ -35,13 +38,13 @@ export function LinkEditForm({popupManager, link, type, id, close, success}) {
 								close();
 							}
 							else {
-								popupManager.error(response.data.message);
+								popups.error(response.data.message);
 								setSubmitting(false);
 							}
 						})
 					}
 					else {
-						popupManager.error("Requested name is not available");
+						popups.error("Requested name is not available");
 						setSubmitting(false);
 					}
 				})
@@ -63,27 +66,4 @@ export function LinkEditForm({popupManager, link, type, id, close, success}) {
 			</Form>
 		</Formik>
 	);
-}
-
-export function linkEditPopup(popupManager, link, type, id, success) {
-	if (type !== LINK_TYPES.CLINIC && type !== LINK_TYPES.DOCTOR) {
-		popupManager.error("Incorrect link type");
-		return;
-	}
-	
-	const close = () => popupManager.remove(popup);
-
-	const popup =
-		<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
-			<LinkEditForm
-				popupManager={popupManager}
-				link={link}
-				type={type}
-				id={id}
-				close={close}
-				success={success}
-			/>
-		</Popup>
-
-	popupManager.add(popup);
 }

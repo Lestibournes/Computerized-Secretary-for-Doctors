@@ -146,25 +146,19 @@ async function create(user) {
  */
 async function search(name) {
 	// Fetch the data of all the secretary documents:
-	const promises = [];
-	
-	return fsdb.collection("secretaries").get().then(secretary_snapshots => {
-		for (const secretary_snapshot of secretary_snapshots.docs) {
-			promises.push(getData(secretary_snapshot.id));
+	return fsdb.collection("users").where("secretary", "==", true).get().then(secretary_snapshots => {
+		const secretaries = [];
+
+		// Filter the secretaries based on whether they have matching names:
+		for (const result of secretary_snapshots.docs) {
+			if (!name || stringContains(result.user.fullName, name)) {
+				const data = result.data();
+				data.id = result.id;
+				secretaries.push(data);
+			}
 		}
 
-		return Promise.all(promises).then(results => {
-			const secretaries = [];
-
-			// Filter the secretaries based on whether they have matching names:
-			for (const result of results) {
-				if ((name && stringContains(result.user.fullName, name)) || !name) {
-					secretaries.push(result);
-				}
-			}
-
-			return secretaries;
-		});
+		return secretaries;
 	});
 }
 

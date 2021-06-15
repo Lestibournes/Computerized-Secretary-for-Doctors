@@ -19,7 +19,6 @@ import { AppointmentSuccessPage } from './Patient/AppointmentSuccessPage';
 import { AppointmentListPage } from './Patient/AppointmentListPage';
 import { AppointmentDeletedPage } from './Patient/AppointmentDeletedPage';
 import { AppointmentCalendarPage } from './Calendar/AppointmentCalendarPage';
-import { DoctorProfileFragment } from './Profile/Doctor/DoctorProfileFragment'
 import { ClinicEditor } from './Clinic/Editor/ClinicEditor';
 import { ScheduleEditor } from './Clinic/Editor/Schedules/ScheduleEditor';
 import { SetAppointmentPage } from './Patient/SetAppointmentPage';
