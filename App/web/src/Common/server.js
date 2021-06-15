@@ -1,6 +1,6 @@
 import { db, fb } from "../init";
+import { usePopups } from "./Popups";
 
-// import { fn } from "../init";
 export const fn = fb.functions();
 
 export const server = {
@@ -24,11 +24,6 @@ export const server = {
 		getAllDoctors: fn.httpsCallable("clinics-getAllDoctors"),
 		addDoctor: fn.httpsCallable("clinics-addDoctor"),
 		removeDoctor: fn.httpsCallable("clinics-removeDoctor"),
-
-		// getAllSecretaries: fn.httpsCallable("clinics-getAllSecretaries"),
-		// addSecretary: fn.httpsCallable("clinics-addSecretary"),
-		// removeSecretary: fn.httpsCallable("clinics-removeSecretary"),
-		// hasSecretary: fn.httpsCallable("clinics-hasSecretary"),
 		
 		getAllCities: fn.httpsCallable("clinics-getAllCities"),
 		getAppointments: fn.httpsCallable("clinics-getAppointments"),
@@ -62,11 +57,7 @@ export const server = {
 	},
 
 	secretaries: {
-		// getData: fn.httpsCallable("secretaries-getData"),
-		// getAllClinics: fn.httpsCallable("secretaries-getAllClinics"),
-		// create: fn.httpsCallable("secretaries-create"),
 		search: fn.httpsCallable("secretaries-search"),
-		// getID: fn.httpsCallable("secretaries-getID"),
 	},
 
 	specializations: {
@@ -81,7 +72,6 @@ export const server = {
 		getPicture: fn.httpsCallable("users-getPicture"),
 		updatePicture: fn.httpsCallable("users-updatePicture"),
 		update: fn.httpsCallable("users-update"),
-		// isSecretary: fn.httpsCallable("users-isSecretary"),
 		isDoctor: fn.httpsCallable("users-isDoctor"),
 	},
 
@@ -102,46 +92,56 @@ export const events = {
 	 * @returns unsubscribe function.
 	 */
 		arrival: function(appointment, callback) {
+			const popups = usePopups();
+
 			if (!this.arrival.cache) this.arrival.cache = new Map();
 			
-			return db.collection("appointments").doc(appointment).onSnapshot(snapshot => {
-				if (snapshot.data()) {
-					if (!this.arrival.cache.has(appointment)) {
-						this.arrival.cache.set(appointment, snapshot.data());
+			return db.collection("appointments").doc(appointment).onSnapshot(
+				snapshot => {
+					if (snapshot.data()) {
+						if (!this.arrival.cache.has(appointment)) {
+							this.arrival.cache.set(appointment, snapshot.data());
+						}
+						
+						if (snapshot.data().arrived !== this.arrival.cache.get(appointment)?.arrived) {
+							callback(appointment, snapshot.data().arrived);
+							this.arrival.cache.set(appointment, snapshot.data());
+						}
 					}
-					
-					if (snapshot.data().arrived !== this.arrival.cache.get(appointment)?.arrived) {
-						callback(appointment, snapshot.data().arrived);
-						this.arrival.cache.set(appointment, snapshot.data());
+					else {
+						this.arrival.cache.delete(appointment);
 					}
-				}
-				else {
-					this.arrival.cache.delete(appointment);
-				}
-			});
+				},
+				error => {popups.error(error.message)}
+			);
 		}
 	},
 	doctors: {
 		arrival: function(doctor, callback) {
+			const popups = usePopups();
+			
 			if (!this.arrival.cache) this.arrival.cache = new Map();
 
-			return db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(appointments => {
-				appointments.docChanges().forEach(change => {
-					if (change.type === "removed") {
-						this.arrival.cache.delete(change.doc.id);
-					}
+			return db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(
+				appointments => {
+					appointments.docChanges().forEach(change => {
+						if (change.type === "removed") {
+							this.arrival.cache.delete(change.doc.id);
+						}
 
-					if (change.type === "added") {
-						this.arrival.cache.set(change.doc.id, change.doc.data());
-					}
+						if (change.type === "added") {
+							this.arrival.cache.set(change.doc.id, change.doc.data());
+						}
 
-					if (change.type === "modified" &&
-							change.doc.data().arrived !== this.arrival.cache.get(change.doc.id).arrived) {
-						callback(change.doc.id, change.doc.data().arrived);
-						this.arrival.cache.set(change.doc.id, change.doc.data());
-					}
-				});
-			});
+						if (change.type === "modified" &&
+								change.doc.data().arrived !== this.arrival.cache.get(change.doc.id).arrived) {
+							callback(change.doc.id, change.doc.data().arrived);
+							this.arrival.cache.set(change.doc.id, change.doc.data());
+						}
+					});
+				},
+				error => popups.error(error.message)
+			);
 		}
 	}
 }

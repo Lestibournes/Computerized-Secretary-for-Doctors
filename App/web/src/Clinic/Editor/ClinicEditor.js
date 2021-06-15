@@ -76,11 +76,15 @@ export function ClinicEditor() {
 					const promises = [];
 
 					for (const secretary_snap of secretary_snaps.docs) {
-						promises.push(db.collection("users").doc(secretary_snap.id).get().then(user_snap => {
-							const data = user_snap.data();
-							data.id = user_snap.id;
-							return data;
-						}));
+						promises.push(
+							db.collection("users").doc(secretary_snap.id).get()
+							.then(user_snap => {
+								const data = user_snap.data();
+								data.id = user_snap.id;
+								return data;
+							})
+							.catch(reason => popups.error(reason))
+						);
 					}
 					
 					Promise.all(promises).then(secretaries_data => {
@@ -91,11 +95,7 @@ export function ClinicEditor() {
 						setSecretariesData(secretaries_data);
 					})
 				},
-				error => popups.error(
-				<>
-				<p>{error.code}</p>
-				<p>{error.message}</p>
-				</>)
+				error => popups.error(error.message)
 				);
 			});
 		}

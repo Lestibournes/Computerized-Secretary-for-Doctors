@@ -73,7 +73,7 @@ export function ClinicEditForm({popupManager, clinic, name, city, address, close
 	);
 }
 
-export function ClinicDeleteForm({popupManager, clinic, close, success}) {
+export function ClinicDeleteForm({popups, clinic, close, success}) {
 	return (
 		<div>
 			<p>Are you sure you wish to delete this clinic?</p>
@@ -84,7 +84,7 @@ export function ClinicDeleteForm({popupManager, clinic, close, success}) {
 						success();
 						close();
 					}).catch(reason => {
-						popupManager.error(reason);
+						popups.error(reason);
 					});
 				}} />
 				<Button type="okay" label="Cancel" action={close} />

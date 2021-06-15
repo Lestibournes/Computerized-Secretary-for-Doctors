@@ -35,13 +35,15 @@ export function SecretaryEditor() {
 	const [image, setImage] = useState(null);
 	
 	const [redirect, setRedirect] = useState(null); //Where to redirect to in case the doctor is removed from the clinic.
-	const popupManager = usePopups();
+	const popups = usePopups();
 
 	useEffect(() => {
 		if (secretary) {
-			db.collection("users").doc(secretary).get().then(secretary_snap => {
+			db.collection("users").doc(secretary).get()
+			.then(secretary_snap => {
 				setSecretaryData(secretary_snap.data());
-			});
+			})
+			.catch(reason => popups.error(reason));
 		}
 	}, [secretary]);
 
@@ -66,7 +68,7 @@ export function SecretaryEditor() {
 					<header>
 						<h2>Details</h2>
 						<Button label="Remove" action={() => {
-							removeSecretaryPopup(popupManager, clinic, secretaryData, () => {
+							removeSecretaryPopup(popups, clinic, secretaryData, () => {
 								setRedirect("/clinics/edit/" + clinic);
 							})
 						}} />

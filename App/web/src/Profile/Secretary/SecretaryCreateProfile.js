@@ -19,11 +19,15 @@ export function SecretaryCreateProfileForm({user, close}) {
 			<h2>Would you like to create a secretary profile?</h2>
 			<div className="buttonBar">
 				<Button action={() => {setNo(true)}} label="No" />
-				<Button type="okay" action={() => {
-					db.collection("users").doc(user).update({secretary: true})
-					.then(() => close())
-					.catch(reason => popups.error(reason));
-				}} label="Yes" />
+				<Button
+					type="okay"
+					action={() => {
+						db.collection("users").doc(user).update({secretary: true})
+						.then(() => close())
+						.catch(reason => popups.error(reason));
+						}}
+					label="Yes"
+				/>
 			</div>
 		</div>
 	);

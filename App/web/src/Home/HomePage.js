@@ -11,6 +11,7 @@ import { useAuth } from "../Common/Auth";
 import { server } from "../Common/server";
 import { Header } from "../Common/Components/Header";
 import { db } from "../init";
+import { usePopups } from "../Common/Popups";
 
 const PATIENT = "Patient";
 const DOCTOR = "Doctor";
@@ -18,6 +19,7 @@ const SECRETARY = "Secretary";
 
 export function HomePage() {
 	const auth = useAuth();
+	const popups = usePopups();
 	const [doctor, setDoctor] = useState();
 	const [secretary, setSecretary] = useState();
 	const [items, setItems] = useState();
@@ -25,14 +27,17 @@ export function HomePage() {
 
 	useEffect(() => {
 		if (auth.user) {
-			return db.collection("users").doc(auth.user.uid).onSnapshot(user_snap => {
-				if (user_snap.data().secretary) setSecretary(auth.user.uid);
-				if (user_snap.data().doctor) setDoctor(auth.user.uid);
-				
-				if (user_snap.data().doctor) setDefaultView(DOCTOR);
-				else if (user_snap.data().secretary) setDefaultView(SECRETARY);
-				else setDefaultView(PATIENT);
-			});
+			return db.collection("users").doc(auth.user.uid).onSnapshot(
+				user_snap => {
+					if (user_snap.data().secretary) setSecretary(auth.user.uid);
+					if (user_snap.data().doctor) setDoctor(auth.user.uid);
+					
+					if (user_snap.data().doctor) setDefaultView(DOCTOR);
+					else if (user_snap.data().secretary) setDefaultView(SECRETARY);
+					else setDefaultView(PATIENT);
+				},
+				error => popups.error(error.message)
+			);
 		}
 	}, [auth]);
 
