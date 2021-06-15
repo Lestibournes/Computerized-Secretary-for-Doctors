@@ -16,6 +16,7 @@ import { capitalize, compareByName } from '../../../Common/functions';
 import { MinimumFormPopup } from './MinimumFormPopup';
 import { TypeFormPopup } from './TypeFormPopup';
 import { usePopups } from '../../../Common/Popups';
+import { db } from '../../../init';
 
 export function ScheduleEditor() {
 	const auth = useAuth();
@@ -50,38 +51,53 @@ export function ScheduleEditor() {
 
 	useEffect(() => {
 		if (clinic && doctor) {
-			server.schedules.getMinimum({clinic: clinic, doctor: doctor}).then(response => {
-				if (response.data.success) setMinimum(response.data.minimum);
-				else popups.error(response.data.message)
-			});
+			// Fetch the minimum appointment duration:
+			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).onSnapshot(
+				doctor_snap => {
+					setMinimum(doctor_snap.data().minimum);
+				},
+				error => popups.error(error.message)
+			);
 
-			server.schedules.getTypes({clinic: clinic, doctor: doctor}).then(response => {
-				if (response.data.success) {
+			// Fetch all of the different appointment types this doctor has at this clinic:
+			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").onSnapshot(
+				type_snaps => {
 					const types = [];
 
-					for (const type of response.data.types) {
-						if (type.name) {
-							types.push(type);
+					for (const type of type_snaps.docs) {
+						if (type.data().name) {
+							types.push(type.data());
 						}
 					}
 
 					types.sort(compareByName);
 					setTypesData(types);
-				}
-				else popups.error(response.data.message)
-			});
+				},
+				error => popups.error(error.message)
+			);
 
-			server.clinics.get({id: clinic}).then(clinic_data => {
-				setClinicData(clinic_data.data);
+			db.collection("clinics").doc(clinic).get()
+			.then(clinic_snap => setClinicData(clinic_snap.data()))
+			.catch(reason => popups.error(reason));
 
-				server.doctors.getData({id: doctor}).then(doctor_data => {
-					setDoctorData(doctor_data.data);
+			db.collection("users").doc(doctor).get()
+			.then(user_snap => setDoctorData(user_snap.data()))
+			.catch(reason => popups.error(reason));
 
-					server.schedules.get({doctor: doctor, clinic: clinic}).then(response => {
-						setSchedule(response.data);
-					});
-				});
-			});
+			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").onSnapshot(
+				shift_snaps => {
+					const days = [];
+					
+					for (let i = 0; i < SimpleDate.day_names.length; i++) {
+						days.push([]);
+					}
+
+					for (const shift of shift_snaps.docs) days[shift.data().day].push(shift.data());
+
+					setSchedule(days);
+				},
+				error => popups.error(error.message)
+			);
 		}
 	}, [clinic, doctor]);
 
@@ -141,12 +157,7 @@ export function ScheduleEditor() {
 							key={shift.id}
 							title={Time.fromObject(shift.start).toString() +
 							" - " + Time.fromObject(shift.end).toString()}
-							action={() => {
-								shiftEditPopup(
-									popups, clinic, doctor, shift.id, shift.day, shift.start, shift.end,
-									result => updateSchedule(popups, result).then(data => setSchedule(data))
-								)
-							}}
+							action={() => shiftEditPopup(popups, clinic, doctor, shift.id, shift.day, shift.start, shift.end)}
 						/>
 					)
 				}
@@ -213,12 +224,7 @@ export function ScheduleEditor() {
 											<h3>{capitalize(name)}</h3>
 											<Button
 												label="+"
-												action={() => {
-													shiftEditPopup(
-														popups, clinic, doctor, null, number, null, null,
-														result => updateSchedule(popups, result).then(data => setSchedule(data))
-													)
-												}}
+												action={() => shiftEditPopup(popups, clinic, doctor, null, number, null, null)}
 											/>
 										</header>
 										<div className="cardList">
@@ -244,12 +250,4 @@ export function ScheduleEditor() {
 			</main>
 		</div>
 	);
-}
-
-async function updateSchedule(popupManager, result) {
-	if (!result.success) popupManager.error(result.message)
-
-	return server.schedules.get({doctor: result.data.doctor, clinic: result.data.clinic}).then(response => {
-		return response.data;
-	});
 }

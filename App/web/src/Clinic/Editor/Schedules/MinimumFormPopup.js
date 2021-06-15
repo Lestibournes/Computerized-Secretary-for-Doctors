@@ -4,6 +4,7 @@ import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
+import { db } from "../../../init";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -14,9 +15,9 @@ import { TextInput } from "../../../Common/Components/TextInput";
  * @param {number} minimum The current minimum appointment duration.
  * @param {(minimum: number) => {}} success Callback for after updating the minimum.
  */
- export function MinimumFormPopup(popupManager, clinic, doctor, minimum, success) {
+ export function MinimumFormPopup(popups, clinic, doctor, minimum, success) {
 	const close = () => {
-		popupManager.remove(popup);
+		popups.remove(popup);
 	};
 
 	const popup = 
@@ -35,17 +36,12 @@ import { TextInput } from "../../../Common/Components/TextInput";
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
 
-				server.schedules.setMinimum({
-					doctor: doctor,
-					clinic: clinic,
-					minimum: values.minimum
-				}).then(response => {
-					if (response.data.success) {
-						success(values.minimum);
-						close();
-					}
-					else popupManager.error(response.data.message)
-				});
+				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).update({minimum: values.minimum})
+				.then(() => {
+					success(values.minimum);
+					close();
+				})
+				.catch(reason => popups.error(reason));
 			}}
 		>
 			<Form>
@@ -60,5 +56,5 @@ import { TextInput } from "../../../Common/Components/TextInput";
 		</Formik>
 	</Popup>;
 
-	popupManager.add(popup);
+	popups.add(popup);
 }

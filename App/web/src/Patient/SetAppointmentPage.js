@@ -15,6 +15,7 @@ import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
+import { db } from '../init';
 
 /**
  * @todo
@@ -131,21 +132,20 @@ export function SetAppointmentPage() {
 
 	useEffect(() => {
 		if (clinicID && doctorID) {
-			server.schedules.getTypes({clinic: clinicID, doctor: doctorID}).then(response => {
-				if (response.data.success) {
-					const types = [];
+			db.collection("clinics").doc(clinicID).collection("doctors").doc(doctorID).collection("types").get()
+			.then(type_snaps => {
+				const types = [];
 	
-					for (const type of response.data.types) {
-						if (type.name) {
-							types.push(type);
-						}
+				for (const type of type_snaps.docs) {
+					if (type.data().name) {
+						types.push(type);
 					}
-	
-					types.sort(compareByName);
-					setTypesData(types);
 				}
-				else popupManager.error(response.data.message)
-			});
+	
+				types.sort(compareByName);
+				setTypesData(types);
+			})
+			.catch(reason => popupManager.error(reason));
 		}
 	}, [clinicID, doctorID]);
 

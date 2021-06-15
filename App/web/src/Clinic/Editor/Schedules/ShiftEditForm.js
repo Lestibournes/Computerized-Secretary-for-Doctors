@@ -5,8 +5,9 @@ import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { Time } from "../../../Common/Classes/Time";
+import { db } from "../../../init";
 
-export function ShiftEditForm({popupManager, clinic, doctor, shift, day, start, end, close, success, deleted}) {
+export function ShiftEditForm({popups, clinic, doctor, shift, day, start, end, close}) {
 	let deletable = start && end;
 
 	return (
@@ -22,9 +23,6 @@ export function ShiftEditForm({popupManager, clinic, doctor, shift, day, start, 
 				setSubmitting(true);
 
 				const data = {
-					shift: shift,
-					doctor: doctor,
-					clinic: clinic,
 					day: day,
 					start: {
 						hours: Number(values.start.split(":")[0]),
@@ -37,24 +35,14 @@ export function ShiftEditForm({popupManager, clinic, doctor, shift, day, start, 
 				}
 
 				if (shift) {
-					server.schedules.edit(data).then(result => {
-						success({
-							data: data,
-							success: result.data.success,
-							message: result.data.message
-						});
-						close();
-					});
+					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").doc(shift).update(data)
+					.then(() => close())
+					.catch(reason => popups.error(reason));
 				}
 				else {
-					server.schedules.add(data).then(result => {
-						success({
-							data: data,
-							success: result.data.success,
-							message: result.data.message
-						});
-						close();
-					});
+					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").add(data)
+					.then(() => close())
+					.catch(reason => popups.error(reason));
 				}
 			}}
 		>
@@ -69,7 +57,7 @@ export function ShiftEditForm({popupManager, clinic, doctor, shift, day, start, 
 						type="cancel"
 						label="Delete"
 						action={() => {
-							confirmDeletePopup(popupManager, clinic, doctor, shift, deleted ? deleted : success);
+							confirmDeletePopup(popups, clinic, doctor, shift);
 						}}
 					/>
 					: ""}
@@ -81,7 +69,7 @@ export function ShiftEditForm({popupManager, clinic, doctor, shift, day, start, 
 	);
 }
 
-function ConfirmDeleteForm({popupManager, clinic, doctor, shift, close, success}) {
+function ConfirmDeleteForm({popups, clinic, doctor, shift, close}) {
 	return (
 		<div>
 			<div>
@@ -90,17 +78,9 @@ function ConfirmDeleteForm({popupManager, clinic, doctor, shift, close, success}
 			</div>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
-					server.schedules.delete({clinic: clinic, doctor: doctor, shift: shift}).then(response => {
-						if (!response.data.success) popupManager.error(response.data.message)
-						else {
-							success({
-								data: {clinic: clinic, doctor: doctor},
-								success: true,
-								message: ""
-							});
-							close();
-						}
-					});
+					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").doc(shift).delete()
+					.then(() => close())
+					.catch(reason => popups.error(reason));
 				}} />
 				<Button type="okay" label="Cancel" action={close} />
 			</div>
@@ -108,7 +88,7 @@ function ConfirmDeleteForm({popupManager, clinic, doctor, shift, close, success}
 	);
 }
 
-export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, end, success, deleted) {
+export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, end) {
 	let title = "Create New Shift";
 
 	if (start && end) {
@@ -127,8 +107,6 @@ export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, 
 				start={start}
 				end={end}
 				close={close}
-				success={success}
-				deleted={deleted}
 			/>
 		</Popup>;
 	popupManager.add(popup);

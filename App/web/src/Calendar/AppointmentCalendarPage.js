@@ -42,6 +42,8 @@ export function AppointmentCalendarPage() {
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState();
 	const [minimum, setMinimum] = useState(60);
+	const [types, setTypes] = useState(new Map());
+	const [max, setMax] = useState(0); //Longest appointment
 
 	const [dimensions, setDimensions] = useState({ 
 		height: window.innerHeight,
@@ -115,8 +117,28 @@ export function AppointmentCalendarPage() {
 	}, [auth.user, doctor, clinic]);
 
 	useEffect(() => {
+		if (doctor && clinic) {
+			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor.id).collection("types").get()
+				.then(type_snaps => {
+					const types = new Map();
+					let max = 0;
+		
+					for (const type of type_snaps.docs) {
+						if (type.data().name) {
+							types.set(type.data().name, type.data().duration);
+							if (type.data().duration > max) max = type.data().duration;
+						}
+					}
+
+					setTypes(types);
+					setMax(max);
+				})
+				.catch(reason => popups.error(reason))
+		}
+	}, [doctor, clinic]);
+
+	useEffect(() => {
 		if (doctor && date) {
-			alert(doctor.id);
 			// Load all the appointment data for the current time range:
 			const saturday = date.getSaturday();
 			
@@ -130,113 +152,44 @@ export function AppointmentCalendarPage() {
 						.where("start", "==", current.toDate())
 						.where("end", "==", current.getNextDay().toDate())
 						.get()
-						.then(appointment_snaps => {
-							const today = {
-								appointments: [],
-								day: day
-							};
+					.then(appointment_snaps => {
+						const today = {
+							appointments: [],
+							day: day
+						};
 
-							const day_promises = [];
+						const day_promises = [];
 
-							// Results holds all the appointments for 1 day.
-							// For each appointment:
-							for (const result of appointment_snaps.docs) {
-								if (result) {
-									day_promises.push(
-										server.schedules.getTypes({clinic: result.appointment.clinic, doctor: result.appointment.doctor}).then(types_response => {
-											return server.schedules.getType({clinic: result.appointment.clinic, doctor: result.appointment.doctor, type: result.appointment.type}).then(type_response => {
-												let hue = 240; //result.appointment.duration % 360;
-			
-												if (types_response.data.success && type_response.data.success){
-													let max = 0;
-													for (const t of types_response.data.types) {
-														if (t.name && t.duration > max) max = t.duration;
-													}
-		
-													hue = (360 / max) * type_response.data.duration;
-												}
-			
-												return {
-													color: "white",
-													background: "hsl(" + hue + ", 100%, 30%)",
-													duration: result.appointment.duration,
-													start: Time.fromObject(result.extra.time),
-													id: result.appointment.id,
-													name: result.patient.fullName,
-												};
-											})
-										})
-									);
-								}
-							}
-							
-							// Once all the appointments for today have been loaded:
-							return Promise.all(day_promises).then(appointments => {
-								if (appointments) today.appointments = appointments;
+						// Get the appointment data this day:
+						for (const appointment of appointment_snaps.docs) {
+							day_promises.push(
+								db.collection("users").doc(appointment.data().patient).get()
+								.then(patient_snap => {
+									const hue = (360 / max) * types.get(appointment.data().type);
 	
-								return today;
-							})
-						})
-					// server.doctors.getAppointments(
-					// 	{
-					// 		clinic: clinic,
-					// 		doctor: doctor.id,
-					// 		start: current.toObject(),
-					// 		end: current.getNextDay().toObject()
-					// 	}
-					// ).then(results => {
-					// 	const today = {
-					// 		appointments: [],
-					// 		day: day
-					// 	};
-
-					// 	if (results.data.success) {
-					// 		const day_promises = [];
-
-					// 		// Results holds all the appointments for 1 day.
-					// 		// For each appointment:
-					// 		for (const result of results.data.data) {
-					// 			if (result) {
-					// 				day_promises.push(
-					// 					server.schedules.getTypes({clinic: result.appointment.clinic, doctor: result.appointment.doctor}).then(types_response => {
-					// 						return server.schedules.getType({clinic: result.appointment.clinic, doctor: result.appointment.doctor, type: result.appointment.type}).then(type_response => {
-					// 							let hue = 240; //result.appointment.duration % 360;
-			
-					// 							if (types_response.data.success && type_response.data.success){
-					// 								let max = 0;
-					// 								for (const t of types_response.data.types) {
-					// 									if (t.name && t.duration > max) max = t.duration;
-					// 								}
-		
-					// 								hue = (360 / max) * type_response.data.duration;
-					// 							}
-			
-					// 							return {
-					// 								color: "white",
-					// 								background: "hsl(" + hue + ", 100%, 30%)",
-					// 								duration: result.appointment.duration,
-					// 								start: Time.fromObject(result.extra.time),
-					// 								id: result.appointment.id,
-					// 								name: result.patient.fullName,
-					// 							};
-					// 						})
-					// 					})
-					// 				);
-					// 			}
-					// 		}
-							
-					// 		// Once all the appointments for today have been loaded:
-					// 		return Promise.all(day_promises).then(appointments => {
-					// 			if (appointments) today.appointments = appointments;
-	
-					// 			return today;
-					// 		})
-					// 	}
-					// 	else {
-					// 		popups.error("Getting a day's appointments using Cloud Functions: " + results.data.message);
-					// 		return today;
-					// 	}
-					// })
+									today.appointments.push({
+										color: "white",
+										background: "hsl(" + hue + ", 100%, 30%)",
+										duration: appointment.data().duration,
+										start: new Time(appointment.data().start),
+										id: appointment.id,
+										name: patient_snap.data().fullName,
+									});
+								})
+								.catch(reason => popups.error(reason))
+							);
+						}
+						
+						// Once all the appointments for today have been loaded:
+						return Promise.all(day_promises).then(appointments => {
+							if (appointments) today.appointments = appointments;
+							return today;
+						});
+					})
+					.catch(reason => {
+						// popups.error("Heregy: " + reason)
+						console.log(reason);
+					})
 				);
 			}
 
@@ -258,31 +211,28 @@ export function AppointmentCalendarPage() {
 			// This is to sized and space the calendar.
 			let start; //The earliest starting time.
 			let end; //The latest ending time.
-			let minimum; //The shortest minimum appointment length.
 
 			const schedule_promises = [];
 
 			for (const clinic of clinics) {
 				schedule_promises.push(
-					server.schedules.get({clinic: clinic.id, doctor: doctor.doctor.id}).then(schedule => {
-						for (const day of schedule.data) {
-							for (const shift of day) {
-								const start_time = Time.fromObject(shift.start);
-								const end_time = Time.fromObject(shift.end);
-								
-								if (!minimum || shift.min < minimum) minimum = shift.min;
-								if (!start || start_time.compare(start) < 0) start = start_time;
-								if (!end || end_time.compare(end) > 0) end = end_time;
-							}
+					db.collection("clinics").doc(clinic.id).collection("doctors").doc(doctor.id).collection("shifts").get()
+					.then(shift_snaps => {
+						for (const shift_snap of shift_snaps.docs) {
+							const start_time = Time.fromObject(shift_snap.data().start);
+							const end_time = Time.fromObject(shift_snap.data().end);
+							
+							if (!start || start_time.compare(start) < 0) start = start_time;
+							if (!end || end_time.compare(end) > 0) end = end_time;
 						}
 					})
+					.catch(reason => popups.error(reason))
 				);
 			}
 
 			Promise.all(schedule_promises).then(() => {
 				if (start && end) setSchedule(new Slot(start, end));
 				else setSchedule(false);
-				// setMinimum(minimum);
 			});
 		}
 		else {
@@ -290,21 +240,21 @@ export function AppointmentCalendarPage() {
 		}
 	}, [doctor, date]);
 
-	if (schedule === false) {
-		popups.add(
-			<Popup key="WorkScheduleWarning" close={() => {window.history.back()}}>
-				You need to create a work schedule before viewing your appointment calendar.
-			</Popup>
-		);
-	}
+	// if (schedule === false) {
+	// 	popups.add(
+	// 		<Popup key="WorkScheduleWarning" close={() => {window.history.back()}}>
+	// 			You need to create a work schedule before viewing your appointment calendar.
+	// 		</Popup>
+	// 	);
+	// }
 
-	if (doctor === false) {
-		popups.add(
-			<Popup key="DoctorWarning" close={() => {window.history.back()}}>
-				You need to be a doctor to view your work calendar.
-			</Popup>
-		);
-	}
+	// if (doctor === false) {
+	// 	popups.add(
+	// 		<Popup key="DoctorWarning" close={() => {window.history.back()}}>
+	// 			You need to be a doctor to view your work calendar.
+	// 		</Popup>
+	// 	);
+	// }
 
 	let display;
 	

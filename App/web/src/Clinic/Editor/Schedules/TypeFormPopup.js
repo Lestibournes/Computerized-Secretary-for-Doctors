@@ -4,6 +4,7 @@ import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
+import { db } from "../../../init";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -44,39 +45,20 @@ import { TextInput } from "../../../Common/Components/TextInput";
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
 
-				const parameters = {
-					clinic: clinic,
-					doctor: doctor,
-					type: type,
+				const data = {
 					name: values.name,
 					duration: values.duration
 				}
 
 				if (type) {
-					server.schedules.editType(parameters).then(response => {
-						if (response.data.success) {
-							success({
-								id: response.data.id,
-								name: response.data.name,
-								duration: response.data.duration
-							});
-							close();
-						}
-						else popupManager.error(response.data.message)
-					});
+					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type).update(data)
+					.then(() => close())
+					.catch(reason => popupManager.error(reason));
 				}
 				else {
-					server.schedules.addType(parameters).then(response => {
-						if (response.data.success) {
-							success({
-								id: response.data.id,
-								name: response.data.name,
-								duration: response.data.duration
-							});
-							close();
-						}
-						else popupManager.error(response.data.message)
-					});
+					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").add(data)
+					.then(() => close())
+					.catch(reason => popupManager.error(reason));
 				}
 			}}
 		>
@@ -131,21 +113,9 @@ export function TypeDeletePopup(popupManager, clinic, doctor, type, name, durati
 		<div className="buttonBar">
 			<Button label="Cancel" action={close} />
 			<Button type="cancel" label="Delete" action={() => {
-				const parameters = {
-					clinic: clinic,
-					doctor: doctor,
-					type: type,
-				}
-
-				server.schedules.deleteType(parameters).then(response => {
-					if (response.data.success) {
-						success({
-							id: response.data.id
-						});
-						close();
-					}
-					else popupManager.error(response.data.message)
-				});
+				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type).delete()
+				.then(() => close())
+				.catch(reason => popupManager.error(reason));
 			}}
 			/>
 		</div>
