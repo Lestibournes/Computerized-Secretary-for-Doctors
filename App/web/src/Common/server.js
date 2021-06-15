@@ -92,7 +92,7 @@ export const events = {
 	 * @returns unsubscribe function.
 	 */
 		arrival: function(appointment, callback) {
-			const popups = usePopups();
+			// const popups = usePopups();
 
 			if (!this.arrival.cache) this.arrival.cache = new Map();
 			
@@ -112,13 +112,13 @@ export const events = {
 						this.arrival.cache.delete(appointment);
 					}
 				},
-				error => {popups.error(error.message)}
+				// error => {popups.error(error.message)}
 			);
 		}
 	},
 	doctors: {
 		arrival: function(doctor, callback) {
-			const popups = usePopups();
+			// const popups = usePopups();
 			
 			if (!this.arrival.cache) this.arrival.cache = new Map();
 
@@ -140,7 +140,7 @@ export const events = {
 						}
 					});
 				},
-				error => popups.error(error.message)
+				// error => popups.error(error.message)
 			);
 		}
 	}

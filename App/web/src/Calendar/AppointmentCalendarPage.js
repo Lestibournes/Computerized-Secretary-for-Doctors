@@ -16,6 +16,7 @@ import { Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { usePopups } from "../Common/Popups";
 import { Header } from "../Common/Components/Header";
+import { db } from "../init";
 
 function debounce(fn, ms) {
   let timer
@@ -30,10 +31,11 @@ function debounce(fn, ms) {
 
 export function AppointmentCalendarPage() {
 	const auth = useAuth();
-	const popupManager = usePopups();
+	const popups = usePopups();
 
 	const { clinic } = useParams();
 	const [doctors, setDoctors] = useState([]);
+	const [clinics, setClinics] = useState([]);
 	const [doctor, setDoctor] = useState(null);
 	const [options, setOptions] = useState();
 	const [date, setDate] = useState(new SimpleDate()); // Default date: today.
@@ -83,21 +85,38 @@ export function AppointmentCalendarPage() {
 	useEffect(() => {
 		if (auth.user && doctor === null && !clinic) {
 			// Check if the current user is a doctor, and if he is, fetch his doctor id/ref:
-			server.users.get({user: auth.user.uid}).then(user => {
-				if (user.data.doctor) {
-					server.doctors.getData({id: user.data.doctor}).then(doctor_data => {
-						setDoctor(doctor_data.data);
+			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
+				if (user_snap.exists && user_snap.data().doctor) {
+					const data = user_snap.data();
+					data.id = auth.user.uid;
+					setDoctor(data);
+
+					// Fetch all the doctor's clinics:
+					db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(clinic_snaps => {
+						const promises = [];
+
+						for (const clinic_snap of clinic_snaps.docs) {
+							promises.push(
+								db.collection("clinics").doc(clinic_snap.data().clinic).get()
+								.then(clinic_data => {return clinic_data.data()})
+								.catch(reason => popups.error("Fetch clinic " + clinic_snap.data().clinic + ": " + reason))
+							);
+						}
+
+						Promise.all(promises).then(clinic_data => {
+							setClinics(clinic_data);
+						})
 					})
+					.catch(reason => popups.error("Getting the doctor's clinics: " + reason));
 				}
-				else {
-					setDoctor(false);
-				}
+				else setDoctor(false);
 			});
 		}
 	}, [auth.user, doctor, clinic]);
 
 	useEffect(() => {
 		if (doctor && date) {
+			alert(doctor.id);
 			// Load all the appointment data for the current time range:
 			const saturday = date.getSaturday();
 			
@@ -106,25 +125,22 @@ export function AppointmentCalendarPage() {
 			// Fetch the appointments day by day:
 			for (let current = date.getSunday(), day = 0; current.compare(saturday) <= 0; current = current.getNextDay(), day++) {
 				appointment_promises.push(
-					server.doctors.getAppointments(
-						{
-							clinic: clinic,
-							doctor: doctor.doctor.id,
-							start: current.toObject(),
-							end: current.getNextDay().toObject()
-						}
-					).then(results => {
-						const today = {
-							appointments: [],
-							day: day
-						};
+					db.collectionGroup("appointments")
+						.where("doctor", "==", doctor.id)
+						.where("start", "==", current.toDate())
+						.where("end", "==", current.getNextDay().toDate())
+						.get()
+						.then(appointment_snaps => {
+							const today = {
+								appointments: [],
+								day: day
+							};
 
-						if (results.data.success) {
 							const day_promises = [];
 
 							// Results holds all the appointments for 1 day.
 							// For each appointment:
-							for (const result of results.data.data) {
+							for (const result of appointment_snaps.docs) {
 								if (result) {
 									day_promises.push(
 										server.schedules.getTypes({clinic: result.appointment.clinic, doctor: result.appointment.doctor}).then(types_response => {
@@ -160,12 +176,67 @@ export function AppointmentCalendarPage() {
 	
 								return today;
 							})
-						}
-						else {
-							popupManager.error(results.data.message);
-							return today;
-						}
-					})
+						})
+					// server.doctors.getAppointments(
+					// 	{
+					// 		clinic: clinic,
+					// 		doctor: doctor.id,
+					// 		start: current.toObject(),
+					// 		end: current.getNextDay().toObject()
+					// 	}
+					// ).then(results => {
+					// 	const today = {
+					// 		appointments: [],
+					// 		day: day
+					// 	};
+
+					// 	if (results.data.success) {
+					// 		const day_promises = [];
+
+					// 		// Results holds all the appointments for 1 day.
+					// 		// For each appointment:
+					// 		for (const result of results.data.data) {
+					// 			if (result) {
+					// 				day_promises.push(
+					// 					server.schedules.getTypes({clinic: result.appointment.clinic, doctor: result.appointment.doctor}).then(types_response => {
+					// 						return server.schedules.getType({clinic: result.appointment.clinic, doctor: result.appointment.doctor, type: result.appointment.type}).then(type_response => {
+					// 							let hue = 240; //result.appointment.duration % 360;
+			
+					// 							if (types_response.data.success && type_response.data.success){
+					// 								let max = 0;
+					// 								for (const t of types_response.data.types) {
+					// 									if (t.name && t.duration > max) max = t.duration;
+					// 								}
+		
+					// 								hue = (360 / max) * type_response.data.duration;
+					// 							}
+			
+					// 							return {
+					// 								color: "white",
+					// 								background: "hsl(" + hue + ", 100%, 30%)",
+					// 								duration: result.appointment.duration,
+					// 								start: Time.fromObject(result.extra.time),
+					// 								id: result.appointment.id,
+					// 								name: result.patient.fullName,
+					// 							};
+					// 						})
+					// 					})
+					// 				);
+					// 			}
+					// 		}
+							
+					// 		// Once all the appointments for today have been loaded:
+					// 		return Promise.all(day_promises).then(appointments => {
+					// 			if (appointments) today.appointments = appointments;
+	
+					// 			return today;
+					// 		})
+					// 	}
+					// 	else {
+					// 		popups.error("Getting a day's appointments using Cloud Functions: " + results.data.message);
+					// 		return today;
+					// 	}
+					// })
 				);
 			}
 
@@ -191,7 +262,7 @@ export function AppointmentCalendarPage() {
 
 			const schedule_promises = [];
 
-			for (const clinic of doctor.clinics) {
+			for (const clinic of clinics) {
 				schedule_promises.push(
 					server.schedules.get({clinic: clinic.id, doctor: doctor.doctor.id}).then(schedule => {
 						for (const day of schedule.data) {
@@ -220,7 +291,7 @@ export function AppointmentCalendarPage() {
 	}, [doctor, date]);
 
 	if (schedule === false) {
-		popupManager.add(
+		popups.add(
 			<Popup key="WorkScheduleWarning" close={() => {window.history.back()}}>
 				You need to create a work schedule before viewing your appointment calendar.
 			</Popup>
@@ -228,7 +299,7 @@ export function AppointmentCalendarPage() {
 	}
 
 	if (doctor === false) {
-		popupManager.add(
+		popups.add(
 			<Popup key="DoctorWarning" close={() => {window.history.back()}}>
 				You need to be a doctor to view your work calendar.
 			</Popup>

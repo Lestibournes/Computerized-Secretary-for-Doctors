@@ -48,22 +48,25 @@ export function SecretaryProfileFragment() {
 
 	useEffect(() => {
 		if (auth.user) {
-			return db.collection("users").doc(auth.user.uid).onSnapshot(user_snap => {
-				if (user_snap.data().secretary) setSecretary(user_snap.data());
-				else {
-					const close = () => {popups.remove(popup)}
-	
-					const popup =
-						<Popup key="Create Secretary Profile" title="Create Secretary Profile" close={close}>
-							<SecretaryCreateProfileForm
-								user={auth.user.uid}
-								close={close}
-							/>
-						</Popup>;
-					
-					popups.add(popup);
-				}
-			});
+			return db.collection("users").doc(auth.user.uid).onSnapshot(
+				user_snap => {
+					if (user_snap.data().secretary) setSecretary(user_snap.data());
+					else {
+						const close = () => {popups.remove(popup)}
+		
+						const popup =
+							<Popup key="Create Secretary Profile" title="Create Secretary Profile" close={close}>
+								<SecretaryCreateProfileForm
+									user={auth.user.uid}
+									close={close}
+								/>
+							</Popup>;
+						
+						popups.add(popup);
+					}
+				},
+				error => popups.error(error.message)
+			);
 		}
 	}, [auth.user]);
 

@@ -48,7 +48,7 @@ service cloud.firestore {
 					return
 					request.resource.data.birthday is timestamp &&
 					request.resource.data.birthday < request.time &&
-					request.resource.data.siblings is number &&
+					request.resource.data.siblings is int &&
 					request.resource.data.siblings >= 0;
 				}
 
@@ -148,11 +148,64 @@ service cloud.firestore {
 					return
 					doctorID == request.resource.data.user &&
 					exists(/databases/$(database)/documents/users/$(doctorID)) &&
-					request.resource.data.clinic == clinicID;
+					request.resource.data.clinic == clinicID &&
+					request.resource.data.minimum is int &&
+					request.resource.data.minimum > 0
+				}
+
+				function isTheDoctor() {
+					return
+					doctorID == request.auth.uid;
 				}
 
 				allow read;
 				allow write: if isOwner() && isValidData();
+
+				match /types/{typeID} {
+					function isValidData() {
+						return
+						request.resource.data.name is string &&
+						request.resource.data.name.size() > 0 &&
+						request.resource.data.duration is int &&
+						request.resource.data.duration > 0
+					}
+
+					allow read;
+					allow write: if isTheDoctor() && isValidData();
+				}
+
+				match /schedules/{schedID} {
+					function isValidData() {
+						return
+						request.resource.data.day is int &&
+						request.resource.data.day >= 0 &&
+						request.resource.data.day <= 6 &&
+						
+						request.resource.data.start is map &&
+
+						request.resource.data.start.hours is int &&
+						request.resource.data.start.hours >= 0 &&
+						request.resource.data.start.hours <= 23 &&
+						
+						request.resource.data.start.minutes is int &&
+						request.resource.data.start.minutes >= 0 &&
+						request.resource.data.start.minutes <= 59 &&
+
+
+						request.resource.data.end is map &&
+
+						request.resource.data.end.hours is int &&
+						request.resource.data.end.hours >= 0 &&
+						request.resource.data.end.hours <= 23 &&
+
+						request.resource.data.end.minutes is int &&
+						request.resource.data.end.minutes >= 0 &&
+						request.resource.data.end.minutes <= 59
+					}
+
+					allow read;
+					allow write: if isValidData() && (isOwner() || isSecretary() || isTheDoctor());
+				}
 			}
 
 			match /appointments/{appointmentID} {
