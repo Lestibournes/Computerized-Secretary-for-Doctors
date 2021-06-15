@@ -25,27 +25,44 @@ export function SelectSecretaryForm({close, success}) {
 				setSubmitting(true);
 
 				server.secretaries.search({name: values.name})
-				.then(async response => {
-					const secretary_cards = [];
-
+				.then(response => {
+					const promises = [];
+					
 					for (const secretary of response.data) {
-						await getPictureURL(secretary.id).then(url => {
-							secretary.image = url;
+						promises.push(
+							getPictureURL(secretary.id).then(url => {
+								secretary.image = url;
+								return {
+									data: secretary,
+									card:
+										<Card
+											key={secretary.id}
+											title={secretary.fullName}
+											image={secretary.image}
+											altText={secretary.fullName + "'s portrait"}
+											action={() => {
+												success(secretary.id);
+												close();
+											}}
+										/>
+								};
+							})
+						);
+					}
+
+					Promise.all(promises).then(secretaries => {
+						secretaries.sort((a, b) => {
+							return a.data.fullName > b.data.fullName ? 1 : a.data.fullName < b.data.fullName ? -1 : 0;
 						});
 
-						secretary_cards.push(<Card
-							key={secretary.id}
-							title={secretary.fullName}
-							image={secretary.image}
-							altText={secretary.fullName + "'s portrait"}
-							action={() => {
-								success(secretary.id);
-								close();
-							}}
-						/>);
-					}
-					
-					setCards(secretary_cards);
+						const cards = [];
+
+						for (const secretary of secretaries) {
+							cards.push(secretary.card);
+						}
+
+						setCards(cards);
+					});
 				});
 			}}
 		>

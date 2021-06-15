@@ -133,7 +133,7 @@ async function create(user) {
 /**
  * Get all secretaries and then filter the results by name.
  * All params are optional. If no parameters are specified (or if the value is falsy), then it will return all secretaries.
- * @todo Change the format of the data that is being returned and be more picky about which data is being returned.
+ * This is one of the few Cloud Functions that is necessary, since I don't want to send the entire db to the client to perform the search there.
  * @param {string} name The name of the secretary.
  * @returns {Promise<{
  * 	id: string,
@@ -146,14 +146,16 @@ async function create(user) {
  */
 async function search(name) {
 	// Fetch the data of all the secretary documents:
-	return fsdb.collection("users").where("secretary", "==", true).get().then(secretary_snapshots => {
+	return fsdb.collection("users").where("secretary", "==", true).get().then(secretary_snaps => {
 		const secretaries = [];
 
 		// Filter the secretaries based on whether they have matching names:
-		for (const result of secretary_snapshots.docs) {
-			if (!name || stringContains(result.user.fullName, name)) {
-				const data = result.data();
-				data.id = result.id;
+		for (const secretary_snap of secretary_snaps.docs) {
+			console.log(secretary_snap.data().fullName);
+			console.log(name);
+			if (!name || stringContains(secretary_snap.data().fullName, name)) {
+				const data = secretary_snap.data();
+				data.id = secretary_snap.id;
 				secretaries.push(data);
 			}
 		}

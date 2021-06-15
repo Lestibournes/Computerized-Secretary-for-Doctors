@@ -7,7 +7,7 @@ import { useRoot } from "../../Common/Root";
 import { server } from "../../Common/server";
 import { db } from "../../init";
 
-export function SecretaryCreateProfileForm({user, success, close}) {
+export function SecretaryCreateProfileForm({user, close}) {
 	const root = useRoot();
 	const popups = usePopups();
 
@@ -20,12 +20,9 @@ export function SecretaryCreateProfileForm({user, success, close}) {
 			<div className="buttonBar">
 				<Button action={() => {setNo(true)}} label="No" />
 				<Button type="okay" action={() => {
-					db.collection("users").doc(user).update({secretary: true}).then(() => {
-						success();
-						close();
-					}).catch(reason => {
-						popups.error(reason);
-					});
+					db.collection("users").doc(user).update({secretary: true})
+					.then(() => close())
+					.catch(reason => popups.error(reason));
 				}} label="Yes" />
 			</div>
 		</div>

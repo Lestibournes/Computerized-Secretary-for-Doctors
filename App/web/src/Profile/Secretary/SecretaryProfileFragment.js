@@ -9,7 +9,7 @@ import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
 import { Loading } from "../../Common/Components/Loading";
 import { useRoot } from "../../Common/Root";
-import { db, fb } from "../../init";
+import { db } from "../../init";
 
 export function SecretaryProfileFragment() {
 	const auth = useAuth();
@@ -57,13 +57,6 @@ export function SecretaryProfileFragment() {
 						<Popup key="Create Secretary Profile" title="Create Secretary Profile" close={close}>
 							<SecretaryCreateProfileForm
 								user={auth.user.uid}
-								success={
-									secretary => {
-										server.secretaries.getData({secretary: secretary}).then(results => {
-											setSecretary(results.data);
-										});
-									}
-								}
 								close={close}
 							/>
 						</Popup>;
