@@ -265,7 +265,7 @@ service cloud.firestore {
 				// Even though writing the data (create, update) is entirely up to Cloud Functions I still want to specify the requirements.
 				function isValidData() {
 					return
-					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'type'], []) &&
+					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'type'], ['valid']) &&
 
 					// The patient is an existing user in the system:
 					exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
@@ -289,23 +289,14 @@ service cloud.firestore {
 					// The duration of the appointment matches the appointment type's duration:
 					request.resource.data.end - request.resource.data.start ==
 						get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)).data.duration *
-						get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.minimum
+						get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.minimum;
 				}
 
 				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary();
-				allow delete: if
+				allow write: if
 					(isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary()) &&
-					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.start > request.time; //Appointments can only be deleted if they haven't occured yet.
-
-				// Since the appointment time slot must not collide with other appointments,
-				// and since I don't think that that can be checked through security rules,
-				// then I will disallow creating new appointments to force new appointments to be created through Cloud Functions.
-				// Update could be allowed if it didn't change the start or end time,
-				// but that's basically the whole data, so what's the point?
-				// Also changing clinics, doctors, or patients should be prohibited.
-				// Therefor the only thing that update could change is appointment type,
-				// and only on the condition that the appointment duration stays the same.
-				allow create, update: if false && isValidData();
+					isValidData() &&
+					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.end > request.time; //Appointments can only be deleted if they haven't occured yet, but let's allow to delete appiontments where the patient didn't show up.
 
 				match /messages/{messageID} {
 					// If I want to enforce correct timestamps on messages

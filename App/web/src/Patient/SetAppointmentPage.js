@@ -32,7 +32,7 @@ import { db } from '../init';
  */
 export function SetAppointmentPage() {
 	const auth = useAuth();
-	const popupManager = usePopups();
+	const popups = usePopups();
 	const root = useRoot();
 	
 	//The root of the site:
@@ -63,17 +63,18 @@ export function SetAppointmentPage() {
 
 	useEffect(() => {
 		if (appointment) {
-			server.appointments.get({id: appointment}).then(results => {
-				if (results.data.success) {
-					setData(results.data.data);
-					setDoctorID(results.data.data.doctor.doctor.id);
-					setClinicID(results.data.data.clinic.id);
-					setType(results.data.data.appointment.type);
-					setDate(SimpleDate.fromObject(results.data.data.extra.date));
-					setTime(Time.fromObject(results.data.data.extra.time));
+			db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).get()
+			.then(app_snap => {
+				if (app_snap.exists) {
+					setData(app_snap.data());
+					setDoctorID(app_snap.data().doctor);
+					setClinicID(clinic);
+					setType(app_snap.data().type);
+					setDate(new SimpleDate(app_snap.data().start));
+					setTime(Time.fromDate(app_snap.data().start));
 				}
-				else popupManager.error(results.data.message)
-			});
+			})
+			.catch(reason => popups.error(reason));
 		}
 		else if (doctor && clinic && !doctorID && !clinicID) {
 			setDoctorID(doctor);
@@ -146,7 +147,7 @@ export function SetAppointmentPage() {
 				types.sort(compareByName);
 				setTypesData(types);
 			})
-			.catch(reason => popupManager.error(reason));
+			.catch(reason => popups.error(reason));
 		}
 	}, [clinicID, doctorID]);
 
@@ -203,7 +204,8 @@ export function SetAppointmentPage() {
 
 						if (data) {
 							let new_data = {
-								appointment: appointment
+								appointment: appointment,
+								clinic: clinic
 							};
 
 							if (values.time) {
@@ -220,9 +222,9 @@ export function SetAppointmentPage() {
 							
 							server.appointments.edit(new_data).then(response => {
 								if (response.data.success) setSuccess(response.data.id);
-								else popupManager.error(response.data.message)
+								else popups.error(response.data.message)
 							})
-							.catch(reason => popupManager.error(reason))
+							.catch(reason => popups.error(reason))
 						}
 						else {
 							// Set the appointment on the server:
@@ -236,7 +238,7 @@ export function SetAppointmentPage() {
 							})
 							.then(response => {
 								if (response.data.messages.length > 0) {
-									popupManager.error(
+									popups.error(
 										response.data.messages.map(message => {
 											return <p>{capitalize(message)}</p>;
 										})
@@ -245,7 +247,7 @@ export function SetAppointmentPage() {
 
 								setSuccess(response.data.id);
 							})
-							.catch(reason => popupManager.error(capitalize(reason)))
+							.catch(reason => popups.error(capitalize(reason)))
 						}
 					}}
 				>
@@ -279,7 +281,7 @@ export function SetAppointmentPage() {
 								{appointment ? 
 									<Button
 										type="cancel"
-										action={() => ConfirmDeletePopup(popupManager, appointment, () => setDeleted(true))}
+										action={() => ConfirmDeletePopup(popups, appointment, () => setDeleted(true))}
 									label="Delete" />
 								: ""}
 								<Button type="submit" label="Submit" />

@@ -88,7 +88,7 @@ function appointmentCollides(appointments, slot) {
  * @param {string} type The type of appointment.
  * @returns {Promise<boolean>} true if available, false if unavailable (temporarily returning 0,1)
  */
-async function isAvailable(doctor, clinic, date, slot, type) {
+async function isAvailable(doctor, clinic, date, slot) {
 	// Get all the unavailable time slots:
 	return getAppointments(doctor, clinic, date).then(appointments => {
 		return schedules.get(clinic, doctor).then(schedule => {
