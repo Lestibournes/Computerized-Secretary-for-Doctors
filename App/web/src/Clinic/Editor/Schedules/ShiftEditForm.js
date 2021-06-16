@@ -6,9 +6,11 @@ import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { Time } from "../../../Common/Classes/Time";
 import { db } from "../../../init";
+import { useState } from "react";
 
 export function ShiftEditForm({popups, clinic, doctor, shift, day, start, end, close}) {
 	let deletable = start && end;
+	const [saving, setSaving] = useState(false);
 
 	return (
 		<Formik
@@ -21,7 +23,7 @@ export function ShiftEditForm({popups, clinic, doctor, shift, day, start, end, c
 			})}
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
-
+				setSaving(true);
 				const data = {
 					day: day,
 					start: {
@@ -50,6 +52,9 @@ export function ShiftEditForm({popups, clinic, doctor, shift, day, start, end, c
 				<div className="widgets">
 					<TextInput label="Shift Start" type="time" name="start" />
 					<TextInput label="Shift End" type="time" name="end" />
+				{saving ?
+					<div>Saving...</div>
+				: ""}
 				</div>
 				<div className="buttonBar">
 					{deletable ? 
@@ -88,18 +93,18 @@ function ConfirmDeleteForm({popups, clinic, doctor, shift, close}) {
 	);
 }
 
-export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, end) {
+export function shiftEditPopup(popups, clinic, doctor, shift, day, start, end) {
 	let title = "Create New Shift";
 
 	if (start && end) {
 		title = "Edit Shift";
 	}
 
-	const close = () => {popupManager.remove(popup)};
+	const close = () => {popups.remove(popup)};
 	const popup =
 		<Popup key="title" title={title} close={close}>
 			<ShiftEditForm
-				popupManager={popupManager}
+				popupManager={popups}
 				clinic={clinic}
 				doctor={doctor}
 				shift={shift}
@@ -109,7 +114,7 @@ export function shiftEditPopup(popupManager, clinic, doctor, shift, day, start, 
 				close={close}
 			/>
 		</Popup>;
-	popupManager.add(popup);
+	popups.add(popup);
 }
 
 export function confirmDeletePopup(popupManager, clinic, doctor, shift, success) {

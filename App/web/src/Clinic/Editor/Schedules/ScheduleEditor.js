@@ -173,7 +173,7 @@ export function ScheduleEditor() {
 	let display;
 
 	if (clinicData && doctorData && shiftCards) {
-		subtitle = doctorData.user.fullName +" at " + clinicData.name;
+		subtitle = doctorData.fullName +" at " + clinicData.name;
 
 		display = (
 			<>

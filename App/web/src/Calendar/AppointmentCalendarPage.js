@@ -94,14 +94,20 @@ export function AppointmentCalendarPage() {
 					setDoctor(data);
 
 					// Fetch all the doctor's clinics:
-					db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(clinic_snaps => {
+					db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(doctor_snaps => {
 						const promises = [];
 
-						for (const clinic_snap of clinic_snaps.docs) {
+						for (const doctor_snap of doctor_snaps.docs) {
 							promises.push(
-								db.collection("clinics").doc(clinic_snap.data().clinic).get()
-								.then(clinic_data => {return clinic_data.data()})
-								.catch(reason => popups.error("Fetch clinic " + clinic_snap.data().clinic + ": " + reason))
+								db.collection("clinics").doc(doctor_snap.data().clinic).get()
+								.then(clinic_data => {
+									if (clinic_data.exists) {
+										const data = clinic_data.data();
+										data.id = clinic_data.id;
+										return data;
+									}
+								})
+								.catch(reason => popups.error("Fetch clinic " + doctor_snap.data().clinic + ": " + reason))
 							);
 						}
 
@@ -166,7 +172,7 @@ export function AppointmentCalendarPage() {
 								db.collection("users").doc(appointment.data().patient).get()
 								.then(patient_snap => {
 									const hue = (360 / max) * types.get(appointment.data().type);
-	
+									
 									today.appointments.push({
 										color: "white",
 										background: "hsl(" + hue + ", 100%, 30%)",
@@ -186,10 +192,7 @@ export function AppointmentCalendarPage() {
 							return today;
 						});
 					})
-					.catch(reason => {
-						// popups.error("Heregy: " + reason)
-						console.log(reason);
-					})
+					.catch(reason => popups.error(reason))
 				);
 			}
 
@@ -215,19 +218,21 @@ export function AppointmentCalendarPage() {
 			const schedule_promises = [];
 
 			for (const clinic of clinics) {
-				schedule_promises.push(
-					db.collection("clinics").doc(clinic.id).collection("doctors").doc(doctor.id).collection("shifts").get()
-					.then(shift_snaps => {
-						for (const shift_snap of shift_snaps.docs) {
-							const start_time = Time.fromObject(shift_snap.data().start);
-							const end_time = Time.fromObject(shift_snap.data().end);
-							
-							if (!start || start_time.compare(start) < 0) start = start_time;
-							if (!end || end_time.compare(end) > 0) end = end_time;
-						}
-					})
-					.catch(reason => popups.error(reason))
-				);
+				if (clinic?.id) {
+					schedule_promises.push(
+						db.collection("clinics").doc(clinic.id).collection("doctors").doc(doctor.id).collection("shifts").get()
+						.then(shift_snaps => {
+							for (const shift_snap of shift_snaps.docs) {
+								const start_time = Time.fromObject(shift_snap.data().start);
+								const end_time = Time.fromObject(shift_snap.data().end);
+								
+								if (!start || start_time.compare(start) < 0) start = start_time;
+								if (!end || end_time.compare(end) > 0) end = end_time;
+							}
+						})
+						.catch(reason => popups.error(reason))
+					);
+				}
 			}
 
 			Promise.all(schedule_promises).then(() => {
@@ -240,21 +245,28 @@ export function AppointmentCalendarPage() {
 		}
 	}, [doctor, date]);
 
-	// if (schedule === false) {
-	// 	popups.add(
-	// 		<Popup key="WorkScheduleWarning" close={() => {window.history.back()}}>
-	// 			You need to create a work schedule before viewing your appointment calendar.
-	// 		</Popup>
-	// 	);
-	// }
+	useEffect(() => {
+		if (schedule === false) {
+			const close = () => popups.remove(popup);
+			const popup =
+				<Popup key="WorkScheduleWarning" close={close /*() => {window.history.back()}*/}>
+					You need to create a work schedule before viewing your appointment calendar.
+				</Popup>;
+			popups.add(popup);
+		}
+	}, [schedule]);
 
-	// if (doctor === false) {
-	// 	popups.add(
-	// 		<Popup key="DoctorWarning" close={() => {window.history.back()}}>
-	// 			You need to be a doctor to view your work calendar.
-	// 		</Popup>
-	// 	);
-	// }
+	useEffect(() => {
+		if (doctor === false) {
+			const close = () => popups.remove(popup);
+			const popup =
+				<Popup key="DoctorWarning" close={close /*() => {window.history.back()}*/}>
+					You need to be a doctor to view your work calendar.
+				</Popup>;
+			popups.add(popup);
+		}
+	}, [doctor]);
+
 
 	let display;
 	
