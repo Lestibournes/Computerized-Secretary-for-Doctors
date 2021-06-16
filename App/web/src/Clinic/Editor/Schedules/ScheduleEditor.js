@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { Header } from '../../../Common/Components/Header';
 import { Button } from "../../../Common/Components/Button";
 import { Card } from '../../../Common/Components/Card';
+import { Popup } from '../../../Common/Components/Popup'
 
 import { Time } from "../../../Common/Classes/Time";
 import { SimpleDate } from "../../../Common/Classes/SimpleDate";
@@ -14,7 +15,7 @@ import { server } from '../../../Common/server';
 import { capitalize, compareByName } from '../../../Common/functions';
 
 import { MinimumFormPopup } from './MinimumFormPopup';
-import { TypeFormPopup } from './TypeFormPopup';
+import { TypeEditForm } from './TypeFormPopup';
 import { usePopups } from '../../../Common/Popups';
 import { db } from '../../../init';
 
@@ -66,7 +67,9 @@ export function ScheduleEditor() {
 
 					for (const type of type_snaps.docs) {
 						if (type.data().name) {
-							types.push(type.data());
+							const data = type.data();
+							data.id = type.id;
+							types.push(data);
 						}
 					}
 
@@ -92,7 +95,11 @@ export function ScheduleEditor() {
 						days.push([]);
 					}
 
-					for (const shift of shift_snaps.docs) days[shift.data().day].push(shift.data());
+					for (const shift of shift_snaps.docs) {
+						const data = shift.data();
+						data.id = shift.id;
+						days[shift.data().day].push(data);
+					}
 
 					setSchedule(days);
 				},
@@ -110,25 +117,27 @@ export function ScheduleEditor() {
 						title={type.name}
 						body={type.duration * minimum + " Minutes"}
 						action={() => {
-							TypeFormPopup(popups, clinic, doctor, type.id, type.name, type.duration,
-								new_type => {
-									const new_types = [];
+							const close = () => {
+								popups.remove(popup);
+							};
 
-									for (const old_type of typesData) {
-										if (old_type.id !== new_type.id) {
-											new_types.push(old_type);
-										}
-									}
+							const popup = 
+								<Popup
+									key={"EditAppointmentType" + type}
+									title={"Edit Appointment Type"}
+									close={close}
+								>
+									<TypeEditForm
+										key={"EditAppointmentType" + type}
+										popups={popups}
+										clinic={clinic}
+										doctor={doctor}
+										type={type}
+										close={close}
+									/>
+								</Popup>;
 
-									if (new_type.name) {
-										new_types.push(new_type);
-									}
-
-									new_types.sort(compareByName);
-
-									setTypesData(new_types);
-								}
-							);
+							popups.add(popup);
 						}}
 					/>)
 			});
@@ -192,21 +201,31 @@ export function ScheduleEditor() {
 				<section>
 					<header>
 						<h2>Appointment Types</h2>
-						<Button label="+" action={() => {
-							TypeFormPopup(popups, clinic, doctor, null, null, null,
-								new_type => {
-									const new_types = [...typesData];
-
-									if (new_type.name) {
-										new_types.push(new_type);
-									}
-
-									new_types.sort(compareByName);
-
-									setTypesData(new_types);
-								}
-							);
-						}} />
+						<Button
+							label="+"
+							action={() => {
+								const close = () => {
+									popups.remove(popup);
+								};
+	
+								const popup = 
+									<Popup
+										key={"NewAppointmentType"}
+										title={"Add Appointment Type"}
+										close={close}
+									>
+										<TypeEditForm
+											popups={popups}
+											clinic={clinic}
+											doctor={doctor}
+											type={null}
+											close={close}
+										/>
+									</Popup>;
+	
+								popups.add(popup);
+							}}
+						/>
 					</header>
 					<div className="cardList">
 						{typeCards}

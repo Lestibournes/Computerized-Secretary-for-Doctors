@@ -137,8 +137,9 @@ export function SetAppointmentPage() {
 				const types = [];
 	
 				for (const type of type_snaps.docs) {
+					console.log(type.data());
 					if (type.data().name) {
-						types.push(type);
+						types.push(type.data());
 					}
 				}
 	

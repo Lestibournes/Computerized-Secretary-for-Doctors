@@ -2,9 +2,9 @@ import { Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { Button } from "../../../Common/Components/Button";
 import { Popup } from "../../../Common/Components/Popup";
-import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { db } from "../../../init";
+import { useState } from "react";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -21,21 +21,14 @@ import { db } from "../../../init";
  * 					duration: number
  * 				}) => {}} success Callback for after updating the appointment type.
  */
- export function TypeFormPopup(popupManager, clinic, doctor, type, name, duration, success) {
-	const close = () => {
-		popupManager.remove(popup);
-	};
+export function TypeEditForm({popups, clinic, doctor, type, close}) {
+	const [saving, setSaving] = useState(false);
 
-	const popup = 
-	<Popup
-		key={(type ? "EditAppointmentType" + type : "NewAppointmentType")}
-		title={(type ? "Edit Appointment Type" : "Add Appointment Type")}
-		close={close}
-	>
+	return (
 		<Formik
 			initialValues={{
-				name: (name ? name : ""),
-				duration: (duration ? duration : 1)
+				name: (type?.name ? type.name : ""),
+				duration: (type?.duration ? type.duration : 1)
 			}}
 
 			validationSchema={Yup.object({
@@ -44,6 +37,7 @@ import { db } from "../../../init";
 
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
+				setSaving(true);
 
 				const data = {
 					name: values.name,
@@ -51,14 +45,14 @@ import { db } from "../../../init";
 				}
 
 				if (type) {
-					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type).update(data)
-					.then(() => close())
-					.catch(reason => popupManager.error(reason));
+					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type.id).update(data)
+					.then(close)
+					.catch(reason => popups.error(reason));
 				}
 				else {
 					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").add(data)
-					.then(() => close())
-					.catch(reason => popupManager.error(reason));
+					.then(close)
+					.catch(reason => popups.error(reason));
 				}
 			}}
 		>
@@ -66,24 +60,45 @@ import { db } from "../../../init";
 				<div className="widgets">
 					<TextInput label="Name" name="name" />
 					<TextInput label="Duration (as a multiple of the minimum)" type="number" name="duration" min="1" />
+					
+					{saving ? 
+						<div>Saving...</div>
+					: ""}
 				</div>
 				<div className="buttonBar">
 					{type ? 
 						<Button type="cancel" label="Delete" action={() => {
-							TypeDeletePopup(popupManager, clinic, doctor, type, name, duration, (result) => {
-								success(result);
-								close();
-							})
+							const cancel = () => {
+								popups.remove(popup);
+							};
+						
+							const popup = 
+							<Popup
+								key="DeleteAppointmentType"
+								title="Delete Appointment Type"
+								close={cancel}
+							>
+								<TypeDeleteForm
+									popups={popups}
+									clinic={clinic}
+									doctor={doctor}
+									type={type}
+									close={close}
+									deleted={() => {
+										cancel();
+										close();
+									}}
+								/>
+							</Popup>;
+						
+							popups.add(popup);
 						}} />
 					: ""}
 					<Button label="Cancel" action={close} />
 					<Button type="submit" label="Save" />
 				</div>
 			</Form>
-		</Formik>
-	</Popup>;
-
-	popupManager.add(popup);
+		</Formik>);
 }
 
 
@@ -94,32 +109,28 @@ import { db } from "../../../init";
  * @param {string} clinic The id of the clinic.
  * @param {string} doctor The id of the doctor.
  * @param {string} type The id of the appointment type.
- * @param {({id: string}) => {}} success Callback for after updating the appointment type.
+ * @param {({id: string}) => {}} deleted Callback for after updating the appointment type.
  */
-export function TypeDeletePopup(popupManager, clinic, doctor, type, name, duration, success) {
-	const close = () => {
-		popupManager.remove(popup);
-	};
+export function TypeDeleteForm({popups, clinic, doctor, type, cancel, deleted}) {
+	const [saving, setSaving] = useState(false);
 
-	const popup = 
-	<Popup
-		key="DeleteAppointmentType"
-		title="Delete Appointment Type"
-		close={close}
-	>
+	return (<>
 		<div className="widgets">
-			Are you sure you wish to delete {name} ({duration})?
+			Are you sure you wish to delete {type.name} ({type.duration})?
 		</div>
+		{saving ? 
+			<div>Saving...</div>
+		: ""}
 		<div className="buttonBar">
-			<Button label="Cancel" action={close} />
+			<Button label="Cancel" action={cancel} />
 			<Button type="cancel" label="Delete" action={() => {
-				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type).delete()
-				.then(() => close())
-				.catch(reason => popupManager.error(reason));
+				setSaving(true);
+console.log(clinic, doctor, type.id);
+				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type.id).delete()
+				.then(deleted)
+				.catch(reason => popups.error(reason));
 			}}
 			/>
 		</div>
-	</Popup>;
-
-	popupManager.add(popup);
+	</>);
 }

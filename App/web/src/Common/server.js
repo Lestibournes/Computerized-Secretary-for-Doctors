@@ -40,22 +40,6 @@ export const server = {
 		getAppointments: fn.httpsCallable("doctors-getAppointments"),
 	},
 
-	schedules: {
-		get: fn.httpsCallable("schedules-get"),
-		add: fn.httpsCallable("schedules-add"),
-		edit: fn.httpsCallable("schedules-edit"),
-		delete: fn.httpsCallable("schedules-delete"),
-
-		addType: fn.httpsCallable("schedules-addType"),
-		editType: fn.httpsCallable("schedules-editType"),
-		deleteType: fn.httpsCallable("schedules-deleteType"),
-		getTypes: fn.httpsCallable("schedules-getTypes"),
-		getType: fn.httpsCallable("schedules-getType"),
-		
-		setMinimum: fn.httpsCallable("schedules-setMinimum"),
-		getMinimum: fn.httpsCallable("schedules-getMinimum"),
-	},
-
 	secretaries: {
 		search: fn.httpsCallable("secretaries-search"),
 	},
