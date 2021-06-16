@@ -142,6 +142,7 @@ async function checkModifyPermission(appointment, context) {
  * message: string,
  * data: {appointment: object, doctor: object, clinic: object, extra: {date: SimpleDate, time: Time}}
  * }>} An object containing all the relevant data.
+ * @deprecated Use the database directly.
  */
 async function get(appointment, context) {
 	const response = {
@@ -214,6 +215,7 @@ async function get(appointment, context) {
  * Start and end times are optional. If they are not specified then there will not be a limit on start and end times.
  * @param {{user: string, doctor: string, start: Date, end: Date}} constraints
  * @returns {Promise<object[]>} An array of appointment data.
+ * @deprecated Use the database directly.
  */
 async function getAll({user, start, end, doctor}, context) {
 	let promises = [];
@@ -356,6 +358,7 @@ async function getAvailable(doctor, clinic, date, type) {
  * }} time The time of the appointment
  * @param {string} type The type of appointment
  * @returns {Promise<{id: string, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
+ * @deprecated Use the database directly.
  */
 async function add(doctor, clinic, patient, date, time, type) {
 	let response = {
@@ -457,6 +460,7 @@ async function add(doctor, clinic, patient, date, time, type) {
  * @param {string} type The type of appointment
  * @param {functions.https.CallableContext} context
  * @returns {Promise<{id: string, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
+ * @deprecated Use the database directly.
  */
 async function edit(appointment, date, time, type, context) {
 	return checkModifyPermission(appointment, context).then(allowed => {
@@ -559,6 +563,7 @@ async function edit(appointment, date, time, type, context) {
  * @param {string} appointment The id of the appointment
  * @param {functions.https.CallableContext} context
  * @returns {Promise<{success: boolean, messages: string[]}>} The id is the id of the new appointment. Messages contains the error messages.
+ * @deprecated Use the database directly.
  */
 async function cancel(appointment, context) {
 	const response = {
@@ -599,6 +604,7 @@ async function cancel(appointment, context) {
  * @param {{appointment: string}} data 
  * @param {functions.https.CallableContext} context 
  * @returns 
+ * @deprecated Use the database directly.
  */
 function arrived(data, context) {
 	const response = {
@@ -638,6 +644,14 @@ function arrived(data, context) {
 	});
 }
 
+/**
+ * 
+ * @param {*} id 
+ * @param {*} text 
+ * @param {*} context 
+ * @returns 
+ * @deprecated Use the database directly.
+ */
 async function saveNote(id, text, context) {
 	const response = {
 		success: false,
@@ -689,9 +703,10 @@ async function saveNote(id, text, context) {
 	});
 }
 
+exports.getAvailable = getAvailable;
+
 exports.get = get;
 exports.getAll = getAll;
-exports.getAvailable = getAvailable;
 exports.add = add;
 exports.edit = edit;
 exports.cancel = cancel;
