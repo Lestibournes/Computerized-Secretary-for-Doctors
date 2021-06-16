@@ -41,10 +41,9 @@ async function getAppointments(doctor, clinic, date) {
 	const start_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day));
 	const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
 
-	return fsdb.collection("appointments").orderBy("start")
+	return fsdb.collection("clinic").doc(clinic).collection("appointments").orderBy("start")
 	.where("start", ">=", start_day)
 	.where("start", "<", end_day)
-	.where("clinic", "==", clinic)
 	.where("doctor", "==", doctor)
 	.get().then(appointment_snaps => {
 		const appointments = [];
@@ -248,6 +247,7 @@ async function getAll({user, start, end, doctor}, context) {
 /**
  * Get all available time slots for a specified date.
  * If appointment type is specified then it will get only time slots that are big enough to accomodate it.
+ * This is one of the few functions that has to be on Cloud Functions to make sure that appointments are only made at correct times.
  * @todo use the Time, Slot, and SimpleDate classes and methods instead of ad-hoc objects and global functions.
  * @param {string} doctor The id of the doctor.
  * @param {string} clinic The id of the clinic.
@@ -258,35 +258,79 @@ async function getAll({user, start, end, doctor}, context) {
 async function getAvailable(doctor, clinic, date, type) {
 	// The time from the server is in UTC with no timezone offset data.
 
-	date = new SimpleDate(date.year, date.month, date.day);
+	const simpleDate = new SimpleDate(date.year, date.month, date.day);
 
+	/**
+	 * The available time slots
+	 * @type {Slot[]}
+	 */
 	const available = [];
 
 	// First get all of the booked time ranges:
-	return getAppointments(doctor, clinic, date).then(appointments => {
-		return schedules.get(clinic, doctor).then(schedule => {
-			return schedules.getType(clinic, doctor, type).then(response => {
-				if (response.success) {
-					for (const shift of schedule[date.weekday]) {
-						const start = Time.fromObject(shift.start);
-						const end = Time.fromObject(shift.end);
-						const shift_slot = new Slot(start, end);
+	return getAppointments(doctor, clinic, simpleDate).then(appointments => {
+		const doctorRef = fsdb.collection("clinics").doc(clinic).collection("doctors").doc(doctor);
 
-						let current_slot = new Slot(start, start.incrementMinutes(response.minutes));
+		return doctorRef.get().then(doctor_snap => {
+			return doctorRef.collection("types").get().then(type_snaps => {
+				/**
+				 * The minimum appointment length, in minutes
+				 * @type {number}
+				 */
+				const minimum = doctor_snap.data().minimum;
 
-						while (shift_slot.contains(current_slot)) {
+				/**
+				 * The length of the requested appointment type, in minutes.
+				 * Defaults to minimum.
+				 * @type {number}
+				 */
+				let duration = minimum;
+
+				// Fine the matching appointment type and get the actual duration fot the selected appointment type:
+				for (const type_snap of type_snaps.docs) {
+					if (type_snap.data().name === type) {
+						duration = doctor_snap.data().minimum * type_snap.data().duration;
+						break;
+					}
+				}
+
+				// Get the shift schedule for the day:
+				return doctorRef.collection("shifts").get().then(shift_snaps => {
+					/**
+					 * The shifts for the selected day of the week.
+					 * @type {Slot[]}
+					 */
+					const day = [];
+
+					for (const shift_snap of shift_snaps.docs) {
+						if (shift_snap.data().day === simpleDate.weekday) {
+							day.push(new Slot(
+								Time.fromObject(shift_snap.data().start),
+								Time.fromObject(shift_snap.data().end)
+							));
+						}
+					}
+
+					// Find all available time slots within each shift:
+					for (const shift of day) {
+						// The size of each time slot should be duration. The start time of the slots should be incremented by minimum.
+						// This is to get all slots for the appointment type while keeping the appointments aligned with each other.
+
+						let current_slot = new Slot(shift.start, shift.start.incrementMinutes(duration));
+			
+						while (shift.contains(current_slot)) {
 							// If the current time slot doesn't collide with the occupied time slots:
 							if (!appointmentCollides(appointments, current_slot)) {
 								available.push(current_slot);
 							}
-
-							current_slot = new Slot(current_slot.start.incrementMinutes(response.minimum),
-								current_slot.end.incrementMinutes(response.minimum))
+			
+							// Increment both the start and end times by minimum to check the next time slot while keeping the size of the slot the same:
+							current_slot = new Slot(current_slot.start.incrementMinutes(minimum),
+								current_slot.end.incrementMinutes(minimum));
 						}
 					}
-
+			
 					return available;
-				}
+				});
 			});
 		});
 	});

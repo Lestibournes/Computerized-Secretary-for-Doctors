@@ -1,8 +1,9 @@
 import { Button } from "../../Common/Components/Button";
 import { Popup } from "../../Common/Components/Popup";
 import { server } from "../../Common/server";
+import { db } from "../../init";
 
-export function createProfilePopup(popups, user, success) {
+export function createProfilePopup(popups, user) {
 	const close = () => popups.remove(popup);
 	
 	const popup =
@@ -11,15 +12,15 @@ export function createProfilePopup(popups, user, success) {
 				<h2>Would you like to create a doctor profile?</h2>
 				<div className="buttonBar">
 					<Button action={close} label="No" />
-					<Button type="okay" action={() => {
-						server.doctors.create({user: user}).then(response => {
-							if (response.data.success) {
-								success(response.data.doctor);
-								close();
-							}
-							else popups.error("You already have a doctor profile");
-						});
-					}} label="Yes" />
+					<Button
+						type="okay"
+						action={() => {
+							db.collection("users").doc(user).update({doctor: true})
+							.then(close)
+							.catch(reason => popups.error(reason));
+						}}
+						label="Yes"
+					/>
 				</div>
 			</div>
 		</Popup>;

@@ -12,7 +12,7 @@ export const LINK_TYPES = {
 	CLINIC: "clinic"
 }
 //The reason for separating the popup function and form component is that I want to be ready to switch to displaying the forms in another way than popups, such as by in-place replacement of the display. By doing it like this from the start I save effort should I change my mind later.
-export function LinkEditForm({link, type, id, close, success}) {
+export function LinkEditForm({link, type, id, close}) {
 	const popups = usePopups();
 	
 	return (
@@ -33,10 +33,7 @@ export function LinkEditForm({link, type, id, close, success}) {
 							type: type,
 							id: id
 						}).then(response => {
-							if (response.data.success) {
-								success();
-								close();
-							}
+							if (response.data.success) close();
 							else {
 								popups.error(response.data.message);
 								setSubmitting(false);

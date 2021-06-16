@@ -41,7 +41,7 @@ service cloud.firestore {
 			
 			function isValidData() {
 				return
-				verifyFields(['firstName', 'lastName', 'sex'], []) &&
+				verifyFields(['firstName', 'lastName', 'sex'], ['link']) &&
 				
 				request.resource.data.firstName is string &&
 				request.resource.data.firstName.size() > 1 &&
@@ -121,7 +121,7 @@ service cloud.firestore {
 
 			function isValidData() {
 				return
-				verifyFields(['name', 'city', 'address'], ['language']) &&
+				verifyFields(['name', 'city', 'address'], ['language', 'link']) &&
 
 				// The name of the clinic must be of a short string:
 				request.resource.data.name is string &&
@@ -532,11 +532,17 @@ service cloud.firestore {
 
 				// Either type is clinic and the clinic exists,
 				(request.resource.data.type == "clinic" &&
-				exists(/databases/$(database)/documents/clinics/$(request.resource.data.id))) ||
+				exists(/databases/$(database)/documents/clinics/$(request.resource.data.id)) &&
+
+				// Make sure that each clinic only has 1 link:
+				get(/databases/$(database)/documents/clinics/$(request.resource.data.id)).data.link == linkID) ||
 
 				// Or type is doctor and the doctor exists:
 				(request.resource.data.type == "doctor" &&
-				exists(/databases/$(database)/documents/doctors/$(request.resource.data.id))) &&
+				exists(/databases/$(database)/documents/doctors/$(request.resource.data.id)) &&
+
+				// Make sure that each doctor only has 1 link:
+				get(/databases/$(database)/documents/users/$(request.resource.data.id)).data.link == linkID) &&
 
 				// The id, which is also the link text, must be made of word characters only:
 				request.resource.id.matches('^[a-zA-Z0-9_]+$') &&

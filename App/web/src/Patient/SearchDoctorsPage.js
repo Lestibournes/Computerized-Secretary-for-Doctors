@@ -8,14 +8,15 @@ import { TextInput } from '../Common/Components/TextInput';
 import { Card } from '../Common/Components/Card';
 import { Button } from '../Common/Components/Button';
 import { Select } from "../Common/Components/Select";
-import { getPictureURL } from "../Common/functions";
+import { capitalizeAll, getPictureURL } from "../Common/functions";
 import { server } from "../Common/server";
 import { Header } from "../Common/Components/Header";
 import { Loading } from "../Common/Components/Loading";
+import { db } from "../init";
 
 export function SearchDoctorsPage() {
 	const [cities, setCities] = useState();
-	const [fields, setFields] = useState();
+	const [specializations, setSpecializations] = useState();
 
 	/**
 	 * There are the following states:
@@ -35,20 +36,20 @@ export function SearchDoctorsPage() {
 	const [results, setResults] = useState();
 
 	useEffect(() => {
-		server.clinics.getAllCities().then(response => {
-			setCities(response.data.map(city => {
+		db.collection("cities").get().then(city_snaps => {
+			setCities(city_snaps.docs.map(city_snap => {
 				return {
-					value: city.id,
-					label: city.label
+					value: city_snap.id,
+					label: capitalizeAll(city_snap.id)
 				}
 			}));
 		});
 
-		server.specializations.getAll().then(response => {
-			setFields(response.data.map(specialization => {
+		db.collection("specializations").get().then(spec_snaps => {
+			setSpecializations(spec_snaps.docs.map(spec_snap => {
 				return {
-					value: specialization.id,
-					label: specialization.label
+					value: spec_snap.id,
+					label: capitalizeAll(spec_snap.id)
 				}
 			}));
 		});
@@ -115,7 +116,7 @@ export function SearchDoctorsPage() {
 		}
 	}
 
-	if (cities && fields) {
+	if (cities && specializations) {
 		display = 
 		<>
 			<Formik
@@ -123,7 +124,7 @@ export function SearchDoctorsPage() {
 				validationSchema={Yup.object({
 					name: Yup.string(),
 					city: Yup.string(),
-					field: Yup.string(),
+					specialization: Yup.string(),
 				})}
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
@@ -133,7 +134,7 @@ export function SearchDoctorsPage() {
 
 					if (values.name) data.name = values.name;
 					if (values.city) data.city = values.city;
-					if (values.field) data.field = values.field;
+					if (values.specialization) data.specialization = values.specialization;
 
 					server.doctors.search(data).then((result) => {
 						setDoctors(result.data);
@@ -149,7 +150,7 @@ export function SearchDoctorsPage() {
 							placeholder="Yoni Robinson"
 						/>
 						<Select label="City" name="city" options={cities}/>
-						<Select label="Specialization" name="field" options={fields}/>
+						<Select label="Specialization" name="specialization" options={specializations}/>
 						<div className="buttonBar">
 							<Button type="submit" label="Search" />
 						</div>

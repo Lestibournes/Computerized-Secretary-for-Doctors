@@ -14,6 +14,7 @@ import { LinkEditForm, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Link } from "react-router-dom";
 import { useRoot } from "../../Common/Root";
 import { Popup } from "../../Common/Components/Popup";
+import { db } from "../../init";
 
 /**
 @todo
@@ -60,39 +61,75 @@ export function DoctorProfileFragment() {
 	const [doctor, setDoctor] = useState(null);
 	const [clinicCards, setClinicCards] = useState(null);
 	const [clinics, setClinics] = useState();
+	const [specializations, setSpecializations] = useState();
+	const [link, setLink] = useState();
 	
 	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (auth.user) loadData(auth.user.uid);
-		});
+		if (auth?.user) {
+			return db.collection("users").doc(auth.user.uid).onSnapshot(
+				user_snap => {
+					const user = user_snap.data();
+					user.id = user_snap.id;
+	
+					if (user.doctor) setDoctor(user);
+					else createProfilePopup(popups, auth.user.uid);
+				},
+				error => popups.error(error.message)
+			)
+		}
+		// const unsubscribe = auth.isLoggedIn(status => {
+		// });
 
-		return unsubscribe;
-	}, [auth]);
+		// return unsubscribe;
+	}, [auth.user, popups]);
 
 	async function loadData(user) {
-		return server.users.isDoctor({id: user}).then(response => {
-			if (response.data) {
-				return server.doctors.getData({id: user}).then(results => {
-					return setDoctor(results.data);
-				});
-			}
-			else {
-				createProfilePopup(
-					popups,
-					auth.user.uid,
-					doctor => {
-						server.doctors.getData({id: doctor}).then(results => {
-							setDoctor(results.data);
-						});
-					}
-				);
-			}
-		});
+		
 	}
 
 	useEffect(() => {
 		if (doctor) {
-			setClinics(doctor.clinics);
+			return db.collectionGroup("doctors").where("user", "==", doctor.id).onSnapshot(
+				doctor_snaps => {
+					const promises = [];
+
+					for (const doctor_snap of doctor_snaps.docs) {
+						const clinicRef = doctor_snap.ref.parent.parent;
+
+						if (clinicRef) {
+							promises.push(
+								clinicRef.get().then(clinic_snap => {
+									const clinic = clinic_snap.data();
+									clinic.id = clinic_snap.id;
+									return clinic;
+								})
+								.catch(reason => popups.error(reason))
+							)
+						}
+					}
+
+					Promise.all(promises).then(clinics => setClinics(clinics));
+				}
+			)
+		}
+	}, [doctor]);
+
+	useEffect(() => {
+		if (doctor) {
+			return db.collection("users").doc(doctor.id).collection("spcializations").onSnapshot(
+				spec_snaps => {
+					const specializations = [];
+
+					for (const spec_snap of spec_snaps.docs) {
+						const spec = spec_snap.data();
+						spec.id = spec_snap.id;
+						specializations.push(spec);
+					}
+
+					setSpecializations(specializations);
+				},
+				error => popups.error(error.message)
+			)
 		}
 	}, [doctor]);
 
@@ -108,7 +145,7 @@ export function DoctorProfileFragment() {
 						body={clinic_data.city}
 						footer={clinic_data.address}
 						link={(
-							clinic_data.owner === doctor.doctor.id ?
+							clinic_data.owner === doctor.id ?
 							root.get() + "/clinics/edit/" + clinic_data.id
 							:
 							root.get() + "/clinics/view/" + clinic_data.id
@@ -119,7 +156,7 @@ export function DoctorProfileFragment() {
 
 			setClinicCards(clinics_list);
 		}
-	}, [doctor, clinics]);
+	}, [doctor, clinics, root]);
 
 	let display;
 
@@ -137,17 +174,10 @@ export function DoctorProfileFragment() {
 								const popup =
 									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
 										<LinkEditForm
-											link={doctor.doctor.link}
+											link={doctor.link}
 											type={LINK_TYPES.DOCTOR}
-											id={doctor.doctor.id}
+											id={doctor.id}
 											close={close}
-											success={
-												() => {
-													server.doctors.getData({id: doctor.doctor.id}).then(doctor_data => {
-														setDoctor(doctor_data.data);
-													});
-												}
-											}
 										/>
 									</Popup>
 							
@@ -155,9 +185,9 @@ export function DoctorProfileFragment() {
 							}}
 						/>
 					</header>
-						{doctor?.doctor?.link ?
+						{doctor?.link ?
 							<div className="table">
-								<b>Name:</b> <Link to={"/" + doctor.doctor.link} >{doctor.doctor.link}</Link>
+								<b>Name:</b> <Link to={"/" + doctor.link} >{doctor.link}</Link>
 							</div>
 							:
 							<div>
@@ -174,33 +204,22 @@ export function DoctorProfileFragment() {
 					<header>
 						<h3>Specializations</h3>
 						<Button label="+"
-							action={() => {
-								selectSpecializationPopup(
-									popups,
-									doctor.fields,
-									specialization => {
-										server.doctors.addSpecialization({doctor: doctor.doctor.id, specialization: specialization})
-										.then(() => {
-											loadData(auth.user.uid);
-										});
-									}
-								);
-							}}
+							action={() => selectSpecializationPopup(popups, specializations)}
 						/>
 					</header>
 					<div className="item-list">
 						{
-							doctor.fields.length > 0 ?
-								doctor.fields.map(field => 
+							specializations?.length > 0 ?
+							specializations.map(specialization => 
 								<div
-									key={field.id}
+									key={specialization.id}
 									className="removable-item"
 								>
 									<Button
 										label="-"
-										action={() => removeSpecializationPopup(popups, doctor.doctor.id, field.id, () => loadData(doctor.user.id))}
+										action={() => removeSpecializationPopup(popups, doctor.doctor.id, specialization.id, () => loadData(doctor.user.id))}
 									/>
-									<span>{capitalizeAll(field.id)}</span>
+									<span>{capitalizeAll(specialization.id)}</span>
 								</div>)
 								:
 								"No specializations specified"

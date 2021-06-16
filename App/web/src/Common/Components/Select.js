@@ -8,7 +8,7 @@ import { Field, useField } from "formik";
 	const [field, meta] = useField(props);
 
 	const options = [];
-	options.push(<option key={label} value={props?.default?.value}>{props?.default?.label}</option>);
+	options.push(<option key={"default"} value={props?.default?.value}>{props?.default?.label}</option>);
 
 	for (const option of props.options) {
 		options.push(<option key={option.value ? option.value : option} value={option.value ? option.value : option}>{option.label ? option.label : option}</option>);

@@ -1,3 +1,5 @@
+const { Time } = require("./Time");
+
 /**
  * Represent a segment of time.
  */
