@@ -2,7 +2,6 @@ import { useAuth } from "../../Common/Auth";
 import { useEffect, useState } from "react";
 import { Button } from "../../Common/Components/Button";
 import { capitalizeAll, getPictureURL } from "../../Common/functions";
-import { server } from "../../Common/server";
 import { userEditPopup } from "./UserEditForm";
 import { usePopups } from "../../Common/Popups";
 import { db, storage } from "../../init";

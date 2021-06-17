@@ -19,7 +19,6 @@ const fsdb = admin.firestore();
 exports.clinics = require('./interfaces/clinics');
 exports.doctors = require('./interfaces/doctors');
 exports.appointments = require('./interfaces/appointments');
-exports.users = require('./interfaces/users');
 exports.specializations = require('./interfaces/specializations');
 exports.schedules = require('./interfaces/schedules');
 exports.secretaries = require('./interfaces/secretaries');

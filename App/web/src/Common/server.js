@@ -50,15 +50,6 @@ export const server = {
 		getAll: fn.httpsCallable("specializations-getAll"),
 	},
 
-	users: {
-		add: fn.httpsCallable("users-add"),
-		get: fn.httpsCallable("users-get"),
-		getPicture: fn.httpsCallable("users-getPicture"),
-		updatePicture: fn.httpsCallable("users-updatePicture"),
-		update: fn.httpsCallable("users-update"),
-		isDoctor: fn.httpsCallable("users-isDoctor"),
-	},
-
 	links: {
 		getLink: fn.httpsCallable("links-getLink"),
 		getTarget: fn.httpsCallable("links-getTarget"),
@@ -104,7 +95,7 @@ export const events = {
 		appointments: function(doctor, callback) {
 			if (!this.appointments.cache) this.appointments.cache = new Map();
 			
-			return db.collectionGroup("appointments").where("doctor", "==", doctor.id).onSnapshot(
+			return db.collectionGroup("appointments").where("doctor", "==", doctor).onSnapshot(
 				app_snaps => {
 					for (const change_snap of app_snaps.docChanges()) {
 						const key = change_snap.doc.data().clinic + "/" + change_snap.doc.id;

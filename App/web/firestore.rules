@@ -564,8 +564,25 @@ service cloud.firestore {
 			allow read;
 		}
 
-		// match /{path=**}/appointments/{appointmentID} {
-		// 	allow read: if 
-		// }
+		match /{path=**}/appointments/{appointmentID} {
+			function isPatient() {
+				return resource.data.patient == request.auth.uid;
+			}
+
+			function isTheDoctor() {
+				return resource.data.doctor == request.auth.uid;
+			}
+
+			function isOwner() {
+				let data = get(/databases/$(database)/documents/$(request.resource.data.clinic)/appointments/$(appointmentID));
+				return data.owner == request.auth.uid;
+			}
+
+			function isSecretary() {
+				return exists(/databases/$(database)/documents/$(request.resource.data.clinic)/secretaries/$(request.auth.uid));
+			}
+
+			allow read: if isPatient() || isTheDoctor() || isSecretary() || isOwner();
+		}
 	}
 }
