@@ -47,12 +47,12 @@ export function TypeEditForm({popups, clinic, doctor, type, close}) {
 				if (type) {
 					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type.id).update(data)
 					.then(close)
-					.catch(reason => popups.error(reason));
+					.catch(reason => popups.error(reason.code));
 				}
 				else {
 					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").add(data)
 					.then(close)
-					.catch(reason => popups.error(reason));
+					.catch(reason => popups.error(reason.code));
 				}
 			}}
 		>
@@ -128,7 +128,7 @@ export function TypeDeleteForm({popups, clinic, doctor, type, cancel, deleted}) 
 console.log(clinic, doctor, type.id);
 				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type.id).delete()
 				.then(deleted)
-				.catch(reason => popups.error(reason));
+				.catch(reason => popups.error(reason.code));
 			}}
 			/>
 		</div>

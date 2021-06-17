@@ -48,62 +48,116 @@ export function SetAppointmentPage() {
 	const { doctor, clinic } = useParams();
 	const [doctorID, setDoctorID] = useState();
 	const [clinicID, setClinicID] = useState();
+
+	const [doctorData, setDoctorData] = useState(null);
+	const [clinicData, setClinicData] = useState(null);
 	
+	// Appointment types/durations:
+	const [minimum, setMinimum] = useState();
 	const [typesData, setTypesData] = useState([]);
+	const [typesOptions, setTypesOptions] = useState([]);
 	const [type, setType] = useState(null);
+
+	// Time and date:
 	const [time, setTime] = useState();
 	const [times, setTimes] = useState();
 	const [date, setDate] = useState(new SimpleDate());
 
+	// For complete actions:
 	const [success, setSuccess] = useState(null);
 	const [deleted, setDeleted] = useState(null);
 
-	const [doctor_data, setDoctorData] = useState(null);
-	const [clinic_data, setClinicData] = useState(null);
-
 	useEffect(() => {
-		if (appointment) {
+		if (clinic && appointment) {
+			// If it's an existing appointment, load the appointment data:
 			db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).get()
 			.then(app_snap => {
 				if (app_snap.exists) {
-					setData(app_snap.data());
-					setDoctorID(app_snap.data().doctor);
-					setClinicID(clinic);
+					setData(app_snap.data()); // Appointment data
+
 					setType(app_snap.data().type);
 					setDate(new SimpleDate(app_snap.data().start));
 					setTime(Time.fromDate(app_snap.data().start));
+
+					setDoctorID(app_snap.data().doctor); 
+					setClinicID(clinic);
 				}
 			})
-			.catch(reason => popups.error(reason));
+			.catch(reason => popups.error(reason.code));
 		}
-		else if (doctor && clinic && !doctorID && !clinicID) {
+		else if (clinic && doctor) {
+			// If it's a new appointment:
 			setDoctorID(doctor);
 			setClinicID(clinic);
 		}
-	}, [appointment, doctor, clinic]);
+	}, [clinic, doctor, appointment]);
 
 	useEffect(() => {
-		if (doctorID && !doctor_data) {
-			server.doctors.getData({id: doctorID}).then(result => {
-				setDoctorData(result.data);
-			});
+		// Get the doctor's user data:
+		if (doctorID) {
+			db.collection("users").doc(doctorID).get()
+			.then(doctor_snap => {
+				const data = doctor_snap.data();
+				data.id = doctor_snap.id;
+				setDoctorData(data);
+			})
+			.catch(reason => popups.error(reason.code));
 		}
-  }, [doctorID]);
+
+		// Get the clinic's public data:
+		if (clinicID) {
+			db.collection("clinics").doc(clinicID).get()
+			.then(clinic_snap => {
+				const data = clinic_snap.data();
+				data.id = clinic_snap.id;
+				setClinicData(data);
+			})
+		}
+
+		if (clinicID && doctorID) {
+			const doctorRef = db.collection("clinics").doc(clinicID).collection("doctors").doc(doctorID);
+
+			// Get the minimum appointment duration:
+			doctorRef.get()
+			.then(doctor_snap => setMinimum(doctor_snap.data().minimum))
+			.catch(reason => popups.error(reason.code));
+
+			// Get the data of the different appointlment types:
+			doctorRef.collection("types").get()
+			.then(type_snaps => {
+				const types = [];
 	
-	useEffect(() => {
-		if (clinicID && !clinic_data) {
-			server.clinics.get({id: clinicID}).then(response => {
-				setClinicData(response.data);
-			});
+				for (const type of type_snaps.docs) {
+					if (type.data().name) {
+						types.push(type.data());
+					}
+				}
+	
+				// Refresh the types options list for the display:
+				types.sort(compareByName);
+				setTypesData(types);
+
+				const options = [];
+
+				for (const type of types) {
+					if (type.name) options.push(type.name);
+				}
+
+				setTypesOptions(options);
+			})
+			.catch(reason => popups.error(reason.code));
 		}
-  }, [clinicID]);
+  }, [clinicID, doctorID]);
+	
 
 	useEffect(() => {
-		if (date.day && date.month && date.year && type && (time || !appointment) && doctorID && clinicID) {
+		// Get the available times for setting appointments:
+		console.log(date.toDate().getTime());
+		if (date && type && (time || !appointment) && doctorID && clinicID) {
 			server.appointments.getAvailable({
-				doctor: doctorID,
 				clinic: clinicID,
-				date: date.toObject(),
+				doctor: doctorID,
+				date: date.toDate().getTime(),
 				type: type
 			})
 			.then(results => {
@@ -113,6 +167,7 @@ export function SetAppointmentPage() {
 					list.push(Time.fromObject(result.start));
 				});
 
+				// If the appointment already exists, add back it the time it is set to:
 				if (time) {
 					for (let i = 0; i < list.length; i++) {
 						if (list[i].compare(time) === 0) {
@@ -131,52 +186,25 @@ export function SetAppointmentPage() {
 		}
 	}, [appointment, time, date, type, doctorID, clinicID])
 
-	useEffect(() => {
-		if (clinicID && doctorID) {
-			db.collection("clinics").doc(clinicID).collection("doctors").doc(doctorID).collection("types").get()
-			.then(type_snaps => {
-				const types = [];
-	
-				for (const type of type_snaps.docs) {
-					console.log(type.data());
-					if (type.data().name) {
-						types.push(type.data());
-					}
-				}
-	
-				types.sort(compareByName);
-				setTypesData(types);
-			})
-			.catch(reason => popups.error(reason));
-		}
-	}, [clinicID, doctorID]);
-
-	/**
-	 * @todo Appointment types should be read from the doctor's configuration on the server.
-	 */
-	const types = [];
-
-	for (const type of typesData) {
-		if (type.name) types.push(type.name);
-	}
+	// Build the display:
 
 	let subtitle;
 	let display;
 	
-	if ((data || !appointment) && doctor_data && clinic_data) {
+	if ((data || !appointment) && doctorData && clinicData) {
 		subtitle = 
 			"Appointment Details" + 
-			(doctor_data ? " for Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName : "") + 
-			(clinic_data ? " at " + clinic_data.name + ", " + clinic_data.city : "");
+			(doctorData ? " for Dr. " + doctorData.fullName : "") + 
+			(clinicData ? " at " + clinicData.name + ", " + clinicData.city : "");
 		
 		display = 
 			<>
 				{data ?
 					<>
 						<p>
-							Currently the appointment is a <b>{capitalizeAll(data.appointment.type)}</b> appointment
-							on <b>{SimpleDate.fromObject(data.extra.date).toString()}</b>
-							at <b>{Time.fromObject(data.extra.time).toString()}</b>.
+							Currently the appointment is a <b>{capitalizeAll(data.type)}</b> appointment
+							on <b>{new SimpleDate(data.start).toString()}</b>
+							at <b>{Time.fromDate(data.start).toString()}</b>.
 						</p>
 						<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
 					</>
@@ -202,52 +230,52 @@ export function SetAppointmentPage() {
 					onSubmit={async (values, { setSubmitting }) => {
 						setSubmitting(true);
 
+						const start = new Date(values.date.year, values.date.month, values.date.day, values.time.hours, values.time.minutes);
+						const end_time = values.time.incrementMinutes(minimum);
+						const end = new Date(values.date.year, values.date.month, values.date.day, end_time.hours, end_time.minutes);
 						if (data) {
-							let new_data = {
-								appointment: appointment,
-								clinic: clinic
-							};
-
-							if (values.time) {
-								new_data.time = values.time.toObject();
-							}
-							
-							if (values.date) {
-								new_data.date = values.date.toObject();
-							}
-
-							if (values.type) {
-								new_data.type = values.type;
-							}
-							
-							server.appointments.edit(new_data).then(response => {
-								if (response.data.success) setSuccess(response.data.id);
-								else popups.error(response.data.message)
+							// If editing an existing appointment:
+							db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({
+								start: start,
+								end: end,
+								type: values.type
 							})
-							.catch(reason => popups.error(reason))
+							.then(app_ref => app_ref.get().then(app_snap => {
+								if (app_snap.exists) {
+									const app_data = app_snap.data();
+									app_data.id = app_snap.id;
+									setSuccess(app_data);
+								}
+								else {
+									popups.error("Modifying the appointment failed");
+								}
+							}))
+							.catch(reason => popups.error(reason.code));
 						}
 						else {
-							// Set the appointment on the server:
-							server.appointments.add({
+							// If creating a new appointment:
+							db.collection("clinics").doc(clinic).collection("appointments").add({
 								doctor: doctor,
 								clinic: clinic,
 								patient: auth.user.uid,
-								date: values.date.toObject(),
-								time: values.time.toObject(),
+								start: start,
+								end: end,
 								type: values.type
 							})
-							.then(response => {
-								if (response.data.messages.length > 0) {
-									popups.error(
-										response.data.messages.map(message => {
-											return <p>{capitalize(message)}</p>;
-										})
-									);
+							.then(app_ref => app_ref.get().then(app_snap => {
+								if (app_snap.exists) {
+									const app_data = app_snap.data();
+									app_data.id = app_snap.id;
+									setSuccess(app_data);
 								}
-
-								setSuccess(response.data.id);
-							})
-							.catch(reason => popups.error(capitalize(reason)))
+								else {
+									popups.error("Creating the appointment failed");
+								}
+							}))
+							.catch(reason => {
+								console.log(reason);
+								popups.error(reason.code);
+							});
 						}
 					}}
 				>
@@ -258,7 +286,7 @@ export function SetAppointmentPage() {
 								<SelectList
 									label="Appointment Type"
 									name="type"
-									options={types}
+									options={typesOptions}
 									selected={type}
 									onClick={(index) => setType(index)}
 								/>
@@ -289,7 +317,7 @@ export function SetAppointmentPage() {
 						</div>
 					</Form>
 				</Formik>
-				{(success ? <Redirect to={root.get() + "/user/appointments/success/" + success} /> : null)}
+				{(success ? <Redirect to={root.get() + "/user/appointments/success/" + success.clinic + "/" + success.id} /> : null)}
 				{(deleted ? <Redirect to={root.get() + "/user/appointments/deleted"} /> : null)}
 			</>;
 	}

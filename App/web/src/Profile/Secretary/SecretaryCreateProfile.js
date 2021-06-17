@@ -24,7 +24,7 @@ export function SecretaryCreateProfileForm({user, close}) {
 					action={() => {
 						db.collection("users").doc(user).update({secretary: true})
 						.then(() => close())
-						.catch(reason => popups.error(reason));
+						.catch(reason => popups.error(reason.code));
 						}}
 					label="Yes"
 				/>

@@ -41,7 +41,7 @@ import { db } from "../../../init";
 					success(values.minimum);
 					close();
 				})
-				.catch(reason => popups.error(reason));
+				.catch(reason => popups.error(reason.code));
 			}}
 		>
 			<Form>

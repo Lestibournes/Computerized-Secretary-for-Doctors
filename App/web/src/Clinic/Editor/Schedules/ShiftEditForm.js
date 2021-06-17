@@ -39,12 +39,12 @@ export function ShiftEditForm({popups, clinic, doctor, shift, day, start, end, c
 				if (shift) {
 					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").doc(shift).update(data)
 					.then(() => close())
-					.catch(reason => popups.error(reason));
+					.catch(reason => popups.error(reason.code));
 				}
 				else {
 					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").add(data)
 					.then(() => close())
-					.catch(reason => popups.error(reason));
+					.catch(reason => popups.error(reason.code));
 				}
 			}}
 		>
@@ -85,7 +85,7 @@ function ConfirmDeleteForm({popups, clinic, doctor, shift, close}) {
 				<Button type="cancel" label="Yes" action={() => {
 					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").doc(shift).delete()
 					.then(() => close())
-					.catch(reason => popups.error(reason));
+					.catch(reason => popups.error(reason.code));
 				}} />
 				<Button type="okay" label="Cancel" action={close} />
 			</div>

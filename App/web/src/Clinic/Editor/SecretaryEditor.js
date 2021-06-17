@@ -43,7 +43,7 @@ export function SecretaryEditor() {
 			.then(secretary_snap => {
 				setSecretaryData(secretary_snap.data());
 			})
-			.catch(reason => popups.error(reason));
+			.catch(reason => popups.error(reason.code));
 		}
 	}, [secretary]);
 
@@ -114,7 +114,7 @@ export function removeSecretaryPopup(popups, clinic, secretaryData, success) {
 			<Button label="Yes" type="cancel" action={() => {
 				db.collection("clinics").doc(clinic).collection("secretaries").doc(secretaryData.id).delete()
 				.then(() => success())
-				.catch(reason => popups.error(reason));
+				.catch(reason => popups.error(reason.code));
 			}} />
 		</div>
 	</Popup>;

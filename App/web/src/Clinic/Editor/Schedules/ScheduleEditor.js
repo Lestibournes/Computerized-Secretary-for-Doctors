@@ -81,11 +81,11 @@ export function ScheduleEditor() {
 
 			db.collection("clinics").doc(clinic).get()
 			.then(clinic_snap => setClinicData(clinic_snap.data()))
-			.catch(reason => popups.error(reason));
+			.catch(reason => popups.error(reason.code));
 
 			db.collection("users").doc(doctor).get()
 			.then(user_snap => setDoctorData(user_snap.data()))
-			.catch(reason => popups.error(reason));
+			.catch(reason => popups.error(reason.code));
 
 			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").onSnapshot(
 				shift_snaps => {

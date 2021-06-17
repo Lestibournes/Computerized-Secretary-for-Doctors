@@ -17,7 +17,7 @@ export function createProfilePopup(popups, user) {
 						action={() => {
 							db.collection("users").doc(user).update({doctor: true})
 							.then(close)
-							.catch(reason => popups.error(reason));
+							.catch(reason => popups.error(reason.code));
 						}}
 						label="Yes"
 					/>

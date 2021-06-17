@@ -121,7 +121,7 @@ export const events = {
 						}
 					}
 				},
-				error => console.log(error.message)
+				error => console.log("Can't fetch notifications: " + error.message)
 			);
 		}
 	}

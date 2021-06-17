@@ -304,7 +304,7 @@ export function ClinicEditor() {
 													db.collection("clinics").doc(clinic).collection("secretaries").doc(selected).set({
 														user: selected,
 														clinic: clinic
-													}).catch(reason => popups.error(reason));
+													}).catch(reason => popups.error(reason.code));
 												}
 											}
 										/>

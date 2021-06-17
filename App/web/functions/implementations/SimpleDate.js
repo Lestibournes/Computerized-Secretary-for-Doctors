@@ -80,7 +80,7 @@
 	 */
 	constructor(...args) {
 		if (args.length === 3 || args.length === 2) this.#date = new Date(...args);
-		if (args.length === 1) this.#date = args[0];
+		if (args.length === 1) this.#date = new Date(args[0].getFullYear(), args[0].getMonth(), args[0].getDate());
 		if (args.length === 0) this.#date = new Date();
 	}
 

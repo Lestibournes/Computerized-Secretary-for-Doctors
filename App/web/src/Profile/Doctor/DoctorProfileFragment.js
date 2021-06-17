@@ -74,7 +74,7 @@ export function DoctorProfileFragment() {
 					if (user.doctor) setDoctor(user);
 					else createProfilePopup(popups, auth.user.uid);
 				},
-				error => popups.error(error.message)
+				error => popups.error("Error fetching user data: " + error.message)
 			)
 		}
 		// const unsubscribe = auth.isLoggedIn(status => {
@@ -89,6 +89,7 @@ export function DoctorProfileFragment() {
 
 	useEffect(() => {
 		if (doctor) {
+			console.log(doctor);
 			return db.collectionGroup("doctors").where("user", "==", doctor.id).onSnapshot(
 				doctor_snaps => {
 					const promises = [];
@@ -103,20 +104,21 @@ export function DoctorProfileFragment() {
 									clinic.id = clinic_snap.id;
 									return clinic;
 								})
-								.catch(reason => popups.error(reason))
+								.catch(reason => popups.error("Error fetching clinic data: " + reason))
 							)
 						}
 					}
 
 					Promise.all(promises).then(clinics => setClinics(clinics));
-				}
+				},
+				error => popups.error("Error fetching doctor data: " + error.message)
 			)
 		}
 	}, [doctor]);
 
 	useEffect(() => {
 		if (doctor) {
-			return db.collection("users").doc(doctor.id).collection("spcializations").onSnapshot(
+			return db.collection("users").doc(doctor.id).collection("specializations").onSnapshot(
 				spec_snaps => {
 					const specializations = [];
 
@@ -128,7 +130,7 @@ export function DoctorProfileFragment() {
 
 					setSpecializations(specializations);
 				},
-				error => popups.error(error.message)
+				error => popups.error("Error fetching specialization data: " + doctor.id + ", " + error.message)
 			)
 		}
 	}, [doctor]);
@@ -228,19 +230,23 @@ export function DoctorProfileFragment() {
 				</section>
 				<section>
 					<header>
-						<h3>Clinics</h3> <Button label="+" action={() => {
-							clinicCreatePopup(
-								popups,
-								doctor.doctor.id, 
-								clinic_id => {
-									server.clinics.get({id: clinic_id}).then(response => {
-										const new_clinics = [...clinics];
-										new_clinics.push(response.data);
-										setClinics(new_clinics);
-									});
-								}
-							);
-						}} />
+						<h3>Clinics</h3>
+						<Button
+							label="+"
+							// action={() => {
+							// 	clinicCreatePopup(
+							// 		popups,
+							// 		doctor.doctor.id, 
+							// 		clinic_id => {
+							// 			server.clinics.get({id: clinic_id}).then(response => {
+							// 				const new_clinics = [...clinics];
+							// 				new_clinics.push(response.data);
+							// 				setClinics(new_clinics);
+							// 			});
+							// 		}
+							// 	);
+							// }}
+						/>
 					</header>
 					<div className="cardList">
 						{clinicCards}

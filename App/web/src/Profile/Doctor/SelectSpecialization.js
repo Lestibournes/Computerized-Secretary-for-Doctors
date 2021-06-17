@@ -76,7 +76,7 @@ export function SelectSpecializationForm({popups, doctor, close}) {
 						
 						db.collection("users").doc(doctor).collection("specializations").doc(specialization.id).set({name: specialization.id})
 						.then(() => setSaving(false))
-						.catch(reason => popups.error(reason));
+						.catch(reason => popups.error(reason.code));
 					}}
 				/>);
 			}
@@ -154,7 +154,7 @@ function CreateSpecializationForm({popups, doctor, specialization, close}) {
 
 					db.collection("users").doc(doctor).collection("specializations").doc(values.specialization).set({name: values.specialization})
 					.then(close)
-					.catch(reason => popups.error(reason));
+					.catch(reason => popups.error(reason.code));
 				}}
 			>
 				<Form>

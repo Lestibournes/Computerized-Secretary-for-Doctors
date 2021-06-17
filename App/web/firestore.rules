@@ -1,15 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
 	match /databases/{database}/documents {
-		match /{document=**} {
-			// Only for development purposes:
-			allow read, write: if true;
-		}
-
-		function isLoggedIn() {
-			return request.auth != null;
-		}
-
 		function isRoot() {
 			return request.auth.uid == get(/databases/$(database)/documents/administration/roles).data.root;
 		}
@@ -20,16 +11,13 @@ service cloud.firestore {
 
 		function verifyFields(required, optional) {
 			let allAllowedFields = required.concat(optional);
-			return request.resource.data.keys().hasAll(required) &&
-				request.resource.data.keys().hasOnly(allAllowedFields);
+			
+			return
+			request.resource.data.keys().hasAll(required) &&
+			request.resource.data.keys().hasOnly(allAllowedFields);
 		}
 
-
 		match /users/{userID} {
-			// People who should be allowed to read the data: the user, any employee of a clinic where he had an appointment, any doctor he visited.
-			// Perhaps let anyone see name and sex, but date of birth, number of siblings, or other sensitive data will be stored in {userID}/private/personal and can only be viewed by the doctor.
-			allow read: if request.auth != null;
-
 			// People who should be allowed to edit the data: just the user.
 			function isTheUser() {
 				return request.auth.uid == userID;
@@ -39,24 +27,46 @@ service cloud.firestore {
 				return exists(/databases/$(database)/documents/users/$(userID)/private/doctors/$(request.auth.uid));
 			}
 			
-			function isValidData() {
+			function isValidData(data) {
 				return
-				verifyFields(['firstName', 'lastName', 'sex'], ['link']) &&
-				
-				request.resource.data.firstName is string &&
-				request.resource.data.firstName.size() > 1 &&
-				request.resource.data.firstName.size() < 50 &&
+				verifyFields(['firstName', 'lastName', 'sex'], ['link', 'doctor', 'secretary', 'fullName']) &&
+				// exists(/databases/$(database)/documents/links/$(data.link)) &&
 
-				request.resource.data.lastName is string &&
-				request.resource.data.lastName.size() > 1 &&
-				request.resource.data.lastName.size() < 50 &&
+				data.get("doctor", false) is bool &&
+				data.get("secretary", false) is bool &&
 
-				request.resource.data.sex is string &&
-				request.resource.data.sex in ["male", "female"];
+				data.firstName is string &&
+				data.firstName.size() > 1 &&
+				data.firstName.size() < 50 &&
+
+				data.lastName is string &&
+				data.lastName.size() > 1 &&
+				data.lastName.size() < 50 &&
+
+				data.sex in ["male", "female"] &&
+
+				data.fullName == resource.data.fullName;
 			}
 
-			allow create, update: if isTheUser() && isValidData();
+			allow read: if true;
+			allow create, update: if isTheUser() && isValidData(request.resource.data);
 
+			match /specializations/{specID} {
+				// If the user is a doctor.
+				// The id is the name of the specialization.
+				// This is so that multiple doctors can share the same specialization without being restricted to a central list.
+				// Perhaps the properties can include translations? Or should the translations be provided in the specialization collection?
+				function isValidData() {
+					return
+					request.resource.id is string &&
+					request.resource.id.size() > 1 &&
+					request.resource.id.size() < 50
+				}
+
+				allow read;
+				allow write: if isTheUser() && isValidData();
+			}
+			
 			match /private/personal {
 				function isValidData() {
 					return
@@ -79,22 +89,6 @@ service cloud.firestore {
 					allow read: if isTheUser()
 					allow write: if false; // Since this is automatically maintained by the server.
 				}
-
-				match /specializations/{specID} {
-					// If the user is a doctor.
-					// The id is the name of the specialization.
-					// This is so that multiple doctors can share the same specialization without being restricted to a central list.
-					// Perhaps the properties can include translations? Or should the translations be provided in the specialization collection?
-					function isValidData() {
-						return
-						request.resource.id is string &&
-						request.resource.id.size() > 1 &&
-						request.resource.id.size() < 50
-					}
-
-					allow read;
-					allow write: if isTheUser() && isValidData();
-				}
 			}
 		}
 
@@ -112,7 +106,12 @@ service cloud.firestore {
 			}
 
 			function isPatient(appointmentID) {
-				return get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.patient == request.auth.uid;
+				return
+				(exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)) &&
+				get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.patient == request.auth.uid) ||
+				(!exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)) &&
+				request.resource.data.patient == request.auth.uid)
+				
 			}
 
 			function isTheDoctor(appointmentID) {
@@ -136,13 +135,12 @@ service cloud.firestore {
 				// The city where the clinic is located must be a short string:
 				request.resource.data.address is string &&
 				request.resource.data.address.size() >= 1 &&
-				request.resource.data.address.size() <= 50 &&
-				
+				request.resource.data.address.size() <= 50;
 				// The clinic's default language (if it sets one/if such a thing is used):
-				exists(/databases/$(database)/documents/languages/$(request.resource.data.language));
+				// exists(/databases/$(database)/documents/languages/$(request.resource.data.language));
 			}
 
-			allow read: if isLoggedIn();
+			allow read;
 			allow create: if request.resource.data.owner == request.auth.uid && isValidData();
 			allow update: if 
 				isOwner() &&
@@ -174,7 +172,7 @@ service cloud.firestore {
 					verifyFields(['user', 'clinic', 'minimum'], []) &&
 
 					// The doctor must be an existing user and match the document id:
-					doctorID == request.resource.data.user &&
+					request.resource.data.user == doctorID &&
 					exists(/databases/$(database)/documents/users/$(doctorID)) &&
 
 					// The clinic must match the clinic this document is in:
@@ -191,7 +189,7 @@ service cloud.firestore {
 				}
 
 				allow read;
-				allow write: if isOwner() && isValidData();
+				allow write: if (isOwner() || isTheDoctor()) && isValidData();
 
 				match /types/{typeID} {
 					function isValidData() {
@@ -222,26 +220,28 @@ service cloud.firestore {
 						request.resource.data.day <= 6 &&
 						
 						// Start time:
-						request.resource.data.start is map &&
+						request.resource.data.start.size() is timestamp &&
+						// request.resource.data.start is map &&
 
-						request.resource.data.start.hours is int &&
-						request.resource.data.start.hours >= 0 &&
-						request.resource.data.start.hours <= 23 &&
+						// request.resource.data.start.hours is int &&
+						// request.resource.data.start.hours >= 0 &&
+						// request.resource.data.start.hours <= 23 &&
 						
-						request.resource.data.start.minutes is int &&
-						request.resource.data.start.minutes >= 0 &&
-						request.resource.data.start.minutes <= 59 &&
+						// request.resource.data.start.minutes is int &&
+						// request.resource.data.start.minutes >= 0 &&
+						// request.resource.data.start.minutes <= 59 &&
 
 						// End time:
-						request.resource.data.end is map &&
+						request.resource.data.start.size() is timestamp;
+						// request.resource.data.end is map &&
 
-						request.resource.data.end.hours is int &&
-						request.resource.data.end.hours >= 0 &&
-						request.resource.data.end.hours <= 23 &&
+						// request.resource.data.end.hours is int &&
+						// request.resource.data.end.hours >= 0 &&
+						// request.resource.data.end.hours <= 23 &&
 
-						request.resource.data.end.minutes is int &&
-						request.resource.data.end.minutes >= 0 &&
-						request.resource.data.end.minutes <= 59
+						// request.resource.data.end.minutes is int &&
+						// request.resource.data.end.minutes >= 0 &&
+						// request.resource.data.end.minutes <= 59
 					}
 
 					allow read;
@@ -272,8 +272,8 @@ service cloud.firestore {
 					// The doctor is registered as a doctor in the system: (Should this just be a field in the user document? Since I'm already checking if the doctor works in the clinic as a doctor, do I need to perform this check at all?)
 					exists(/databases/$(database)/documents/doctors/$(request.resource.data.doctor)) &&
 					// The patient and doctor are different people:
-					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.doctor !=
-						get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.patient &&
+					// get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.doctor !=
+					// 	get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.patient &&
 					// The clinic exists in the system:(is clinic even needed as a field?)
 					exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic)) &&
 					// The doctor works for the clinic:
@@ -311,8 +311,22 @@ service cloud.firestore {
 				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary();
 				allow write: if
 					(isPatient(appointmentID) && arrivalUnchanged() || isTheDoctor(appointmentID) || isSecretary()) &&
-					isValidData() && !isArchived();
-					
+					isValidData() &&
+					!isArchived();
+				allow write: if
+					// (
+						isPatient(appointmentID)
+						&& 
+					// arrivalUnchanged() 
+					// || 
+					// isTheDoctor(appointmentID) 
+					// || isSecretary()
+					// )
+					//  &&
+					isValidData()
+					//  &&
+					// !isArchived()
+					;
 
 				match /messages/{messageID} {
 					// If I want to enforce correct timestamps on messages
@@ -363,31 +377,6 @@ service cloud.firestore {
 
 				allow read: if isPatient(noteID) || isTheDoctor(noteID);
 				allow write: if isTheDoctor(noteID) && isValidData();
-			}
-
-			// I can do this within the appointment document, so @deprecated.
-			// The patient's arrival status. This is an internal piece of data for the clinic that the patient doesn't need access to.
-			// The arrivalID should be the same as the appointmentID for easy fetching.
-			// This is directly beneath the clinic document so that the doctors can receive arrival notifications through listening to the collectionGroup.
-			match /arrivals/{arrivalID} {
-				function isValidData() {
-					return
-					verifyFields(['arrived', 'doctor'], []) &&
-
-					// The arrivalID must match an appointmentID:
-					exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(arrivalID)) &&
-
-					// Can only modify the arrival status if the appointment end time hasn't passed:
-					exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(arrivalID)).data.end > request.time &&
-
-					request.resource.data.arrived is bool;
-				}
-
-				// allow read: if isTheDoctor(arrivalID) || isSecretary();
-				// allow write: if (isTheDoctor(arrivalID) || isSecretary()) && isValidData();
-				allow read, write: if false; //Since it's deprecated and I want to make sure there is no code using it. If something tries to read or write to this collection I will get an error.
-
-				// For deletion of the appointment by the patient, use a Cloud Functions event handler (effect?).
 			}
 		}
 
@@ -450,20 +439,20 @@ service cloud.firestore {
 			allow write: if false && isValidData();
 
 
-			match /doctors/{doctorID} {
+			match /practitioners/{practitionerID} {
 				// This is an automatically-maintained collection of all the doctors who have this specialization.
 
 				// This function isn't used, but I want to specify the requirements anyway:
 				function isValidData() {
 					return
-					verifyFields(['doctor'], []) &&
+					verifyFields(['practitioner'], []) &&
 
 					// make the doctor id easy to access and ensure that the document will be considered to exist:
-					request.resource.data.doctor == doctorID &&
+					request.resource.data.practitionerID == practitionerID &&
 
 					// Make sure that the doctor exists:
-					exists(/databases/$(database)/documents/users/$(doctorID)) &&
-					get(/databases/$(database)/documents/users/$(doctorID)).data.doctor == true;
+					exists(/databases/$(database)/documents/users/$(practitionerID)) &&
+					get(/databases/$(database)/documents/users/$(practitionerID)).data.doctor == true;
 				}
 
 				allow read;
