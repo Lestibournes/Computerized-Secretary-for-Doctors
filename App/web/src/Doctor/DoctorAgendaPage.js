@@ -36,7 +36,7 @@ export function DoctorAgendaPage() {
 	const [searching, setSearching] = useState(true);
 
 	useEffect(() => {
-		if (auth?.user) {
+		if (auth?.user?.uid) {
 			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
 				const user_data = user_snap.data();
 				user_data.id = user_snap.id;
@@ -50,7 +50,7 @@ export function DoctorAgendaPage() {
 			let query = db;
 
 			if (searchPrameters.clinic) {
-				query = query.collection("clinics").doc(clinic).collection("appointments");
+				query = query.collection("clinics").doc(searchPrameters.clinic).collection("appointments");
 			}
 			else {
 				query = query.collectionGroup("appointments")

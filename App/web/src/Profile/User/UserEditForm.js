@@ -7,7 +7,6 @@ import { TextInput } from "../../Common/Components/TextInput";
 import { db, storage } from "../../init";
 import { RadioInput } from "../../Common/Components/RadioInput";
 import { PictureInput } from "../../Common/Components/PictureInput";
-import { server } from "../../Common/server";
 
 export function UserEditForm({popupManager: popups, user, data, image, close, success}) {
 	const [selectedImage, setSelectedImage] = useState(image);
@@ -34,19 +33,21 @@ export function UserEditForm({popupManager: popups, user, data, image, close, su
 					// Decide the file name for the picture:
 					let current = 0;
 
-					await db.collection("users").doc(id).get().then(user_snap => {
+					await db.collection("users").doc(user).get().then(user_snap => {
 						if (user_snap.data().image) current = user_snap.data().image;
 					});
 
 					current++;
 
 					promises.push(
-						db.collection("users").doc(id).update({image: current})
-						.catch(reason => popups.error(reason.message))
 					);
 
 					promises.push(
-						storage.child("users/" + id + "/pictures/" + current).put(file)
+						storage.child("users/" + user + "/pictures/" + current).put(file)
+						.then(upload_task => {
+							db.collection("users").doc(user).update({image: current})
+							.catch(reason => popups.error(reason.message))
+						})
 						.catch(error => popups.error(error.message))
 					);
 				}
@@ -64,10 +65,7 @@ export function UserEditForm({popupManager: popups, user, data, image, close, su
 					.catch(reason => popups.error(reason.message))
 				)
 
-				Promise.all(promises).then(() => {
-					success();
-					close();
-				});
+				Promise.all(promises).then(() => close());
 			}}
 		>
 			<Form>
