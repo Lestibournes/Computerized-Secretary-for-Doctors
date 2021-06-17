@@ -5,8 +5,12 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput } from '../../Common/Components/TextInput';
 import { server } from "../../Common/server";
+import { db } from "../../init";
+import { usePopups } from "../../Common/Popups";
 
-export function ClinicCreateForm({doctor, close, success}) {
+export function ClinicCreateForm({doctor, close}) {
+	const popups = usePopups();
+
 	return (
 		<Formik
 			initialValues={{
@@ -25,11 +29,13 @@ export function ClinicCreateForm({doctor, close, success}) {
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
 
-				server.clinics.add({doctor: doctor, name: values.name, city: values.city, address: values.address})
-				.then(response => {
-						success(response.data);
-						close();
-				});
+				db.collection("clinics").add({owner: doctor, name: values.name, city: values.city, address: values.address})
+				.then(clinicRef => {
+					clinicRef.collection("doctors").doc(doctor).set({user: doctor, clinic: clinicRef.id, minimum: 15})
+					.then(close)
+					.catch(reason => popups.error(reason.message));
+				})
+				.catch(reason => popups.error(reason.message));
 			}}
 		>
 			<Form>
@@ -60,13 +66,4 @@ export function ClinicCreateForm({doctor, close, success}) {
 			</Form>
 		</Formik>
 	);
-}
-
-export function clinicCreatePopup(popupManager, doctor, success) {
-	const close = () => {popupManager.remove(popup)};
-	const popup =
-		<Popup key="Create New Clinic" title="Create New Clinic" close={close}>
-			<ClinicCreateForm doctor={doctor} close={close} success={success} />
-		</Popup>;
-		popupManager.add(popup);
 }

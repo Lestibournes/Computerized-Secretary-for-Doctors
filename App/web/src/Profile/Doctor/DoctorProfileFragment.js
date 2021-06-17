@@ -4,11 +4,10 @@ import { useEffect, useState } from "react";
 import { Card } from "../../Common/Components/Card";
 import { Button } from "../../Common/Components/Button";
 
-import { clinicCreatePopup } from "./ClinicCreateForm";
+import { ClinicCreateForm, clinicCreatePopup } from "./ClinicCreateForm";
 import { createProfilePopup } from "./CreateDoctorProfile";
 import { capitalizeAll } from "../../Common/functions";
 import { selectSpecializationPopup, removeSpecializationPopup } from "./SelectSpecialization";
-import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
 import { LinkEditForm, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Link } from "react-router-dom";
@@ -59,10 +58,15 @@ export function DoctorProfileFragment() {
 	const root = useRoot();
 
 	const [doctor, setDoctor] = useState(null);
-	const [clinicCards, setClinicCards] = useState(null);
-	const [clinics, setClinics] = useState();
 	const [specializations, setSpecializations] = useState();
 	const [link, setLink] = useState();
+
+	const [owned, setOwned] = useState();
+	const [ownedCards, setOwnedCards] = useState(null);
+
+	const [clinics, setClinics] = useState();
+	const [clinicCards, setClinicCards] = useState(null);
+	
 	
 	useEffect(() => {
 		if (auth?.user) {
@@ -83,18 +87,36 @@ export function DoctorProfileFragment() {
 		// return unsubscribe;
 	}, [auth.user, popups]);
 
-	async function loadData(user) {
-		
-	}
+	useEffect(() => {
+		if (doctor) {
+			return db.collection("clinics")
+			.where("owner", "==", doctor.id)
+			.onSnapshot(
+				clinic_snaps => {
+					const clinics = [];
+					
+					for (const clinic_snap of clinic_snaps.docs) {
+						const clinic = clinic_snap.data();
+						clinic.id = clinic_snap.id;
+						clinics.push(clinic)
+					}
+
+					setOwned(clinics);
+				},
+				error => popups.error("Error fetching doctor data: " + error.message)
+			)
+		}
+	}, [doctor]);
 
 	useEffect(() => {
 		if (doctor) {
 			return db.collectionGroup("doctors")
-			// .where("user", "==", doctor.id)
+			.where("user", "==", doctor.id)
 			.onSnapshot(
 				doctor_snaps => {
 					const promises = [];
-
+					console.log("What's up?")
+					
 					for (const doctor_snap of doctor_snaps.docs) {
 						const clinicRef = doctor_snap.ref.parent.parent;
 
@@ -137,6 +159,26 @@ export function DoctorProfileFragment() {
 	}, [doctor]);
 
 	useEffect(() => {
+		if (owned && doctor) {
+			const clinics_list = [];
+			
+			for (let clinic_data of owned) {
+				clinics_list.push(
+					<Card
+						key={clinic_data.id}
+						title={clinic_data.name}
+						body={clinic_data.city}
+						footer={clinic_data.address}
+						link={root.get() + "/clinics/edit/" + clinic_data.id}
+					/>
+				);
+			}
+
+			setOwnedCards(clinics_list);
+		}
+	}, [doctor, owned, root]);
+	
+	useEffect(() => {
 		if (clinics && doctor) {
 			const clinics_list = [];
 			
@@ -147,12 +189,7 @@ export function DoctorProfileFragment() {
 						title={clinic_data.name}
 						body={clinic_data.city}
 						footer={clinic_data.address}
-						link={(
-							clinic_data.owner === doctor.id ?
-							root.get() + "/clinics/edit/" + clinic_data.id
-							:
-							root.get() + "/clinics/view/" + clinic_data.id
-						)}
+						link={root.get() + "/clinics/view/" + clinic_data.id}
 					/>
 				);
 			}
@@ -220,7 +257,7 @@ export function DoctorProfileFragment() {
 								>
 									<Button
 										label="-"
-										action={() => removeSpecializationPopup(popups, doctor.doctor.id, specialization.id, () => loadData(doctor.user.id))}
+										action={() => removeSpecializationPopup(popups, doctor.doctor.id, specialization.id)}
 									/>
 									<span>{capitalizeAll(specialization.id)}</span>
 								</div>)
@@ -231,23 +268,29 @@ export function DoctorProfileFragment() {
 				</section>
 				<section>
 					<header>
-						<h3>Clinics</h3>
+						<h3>Clinics I Own</h3>
 						<Button
 							label="+"
-							// action={() => {
-							// 	clinicCreatePopup(
-							// 		popups,
-							// 		doctor.doctor.id, 
-							// 		clinic_id => {
-							// 			server.clinics.get({id: clinic_id}).then(response => {
-							// 				const new_clinics = [...clinics];
-							// 				new_clinics.push(response.data);
-							// 				setClinics(new_clinics);
-							// 			});
-							// 		}
-							// 	);
-							// }}
+							action={() => {
+								const close = () => {popups.remove(popup)};
+								const popup =
+									<Popup key="Create New Clinic" title="Create New Clinic" close={close}>
+										<ClinicCreateForm
+											doctor={doctor.id}
+											close={close}
+										/>
+									</Popup>;
+									popups.add(popup);
+							}}
 						/>
+					</header>
+					<div className="cardList">
+						{ownedCards}
+					</div>
+				</section>
+				<section>
+					<header>
+						<h3>Clinics Where I Work</h3>
 					</header>
 					<div className="cardList">
 						{clinicCards}
