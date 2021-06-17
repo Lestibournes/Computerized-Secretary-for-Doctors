@@ -89,8 +89,9 @@ export function DoctorProfileFragment() {
 
 	useEffect(() => {
 		if (doctor) {
-			console.log(doctor);
-			return db.collectionGroup("doctors").where("user", "==", doctor.id).onSnapshot(
+			return db.collectionGroup("doctors")
+			// .where("user", "==", doctor.id)
+			.onSnapshot(
 				doctor_snaps => {
 					const promises = [];
 

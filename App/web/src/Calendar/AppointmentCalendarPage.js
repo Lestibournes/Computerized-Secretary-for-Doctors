@@ -8,7 +8,6 @@ import { Slot } from "../Common/Classes/Slot";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { CalendarWeek } from "./CalendarWeek";
 import { Button } from '../Common/Components/Button';
-import { server } from "../Common/server";
 import { Popup } from "../Common/Components/Popup";
 import { useParams } from "react-router";
 import { Select } from "../Common/Components/Select";
@@ -67,19 +66,33 @@ export function AppointmentCalendarPage() {
 
 	useEffect(() => {
 		if (clinic) {
-			server.clinics.getAllDoctors({clinic: clinic}).then(response => {
-				setDoctors(response.data);
+			db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
+				const promises = [];
 
-				const doctor_options = [];
-
-				for (const doctor_data of response.data) {
-					doctor_options.push({
-						value: doctor_data.doctor.id,
-						label: doctor_data.user.fullName
-					})
+				for (const doctor_snap of doctor_snaps.docs) {
+					promises.push(
+						db.collection("users").doc(doctor_snap.id).get().then(user_snap => {
+							const data = user_snap.data();
+							data.id = user_snap.id;
+							return data;
+						})
+					)
 				}
 
-				setOptions(doctor_options);
+				Promise.all(promises).then(doctors => {
+					setDoctors(doctors);
+
+					const doctor_options = [];
+		
+					for (const doctor of doctors) {
+						doctor_options.push({
+							value: doctor.id,
+							label: doctor.fullName
+						})
+					}
+		
+					setOptions(doctor_options);
+				});
 			});
 		}
 	}, [clinic]);

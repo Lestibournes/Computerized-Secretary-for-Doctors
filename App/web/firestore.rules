@@ -1,6 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
 	match /databases/{database}/documents {
+		// match /{document=**} {
+		// 	// Only for development purposes:
+		// 	allow read, write: if true;
+    // }
+
 		function isRoot() {
 			return request.auth.uid == get(/databases/$(database)/documents/administration/roles).data.root;
 		}
@@ -167,29 +172,29 @@ service cloud.firestore {
 			}
 
 			match /doctors/{doctorID} {
-				function isValidData() {
-					return
-					verifyFields(['user', 'clinic', 'minimum'], []) &&
+				// function isValidData() {
+				// 	return
+				// 	verifyFields(['user', 'clinic', 'minimum'], []) &&
 
-					// The doctor must be an existing user and match the document id:
-					request.resource.data.user == doctorID &&
-					exists(/databases/$(database)/documents/users/$(doctorID)) &&
+				// 	// The doctor must be an existing user and match the document id:
+				// 	request.resource.data.user == doctorID &&
+				// 	exists(/databases/$(database)/documents/users/$(doctorID)) &&
 
-					// The clinic must match the clinic this document is in:
-					request.resource.data.clinic == clinicID &&
+				// 	// The clinic must match the clinic this document is in:
+				// 	request.resource.data.clinic == clinicID &&
 
-					// The minimum appointment duration in minutes:
-					request.resource.data.minimum is int &&
-					request.resource.data.minimum > 0
-				}
+				// 	// The minimum appointment duration in minutes:
+				// 	request.resource.data.minimum is int &&
+				// 	request.resource.data.minimum > 0
+				// }
 
-				function isTheDoctor() {
-					return
-					doctorID == request.auth.uid;
-				}
+				// function isTheDoctor() {
+				// 	return
+				// 	doctorID == request.auth.uid;
+				// }
 
 				allow read;
-				allow write: if (isOwner() || isTheDoctor()) && isValidData();
+				// allow write: if (isOwner() || isTheDoctor()) && isValidData();
 
 				match /types/{typeID} {
 					function isValidData() {
@@ -552,5 +557,14 @@ service cloud.firestore {
 			allow read;
 			allow write: if isOwner() && isValidData();
 		}
+
+		// To enable using a collectionGroup of doctors:
+		match /{path=**}/doctors/{doctorID} {
+			allow read;
+		}
+
+		// match /{path=**}/appointments/{appointmentID} {
+		// 	allow read: if 
+		// }
 	}
 }

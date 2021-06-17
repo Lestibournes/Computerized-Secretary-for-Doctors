@@ -48,19 +48,13 @@ export function ClinicEditor() {
 	const [redirect, setRedirect] = useState(null);
 	
 	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (auth.user) {
-				server.users.isDoctor({id: auth.user.uid}).then(response => {
-					if (response.data) {
-						server.doctors.getData({id: auth.user.uid}).then(doctor_data => {
-							setDoctor(doctor_data.data);
-						});
-					}
-				});
-			}
-		});
-
-		return unsubscribe;
+		if (auth.user) {
+			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
+				const data = user_snap.data();
+				data.id = user_snap.id;
+				if (data.doctor) setDoctor(data);
+			});
+		}
 	}, [auth]);
 
 	useEffect(() => {

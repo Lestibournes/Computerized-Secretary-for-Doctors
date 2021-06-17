@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { fb } from "../init";
+import { db, fb } from "../init";
 import {server} from "./server";
 
 // User authentication services:
@@ -83,22 +83,19 @@ function useProvideAuth() {
 			result.user = create_response.user;
 			setUser(result.user);
 			
-			return server.users.add({user: result.user.uid, firstName: firstName, lastName: lastName}).then(add_response => {
-				if (add_response.data.success) {
-					return fb.auth().signOut().then(() => {
-						result.success = true;
-						return result;
-					})
-				}
-				else {
-					result.message = add_response.data.message;
-				}
-			}).catch(reason => {
-				result.message = reason;
+			db.collection("users").add({user: result.user.uid, firstName: firstName, lastName: lastName})
+			.then(userRef => {
+				return fb.auth().signOut().then(() => {
+					result.success = true;
+					return result;
+				});
+			})
+			.catch(reason => {
+				result.message = reason.message;
 				return result;
 			});
 		}).catch(reason => {
-			result.message = "Could not register user";
+			result.message = reason.message;
 			return result;
 		});
 	};
@@ -137,14 +134,15 @@ function useProvideAuth() {
 			if (user) {
 				setUser(user);
 
-				server.users.get({user: user.uid}).then(response => {
-					if (response.data) {
+				return db.collection("users").doc(user.uid).onSnapshot(
+					user_snap => {
 						setName({
-							first: response.data.firstName,
-							last: response.data.lastName,
-							full: response.data.firstName + " " + response.data.lastName})
+							first: user_snap.data().firstName,
+							last: user_snap.data().lastName,
+							full: user_snap.data().fullName
+						});
 					}
-				});
+				);
 			}
 			else {
 				setUser(null);

@@ -4,7 +4,6 @@ import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
-import { server } from '../Common/server';
 
 import * as Yup from 'yup';
 import { TextInput } from '../Common/Components/TextInput';
@@ -15,6 +14,7 @@ import { Select } from '../Common/Components/Select';
 import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
+import { db } from '../init';
 
 export function DoctorAgendaPage() {
 	const root = useRoot();
@@ -37,37 +37,69 @@ export function DoctorAgendaPage() {
 
 	useEffect(() => {
 		if (auth?.user) {
-			server.users.isDoctor({id: auth.user.uid}).then(response => {
-				if (response.data) {
-					server.doctors.getData({id: auth.user.uid}).then(results => {
-						setDoctor(results.data);
+			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
+				const user_data = user_snap.data();
+				user_data.id = user_snap.id;
+				if (user_data.doctor) setDoctor(user_data);
+			})
+		}
+	}, [auth]);
 
+	useEffect(() => {
+		if (doctor && searchPrameters) {
+			let query = db;
+
+			if (searchPrameters.clinic) {
+				query = query.collection("clinics").doc(clinic).collection("appointments");
+			}
+			else {
+				query = query.collectionGroup("appointments")
+			}
+			
+			query
+			.where("doctor", "==", doctor.id)
+			.where("start", "==", searchPrameters.start.toDate().getTime())
+			.where("end", "==", searchPrameters.end.toDate().getTime())
+			.get().then(appt_snaps => {
+				const appointments = [];
+
+				for (const appt_snap of appt_snaps.docs) {
+					const data = appt_snap.data();
+					data.id = appt_snap.id;
+					appointments.push(data);
+				}
+
+				setAppointments(appointments);
+			})
+			.catch(reason => popups.error(reason.message));			
+		}
+
+		// Get all of the doctor's clinics:
+		if (doctor) {
+			db.collectionGroup("doctors").where("doctor", "==", doctor.id).get().then(doctor_snaps => {
+				for (const doctor_snap of doctor_snaps.docs) {
+					const clinicRef = doctor_snap.ref.parent.parent;
+					const promises = [];
+
+					clinicRef.get().then(clinic_snap => {
+						const data = clinic_snap.data();
+						data.id = clinic_snap.id;
+						return data;
+					})
+
+					Promise.all(promises).then(clinic_data => {
 						const clinics = [];
-
-						for (const clinic of results.data.clinics) {
+	
+						for (const clinic of clinic_data) {
 							if (clinic.id) clinics.push({
 								value: clinic.id,
 								label: clinic.name
 							});
 						}
-
+		
 						setClinics(clinics);
 					});
 				}
-			});
-		}
-	}, [auth]);
-
-	useEffect(() => {
-		if (doctor) {
-			server.doctors.getAppointments({
-				doctor: doctor.doctor.id,
-				clinic: searchPrameters.clinic ? searchPrameters.clinic : null,
-				start: searchPrameters.start.toObject(),
-				end: searchPrameters.end.toObject()
-			}).then(response => {
-				if (response.data.success) setAppointments(response.data.data);
-				else popups.error(response.data.message)
 			});
 		}
   }, [doctor, searchPrameters]);
