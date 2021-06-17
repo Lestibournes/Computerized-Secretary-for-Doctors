@@ -35,7 +35,7 @@ export function AppointmentPage() {
 	// Text Area styling:
 	const [fontSize, setFontSize] = useState(1);
 
-	const popupManager = usePopups();
+	const popups = usePopups();
 	
 	useEffect(() => {
 		if (appointment) {
@@ -61,12 +61,12 @@ export function AppointmentPage() {
 					setServerText(data.appointment.notes);
 					setClientText(data.appointment.notes);
 
-					return events.appointments.arrival(appointment, (appointment_id, arrived) => {
-						setArrived(arrived);
+					return events.clinics.appointment(appointmentData.clinic, appointment, (oldData, newData) => {
+						if (oldData.arrived !== newData.arrived && newData.arrived) setArrived(newData.arrived);
 					});
 				}
 				else {
-					popupManager.error(results.data.message);
+					popups.error(results.data.message);
 				}
 			});
 		}
@@ -97,7 +97,7 @@ export function AppointmentPage() {
 								server.appointments.arrived({appointment: appointment}).then(response => {
 									if (!response.data.success) {
 										// Display error message popup.\
-										popupManager.error(response.data.message);
+										popups.error(response.data.message);
 									}
 								});
 							}}
@@ -149,7 +149,7 @@ export function AppointmentPage() {
 							
 							server.appointments.saveNote({id: appointment, text: clientText}).then(response => {
 								if (response.data.success) setServerText(response.data.text);
-								else popupManager.error(response.data.message);
+								else popups.error(response.data.message);
 							});
 						}}
 					>

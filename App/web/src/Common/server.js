@@ -1,18 +1,18 @@
 import { db, fb } from "../init";
-import { usePopups } from "./Popups";
+// import { usePopups } from "./Popups";
 
 export const fn = fb.functions();
 
 export const server = {
 	appointments: {
-		get: fn.httpsCallable("appointments-get"),
-		getAll: fn.httpsCallable("appointments-getAll"),
+		// get: fn.httpsCallable("appointments-get"),
+		// getAll: fn.httpsCallable("appointments-getAll"),
 		getAvailable: fn.httpsCallable("appointments-getAvailable"),
-		add: fn.httpsCallable("appointments-add"),
-		edit: fn.httpsCallable("appointments-edit"),
-		cancel: fn.httpsCallable("appointments-cancel"),
-		arrived: fn.httpsCallable("appointments-arrived"),
-		saveNote: fn.httpsCallable("appointments-saveNote"),
+		// add: fn.httpsCallable("appointments-add"),
+		// edit: fn.httpsCallable("appointments-edit"),
+		// cancel: fn.httpsCallable("appointments-cancel"),
+		// arrived: fn.httpsCallable("appointments-arrived"),
+		// saveNote: fn.httpsCallable("appointments-saveNote"),
 	},
 
 	clinics: {
@@ -68,63 +68,60 @@ export const server = {
 }
 
 export const events = {
-	appointments: {
+	clinics: {
 		/**
 	 * For watching changes in the patient arrival status for one specific appointment.
 	 * @param {string} appointment the id of the appointment.
-	 * @param {(appointment: string, arrived: [boolean, string]) => {}} callback 
+	 * @param {(oldData: firebase.firestore.DocumentData, newData: firebase.firestore.DocumentData) => {}} callback Includes the id of the appointment and all the data of the appoinemnt document.
 	 * @returns unsubscribe function.
 	 */
-		arrival: function(appointment, callback) {
-			// const popups = usePopups();
-
-			if (!this.arrival.cache) this.arrival.cache = new Map();
+		appointment: function(clinic, appointment, callback) {
+			if (!this.appointments.cache) this.appointments.cache = new Map();
 			
-			return db.collection("appointments").doc(appointment).onSnapshot(
-				snapshot => {
-					if (snapshot.data()) {
-						if (!this.arrival.cache.has(appointment)) {
-							this.arrival.cache.set(appointment, snapshot.data());
+			return db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).onSnapshot(
+				app_snap => {
+					const key = clinic + "/" + appointment;
+					const newData = app_snap.data();
+					newData.id = appointment;
+
+					if (app_snap.data()) {
+						if (!this.appointments.cache.has(key)) {
+							this.appointments.cache.set(key, newData);
 						}
 						
-						if (snapshot.data().arrived !== this.arrival.cache.get(appointment)?.arrived) {
-							callback(appointment, snapshot.data().arrived);
-							this.arrival.cache.set(appointment, snapshot.data());
-						}
+						callback(this.appointments.cache.get(key), newData.arrived);
+						this.appointments.cache.set(key, newData);
 					}
 					else {
-						this.arrival.cache.delete(appointment);
+						this.appointments.cache.delete(key);
 					}
-				},
-				// error => {popups.error(error.message)}
+				}
 			);
 		}
 	},
+
 	doctors: {
-		arrival: function(doctor, callback) {
-			// const popups = usePopups();
+		appointments: function(doctor, callback) {
+			if (!this.appointments.cache) this.appointments.cache = new Map();
 			
-			if (!this.arrival.cache) this.arrival.cache = new Map();
-
-			return db.collection("doctors").doc(doctor).collection("appointments").onSnapshot(
-				appointments => {
-					appointments.docChanges().forEach(change => {
-						if (change.type === "removed") {
-							this.arrival.cache.delete(change.doc.id);
+			return db.collectionGroup("appointments").where("doctor", "==", doctor.id).onSnapshot(
+				app_snaps => {
+					for (const change_snap of app_snaps.docChanges()) {
+						const key = change_snap.doc.data().clinic + "/" + change_snap.doc.id;
+						const newData = change_snap.doc.data();
+						newData.id = change_snap.doc.id;
+						
+						if (change_snap.type === "added") this.appointments.cache.set(key, newData);
+		
+						if (change_snap.type === "deleted") this.appointments.cache.delete(key);
+		
+						if (change_snap.type === "modified") {
+							callback(this.appointments.cache.get(key), newData);	
+							this.appointments.cache.set(key, newData);
 						}
-
-						if (change.type === "added") {
-							this.arrival.cache.set(change.doc.id, change.doc.data());
-						}
-
-						if (change.type === "modified" &&
-								change.doc.data().arrived !== this.arrival.cache.get(change.doc.id).arrived) {
-							callback(change.doc.id, change.doc.data().arrived);
-							this.arrival.cache.set(change.doc.id, change.doc.data());
-						}
-					});
+					}
 				},
-				// error => popups.error(error.message)
+				error => console.log(error.message)
 			);
 		}
 	}

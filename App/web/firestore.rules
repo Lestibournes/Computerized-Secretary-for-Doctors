@@ -265,7 +265,7 @@ service cloud.firestore {
 				// Even though writing the data (create, update) is entirely up to Cloud Functions I still want to specify the requirements.
 				function isValidData() {
 					return
-					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'type'], ['valid']) &&
+					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'type'], ['valid', 'arrived']) &&
 
 					// The patient is an existing user in the system:
 					exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
@@ -289,14 +289,30 @@ service cloud.firestore {
 					// The duration of the appointment matches the appointment type's duration:
 					request.resource.data.end - request.resource.data.start ==
 						get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)).data.duration *
-						get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.minimum;
+						get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.minimum &&
+					
+					// The one who updated the arrival status must be either a secretary or the doctor:
+					(exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.resource.data.arrived)) ||
+					request.resource.data.doctor == request.resource.data.arrived)
+				}
+
+				// Only a secretary or the doctor who receives the patient should be allowed to modify the patient's arrival status:
+				function arrivalUnchanged() {
+					return
+					request.resource.data.arrived == resource.data.arrived;
+				}
+
+				//Appointments can only be modified if they haven't occured yet, but let's allow to delete appiontments where the patient didn't show up.
+				function isArchived() {
+					return
+					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.end > request.time;
 				}
 
 				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary();
 				allow write: if
-					(isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary()) &&
-					isValidData() &&
-					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.end > request.time; //Appointments can only be deleted if they haven't occured yet, but let's allow to delete appiontments where the patient didn't show up.
+					(isPatient(appointmentID) && arrivalUnchanged() || isTheDoctor(appointmentID) || isSecretary()) &&
+					isValidData() && !isArchived();
+					
 
 				match /messages/{messageID} {
 					// If I want to enforce correct timestamps on messages
@@ -349,13 +365,14 @@ service cloud.firestore {
 				allow write: if isTheDoctor(noteID) && isValidData();
 			}
 
+			// I can do this within the appointment document, so @deprecated.
 			// The patient's arrival status. This is an internal piece of data for the clinic that the patient doesn't need access to.
 			// The arrivalID should be the same as the appointmentID for easy fetching.
 			// This is directly beneath the clinic document so that the doctors can receive arrival notifications through listening to the collectionGroup.
 			match /arrivals/{arrivalID} {
 				function isValidData() {
 					return
-					verifyFields(['arrived'], []) &&
+					verifyFields(['arrived', 'doctor'], []) &&
 
 					// The arrivalID must match an appointmentID:
 					exists(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(arrivalID)) &&
@@ -366,8 +383,9 @@ service cloud.firestore {
 					request.resource.data.arrived is bool;
 				}
 
-				allow read: if isTheDoctor(arrivalID) || isSecretary();
-				allow write: if (isTheDoctor(arrivalID) || isSecretary()) && isValidData();
+				// allow read: if isTheDoctor(arrivalID) || isSecretary();
+				// allow write: if (isTheDoctor(arrivalID) || isSecretary()) && isValidData();
+				allow read, write: if false; //Since it's deprecated and I want to make sure there is no code using it. If something tries to read or write to this collection I will get an error.
 
 				// For deletion of the appointment by the patient, use a Cloud Functions event handler (effect?).
 			}
