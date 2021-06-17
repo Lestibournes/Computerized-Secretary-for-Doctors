@@ -1,12 +1,20 @@
-import { fb, storage } from "../init";
-
-const fn = fb.functions();
-
-const getPicture = fn.httpsCallable("users-getPicture");
+import { db, storage } from "../init";
 
 export async function getPictureURL(user) {
-	return getPicture({id: user}).then(location => {
-		return storage.child(location.data).getDownloadURL().then(url => {
+	let location;
+
+	return db.collection("users").doc(user).get().then(user_snap => {
+		if (user_snap.data().image) {
+			location = "users/" + user + "/pictures/" + user_snap.data().image;
+		}
+		else if (user_snap.data().sex === "male") {
+			location = "graphics/pictures/man";
+		}
+		else {
+			location = "graphics/pictures/woman";
+		}
+
+		return storage.child(location).getDownloadURL().then(url => {
 			return url;
 		});
 	});

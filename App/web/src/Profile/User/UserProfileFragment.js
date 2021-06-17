@@ -5,7 +5,7 @@ import { capitalizeAll, getPictureURL } from "../../Common/functions";
 import { server } from "../../Common/server";
 import { userEditPopup } from "./UserEditForm";
 import { usePopups } from "../../Common/Popups";
-import { db } from "../../init";
+import { db, storage } from "../../init";
 
 export function UserProfileFragment({user}) {
 	const auth = useAuth();
@@ -35,10 +35,7 @@ export function UserProfileFragment({user}) {
 					const data = user_snap.data();
 					data.id = user_snap.id;
 					
-					storage.child("users/" + data.id + "/pictures/" + data.image).getDownloadURL().then(url => {
-						setImage(url);
-					});
-					
+					getPictureURL(data.id).then(url => setImage(url));
 					setUserData(data);
 				},
 				error => popups.error(error.message)

@@ -212,7 +212,7 @@ service cloud.firestore {
 					}
 
 					allow read;
-					allow write: if isTheDoctor() && isValidData();
+					allow write: if (doctorID == request.auth.uid || isSecretary() || isOwner()) && isValidData();
 				}
 
 				match /shifts/{shiftID} {
@@ -251,7 +251,7 @@ service cloud.firestore {
 					}
 
 					allow read;
-					allow write: if isValidData() && (isOwner() || isSecretary() || isTheDoctor());
+					allow write: if (doctorID == request.auth.uid || isSecretary() || isOwner()) && isValidData();
 				}
 			}
 
