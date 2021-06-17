@@ -4,12 +4,12 @@ import { useState } from "react";
 import { Button } from "../../Common/Components/Button";
 import { Popup } from "../../Common/Components/Popup";
 import { TextInput } from "../../Common/Components/TextInput";
-import { storage } from "../../init";
+import { db, storage } from "../../init";
 import { RadioInput } from "../../Common/Components/RadioInput";
 import { PictureInput } from "../../Common/Components/PictureInput";
 import { server } from "../../Common/server";
 
-export function UserEditForm({popupManager, user, data, image, close, success}) {
+export function UserEditForm({popupManager: popups, user, data, image, close, success}) {
 	const [selectedImage, setSelectedImage] = useState(image);
 	const [file, setFile] = useState(null);
 
@@ -31,9 +31,24 @@ export function UserEditForm({popupManager, user, data, image, close, success}) 
 				const promises = [];
 				
 				if (file) {
-					promises.push(server.users.updatePicture({id: user}).then(response => {
-						storage.child(response.data).put(file);
-					}));
+					// Decide the file name for the picture:
+					let current = 0;
+
+					await db.collection("users").doc(id).get().then(user_snap => {
+						if (user_snap.data().image) current = user_snap.data().image;
+					});
+
+					current++;
+
+					promises.push(
+						db.collection("users").doc(id).update({image: current})
+						.catch(reason => popups.error(reason.message))
+					);
+
+					promises.push(
+						storage.child("users/" + id + "/pictures/" + current).put(file)
+						.catch(error => popups.error(error.message))
+					);
 				}
 
 				const updates = {};
@@ -44,9 +59,12 @@ export function UserEditForm({popupManager, user, data, image, close, success}) 
 
 				if (values.sex) updates.sex = values.sex.toLowerCase();
 
-				promises.push(server.users.update({id: user, changes: updates}));
+				promises.push(
+					db.collection("users").doc(user).update(updates)
+					.catch(reason => popups.error(reason.message))
+				)
 
-				Promise.all(promises).then(results => {
+				Promise.all(promises).then(() => {
 					success();
 					close();
 				});

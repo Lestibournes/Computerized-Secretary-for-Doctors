@@ -5,10 +5,11 @@ import { capitalizeAll, getPictureURL } from "../../Common/functions";
 import { server } from "../../Common/server";
 import { userEditPopup } from "./UserEditForm";
 import { usePopups } from "../../Common/Popups";
+import { db } from "../../init";
 
-export function UserProfileFragment({user, data}) {
+export function UserProfileFragment({user}) {
 	const auth = useAuth();
-	const popupManager = usePopups();
+	const popups = usePopups();
 
 	const [userID, setUserID] = useState();
 	const [userData, setUserData] = useState();
@@ -16,72 +17,53 @@ export function UserProfileFragment({user, data}) {
 
 
 	useEffect(() => {
-		popupManager.clear();
+		popups.clear();
 	}, []);
 	
 	// Fetch the current user's id if and ID has not been provided in the props:
 	useEffect(() => {
-		if (user) {
-			setUserID(user);
-		}
-		else {
-			const unsubscribe = auth.isLoggedIn(status => {
-				if (auth.user) setUserID(auth.user.uid);
-			});
-	
-			return unsubscribe;
-		}
+		if (user) setUserID(user);
+		else if (auth?.user?.uid) setUserID(auth.user.uid);
 	}, [auth, user]);
 	
 
 	// Fetch the current user's data:
 	useEffect(() => {
-		if (data) {
-			setUserData(data);
-		}
-		else if (userID) {
-			server.users.get({user: userID}).then(response => {
-				setUserData(response.data);
-			})
-		}
-	}, [data, userID]);
-
-	// Fetch the current user's profile picture:
-	useEffect(() => {
 		if (userID) {
-			getPictureURL(userID).then(url => {
-				setImage(url);
-			});
+			return db.collection("users").doc(userID).onSnapshot(
+				user_snap => {
+					const data = user_snap.data();
+					data.id = user_snap.id;
+					
+					storage.child("users/" + data.id + "/pictures/" + data.image).getDownloadURL().then(url => {
+						setImage(url);
+					});
+					
+					setUserData(data);
+				},
+				error => popups.error(error.message)
+			);
 		}
 	}, [userID]);
 
-	if (userID && userData) {
-		return (
-			<>
-				<h2>User Profile</h2>
-				<section>
-					<header>
-						<h3>Details</h3>
-						<Button
-							label="Edit"
-							action={() => userEditPopup(popupManager, userID, userData, image, () => {
-								server.users.get({user: userID}).then(response => {
-									getPictureURL(userID).then(url => {
-										setImage(url);
-									});
-									setUserData(response.data);
-								})
-							})}
-						/>
-					</header>
-					<div className="table">
-						<b>Photo</b> <img src={image} alt={userData.fullName} />
-						<b>Name:</b> <span>{userData.fullName}</span>
-						<b>Sex:</b> <span>{userData.sex ? capitalizeAll(userData.sex) : "Not specified"}</span>
-					</div>
-				</section>
-			</>
-		);
+	if (userData) {
+		return (<>
+			<h2>User Profile</h2>
+			<section>
+				<header>
+					<h3>Details</h3>
+					<Button
+						label="Edit"
+						action={() => userEditPopup(popups, userData.id, userData, image)}
+					/>
+				</header>
+				<div className="table">
+					<b>Photo</b> <img src={image} alt={userData.fullName} />
+					<b>Name:</b> <span>{userData.fullName}</span>
+					<b>Sex:</b> <span>{userData.sex ? capitalizeAll(userData.sex) : "Not specified"}</span>
+				</div>
+			</section>
+		</>);
 	}
 	
 	return "";

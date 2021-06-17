@@ -34,11 +34,12 @@ service cloud.firestore {
 			
 			function isValidData(data) {
 				return
-				verifyFields(['firstName', 'lastName', 'sex'], ['link', 'doctor', 'secretary', 'fullName']) &&
+				verifyFields(['firstName', 'lastName', 'sex'], ['link', 'doctor', 'secretary', 'fullName', 'image']) &&
 				// exists(/databases/$(database)/documents/links/$(data.link)) &&
 
 				data.get("doctor", false) is bool &&
 				data.get("secretary", false) is bool &&
+				data.get("image", 1) is number &&
 
 				data.firstName is string &&
 				data.firstName.size() > 1 &&
