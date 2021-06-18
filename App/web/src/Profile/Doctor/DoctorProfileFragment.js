@@ -7,7 +7,7 @@ import { Button } from "../../Common/Components/Button";
 import { ClinicCreateForm, clinicCreatePopup } from "./ClinicCreateForm";
 import { createProfilePopup } from "./CreateDoctorProfile";
 import { capitalizeAll } from "../../Common/functions";
-import { selectSpecializationPopup, removeSpecializationPopup, SelectSpecializationForm } from "./SelectSpecialization";
+import { removeSpecializationPopup, SelectSpecializationForm } from "./SelectSpecialization";
 import { usePopups } from "../../Common/Popups";
 import { LinkEditForm, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Link } from "react-router-dom";
@@ -261,7 +261,30 @@ export function DoctorProfileFragment() {
 								>
 									<Button
 										label="-"
-										action={() => removeSpecializationPopup(popups, doctor.id, specialization.id)}
+										action={() => {
+											const close = () => {popups.remove(popup)}
+
+											const popup = 
+												<Popup key="Remove Specialization" title="Please Confirm" close={close}>
+													<p>
+														Are you sure you wish to remove the specialization {capitalizeAll(specialization.id)}?
+													</p>
+													<div className="buttonBar">
+														<Button type="okay" label="Cancel" action={close} />
+														<Button
+															type="cancel"
+															label="Yes"
+															action={() => {
+																db.collection("users").doc(doctor.id).collection("specializations").doc(specialization.id).delete()
+																.then(close)
+																.catch(reason => popups.error(reason.message));
+															}}
+														/>
+													</div>
+												</Popup>;
+
+											popups.add(popup);
+										}}
 									/>
 									<span>{capitalizeAll(specialization.id)}</span>
 								</div>)

@@ -11,14 +11,6 @@ import { server } from '../../Common/server';
 import { db } from '../../init';
 import { usePopups } from '../../Common/Popups';
 
-function hasSpecialization(specializations, specialization) {
-	for (const spec of specializations) {
-		if (spec.id.toLowerCase() === specialization.toLowerCase()) return true;
-	}
-
-	return false;
-}
-
 export function SelectSpecializationForm({doctor, close}) {
 	const popups = usePopups();
 
@@ -54,7 +46,13 @@ export function SelectSpecializationForm({doctor, close}) {
 					if (!search || spec_snap.id.toLowerCase().includes(search.toLowerCase())) {
 						const data = spec_snap.data();
 						data.id = spec_snap.id;
-						data.hasSpecialization = specializations ? hasSpecialization(specializations, data.id) : false;
+
+						data.hasSpecialization = false;
+
+						for (const spec of specializations) {
+							if (spec.id.toLowerCase() === data.id.toLowerCase()) data.hasSpecialization = true;
+						}
+
 						specs.push(data);
 					}
 				}
@@ -183,27 +181,4 @@ function CreateSpecializationForm({doctor, specialization, close}) {
 				</Form>
 			</Formik>
 	);
-}
-
-export function removeSpecializationPopup(popupManager, doctor, specialization, success) {
-	const close = () => {popupManager.remove(popup)}
-
-	const popup = 
-		<Popup key="Remove Specialization" title="Please Confirm" close={close}>
-			<p>
-				Are you sure you wish to remove the specialization {capitalizeAll(specialization)}?
-			</p>
-			<div className="buttonBar">
-				<Button type="okay" label="Cancel" action={close} />
-				<Button type="cancel" label="Yes" action={() => {
-					server.doctors.removeSpecialization({doctor: doctor, specialization: specialization})
-					.then(() => {
-						success();
-						close();
-					});
-				}} />
-			</div>
-		</Popup>;
-
-	popupManager.add(popup);
 }

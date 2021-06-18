@@ -70,7 +70,8 @@ service cloud.firestore {
 				}
 
 				allow read;
-				allow write: if isTheUser() && isValidData();
+				allow create, update: if isTheUser() && isValidData();
+				allow delete: if isTheUser();
 			}
 			
 			match /private/personal {
