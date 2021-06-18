@@ -9,6 +9,7 @@ import { Popup } from '../../Common/Components/Popup';
 import { capitalizeAll } from '../../Common/functions';
 import { server } from '../../Common/server';
 import { db } from '../../init';
+import { usePopups } from '../../Common/Popups';
 
 function hasSpecialization(specializations, specialization) {
 	for (const spec of specializations) {
@@ -18,52 +19,54 @@ function hasSpecialization(specializations, specialization) {
 	return false;
 }
 
-export function SelectSpecializationForm({popups, doctor, close}) {
+export function SelectSpecializationForm({doctor, close}) {
+	const popups = usePopups();
+
 	const [cards, setCards] = useState([]);
 	const [specializations, setSpecializations] = useState();
 	const [saving, setSaving] = useState(false); //todo: make it work with multiple simultaneous saves.
-	const [search, setSearch] = useState();
+	const [search, setSearch] = useState("");
 	const [results, setResults] = useState();
 
 	useEffect(() => {
 		if (doctor) {
-			return db.collection("users").doc(doctor).collection("specializations").onSnapshot(spec_snaps => {
-				const specs = spec_snaps.docs.map(spec_snap => {
-					const data = spec_snap.data();
-					data.id = spec_snap.id;
-					return data;
-				});
+			return db.collection("users").doc(doctor).collection("specializations").onSnapshot(
+				spec_snaps => {
+					const specs = spec_snaps.docs.map(spec_snap => {
+						const data = spec_snap.data();
+						data.id = spec_snap.id;
+						return data;
+					});
 
-				setSpecializations(specs);
+					setSpecializations(specs);
 			})
 		}
 	}, [doctor]);
 
 	useEffect(() => {
 		let specRef = db.collection("specializations");
-				
-		if (search) specRef = specRef.where("__name__", "==", search);
 		
 		return specRef.onSnapshot(
 			spec_snaps => {
 				const specs = [];
 				
 				for (const spec_snap of spec_snaps.docs) {
-					const data = spec_snap.data();
-					data.id = spec_snap.id;
-					data.hasSpecialization = hasSpecialization(specializations, data.id);
-					specs.push(data);
+					if (!search || spec_snap.id.toLowerCase().includes(search.toLowerCase())) {
+						const data = spec_snap.data();
+						data.id = spec_snap.id;
+						data.hasSpecialization = specializations ? hasSpecialization(specializations, data.id) : false;
+						specs.push(data);
+					}
 				}
 
 				setResults(specs);
 			},
 			error => popups.error(error)
 		)
-	}, [search]);
+	}, [search, specializations]);
 
 	useEffect(() => {
 		if (results) {
-
 			const specialization_cards = [];
 							
 			for (let specialization of results) {
@@ -88,15 +91,24 @@ export function SelectSpecializationForm({popups, doctor, close}) {
 	return (
 		<>
 			<Formik
-				initialValues={{
-					specialization: ""
-				}}
+				initialValues={{}}
 				validationSchema={Yup.object({
 					specialization: Yup.string()
 				})}
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
-					setSearch(values.specialization ? values.specialization : false);
+
+					const close = () => {popups.remove(popup)};
+
+					const popup =
+						<Popup key="Create Specialization" title="Create New Specialization" close={close}>
+							<CreateSpecializationForm
+								doctor={doctor}
+								specialization={search}
+								close={close} />
+						</Popup>;
+
+					popups.add(popup);
 				}}
 			>
 				<Form>
@@ -106,6 +118,8 @@ export function SelectSpecializationForm({popups, doctor, close}) {
 							name="specialization"
 							type="text"
 							placeholder="Pediatrician"
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
 						/>
 
 						{saving ?
@@ -113,19 +127,8 @@ export function SelectSpecializationForm({popups, doctor, close}) {
 						: ""}
 					</div>
 					<div className="buttonBar">
-						<Button type="cancel" label="Create"
-							action={
-								() => {
-									createSpecializationPopup(
-										popups,
-										doctor,
-										""
-									);
-								}
-							}
-						/>
 						<Button label="Close" action={close} />
-						<Button type="submit" label="Search" />
+						<Button type="submit" label="Create" />
 					</div>
 				</Form>
 			</Formik>
@@ -137,13 +140,14 @@ export function SelectSpecializationForm({popups, doctor, close}) {
 	);
 }
 
-function CreateSpecializationForm({popups, doctor, specialization, close}) {
+function CreateSpecializationForm({doctor, specialization, close}) {
+	const popups = usePopups();
 	const [saving, setSaving] = useState(false);
 
 	return (
 			<Formik
 				initialValues={{
-					specialization: specialization
+					specialization: specialization ? specialization : ""
 				}}
 				validationSchema={Yup.object({
 					specialization: Yup.string()
@@ -179,30 +183,6 @@ function CreateSpecializationForm({popups, doctor, specialization, close}) {
 				</Form>
 			</Formik>
 	);
-}
-
-export function selectSpecializationPopup(popups, specializations) {
-	const close = () => {popups.remove(popup)};
-	const popup =
-		<Popup key="Select Specialization" title="Add Specialization" close={close} popupManager={popups}>
-			<SelectSpecializationForm popups={popups} specializations={specializations} close={close} />
-		</Popup>;
-	popups.add(popup);
-}
-
-export function createSpecializationPopup(popups, doctor, specialization) {
-	const close = () => {popups.remove(popup)};
-
-	const popup =
-		<Popup key="Create Specialization" title="Create New Specialization" close={close}>
-			<CreateSpecializationForm
-				popups={popups}
-				doctor={doctor}
-				specializations={specialization}
-				close={close} />
-		</Popup>;
-
-	popups.add(popup);
 }
 
 export function removeSpecializationPopup(popupManager, doctor, specialization, success) {

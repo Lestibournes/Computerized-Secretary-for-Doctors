@@ -9,19 +9,21 @@ const fsdb = admin.firestore();
 const NAME = "fields";
 
 async function search(text) {
-	return fsdb.collection(NAME).get().then(response => {
-		const specializations = [];
+	return fsdb.collection(NAME).onSnapshot(
+		response => {
+			const specializations = [];
 
-		for (let doc of response.docs) {
-			if (doc.id.toLowerCase().includes(text.toLowerCase())) {
-				const data = doc.data();
-				data.id = doc.id; 
-				specializations.push(data);
+			for (let doc of response.docs) {
+				if (doc.id.toLowerCase().includes(text.toLowerCase())) {
+					const data = doc.data();
+					data.id = doc.id; 
+					specializations.push(data);
+				}
 			}
-		}
 
-		return specializations;
-	});
+			return specializations;
+		}
+	);
 }
 
 async function getAll() {

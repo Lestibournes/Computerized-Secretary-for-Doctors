@@ -7,7 +7,7 @@ import { Button } from "../../Common/Components/Button";
 import { ClinicCreateForm, clinicCreatePopup } from "./ClinicCreateForm";
 import { createProfilePopup } from "./CreateDoctorProfile";
 import { capitalizeAll } from "../../Common/functions";
-import { selectSpecializationPopup, removeSpecializationPopup } from "./SelectSpecialization";
+import { selectSpecializationPopup, removeSpecializationPopup, SelectSpecializationForm } from "./SelectSpecialization";
 import { usePopups } from "../../Common/Popups";
 import { LinkEditForm, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Link } from "react-router-dom";
@@ -81,10 +81,6 @@ export function DoctorProfileFragment() {
 				error => popups.error("Error fetching user data: " + error.message)
 			)
 		}
-		// const unsubscribe = auth.isLoggedIn(status => {
-		// });
-
-		// return unsubscribe;
 	}, [auth.user, popups]);
 
 	useEffect(() => {
@@ -115,7 +111,6 @@ export function DoctorProfileFragment() {
 			.onSnapshot(
 				doctor_snaps => {
 					const promises = [];
-					console.log("What's up?")
 					
 					for (const doctor_snap of doctor_snaps.docs) {
 						const clinicRef = doctor_snap.ref.parent.parent;
@@ -244,7 +239,16 @@ export function DoctorProfileFragment() {
 					<header>
 						<h3>Specializations</h3>
 						<Button label="+"
-							action={() => selectSpecializationPopup(popups, specializations)}
+							action={() => {
+								const close = () => {popups.remove(popup)};
+
+								const popup =
+									<Popup key="Select Specialization" title="Add Specialization" close={close}>
+										<SelectSpecializationForm doctor={doctor.id} close={close} />
+									</Popup>;
+
+								popups.add(popup);
+							}}
 						/>
 					</header>
 					<div className="item-list">
@@ -257,7 +261,7 @@ export function DoctorProfileFragment() {
 								>
 									<Button
 										label="-"
-										action={() => removeSpecializationPopup(popups, doctor.doctor.id, specialization.id)}
+										action={() => removeSpecializationPopup(popups, doctor.id, specialization.id)}
 									/>
 									<span>{capitalizeAll(specialization.id)}</span>
 								</div>)
