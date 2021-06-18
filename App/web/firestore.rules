@@ -37,9 +37,13 @@ service cloud.firestore {
 				verifyFields(['firstName', 'lastName', 'sex'], ['link', 'doctor', 'secretary', 'fullName', 'image']) &&
 				// exists(/databases/$(database)/documents/links/$(data.link)) &&
 
+				// Optional properties:
 				data.get("doctor", false) is bool &&
 				data.get("secretary", false) is bool &&
 				data.get("image", 1) is number &&
+
+				// Automatically maintained by Cloud Functions. Should never be modified or created manually by a user:
+				data.get("link", "") == resource.data.get("link", "") &&
 
 				data.firstName is string &&
 				data.firstName.size() > 1 &&
@@ -125,33 +129,36 @@ service cloud.firestore {
 				return get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.doctor == request.auth.uid;
 			}
 
-			function isValidData() {
+			function isValidData(data) {
 				return
 				verifyFields(['owner', 'name', 'city', 'address'], ['language', 'link']) &&
 
+				// Automatically maintained by Cloud Functions. Should never be modified or created manually by a user:
+				data.get("link", "") == resource.data.get("link", "") &&
+
 				// The name of the clinic must be of a short string:
-				request.resource.data.name is string &&
-				request.resource.data.name.size() >= 1 &&
-				request.resource.data.name.size() <= 50  &&
+				data.name is string &&
+				data.name.size() >= 1 &&
+				data.name.size() <= 50  &&
 				
 				// The city where the clinic is located must be a short string:
-				request.resource.data.city is string &&
-				request.resource.data.city.size() >= 1 &&
-				request.resource.data.city.size() <= 50  &&
+				data.city is string &&
+				data.city.size() >= 1 &&
+				data.city.size() <= 50  &&
 				
 				// The city where the clinic is located must be a short string:
-				request.resource.data.address is string &&
-				request.resource.data.address.size() >= 1 &&
-				request.resource.data.address.size() <= 50;
+				data.address is string &&
+				data.address.size() >= 1 &&
+				data.address.size() <= 50;
 				// The clinic's default language (if it sets one/if such a thing is used):
 				// exists(/databases/$(database)/documents/languages/$(request.resource.data.language));
 			}
 
 			allow read;
-			allow create: if request.resource.data.owner == request.auth.uid && isValidData();
+			allow create: if request.resource.data.owner == request.auth.uid && isValidData(request.resource.data);
 			allow update: if 
 				isOwner() &&
-				isValidData() &&
+				isValidData(request.resource.data) &&
 				// If the owner isn't changed:
 				resource.data.owner == request.resource.data.owner;
 			allow delete: if isOwner();
@@ -521,6 +528,9 @@ service cloud.firestore {
 
 		match /links/{linkID} {
 			// The id of the link is the link string itself.
+			// Use a Cloud Functions onWrite listener for maintenance:
+			// * When a new link is created, find and delete all the old ones that have the same type and id combination.
+			// * Update the clinic/user document with the new link id/name
 			
 			function isOwner() {
 				return
@@ -533,27 +543,30 @@ service cloud.firestore {
 
 			function isValidData() {
 				return
-				verifyFields(['type', 'id', 'link'], []) &&
+				verifyFields(['type', 'id', 'name'], []) &&
 
-				// Either type is clinic and the clinic exists,
-				(request.resource.data.type == "clinic" &&
-				exists(/databases/$(database)/documents/clinics/$(request.resource.data.id)) &&
+				(
+					(
+						// Either type is clinic and the clinic exists,
+						request.resource.data.type == "clinic" &&
+						exists(/databases/$(database)/documents/clinics/$(request.resource.data.id))
+					)
+						||
+					(
+						// Or type is doctor and the doctor exists:
+						request.resource.data.type == "doctor" &&
+						exists(/databases/$(database)/documents/users/$(request.resource.data.id)) &&
 
-				// Make sure that each clinic only has 1 link:
-				get(/databases/$(database)/documents/clinics/$(request.resource.data.id)).data.link == linkID) ||
-
-				// Or type is doctor and the doctor exists:
-				(request.resource.data.type == "doctor" &&
-				exists(/databases/$(database)/documents/doctors/$(request.resource.data.id)) &&
-
-				// Make sure that each doctor only has 1 link:
-				get(/databases/$(database)/documents/users/$(request.resource.data.id)).data.link == linkID) &&
+						// And the user is a doctor:
+						get(/databases/$(database)/documents/users/$(request.resource.data.id)).data.doctor == true
+					)
+				) &&
 
 				// The id, which is also the link text, must be made of word characters only:
-				request.resource.id.matches('^[a-zA-Z0-9_]+$') &&
+				linkID.matches('^[a-zA-Z0-9_]+$') &&
 
 				// Convenience property for accessing the link text, which must match the id:
-				request.resource.data.link == linkID;
+				request.resource.data.name == linkID;
 			}
 
 			allow read;
