@@ -86,13 +86,15 @@ exports.modifyLink = functions.firestore.document('links/{linkID}').onWrite((cha
 		const id = newDocument.id;
 		const name = newDocument.name;
 	
-		if (type == "clinic") {
-			db.collection("clinics").doc(id).update({link: name});
-	
-			db.collection("links").where("type", "==", type).where("id", "==", id).get().then(oldLinks => {
-				for (const oldLink of oldLinks.docs) oldLink.ref.delete();
-			})
-		}
+		if (type == "clinic") db.collection("clinics").doc(id).update({link: name});
+
+		if (type == "doctor") db.collection("users").doc(id).update({link: name});
+
+		db.collection("links").where("type", "==", type).where("id", "==", id).get().then(oldLinks => {
+			for (const oldLink of oldLinks.docs) {
+				if (oldLink.id !== context.params.linkID) oldLink.ref.delete();
+			}
+		});
 	}
 });
 
