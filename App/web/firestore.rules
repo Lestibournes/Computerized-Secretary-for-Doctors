@@ -279,7 +279,7 @@ service cloud.firestore {
 				// Even though writing the data (create, update) is entirely up to Cloud Functions I still want to specify the requirements.
 				function isValidData() {
 					return
-					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'type'], ['valid', 'arrived']) &&
+					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'type', 'verified'], ['arrived']) &&
 
 					// The patient is an existing user in the system:
 					exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
@@ -307,7 +307,10 @@ service cloud.firestore {
 					
 					// The one who updated the arrival status must be either a secretary or the doctor:
 					(exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.resource.data.arrived)) ||
-					request.resource.data.doctor == request.resource.data.arrived)
+					request.resource.data.doctor == request.resource.data.arrived) &&
+					
+					// When the client creates or updates an appointment, he must specify that's it needs to be verified:
+					request.resource.data.verified == false;
 				}
 
 				// Only a secretary or the doctor who receives the patient should be allowed to modify the patient's arrival status:

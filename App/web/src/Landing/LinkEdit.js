@@ -3,10 +3,8 @@ import { useState } from "react";
 import * as Yup from 'yup';
 import { Button } from "../Common/Components/Button";
 
-import { Popup } from '../Common/Components/Popup';
 import { TextInput } from '../Common/Components/TextInput';
 import { usePopups } from "../Common/Popups";
-import { server } from "../Common/server";
 import { db } from "../init";
 
 export const LINK_TYPES = {

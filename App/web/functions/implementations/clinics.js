@@ -2,7 +2,6 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 
-const users = require("./users");
 const permissions = require("./permissions");
 const doctors = require('./doctors');
 const secretaries = require('./secretaries');
