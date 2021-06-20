@@ -5,11 +5,15 @@ import * as Yup from 'yup';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
-import { Popup } from '../../Common/Components/Popup';
 import { getPictureURL } from '../../Common/functions';
 import { server } from '../../Common/server';
+import { db } from '../../init';
+import { usePopups } from '../../Common/Popups';
 
-export function SelectDoctorForm({close, success}) {
+export function SelectDoctorForm({clinic, close}) {
+	const popups = usePopups();
+
+	const [saving, setSaving] = useState(false);
 	const [cards, setCards] = useState([]);
 	
 	return (
@@ -32,27 +36,33 @@ export function SelectDoctorForm({close, success}) {
 					const doctor_cards = [];
 
 					for (let doctor of response.data) {
-						await getPictureURL(doctor.user.id).then(url => {
-							doctor.image = url;
+						getPictureURL(doctor.id).then(url => {
+							doctor_cards.push(<Card
+								key={doctor.id}
+								title={doctor.fullName}
+								body={doctor.specializations.map((specialization, index) => {
+									return specialization.id + (index < doctor.specializations.length - 1 ? ", " : ".")
+								})}
+								footer={doctor.clinics.map((clinic, index) => {
+									return clinic.name + ", " + clinic.city +
+										(index < doctor.clinics.length - 1 ? ", " : ".");
+								})}
+								image={url}
+								altText={doctor.fullName + "'s portrait"}
+								action={() => {
+									setSaving(true);
+	
+									db.collection("clinics").doc(clinic.id).collection("doctors").doc(doctor.id).set({
+										user: doctor.id,
+										clinic: clinic.id,
+										minimum: 15
+									})
+									.then(close)
+									.catch(reason => popups.error(reason.message));
+								}}
+							/>);
 						});
 
-						doctor_cards.push(<Card
-							key={doctor.doctor.id}
-							title={doctor.user.firstName + " " + doctor.user.lastName}
-							body={doctor.fields.map((field, index) => {
-								return (index < doctor.fields.length - 1 ? field.id + "; " : field.id)
-							})}
-							footer={doctor.clinics.map((clinic, index) => {
-								return clinic.name + ", " + clinic.city +
-									(index < doctor.clinics.length - 1 ? "; " : "");
-							})}
-							image={doctor.image}
-							altText={doctor.user.firstName + " " + doctor.user.lastName + "'s portrait"}
-							action={() => {
-								success(doctor.doctor.id);
-								close();
-							}}
-						/>);
 					}
 					
 					setCards(doctor_cards);
@@ -90,13 +100,4 @@ export function SelectDoctorForm({close, success}) {
 			</Form>
 		</Formik>
 	);
-}
-
-export function selectDoctorPopup(popupManager, success) {
-	const close = () => {popupManager.remove(popup)};
-	const popup =
-		<Popup key="Add Doctor" title="Add Doctor" close={close}>
-			<SelectDoctorForm close={close} success={success} />
-		</Popup>;
-	popupManager.add(popup);
 }

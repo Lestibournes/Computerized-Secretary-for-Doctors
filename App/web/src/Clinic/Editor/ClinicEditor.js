@@ -5,7 +5,7 @@ import { Link, Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { ClinicEditForm } from "./ClinicEditForm";
-import { selectDoctorPopup } from "./SelectDoctor";
+import { SelectDoctorForm } from "./SelectDoctor";
 import { getPictureURL } from "../../Common/functions";
 import { SelectSecretaryForm } from './SelectSecretary';
 import { usePopups } from '../../Common/Popups';
@@ -307,13 +307,6 @@ export function ClinicEditor() {
 											type={LINK_TYPES.CLINIC}
 											id={clinic}
 											close={close}
-											success={
-												() => {
-													// server.clinics.get({id: clinic}).then(clinic_data => {
-													// 	setData(clinic_data.data);
-													// });
-												}
-											}
 										/>
 									</Popup>
 							
@@ -343,16 +336,14 @@ export function ClinicEditor() {
 						<h2>Doctors</h2>
 						<Button label="+"
 							action={() => {
-								selectDoctorPopup(
-									popups,
-									selected => {
-										// server.clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
-										// 	server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
-										// 		setDoctorsData(doctors_data.data);
-										// 	});
-										// });
-									}
-								);
+								const close = () => {popups.remove(popup)};
+
+								const popup =
+									<Popup key="Add Doctor" title="Add Doctor" close={close}>
+										<SelectDoctorForm close={close} />
+									</Popup>;
+
+								popups.add(popup);
 							}} />
 					</header>
 					<div className="cardList">
