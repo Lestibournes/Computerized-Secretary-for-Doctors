@@ -179,6 +179,7 @@ service cloud.firestore {
 
 				allow read: if isOwner() || isSecretary() || isADoctor();
 				allow write: if isOwner() && isValidData();
+				allow delete: if isOwner();
 			}
 
 			match /doctors/{doctorID} {

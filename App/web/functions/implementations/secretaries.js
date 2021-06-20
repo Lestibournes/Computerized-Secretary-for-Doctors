@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 /**
  * Convenience global variable for accessing the Admin Firestore object.
  */
-const fsdb = admin.firestore();
+const db = admin.firestore();
 
 const stringContains = require('./functions').stringContains;
 
@@ -22,7 +22,7 @@ const stringContains = require('./functions').stringContains;
  * }>} The data of the requested secretary.
  */
 async function getData(secretary) {
-	return fsdb.collection("secretaries").doc(secretary).get().then(secretary_snapshot => {
+	return db.collection("secretaries").doc(secretary).get().then(secretary_snapshot => {
 		if (secretary_snapshot.exists) {
 			const result = {
 				id: secretary,
@@ -36,7 +36,7 @@ async function getData(secretary) {
 			const promises = [];
 			// Get the user data:
 			promises.push(
-				fsdb.collection("users").doc(result.data.user).get().then(user_snapshot => {
+				db.collection("users").doc(result.data.user).get().then(user_snapshot => {
 					result.user = user_snapshot.data();
 					result.user.id = user_snapshot.id;
 					result.fullName = user_snapshot.data().firstName + " " + user_snapshot.data().lastName;
@@ -67,12 +67,12 @@ async function getData(secretary) {
  */
 async function getAllClinics(secretary) {
 	// Get the clinic data for the given secretary:
-	return fsdb.collection("secretaries").doc(secretary).collection("clinics").get().then(clinic_snaps => {
+	return db.collection("secretaries").doc(secretary).collection("clinics").get().then(clinic_snaps => {
 		const clinic_promises = [];
 
 		for (const clinic_snap of clinic_snaps.docs) {
 			clinic_promises.push(
-				fsdb.collection("clinics").doc(clinic_snap.id).get().then(clinic_snapshot => {
+				db.collection("clinics").doc(clinic_snap.id).get().then(clinic_snapshot => {
 					if (clinic_snapshot.data()) {
 						let clinic_data = clinic_snapshot.data();
 						clinic_data.id = clinic_snapshot.id;
@@ -105,14 +105,14 @@ async function create(user) {
 		success: false
 	};
 
-	return fsdb.collection("users").doc(user).get().then(user_snap => {
+	return db.collection("users").doc(user).get().then(user_snap => {
 		if (!user_snap.data().secretary) {
 			// If the user doesn't have a secretary profile then create a profile:
-			return fsdb.collection("secretaries").doc(user).set({
+			return db.collection("secretaries").doc(user).set({
 				user: user
 			}).then(() => {
 				// Add the secretary profile to the user:
-				return fsdb.collection("users").doc(user).update({
+				return db.collection("users").doc(user).update({
 					secretary: user
 				}).then(() => {
 					result.secretary = user;
@@ -146,13 +146,11 @@ async function create(user) {
  */
 async function search(name) {
 	// Fetch the data of all the secretary documents:
-	return fsdb.collection("users").where("secretary", "==", true).get().then(secretary_snaps => {
+	return db.collection("users").where("secretary", "==", true).get().then(secretary_snaps => {
 		const secretaries = [];
 
 		// Filter the secretaries based on whether they have matching names:
 		for (const secretary_snap of secretary_snaps.docs) {
-			console.log(secretary_snap.data().fullName);
-			console.log(name);
 			if (!name || stringContains(secretary_snap.data().fullName, name)) {
 				const data = secretary_snap.data();
 				data.id = secretary_snap.id;
@@ -171,7 +169,7 @@ async function search(name) {
  * Null if he doesn't have one.
  */
 async function getID(user) {
-	return fsdb.collection("users").doc(user).get().then(user_snap => {
+	return db.collection("users").doc(user).get().then(user_snap => {
 		if (user_snap.data().secretary) return user_snap.data().secretary;
 
 		return null;

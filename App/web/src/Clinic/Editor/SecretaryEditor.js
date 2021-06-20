@@ -4,7 +4,6 @@ import { useAuth } from "../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../Common/Components/Button";
 
-import { server } from '../../Common/server';
 import { capitalize, getPictureURL } from '../../Common/functions';
 import { Popup } from '../../Common/Components/Popup';
 import { usePopups } from '../../Common/Popups';
@@ -49,9 +48,11 @@ export function SecretaryEditor() {
 
 	useEffect(() => {
 		if (clinic) {
-			server.clinics.get({id: clinic}).then(clinic_data => {
-				setClinicData(clinic_data.data);
-			});
+			db.collection("clinics").doc(clinic).get().then(clinic_snap => {
+				const data = clinic_snap.data();
+				data.id = clinic_snap.id;
+				setClinicData(data);
+			})
 		}
 	}, [clinic]);
 
@@ -68,9 +69,30 @@ export function SecretaryEditor() {
 					<header>
 						<h2>Details</h2>
 						<Button label="Remove" action={() => {
-							removeSecretaryPopup(popups, clinic, secretaryData, () => {
-								setRedirect("/clinics/edit/" + clinic);
-							})
+							const close = () => {
+								popups.remove(popup);
+							};
+						
+							const popup = 
+							<Popup
+								key="RemoveSecretary"
+								title="Remove Secretary"
+								close={close}
+							>
+								<div>
+									Are you sure you want to remove {secretaryData.fullName} from your clinic?
+								</div>
+								<div className="buttonBar">
+									<Button label="Cancel" type="okay" action={close} />
+									<Button label="Yes" type="cancel" action={() => {
+										db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete()
+										.then(() => setRedirect("/clinics/edit/" + clinic))
+										.catch(reason => popups.error(reason.code));
+									}} />
+								</div>
+							</Popup>;
+						
+							popups.add(popup);
 						}} />
 					</header>
 					<div className="table">
@@ -93,31 +115,4 @@ export function SecretaryEditor() {
 			</main>
 		</div>
 	);
-}
-
-export function removeSecretaryPopup(popups, clinic, secretaryData, success) {
-	const close = () => {
-		popups.remove(popup);
-	};
-
-	const popup = 
-	<Popup
-		key="RemoveSecretary"
-		title="Remove Secretary"
-		close={close}
-	>
-		<div>
-			Are you sure you want to remove {secretaryData.fullName} from your clinic?
-		</div>
-		<div className="buttonBar">
-			<Button label="Cancel" type="okay" action={close} />
-			<Button label="Yes" type="cancel" action={() => {
-				db.collection("clinics").doc(clinic).collection("secretaries").doc(secretaryData.id).delete()
-				.then(() => success())
-				.catch(reason => popups.error(reason.code));
-			}} />
-		</div>
-	</Popup>;
-
-	popups.add(popup);
 }
