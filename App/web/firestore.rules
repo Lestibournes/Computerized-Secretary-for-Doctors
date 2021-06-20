@@ -105,7 +105,7 @@ service cloud.firestore {
 
 		match /clinics/{clinicID} {
 			function isOwner() {
-				return resource.data.owner == request.auth.uid;
+				return get(/databases/$(database)/documents/clinics/$(clinicID)).data.owner == request.auth.uid;
 			}
 
 			function isSecretary() {
@@ -133,9 +133,6 @@ service cloud.firestore {
 				return
 				verifyFields(['owner', 'name', 'city', 'address'], ['language', 'link']) &&
 
-				// Automatically maintained by Cloud Functions. Should never be modified or created manually by a user:
-				data.get("link", "") == resource.data.get("link", "") &&
-
 				// The name of the clinic must be of a short string:
 				data.name is string &&
 				data.name.size() >= 1 &&
@@ -155,12 +152,16 @@ service cloud.firestore {
 			}
 
 			allow read;
-			allow create: if request.resource.data.owner == request.auth.uid && isValidData(request.resource.data);
+			allow create: if
+				request.resource.data.owner == request.auth.uid &&
+				isValidData(request.resource.data) &&
+				!request.resource.data.keys().hasAny(['link']);
 			allow update: if 
 				isOwner() &&
 				isValidData(request.resource.data) &&
 				// If the owner isn't changed:
-				resource.data.owner == request.resource.data.owner;
+				resource.data.owner == request.resource.data.owner &&
+				resource.data.link == request.resource.data.link;
 			allow delete: if isOwner();
 
 			match /secretaries/{secID} {

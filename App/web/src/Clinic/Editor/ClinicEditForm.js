@@ -3,16 +3,18 @@ import * as Yup from 'yup';
 import { Button } from "../../Common/Components/Button";
 import { Popup } from "../../Common/Components/Popup";
 import { TextInput } from "../../Common/Components/TextInput";
-import { server } from "../../Common/server";
+import { usePopups } from "../../Common/Popups";
 import { db } from "../../init";
 
-export function ClinicEditForm({popupManager, clinic, name, city, address, close, success, deleted}) {
+export function ClinicEditForm({popupManager, clinic, close, deleted}) {
+	const popups = usePopups();
+
 	return (
 		<Formik
 			initialValues={{
-				name: name,
-				city: city,
-				address: address
+				name: clinic.name,
+				city: clinic.city,
+				address: clinic.address
 			}}
 			validationSchema={Yup.object({
 				name: Yup.string()
@@ -24,14 +26,9 @@ export function ClinicEditForm({popupManager, clinic, name, city, address, close
 			})}
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
-				server.clinics.edit({id: clinic, name: values.name, city: values.city, address: values.address})
-				.then(response => {
-					if (response.data.success) {
-						success();
-						close();
-					}
-					else popupManager.error(response.data.message);
-				});
+				db.collection("clinics").doc(clinic.id).update({name: values.name, city: values.city, address: values.address})
+				.then(close)
+				.catch(reason => popups.error(reason.message));
 			}}
 		>
 			<Form>
@@ -58,11 +55,18 @@ export function ClinicEditForm({popupManager, clinic, name, city, address, close
 				<div className="buttonBar">
 					<Button type="cancel" label="Delete"
 						action={() => {
-							clinicDeletePopup(
-								popupManager,
-								clinic,
-								deleted
-							)
+							const close = () => {popups.remove(popup)};
+	
+							const popup =
+								<Popup key="Confirm Clinic Deletion" title="Confirm Deletion" close={close}>
+									<ClinicDeleteForm
+										clinic={clinic}
+										close={close}
+										deleted={deleted}
+									/>
+								</Popup>;
+
+							popups.add(popup);
 						}}
 					/>
 					<Button label="Cancel" action={close} />
@@ -73,54 +77,24 @@ export function ClinicEditForm({popupManager, clinic, name, city, address, close
 	);
 }
 
-export function ClinicDeleteForm({popups, clinic, close, success}) {
+export function ClinicDeleteForm({clinic, close, deleted}) {
+	const popups = usePopups();
+	
 	return (
 		<div>
 			<p>Are you sure you wish to delete this clinic?</p>
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
-					db.collection("clinics").doc(clinic).delete().then(() => {
-						success();
+					db.collection("clinics").doc(clinic.id).delete()
+					.then(() => {
+						deleted();
 						close();
-					}).catch(reason => {
-						popups.error(reason);
-					});
+					})
+					.catch(reason => popups.error(reason));
 				}} />
 				<Button type="okay" label="Cancel" action={close} />
 			</div>
 		</div>
 	);
-}
-
-export function clinicEditPopup(popupManager, clinic, name, city, address, deleted, success) {
-	const close = () => {popupManager.remove(popup)};
-	const popup =
-		<Popup key="Edit Details" title="Edit Details" close={close}>
-			<ClinicEditForm
-				popupManager={popupManager}
-				clinic={clinic}
-				name={name}
-				city={city}
-				address={address}
-				close={close}
-				success={success}
-				deleted={deleted}
-			/>
-		</Popup>;
-		popupManager.add(popup);
-}
-
-export function clinicDeletePopup(popupManager, clinic, success) {
-	const close = () => {popupManager.remove(popup)};
-	const popup =
-		<Popup key="Confirm Clinic Deletion" title="Confirm Deletion" close={close}>
-			<ClinicDeleteForm
-				popupManager={popupManager}
-				clinic={clinic}
-				close={close}
-				success={success}
-			/>
-		</Popup>;
-		popupManager.add(popup);
 }

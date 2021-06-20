@@ -7,12 +7,13 @@ import { Button } from "../../Common/Components/Button";
 import { ClinicCreateForm, clinicCreatePopup } from "./ClinicCreateForm";
 import { createProfilePopup } from "./CreateDoctorProfile";
 import { capitalizeAll } from "../../Common/functions";
-import { removeSpecializationPopup, SelectSpecializationForm } from "./SelectSpecialization";
+import { SelectSpecializationForm } from "./SelectSpecialization";
 import { usePopups } from "../../Common/Popups";
 import { LinkEditForm, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Link } from "react-router-dom";
 import { useRoot } from "../../Common/Root";
 import { Popup } from "../../Common/Components/Popup";
+import { Loading } from "../../Common/Components/Loading";
 import { db } from "../../init";
 
 /**
@@ -66,8 +67,8 @@ export function DoctorProfileFragment() {
 
 	const [clinics, setClinics] = useState();
 	const [clinicCards, setClinicCards] = useState(null);
-	
-	
+
+	// Load user data:
 	useEffect(() => {
 		if (auth?.user) {
 			return db.collection("users").doc(auth.user.uid).onSnapshot(
@@ -83,6 +84,7 @@ export function DoctorProfileFragment() {
 		}
 	}, [auth.user, popups]);
 
+	// Load the data of the clinics owned by this doctor:
 	useEffect(() => {
 		if (doctor) {
 			return db.collection("clinics")
@@ -92,9 +94,11 @@ export function DoctorProfileFragment() {
 					const clinics = [];
 					
 					for (const clinic_snap of clinic_snaps.docs) {
-						const clinic = clinic_snap.data();
-						clinic.id = clinic_snap.id;
-						clinics.push(clinic)
+						if (clinic_snap.exists) {
+							const clinic = clinic_snap.data();
+							clinic.id = clinic_snap.id;
+							clinics.push(clinic)
+						}
 					}
 
 					setOwned(clinics);
@@ -104,6 +108,7 @@ export function DoctorProfileFragment() {
 		}
 	}, [doctor]);
 
+	// Load the data of the clinics where this doctor works:
 	useEffect(() => {
 		if (doctor) {
 			return db.collectionGroup("doctors")
@@ -117,10 +122,15 @@ export function DoctorProfileFragment() {
 
 						if (clinicRef) {
 							promises.push(
-								clinicRef.get().then(clinic_snap => {
-									const clinic = clinic_snap.data();
-									clinic.id = clinic_snap.id;
-									return clinic;
+								clinicRef.get()
+								.then(clinic_snap => {
+									if (clinic_snap.exists) {
+										const clinic = clinic_snap.data();
+										clinic.id = clinic_snap.id;
+										return clinic;
+									}
+									
+									return null;
 								})
 								.catch(reason => popups.error("Error fetching clinic data: " + reason))
 							)
@@ -134,6 +144,7 @@ export function DoctorProfileFragment() {
 		}
 	}, [doctor]);
 
+	// Load the specializations of this doctor:
 	useEffect(() => {
 		if (doctor) {
 			return db.collection("users").doc(doctor.id).collection("specializations").onSnapshot(
@@ -153,52 +164,60 @@ export function DoctorProfileFragment() {
 		}
 	}, [doctor]);
 
+	// Display the clinics this doctor owns:
 	useEffect(() => {
 		if (owned && doctor) {
 			const clinics_list = [];
 			
 			for (let clinic_data of owned) {
-				clinics_list.push(
-					<Card
-						key={clinic_data.id}
-						title={clinic_data.name}
-						body={clinic_data.city}
-						footer={clinic_data.address}
-						link={root.get() + "/clinics/edit/" + clinic_data.id}
-					/>
-				);
+				if (clinic_data) {
+					clinics_list.push(
+						<Card
+							key={clinic_data.id}
+							title={clinic_data.name}
+							body={clinic_data.city}
+							footer={clinic_data.address}
+							link={root.get() + "/clinics/edit/" + clinic_data.id}
+						/>
+					);
+				}
 			}
 
 			setOwnedCards(clinics_list);
 		}
 	}, [doctor, owned, root]);
 	
+	// Display the clinics where this doctor works:
 	useEffect(() => {
 		if (clinics && doctor) {
 			const clinics_list = [];
 			
 			for (let clinic_data of clinics) {
-				clinics_list.push(
-					<Card
-						key={clinic_data.id}
-						title={clinic_data.name}
-						body={clinic_data.city}
-						footer={clinic_data.address}
-						link={root.get() + "/clinics/view/" + clinic_data.id}
-					/>
-				);
+				if (clinic_data) {
+					clinics_list.push(
+						<Card
+							key={clinic_data.id}
+							title={clinic_data.name}
+							body={clinic_data.city}
+							footer={clinic_data.address}
+							link={root.get() + "/clinics/view/" + clinic_data.id}
+						/>
+					);
+				}
 			}
 
 			setClinicCards(clinics_list);
 		}
 	}, [doctor, clinics, root]);
 
-	let display;
+	let display = <Loading />;
 
 	if (doctor && clinicCards) {
 		display = (
 			<>
 				<h2>Doctor Profile</h2>
+
+				{/* The doctor's direct link: */}
 				<section>
 					<header>
 						<h3>Link</h3>
@@ -235,6 +254,8 @@ export function DoctorProfileFragment() {
 							</div>
 						}
 				</section>
+
+				{/* The doctor's specializations: */}
 				<section>
 					<header>
 						<h3>Specializations</h3>
@@ -293,6 +314,8 @@ export function DoctorProfileFragment() {
 						}
 					</div>
 				</section>
+
+				{/* The doctor's owned clinics: */}
 				<section>
 					<header>
 						<h3>Clinics I Own</h3>
@@ -315,6 +338,8 @@ export function DoctorProfileFragment() {
 						{ownedCards}
 					</div>
 				</section>
+
+				{/* Other clinics where the doctor works: */}
 				<section>
 					<header>
 						<h3>Clinics Where I Work</h3>

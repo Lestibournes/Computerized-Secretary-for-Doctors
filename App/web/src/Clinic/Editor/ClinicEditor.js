@@ -4,11 +4,10 @@ import { useAuth } from "../../Common/Auth";
 import { Link, Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
-import { clinicEditPopup } from "./ClinicEditForm";
+import { ClinicEditForm } from "./ClinicEditForm";
 import { selectDoctorPopup } from "./SelectDoctor";
 import { getPictureURL } from "../../Common/functions";
 import { SelectSecretaryForm } from './SelectSecretary';
-import { server } from '../../Common/server';
 import { usePopups } from '../../Common/Popups';
 import { LinkEditForm, LINK_TYPES } from "../../Landing/LinkEdit";
 import { Header } from '../../Common/Components/Header';
@@ -47,6 +46,7 @@ export function ClinicEditor() {
 
 	const [redirect, setRedirect] = useState(null);
 	
+	// Get user data:
 	useEffect(() => {
 		if (auth.user) {
 			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
@@ -57,16 +57,81 @@ export function ClinicEditor() {
 		}
 	}, [auth]);
 
+	// Get clinic data:
 	useEffect(() => {
 		if (clinic) {
-			server.clinics.get({id: clinic}).then(clinic_data => {
-				setData(clinic_data.data);
+			return db.collection("clinics").doc(clinic).onSnapshot(
+				clinic_snap => {
+					if (clinic_snap.exists) {
+						const data = clinic_snap.data();
+						data.id = clinic_snap.id;
+						setData(data);
+					}
 
-				server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
-					setDoctorsData(doctors_data.data);
-				});
+					return null;
+				},
+				error => popups.error(error.message)
+			);
+		}
+	}, [clinic]);
 
-				db.collection("clinics").doc(clinic).collection("secretaries").onSnapshot(secretary_snaps => {
+	// Get the doctors' data with their specializations:
+	useEffect(() => {
+		if (clinic) {
+			return db.collection("clinics").doc(clinic).collection("doctors").onSnapshot(
+				doctor_snaps => {
+					const promises = [];
+
+					for (const doctor_snap of doctor_snaps.docChanges()) {
+						promises.push(
+							db.collection("users").doc(doctor_snap.doc.id).get()
+							.then(user_snap => {
+								const data = user_snap.data();
+								data.id = user_snap.id;
+
+								return db.collection("users").doc(user_snap.id).collection("specializations").get()
+								.then(spec_snaps => {
+									data.specializations = [];
+
+									for (const spec_snap of spec_snaps.docs) {
+										const spec_data = spec_snap.data();
+										spec_data.id = spec_snap.id;
+										data.specializations.push(spec_data);
+									}
+
+									return data;
+								});
+							})
+							.catch(reason => popups.error(reason.message))
+						);
+					}
+
+					Promise.all(promises).then(user_data => {
+						user_data.sort(
+							(a, b) => {
+								if (a.lastName > b.lastName) return 1;
+								if (a.lastName < b.lastName) return -1;
+
+								if (a.firstName > b.firstName) return 1;
+								if (a.firstName < b.firstName) return -1;
+
+								return 0;
+							}
+						);
+
+						setDoctorsData(user_data);
+					})
+				},
+				error => popups.error(error.message)
+			);
+		}
+	}, [clinic]);
+
+	// Get the secretaries' data:
+	useEffect(() => {
+		if (clinic) {
+			return db.collection("clinics").doc(clinic).collection("secretaries").onSnapshot(
+				secretary_snaps => {
 					const promises = [];
 
 					for (const secretary_snap of secretary_snaps.docs) {
@@ -82,68 +147,67 @@ export function ClinicEditor() {
 					}
 					
 					Promise.all(promises).then(secretaries_data => {
-						secretaries_data.sort((a, b) => {
-							return a.fullName > b.fullName ? 1 : a.fullName < b.fullName ? -1 : 0;
-						});
+						secretaries_data.sort(
+							(a, b) => {
+								if (a.lastName > b.lastName) return 1;
+								if (a.lastName < b.lastName) return -1;
+								
+								if (a.firstName > b.firstName) return 1;
+								if (a.firstName < b.firstName) return -1;
+
+								return 0;
+							}
+						);
 
 						setSecretariesData(secretaries_data);
 					})
 				},
 				error => popups.error(error.message)
-				);
-			});
+			);
 		}
 	}, [clinic]);
 
-
+	// Generate the doctor list:
 	useEffect(() => {
 		if (doctorsData) {
 			const promises = [];
 
 			for (const doctor of doctorsData) {
-				promises.push(getPictureURL(doctor.user.id).then(url => {
-					doctor.image = url;
-
-					const card = (<Card
-						key={doctor.doctor.id}
-						title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (♚ owner)" : "")}
-						body=
-							{doctor.fields.length > 0 ?
-								doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-								: ""))
-							: "No specializations specified"}
-						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
-						image={doctor.image}
-						link={root.get() + "/clinics/schedule/edit/" + clinic + "/" + doctor.doctor.id}
-					/>);
-	
-					return {
-						name: doctor.user.lastName + doctor.user.firstName,
-						id: doctor.doctor.id,
-						component: card
-					};
-				}));
+				promises.push(
+					getPictureURL(doctor.id).then(url => {
+						const card = 
+							<Card
+								key={doctor.id}
+								title={doctor.fullName + (doctor.id === data.owner ? " (♚ owner)" : "")}
+								body=
+									{doctor.specializations.length > 0 ?
+										doctor.specializations.map((specialization, index) => specialization.id + (index < doctor.specializations.length - 1 ? ", "
+										: ""))
+									: "No specializations specified"}
+								image={url}
+								link={root.get() + "/clinics/schedule/edit/" + clinic + "/" + doctor.id}
+							/>;
+		
+						return {
+							data: doctor,
+							component: card
+						};
+					})
+				);
 			}
 
 			Promise.all(promises).then(cards => {
 				cards.sort((a, b) => {
-					if (a.id === data.owner) {
-						return -1;
-					};
-		
-					if (b.id === data.owner) {
-						return 1;
-					};
+					if (a.data.id === data.owner) return 1;
+					if (b.data.id === data.owner) return -1;
 	
-					if (a.name === b.name) {
-						return 0;
-					}
-					else if (a.name < b.name) {
-						return -1;
-					}
-					else {
-						return 1;
-					}
+					if (a.data.lastName > b.data.lastName) return 1;
+					if (a.data.lastName < b.data.lastName) return 1;
+
+					if (a.data.firstName > b.data.firstName) return 1;
+					if (a.data.firstName < b.data.firstName) return 1;
+
+					return 0;
 				});
 				
 				setDoctorCards(cards.map(card => card.component));
@@ -151,31 +215,42 @@ export function ClinicEditor() {
 		}
 	}, [doctorsData, data, clinic]);
 
+	// Generate the secretary list:
 	useEffect(() => {
 		if (secretariesData) {
 			const promises = [];
 
 			for (const secretary of secretariesData) {
-				promises.push(getPictureURL(secretary.id).then(url => {
-					secretary.image = url;
-
-					const card = (<Card
-						key={secretary.id}
-						title={secretary.fullName}
-						image={secretary.image}
-						link={root.get() + "/clinics/secretary/edit/" + clinic + "/" + secretary.id}
-					/>);
-	
-					return {
-						name: secretary.fullName,
-						id: secretary.id,
-						component: card
-					};
-				}));
+				promises.push(
+					getPictureURL(secretary.id).then(url => {
+						const card = (<Card
+							key={secretary.id}
+							title={secretary.fullName}
+							image={url}
+							link={root.get() + "/clinics/secretary/edit/" + clinic + "/" + secretary.id}
+						/>);
+		
+						return {
+							data: secretary,
+							component: card
+						};
+					})
+				);
 			}
 
 			Promise.all(promises).then(cards => {
-				cards.sort((a, b) => a.name === b.name ? 0 : a.name < b.name ? -1 : 1);
+				cards.sort((a, b) => {
+					if (a.data.id === data.owner) return 1;
+					if (b.data.id === data.owner) return -1;
+	
+					if (a.data.lastName > b.data.lastName) return 1;
+					if (a.data.lastName < b.data.lastName) return 1;
+
+					if (a.data.firstName > b.data.firstName) return 1;
+					if (a.data.firstName < b.data.firstName) return 1;
+
+					return 0;
+				});
 				
 				setSecretaryCards(cards.map(card => card.component));
 			});
@@ -187,24 +262,25 @@ export function ClinicEditor() {
 		display = (
 			<>
 				{redirect ? <Redirect to={root.get() + redirect} /> : ""}
+
+				{/* Clinic data: */}
 				<section>
 					<header>
 						<h2>Details</h2>
 						<Button label="Edit"
 							action={() => {
-								clinicEditPopup(
-									popups,
-									clinic,
-									data.name,
-									data.city,
-									data.address,
-									() => setRedirect("/user/profile/doctor"),
-									() => {
-										server.clinics.get({id: clinic}).then(clinic_data => {
-											setData(clinic_data.data);
-										});
-									}
-								)
+								const close = () => {popups.remove(popup)};
+
+								const popup =
+									<Popup key="Edit Details" title="Edit Details" close={close}>
+										<ClinicEditForm
+											clinic={data}
+											close={close}
+											deleted={() => setRedirect("/user/profile/doctor")}
+										/>
+									</Popup>;
+									
+								popups.add(popup);
 							}}
 						/>
 					</header>
@@ -216,6 +292,7 @@ export function ClinicEditor() {
 					: "Loading..."}
 				</section>
 
+				{/* Clinic direct link: */}
 				<section>
 					<header>
 						<h2>Link</h2>
@@ -232,9 +309,9 @@ export function ClinicEditor() {
 											close={close}
 											success={
 												() => {
-													server.clinics.get({id: clinic}).then(clinic_data => {
-														setData(clinic_data.data);
-													});
+													// server.clinics.get({id: clinic}).then(clinic_data => {
+													// 	setData(clinic_data.data);
+													// });
 												}
 											}
 										/>
@@ -244,7 +321,7 @@ export function ClinicEditor() {
 							}}
 						/>
 					</header>
-					{data.link ?
+					{data?.link ?
 						<div className="table">
 							<><b>Name:</b> <Link to={"/" + data.link} >{data.link}</Link></>
 						</div>
@@ -259,7 +336,8 @@ export function ClinicEditor() {
 						</div>
 					}
 				</section>
-				
+
+				{/* Doctor list: */}
 				<section>
 					<header>
 						<h2>Doctors</h2>
@@ -268,11 +346,11 @@ export function ClinicEditor() {
 								selectDoctorPopup(
 									popups,
 									selected => {
-										server.clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
-											server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
-												setDoctorsData(doctors_data.data);
-											});
-										});
+										// server.clinics.addDoctor({clinic: clinic, requester: doctor.doctor.id, doctor: selected}).then(() => {
+										// 	server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
+										// 		setDoctorsData(doctors_data.data);
+										// 	});
+										// });
 									}
 								);
 							}} />
@@ -282,6 +360,7 @@ export function ClinicEditor() {
 					</div>
 				</section>
 
+				{/* Secretary list: */}
 				<section>
 					<header>
 						<h2>Secretaries</h2>
