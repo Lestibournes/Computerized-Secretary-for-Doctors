@@ -35,8 +35,7 @@ export function ClinicEditor() {
 	const { clinic } = useParams(); //The ID of clinic.
 
 	// Components runtime data (states):
-	const [data, setData] = useState(null);
-	const [doctor, setDoctor] = useState(null);
+	const [clinicData, setClinicData] = useState(null); // The data of the clinic
 	
 	const [doctorsData, setDoctorsData] = useState();
 	const [doctorCards, setDoctorCards] = useState();
@@ -45,17 +44,6 @@ export function ClinicEditor() {
 	const [secretaryCards, setSecretaryCards] = useState();
 
 	const [redirect, setRedirect] = useState(null);
-	
-	// Get user data:
-	useEffect(() => {
-		if (auth.user) {
-			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
-				const data = user_snap.data();
-				data.id = user_snap.id;
-				if (data.doctor) setDoctor(data);
-			});
-		}
-	}, [auth]);
 
 	// Get clinic data:
 	useEffect(() => {
@@ -65,7 +53,7 @@ export function ClinicEditor() {
 					if (clinic_snap.exists) {
 						const data = clinic_snap.data();
 						data.id = clinic_snap.id;
-						setData(data);
+						setClinicData(data);
 					}
 
 					return null;
@@ -178,7 +166,7 @@ export function ClinicEditor() {
 						const card = 
 							<Card
 								key={doctor.id}
-								title={doctor.fullName + (doctor.id === data.owner ? " (♚ owner)" : "")}
+								title={doctor.fullName + (doctor.id === clinicData.owner ? " (♚ owner)" : "")}
 								body=
 									{doctor.specializations.length > 0 ?
 										doctor.specializations.map((specialization, index) => specialization.id + (index < doctor.specializations.length - 1 ? ", "
@@ -198,8 +186,8 @@ export function ClinicEditor() {
 
 			Promise.all(promises).then(cards => {
 				cards.sort((a, b) => {
-					if (a.data.id === data.owner) return 1;
-					if (b.data.id === data.owner) return -1;
+					if (a.data.id === clinicData.owner) return 1;
+					if (b.data.id === clinicData.owner) return -1;
 	
 					if (a.data.lastName > b.data.lastName) return 1;
 					if (a.data.lastName < b.data.lastName) return 1;
@@ -213,7 +201,7 @@ export function ClinicEditor() {
 				setDoctorCards(cards.map(card => card.component));
 			});
 		}
-	}, [doctorsData, data, clinic]);
+	}, [doctorsData, clinicData, clinic]);
 
 	// Generate the secretary list:
 	useEffect(() => {
@@ -240,8 +228,8 @@ export function ClinicEditor() {
 
 			Promise.all(promises).then(cards => {
 				cards.sort((a, b) => {
-					if (a.data.id === data.owner) return 1;
-					if (b.data.id === data.owner) return -1;
+					if (a.data.id === clinicData.owner) return 1;
+					if (b.data.id === clinicData.owner) return -1;
 	
 					if (a.data.lastName > b.data.lastName) return 1;
 					if (a.data.lastName < b.data.lastName) return 1;
@@ -255,10 +243,10 @@ export function ClinicEditor() {
 				setSecretaryCards(cards.map(card => card.component));
 			});
 		}
-	}, [secretariesData, data, clinic]);
+	}, [secretariesData, clinicData, clinic]);
 
 	let display = <Loading />;
-	if (data && doctorCards && secretaryCards) {
+	if (clinicData && doctorCards && secretaryCards) {
 		display = (
 			<>
 				{redirect ? <Redirect to={root.get() + redirect} /> : ""}
@@ -274,7 +262,7 @@ export function ClinicEditor() {
 								const popup =
 									<Popup key="Edit Details" title="Edit Details" close={close}>
 										<ClinicEditForm
-											clinic={data}
+											clinic={clinicData}
 											close={close}
 											deleted={() => setRedirect("/user/profile/doctor")}
 										/>
@@ -284,10 +272,10 @@ export function ClinicEditor() {
 							}}
 						/>
 					</header>
-					{data ?
+					{clinicData ?
 						<div className="table">
-							<b>Name:</b> <span>{data.name}</span>
-							<b>Address:</b> <span>{data.city}, {data.address}</span>
+							<b>Name:</b> <span>{clinicData.name}</span>
+							<b>Address:</b> <span>{clinicData.city}, {clinicData.address}</span>
 						</div>
 					: "Loading..."}
 				</section>
@@ -303,7 +291,7 @@ export function ClinicEditor() {
 								const popup =
 									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
 										<LinkEditForm
-											link={data.link}
+											link={clinicData.link}
 											type={LINK_TYPES.CLINIC}
 											id={clinic}
 											close={close}
@@ -314,9 +302,9 @@ export function ClinicEditor() {
 							}}
 						/>
 					</header>
-					{data?.link ?
+					{clinicData?.link ?
 						<div className="table">
-							<><b>Name:</b> <Link to={"/" + data.link} >{data.link}</Link></>
+							<><b>Name:</b> <Link to={"/" + clinicData.link} >{clinicData.link}</Link></>
 						</div>
 						:
 						<div>
@@ -340,7 +328,7 @@ export function ClinicEditor() {
 
 								const popup =
 									<Popup key="Add Doctor" title="Add Doctor" close={close}>
-										<SelectDoctorForm close={close} />
+										<SelectDoctorForm clinic={clinicData} close={close} />
 									</Popup>;
 
 								popups.add(popup);
