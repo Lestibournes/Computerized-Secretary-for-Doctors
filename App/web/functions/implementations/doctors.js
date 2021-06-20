@@ -165,22 +165,29 @@ async function search(name, specialization, city) {
 
 		/**
 		 * Holds the all the top-level promises for all the users.
-		 * @type {Promise<void>[]}
+		 * @type {Promise<void>}
 		 */
 		const promises = [];
 
 		const user_data = [];
 		
 		for (const user_snap of user_snaps.docs) {
-			const user_data = user_snap.data();
-			user_data.id = user_snap.id;
+
+			/**
+			 * Holds the promise to fetch the clinics and the promise to fetch the specializations.
+			 * @type {Promise<void>}
+			 */
+			const user_promises = [];
+
+			const data = user_snap.data();
+			data.id = user_snap.id;
 
 			// Filter by whether the user is a doctor and whether the name is a match:
-			if (user_data.doctor && (!name || stringContains(user_data.fullName, name))) {
+			if (data.doctor && (!name || stringContains(data.fullName, name))) {
 
 				// Get the clinics:
-				promises.push(
-					db.collectionGroup("doctors").where("user", "==", user_data.id).get()
+				user_promises.push(
+					db.collectionGroup("doctors").where("user", "==", data.id).get()
 					.then(doctor_snaps => {
 						const clinic_promises = [];
 	
@@ -196,52 +203,51 @@ async function search(name, specialization, city) {
 											clinic_data.id = clinic_snap.id;
 											return clinic_data;
 										}
-	
+
 										else return null;
 									})
 								);
 							}
 						}
 	
-						// Get the specializations:
-						let query = db.collection("users").doc(user_data.id).collection("specializations");
-		
-						if (specialization) query = query.where("specialization", "==", specialization);
-		
-						return query.get()
-						.then(spec_snaps => {
-							user_data.specializations = [];
-		
-							for (const spec_snap of spec_snaps.docs) {
-								const spec_data = spec_snap.data();
-								spec_data.id = spec_snap.id;
-								user_data.specializations.push(spec_data);
+						// Once all clinics are fetched, save all those that exist and match the city:
+						return Promise.all(clinic_promises).then(clinic_data => {
+							data.clinics = [];
+	
+							for (const clinic of clinic_data) {
+								if (clinic) data.clinics.push(clinic);
 							}
-	
-							// Once all clinics are fetched, save all those that exist and match the city:
-							return Promise.all(clinic_promises).then(clinic_data => {
-								user_data.clinics = [];
-	
-								for (const clinic of clinic_data) {
-									if (clinic) user_data.clinics.push(clinic);
-								}
-							});
 						});
 					})
 				);
 
+				// Get the specializations:
+				let query = db.collection("users").doc(data.id).collection("specializations");
+
+				if (specialization) query = query.where("specialization", "==", specialization);
+
+				user_promises.push(
+					query.get()
+					.then(spec_snaps => {
+						data.specializations = [];
 	
+						for (const spec_snap of spec_snaps.docs) {
+							const spec_data = spec_snap.data();
+							spec_data.id = spec_snap.id;
+							data.specializations.push(spec_data);
+						}
+					})
+				);
+	
+				// Add each user's array of data-fetching promises to the array of promises:
+				promises.push(
+					Promise.all(user_promises).then(() => {
+						// For each user, when all his data is fetched, only add him to the results if he's a match:
+						if (user_data.clinics.length > 0 && user_data.specializations.length > 0) user_data.push(data);
+					})
+				);
 			}
 		}
-		// Add each user's array of data-fetching promises to the array of promises:
-		promises.push(
-			Promise.all(user_promises).then(() => {
-				// For each user, when all his data is fetched, only add him to the results if he's a match:
-				for (const user of user_data) {
-					if (user_data.clinics.length > 0 && user_data.specializations.length > 0) user_data.push(user_data);
-				}
-			})
-		);
 
 		// Once all results have been fetched, return them:
 		return Promise.all(promises).then(() => {return user_data});
