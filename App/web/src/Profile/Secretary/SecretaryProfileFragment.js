@@ -5,7 +5,6 @@ import { Card } from "../../Common/Components/Card";
 import { Popup } from "../../Common/Components/Popup";
 
 import { SecretaryCreateProfileForm } from "./SecretaryCreateProfile";
-import { server } from "../../Common/server";
 import { usePopups } from "../../Common/Popups";
 import { Loading } from "../../Common/Components/Loading";
 import { useRoot } from "../../Common/Root";
@@ -26,23 +25,29 @@ export function SecretaryProfileFragment() {
 
 	useEffect(() => {
 		if (auth.user) {
-			return db.collectionGroup("secretaries").where('user', '==', auth.user.uid).onSnapshot(secretary_snaps => {
-				const promises = [];
+			return db.collectionGroup("secretaries")
+			.where('user', '==', auth.user.uid)
+			.onSnapshot(
+				secretary_snaps => {
+					const promises = [];
 
-				for (const secretary of secretary_snaps.docs) {
-					const clinicRef = secretary.ref.parent.parent;
+					for (const secretary of secretary_snaps.docs) {
+						const clinicRef = secretary.ref.parent.parent;
 
-					promises.push(
-						clinicRef.get().then(clinic_snap => {
-							const data = clinic_snap.data();
-							data.id = clinic_snap.id;
-							return data;
-						})
-					);
-				}
+						promises.push(
+							clinicRef.get().then(clinic_snap => {
+								const data = clinic_snap.data();
+								data.id = clinic_snap.id;
+								return data;
+							})
+							.catch(reason => popups.error("It's here!", reason.message))
+						);
+					}
 
-				Promise.all(promises).then(data => setClinics(data));
-			});
+					Promise.all(promises).then(data => setClinics(data));
+				},
+				error => popups.error("Fetching clinic data: " + error.message)
+			);
 		}
 	}, [auth.user]);
 
@@ -65,7 +70,7 @@ export function SecretaryProfileFragment() {
 						popups.add(popup);
 					}
 				},
-				error => popups.error(error.message)
+				error => popups.error("Fetching user data: " + error.message)
 			);
 		}
 	}, [auth.user]);

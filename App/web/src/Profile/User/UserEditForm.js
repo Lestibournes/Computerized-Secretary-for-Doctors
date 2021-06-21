@@ -11,6 +11,7 @@ import { PictureInput } from "../../Common/Components/PictureInput";
 export function UserEditForm({popups, user, data, image, close, success}) {
 	const [selectedImage, setSelectedImage] = useState(image);
 	const [file, setFile] = useState(null);
+	const [saving, setSaving] = useState(false);
 
 	return (
 		<Formik
@@ -26,6 +27,7 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 			})}
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
+				setSaving(true);
 
 				const promises = [];
 				
@@ -108,6 +110,9 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 						}}
 					/>
 
+					{saving ?
+						<small>Saving...</small>
+					: ""}
 				</div>
 
 				<div className="buttonBar">

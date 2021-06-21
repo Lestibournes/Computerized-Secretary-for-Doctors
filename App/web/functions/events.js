@@ -42,12 +42,15 @@ exports.modifySpecializations = functions.firestore.document('users/{userID}/spe
 	if (!newDocument) {
 		// remove the doctor from the old specialization index:
 		db.collection("specializations").doc(context.params.specID).collection("doctors").doc(context.params.userID).delete();
+		db.collection("specializations").doc(context.params.specID).collection("practitioners").doc(context.params.userID).delete();
 	}
 	
 	if (newDocument) {
 		// Add the document to the new specialization index:
 		db.collection("specializations").doc(context.params.specID).set({exists: true}).then(() => {
-			db.collection("specializations").doc(context.params.specID).collection("doctors").doc(context.params.userID).set({exists: true});
+			db.collection("specializations").doc(context.params.specID).collection("practitioners").doc(context.params.userID).set({
+				practitioner: context.params.userID
+			});
 		});
 	}
 });

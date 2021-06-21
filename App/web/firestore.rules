@@ -104,11 +104,11 @@ service cloud.firestore {
 		}
 
 		match /clinics/{clinicID} {
-			function isOwner() {
+			function isTheOwner() {
 				return get(/databases/$(database)/documents/clinics/$(clinicID)).data.owner == request.auth.uid;
 			}
 
-			function isSecretary() {
+			function isASecretary() {
 				return exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.auth.uid));
 			}
 
@@ -157,14 +157,19 @@ service cloud.firestore {
 				isValidData(request.resource.data) &&
 				!request.resource.data.keys().hasAny(['link']);
 			allow update: if 
-				isOwner() &&
+				isTheOwner() &&
 				isValidData(request.resource.data) &&
 				// If the owner isn't changed:
 				resource.data.owner == request.resource.data.owner &&
 				resource.data.link == request.resource.data.link;
-			allow delete: if isOwner();
+			allow delete: if isTheOwner();
 
 			match /secretaries/{secID} {
+				function isTheSecretary() {
+					return
+					request.auth.uid == resource.data.user;
+				}
+
 				function isValidData() {
 					return
 					verifyFields(['user', 'clinic'], []) &&
@@ -177,9 +182,9 @@ service cloud.firestore {
 					request.resource.data.clinic == clinicID;
 				}
 
-				allow read: if isOwner() || isSecretary() || isADoctor();
-				allow write: if isOwner() && isValidData();
-				allow delete: if isOwner();
+				allow read: if isTheOwner() || isASecretary() || isADoctor() || isTheSecretary();
+				allow write: if isTheOwner() && isValidData();
+				allow delete: if isTheOwner();
 			}
 
 			match /doctors/{doctorID} {
@@ -205,7 +210,7 @@ service cloud.firestore {
 				}
 
 				allow read;
-				allow write: if (isOwner() || isTheDoctor()) && isValidData();
+				allow write: if (isTheOwner() || isTheDoctor()) && isValidData();
 
 				match /types/{typeID} {
 					function isValidData() {
@@ -222,8 +227,8 @@ service cloud.firestore {
 					}
 
 					allow read;
-					allow write: if (doctorID == request.auth.uid || isSecretary() || isOwner()) && isValidData();
-					allow delete: if (doctorID == request.auth.uid || isSecretary() || isOwner());
+					allow write: if (doctorID == request.auth.uid || isASecretary() || isTheOwner()) && isValidData();
+					allow delete: if (doctorID == request.auth.uid || isASecretary() || isTheOwner());
 				}
 
 				match /shifts/{shiftID} {
@@ -262,8 +267,8 @@ service cloud.firestore {
 					}
 
 					allow read;
-					allow write: if (doctorID == request.auth.uid || isSecretary() || isOwner()) && isValidData();
-					allow delete: if (doctorID == request.auth.uid || isSecretary() || isOwner());
+					allow write: if (doctorID == request.auth.uid || isASecretary() || isTheOwner()) && isValidData();
+					allow delete: if (doctorID == request.auth.uid || isASecretary() || isTheOwner());
 				}
 			}
 
@@ -329,9 +334,9 @@ service cloud.firestore {
 					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.end > request.time;
 				}
 
-				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isSecretary();
+				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isASecretary();
 				allow write: if
-					(isPatient(appointmentID) && arrivalUnchanged() || isTheDoctor(appointmentID) || isSecretary()) &&
+					(isPatient(appointmentID) && arrivalUnchanged() || isTheDoctor(appointmentID) || isASecretary()) &&
 					isValidData() &&
 					!isArchived();
 				allow write: if
@@ -341,7 +346,7 @@ service cloud.firestore {
 					// arrivalUnchanged() 
 					// || 
 					// isTheDoctor(appointmentID) 
-					// || isSecretary()
+					// || isASecretary()
 					// )
 					//  &&
 					isValidData()
@@ -539,7 +544,7 @@ service cloud.firestore {
 			// * When a new link is created, find and delete all the old ones that have the same type and id combination.
 			// * Update the clinic/user document with the new link id/name
 			
-			function isOwner() {
+			function isTheOwner() {
 				return
 				(request.resource.data.type == "clinic" &&
 				get(/databases/$(database)/documents/clinics/$(request.resource.data.id)).data.owner == request.auth.uid)
@@ -577,10 +582,20 @@ service cloud.firestore {
 			}
 
 			allow read;
-			allow write: if isOwner() && isValidData();
+			allow write: if isTheOwner() && isValidData();
 		}
 
-		// To enable using a collectionGroup of doctors:
+		// To enable using collectionGroup:
+
+		match /{path=**}/secretaries/{secretaryID} {
+			function isTheSecretary() {
+				return
+				request.auth.uid == resource.data.user;
+			}
+			
+			allow read: if isTheSecretary();
+		}
+
 		match /{path=**}/doctors/{doctorID} {
 			allow read;
 		}
@@ -594,16 +609,16 @@ service cloud.firestore {
 				return resource.data.doctor == request.auth.uid;
 			}
 
-			function isOwner() {
+			function isTheOwner() {
 				let data = get(/databases/$(database)/documents/$(request.resource.data.clinic)/appointments/$(appointmentID));
 				return data.owner == request.auth.uid;
 			}
 
-			function isSecretary() {
+			function isASecretary() {
 				return exists(/databases/$(database)/documents/$(request.resource.data.clinic)/secretaries/$(request.auth.uid));
 			}
 
-			allow read: if isPatient() || isTheDoctor() || isSecretary() || isOwner();
+			allow read: if isPatient() || isTheDoctor() || isASecretary() || isTheOwner();
 		}
 	}
 }
