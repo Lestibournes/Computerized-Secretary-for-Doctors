@@ -19,6 +19,8 @@ import { AppointmentSuccessPage } from './Patient/AppointmentSuccessPage';
 import { AppointmentListPage } from './Patient/AppointmentListPage';
 import { AppointmentDeletedPage } from './Patient/AppointmentDeletedPage';
 import { AppointmentCalendarPage } from './Calendar/AppointmentCalendarPage';
+import { DoctorCalendarPage } from "./Calendar/DoctorCalendarPage";
+import { ClinicCalendarPage } from "./Calendar/ClinicCalendarPage";
 import { ClinicEditor } from './Clinic/Editor/ClinicEditor';
 import { ScheduleEditor } from './Clinic/Editor/Schedules/ScheduleEditor';
 import { SetAppointmentPage } from './Patient/SetAppointmentPage';
@@ -93,7 +95,7 @@ ReactDOM.render(
 							{/* Doctors */}
 
 							<Route path="/doctor/appointments/calendar">
-								<AppointmentCalendarPage />
+								<DoctorCalendarPage />
 							</Route>
 							<Route path="/doctor/appointments/list">
 								<DoctorAgendaPage />
@@ -119,7 +121,7 @@ ReactDOM.render(
 								<ClinicAgendaPage />
 							</Route>
 							<Route path="/clinic/appointments/calendar/:clinic">
-								<AppointmentCalendarPage />
+								<ClinicCalendarPage />
 							</Route>
 							<Route path="/clinic/appointments/view/:appointment">
 								<AppointmentPage />
@@ -167,7 +169,7 @@ ReactDOM.render(
 								<ClinicEditor />
 							</Route>
 							<Route path="/:link/clinic/appointments/calendar/:clinic">
-								<AppointmentCalendarPage />
+								<ClinicCalendarPage />
 							</Route>
 							<Route path="/:link/clinics/appointments/agenda/:clinic">
 								<ClinicAgendaPage />

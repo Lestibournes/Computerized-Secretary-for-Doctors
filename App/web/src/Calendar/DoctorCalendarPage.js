@@ -28,21 +28,21 @@ function debounce(fn, ms) {
   };
 }
 
-export function AppointmentCalendarPage() {
+export function DoctorCalendarPage() {
 	const auth = useAuth();
 	const popups = usePopups();
 
 	const { clinic } = useParams();
-	const [doctors, setDoctors] = useState([]);
 	const [clinics, setClinics] = useState([]);
 	const [doctor, setDoctor] = useState(null);
+	const [doctors, setDoctors] = useState([]);
 	const [options, setOptions] = useState();
 	const [date, setDate] = useState(new SimpleDate()); // Default date: today.
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
-	const [schedule, setSchedule] = useState();
+	const [schedule, setSchedule] = useState(null);
 	const [minimum, setMinimum] = useState(60);
-	const [types, setTypes] = useState(new Map());
-	const [max, setMax] = useState(0); //Longest appointment. Used for automatically color-coding appointment types.
+	// const [types, setTypes] = useState(new Map());
+	// const [max, setMax] = useState(0); //Longest appointment. Used for automatically color-coding appointment types.
 
 	// The dimentions of the display area. I really should have used CSS for this:
 	/**
@@ -68,104 +68,95 @@ export function AppointmentCalendarPage() {
 
 		return () => window.removeEventListener('resize', debouncedHandleResize);
 	});
-
-	// If it's a clinic-wide appointment calendar, fetch the list of doctors in the clinic:
-	/**
-	 * @todo move all the data-fetching outside of the calendar component. The calendar should be a widget that displays events that are provided to it, nothing more.
-	 */
-	useEffect(() => {
-		if (clinic) {
-			db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
-				const promises = [];
-
-				for (const doctor_snap of doctor_snaps.docs) {
-					promises.push(
-						db.collection("users").doc(doctor_snap.id).get().then(user_snap => {
-							const data = user_snap.data();
-							data.id = user_snap.id;
-							return data;
-						})
-					)
-				}
-
-				Promise.all(promises).then(doctors => {
-					setDoctors(doctors);
-
-					const doctor_options = [];
-		
-					for (const doctor of doctors) {
-						doctor_options.push({
-							value: doctor.id,
-							label: doctor.fullName
-						})
-					}
-		
-					setOptions(doctor_options);
-				});
-			});
-		}
-	}, [clinic]);
 	
-	// If it's instead an individual doctor's cross-clinic calendar:
+	// Load the user data:
 	useEffect(() => {
-		if (auth.user && doctor === null && !clinic) {
+		if (auth.user && doctor === null) {
 			// Check if the current user is a doctor, and if he is, fetch his doctor id/ref:
 			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
 				if (user_snap.exists && user_snap.data().doctor) {
 					const data = user_snap.data();
 					data.id = auth.user.uid;
 					setDoctor(data);
-
-					// Fetch all the doctor's clinics:
-					db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(doctor_snaps => {
-						const promises = [];
-
-						for (const doctor_snap of doctor_snaps.docs) {
-							promises.push(
-								db.collection("clinics").doc(doctor_snap.data().clinic).get()
-								.then(clinic_data => {
-									if (clinic_data.exists) {
-										const data = clinic_data.data();
-										data.id = clinic_data.id;
-										return data;
-									}
-								})
-								.catch(reason => popups.error("Fetch clinic " + doctor_snap.data().clinic + ": " + reason))
-							);
-						}
-
-						Promise.all(promises).then(clinic_data => {
-							setClinics(clinic_data);
-						})
-					})
-					.catch(reason => popups.error("Getting the doctor's clinics: " + reason));
 				}
 				else setDoctor(false);
 			});
 		}
-	}, [auth.user, doctor, clinic]);
+	}, [auth.user, doctor]);
 
-	// Once a doctor and clinic combination is selected (for clinic calendars), load the appointment types:
+	// Get the user's clinics:
 	useEffect(() => {
-		if (doctor && clinic) {
-			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor.id).collection("types").get()
-				.then(type_snaps => {
-					const types = new Map();
-					let max = 0;
-		
-					for (const type of type_snaps.docs) {
-						if (type.data().name) {
-							types.set(type.data().name, type.data().duration);
-							if (type.data().duration > max) max = type.data().duration;
-						}
-					}
+		if (auth.user && doctor === null) {
+			// Fetch all the doctor's clinics (Will be used to filter by clinic):
+			db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(doctor_snaps => {
+				const promises = [];
 
-					setTypes(types);
-					setMax(max);
+				for (const doctor_snap of doctor_snaps.docs) {
+					promises.push(
+						db.collection("clinics").doc(doctor_snap.data().clinic).get()
+						.then(clinic_data => {
+							if (clinic_data.exists) {
+								const data = clinic_data.data();
+								data.id = clinic_data.id;
+								return data;
+							}
+						})
+						.catch(reason => popups.error("Fetch clinic " + doctor_snap.data().clinic + ": " + reason))
+					);
+				}
+
+				Promise.all(promises).then(clinic_data => {
+					setClinics(clinic_data);
 				})
-				.catch(reason => popups.error(reason))
+			})
+			.catch(reason => popups.error("Getting the doctor's clinics: " + reason));
 		}
-	}, [doctor, clinic]);
+	}, [auth.user, doctor]);
+
+	// // Once a doctor is selected, load the appointment types:
+	// useEffect(() => {
+	// 	if (doctor) {
+	// 		db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(doctor_snaps => {
+	// 			const promises = [];
+
+	// 			for (const doctor_snap of doctor_snaps.docs) {
+	// 				promises.push(
+	// 					doctor_snap.ref.collection("types").get()
+	// 					.then(type_snaps => {
+	// 						// const data ={
+	// 						// 	types: new Map(),
+	// 						// 	max: 0,
+	// 						// }
+				
+	// 						const types = new Map();
+	// 						let max = 0;
+
+	// 						for (const type of type_snaps.docs) {
+	// 							if (type.data().name) {
+	// 								types.set(type.data().name, type.data().duration);
+	// 								if (type.data().duration > max) max = type.data().duration;
+	// 							}
+	// 						}
+			
+	// 						return max;
+	// 					})
+	// 					.catch(reason => popups.error(reason))
+	// 					)
+	// 				}
+					
+	// 				Promise.all(promises).then(durations => {
+	// 					// setTypes(types);
+	// 					let max = 0;
+
+	// 					for (const duration of durations) {
+	// 						if (duration > max) max = duration;
+	// 					}
+						
+	// 					setMax(max);
+	// 			})
+	// 		});
+	// 	}
+	// }, [doctor, clinic]);
 
 	// When a doctor and date are selected.
 	// Won't this just load all appointments for the given doctor across all clinics?
@@ -198,12 +189,14 @@ export function AppointmentCalendarPage() {
 							day_promises.push(
 								db.collection("users").doc(appointment.data().patient).get()
 								.then(patient_snap => {
-									const hue = (360 / max) * types.get(appointment.data().type);
+									// appointment duration in minutes (hopefully):
+									const duration = (appointment.data().end - appointment.data().start) / 60;
+									const hue = duration % 360;
 									
 									today.appointments.push({
 										color: "white",
 										background: "hsl(" + hue + ", 100%, 30%)",
-										duration: appointment.data().duration,
+										duration: duration,
 										start: new Time(appointment.data().start),
 										id: appointment.id,
 										name: patient_snap.data().fullName,
@@ -236,9 +229,15 @@ export function AppointmentCalendarPage() {
 				}
 				setAppointments(calendar);
 			});
-			
-			// Get the global schedule paramaters.
-			// This is to sized and space the calendar.
+		}
+	}, [doctor, date]);
+
+
+
+	// Get the global schedule paramaters.
+	// This is to sized and space the calendar.
+	useEffect(() => {
+		if (clinics.length > 0 && doctor) {
 			let start; //The earliest starting time.
 			let end; //The latest ending time.
 
@@ -250,8 +249,8 @@ export function AppointmentCalendarPage() {
 						db.collection("clinics").doc(clinic.id).collection("doctors").doc(doctor.id).collection("shifts").get()
 						.then(shift_snaps => {
 							for (const shift_snap of shift_snaps.docs) {
-								const start_time = Time.fromObject(shift_snap.data().start);
-								const end_time = Time.fromObject(shift_snap.data().end);
+								const start_time = Time.fromDate(shift_snap.data().start.toDate());
+								const end_time = Time.fromDate(shift_snap.data().end.toDate());
 								
 								if (!start || start_time.compare(start) < 0) start = start_time;
 								if (!end || end_time.compare(end) > 0) end = end_time;
@@ -263,14 +262,12 @@ export function AppointmentCalendarPage() {
 			}
 
 			Promise.all(schedule_promises).then(() => {
+				console.log(start, end);
 				if (start && end) setSchedule(new Slot(start, end));
 				else setSchedule(false);
 			});
 		}
-		else {
-			setSchedule(null);
-		}
-	}, [doctor, date]);
+	}, [clinics, doctor]);
 
 	useEffect(() => {
 		if (schedule === false) {

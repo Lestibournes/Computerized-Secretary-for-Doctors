@@ -16,6 +16,7 @@ import * as Yup from 'yup';
 import { usePopups } from "../Common/Popups";
 import { Header } from "../Common/Components/Header";
 import { db } from "../init";
+import { Loading } from "../Common/Components/Loading";
 
 function debounce(fn, ms) {
   let timer
@@ -28,7 +29,7 @@ function debounce(fn, ms) {
   };
 }
 
-export function AppointmentCalendarPage() {
+export function ClinicCalendarPage() {
 	const auth = useAuth();
 	const popups = usePopups();
 
@@ -39,7 +40,7 @@ export function AppointmentCalendarPage() {
 	const [options, setOptions] = useState();
 	const [date, setDate] = useState(new SimpleDate()); // Default date: today.
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
-	const [schedule, setSchedule] = useState();
+	const [schedule, setSchedule] = useState(null);
 	const [minimum, setMinimum] = useState(60);
 	const [types, setTypes] = useState(new Map());
 	const [max, setMax] = useState(0); //Longest appointment. Used for automatically color-coding appointment types.
@@ -105,45 +106,6 @@ export function AppointmentCalendarPage() {
 			});
 		}
 	}, [clinic]);
-	
-	// If it's instead an individual doctor's cross-clinic calendar:
-	useEffect(() => {
-		if (auth.user && doctor === null && !clinic) {
-			// Check if the current user is a doctor, and if he is, fetch his doctor id/ref:
-			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
-				if (user_snap.exists && user_snap.data().doctor) {
-					const data = user_snap.data();
-					data.id = auth.user.uid;
-					setDoctor(data);
-
-					// Fetch all the doctor's clinics:
-					db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(doctor_snaps => {
-						const promises = [];
-
-						for (const doctor_snap of doctor_snaps.docs) {
-							promises.push(
-								db.collection("clinics").doc(doctor_snap.data().clinic).get()
-								.then(clinic_data => {
-									if (clinic_data.exists) {
-										const data = clinic_data.data();
-										data.id = clinic_data.id;
-										return data;
-									}
-								})
-								.catch(reason => popups.error("Fetch clinic " + doctor_snap.data().clinic + ": " + reason))
-							);
-						}
-
-						Promise.all(promises).then(clinic_data => {
-							setClinics(clinic_data);
-						})
-					})
-					.catch(reason => popups.error("Getting the doctor's clinics: " + reason));
-				}
-				else setDoctor(false);
-			});
-		}
-	}, [auth.user, doctor, clinic]);
 
 	// Once a doctor and clinic combination is selected (for clinic calendars), load the appointment types:
 	useEffect(() => {
@@ -171,7 +133,7 @@ export function AppointmentCalendarPage() {
 	// Won't this just load all appointments for the given doctor across all clinics?
 	// What about per-clinic appointments?
 	useEffect(() => {
-		if (doctor && date) {
+		if (clinic && doctor && date) {
 			// Load all the appointment data for the current time range:
 			const saturday = date.getSaturday();
 			
@@ -180,7 +142,7 @@ export function AppointmentCalendarPage() {
 			// Fetch the appointments day by day:
 			for (let current = date.getSunday(), day = 0; current.compare(saturday) <= 0; current = current.getNextDay(), day++) {
 				appointment_promises.push(
-					db.collectionGroup("appointments")
+					db.collection("clinics").doc(clinic).collection("appointments")
 						.where("doctor", "==", doctor.id)
 						.where("start", "==", current.toDate())
 						.where("end", "==", current.getNextDay().toDate())
@@ -236,136 +198,118 @@ export function AppointmentCalendarPage() {
 				}
 				setAppointments(calendar);
 			});
-			
-			// Get the global schedule paramaters.
-			// This is to sized and space the calendar.
-			let start; //The earliest starting time.
-			let end; //The latest ending time.
+		}
+	}, [clinic, doctor, date]);
 
-			const schedule_promises = [];
+	// Get the schedule paramaters.
+	// This is to sized and space the calendar.
+	useEffect(() => {
+		if (clinic && doctor && date) {
+			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor.id).collection("shifts").get()
+			.then (shift_snaps => {
+				let start; //The earliest starting time.
+				let end; //The latest ending time.
 
-			for (const clinic of clinics) {
-				if (clinic?.id) {
-					schedule_promises.push(
-						db.collection("clinics").doc(clinic.id).collection("doctors").doc(doctor.id).collection("shifts").get()
-						.then(shift_snaps => {
-							for (const shift_snap of shift_snaps.docs) {
-								const start_time = Time.fromObject(shift_snap.data().start);
-								const end_time = Time.fromObject(shift_snap.data().end);
-								
-								if (!start || start_time.compare(start) < 0) start = start_time;
-								if (!end || end_time.compare(end) > 0) end = end_time;
-							}
-						})
-						.catch(reason => popups.error(reason))
-					);
+				for (const shift_snap of shift_snaps.docs) {
+					const start_time = Time.fromDate(shift_snap.data().start.toDate());
+					const end_time = Time.fromDate(shift_snap.data().end.toDate());
+
+					if (!start || start_time.compare(start) < 0) start = start_time;
+					if (!end || end_time.compare(end) > 0) end = end_time;
 				}
-			}
 
-			Promise.all(schedule_promises).then(() => {
 				if (start && end) setSchedule(new Slot(start, end));
 				else setSchedule(false);
-			});
+			})
+			.catch(reason => popups.error(reason.message));
 		}
-		else {
-			setSchedule(null);
-		}
-	}, [doctor, date]);
+	}, [clinic, doctor, date]);
 
 	useEffect(() => {
 		if (schedule === false) {
 			const close = () => popups.remove(popup);
 			const popup =
 				<Popup key="WorkScheduleWarning" close={close /*() => {window.history.back()}*/}>
-					You need to create a work schedule before viewing your appointment calendar.
+					The selected doctor does not have a work schedule.
 				</Popup>;
 			popups.add(popup);
 		}
 	}, [schedule]);
 
 	useEffect(() => {
-		if (doctor === false) {
-			const close = () => popups.remove(popup);
-			const popup =
-				<Popup key="DoctorWarning" close={close /*() => {window.history.back()}*/}>
-					You need to be a doctor to view your work calendar.
-				</Popup>;
-			popups.add(popup);
-		}
-	}, [doctor]);
+		
+	}, [clinic, doctor]);
 
-
-	let display;
+	let display = <Loading />;
 	
-		display = 
-			<>
-				{clinic && options ?
-					<Formik
-						initialValues={{
-							doctor: doctor ? doctor : ""
-						}}
-						validationSchema={Yup.object({
-						})}
-						onSubmit={async (values, { setSubmitting }) => {
-							setSubmitting(true);
-							
-							// If the user has selected a doctor, find the doctor data for that doctor and set it:
-							if (values.doctor) {
-								for (const doc of doctors) {
-									if (doc.doctor.id === values.doctor) {
-										setDoctor(doc);
-										break;
-									}
+	display = 
+		<>
+			{clinic && options ?
+				<Formik
+					initialValues={{
+						doctor: doctor ? doctor : ""
+					}}
+					validationSchema={Yup.object({
+					})}
+					onSubmit={async (values, { setSubmitting }) => {
+						setSubmitting(true);
+						// If the user has selected a doctor, find the doctor data for that doctor and set it:
+						if (values.doctor) {
+							for (const doc of doctors) {
+								if (doc.id === values.doctor) {
+									setDoctor(doc);
+									break;
 								}
 							}
-							else {
-								setDoctor(null);
-							}
-						}}
-					>
-						<Form>
-							<div className="searchBar">
-								<Select
-									label="Doctor"
-									name="doctor"
-									default={{
-										value: "",
-										label: ""
-									}}
-									options={options}
-								/>
-								<div className="buttonBar">
-									<Button type="submit" label="Select" />
-								</div>
+						}
+						else {
+							setDoctor(null);
+						}
+					}}
+				>
+					<Form>
+						<div className="searchBar">
+							<Select
+								label="Doctor"
+								name="doctor"
+								default={{
+									value: "",
+									label: ""
+								}}
+								options={options}
+							/>
+							<div className="buttonBar">
+								<Button type="submit" label="Select" />
 							</div>
-						</Form>
-					</Formik>
-				: ""}
-				{schedule ?
-					<div className="Calendar" id="display">
-						<div className="buttonBar">
-						<Button action={() => {
-								setDate(new SimpleDate());
-								}} label="Today" />
-							<Button action={() => {
-								setDate(date.getPreviousWeek());
-								}} label="<" />
-							<Button action={() => {
-								setDate(date.getNextWeek());
-								}} label=">" />
-							<h3>{date.monthname + " " + date.year}</h3>
 						</div>
-						<CalendarWeek
-							date={date}
-							appointments={appointments}
-							schedule={schedule}
-							minimum={minimum}
-							width={dimensions.width}
-							height={960}
-						/>
+					</Form>
+				</Formik>
+			: ""}
+			{schedule ?
+				<div className="Calendar" id="display">
+					<div className="buttonBar">
+					<Button action={() => {
+							setDate(new SimpleDate());
+							}} label="Today" />
+						<Button action={() => {
+							setDate(date.getPreviousWeek());
+							}} label="<" />
+						<Button action={() => {
+							setDate(date.getNextWeek());
+							}} label=">" />
+						<h3>{date.monthname + " " + date.year}</h3>
 					</div>
-				: ""}
-			</>;
+					<CalendarWeek
+						date={date}
+						appointments={appointments}
+						schedule={schedule}
+						minimum={minimum}
+						width={dimensions.width}
+						height={960}
+					/>
+				</div>
+			: ""}
+		</>;
 
 	return (
 		<div className="Page">

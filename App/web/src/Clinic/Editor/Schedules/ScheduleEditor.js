@@ -147,6 +147,8 @@ export function ScheduleEditor() {
 				const temp_day = [];
 				
 				day.sort((a, b) => {
+					console.log(a.end - a.start);
+					
 					const time_a = Time.fromDate(a.start.toDate());
 					const time_b = Time.fromDate(b.start.toDate());
 					
