@@ -10,14 +10,14 @@ import { Popup } from '../../../Common/Components/Popup'
 import { Time } from "../../../Common/Classes/Time";
 import { SimpleDate } from "../../../Common/Classes/SimpleDate";
 
-import { shiftEditPopup } from './ShiftEditForm';
-import { server } from '../../../Common/server';
+import { ShiftEditForm } from './ShiftEditForm';
+
 import { capitalize, compareByName } from '../../../Common/functions';
 
 import { MinimumFormPopup } from './MinimumFormPopup';
 import { TypeEditForm } from './TypeFormPopup';
 import { usePopups } from '../../../Common/Popups';
-import { db } from '../../../init';
+import { db, fb } from '../../../init';
 
 export function ScheduleEditor() {
 	const auth = useAuth();
@@ -143,24 +143,37 @@ export function ScheduleEditor() {
 	useEffect(() => {
 		if (schedule) {
 			const temp_cards = [];
-	
 			for (const day of schedule) {
 				const temp_day = [];
-
+				
 				day.sort((a, b) => {
-					const time_a = Time.fromObject(a.start);
-					const time_b = Time.fromObject(b.start);
-
+					const time_a = Time.fromDate(a.start.toDate());
+					const time_b = Time.fromDate(b.start.toDate());
+					
 					return time_a.compare(time_b);
 				});
-
+				
 				for (const shift of day) {
 					temp_day.push(
 						<Card
 							key={shift.id}
-							title={Time.fromObject(shift.start).toString() +
-							" - " + Time.fromObject(shift.end).toString()}
-							action={() => shiftEditPopup(popups, clinic, doctor, shift.id, shift.day, shift.start, shift.end)}
+							title={Time.fromDate(shift.start.toDate()).toString() +
+							" - " + Time.fromDate(shift.end.toDate()).toString()}
+							action={() => {
+								const close = () => {popups.remove(popup)};
+
+								const popup =
+									<Popup key={"Edit Shift" + shift.id} title="Edit Shift" close={close}>
+										<ShiftEditForm
+											clinic={clinic}
+											doctor={doctor}
+											shift={shift}
+											close={close}
+										/>
+									</Popup>;
+
+								popups.add(popup);
+							}}
 						/>
 					)
 				}
@@ -226,29 +239,41 @@ export function ScheduleEditor() {
 					</div>
 				</section>
 
-				<section>
+				<main>
 					<h2>Shift Schedule</h2>
 					{
 						SimpleDate.day_names.map((name, number) => {
 							return (
-								<>
-									<section>
-										<header>
-											<h3>{capitalize(name)}</h3>
-											<Button
-												label="+"
-												action={() => shiftEditPopup(popups, clinic, doctor, null, number, null, null)}
-											/>
-										</header>
-										<div className="cardList">
-											{shiftCards[number]}
-										</div>
-									</section>
-								</>
+								<section key={name}>
+									<header>
+										<h3>{capitalize(name)}</h3>
+										<Button
+											label="+"
+											action={() => {
+												const close = () => {popups.remove(popup)};
+
+												const popup =
+													<Popup key="Create New Shift" title="Create New Shift" close={close}>
+														<ShiftEditForm
+															clinic={clinic}
+															doctor={doctor}
+															shift={{day: number}}
+															close={close}
+														/>
+													</Popup>;
+
+												popups.add(popup);
+											}}
+										/>
+									</header>
+									<div className="cardList">
+										{shiftCards[number]}
+									</div>
+								</section>
 							);
 						})
 					}
-				</section>
+				</main>
 			</>
 		);
 	}

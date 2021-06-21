@@ -223,6 +223,7 @@ service cloud.firestore {
 
 					allow read;
 					allow write: if (doctorID == request.auth.uid || isSecretary() || isOwner()) && isValidData();
+					allow delete: if (doctorID == request.auth.uid || isSecretary() || isOwner());
 				}
 
 				match /shifts/{shiftID} {
@@ -236,7 +237,7 @@ service cloud.firestore {
 						request.resource.data.day <= 6 &&
 						
 						// Start time:
-						request.resource.data.start.size() is timestamp &&
+						request.resource.data.start is timestamp &&
 						// request.resource.data.start is map &&
 
 						// request.resource.data.start.hours is int &&
@@ -248,7 +249,7 @@ service cloud.firestore {
 						// request.resource.data.start.minutes <= 59 &&
 
 						// End time:
-						request.resource.data.start.size() is timestamp;
+						request.resource.data.end is timestamp;
 						// request.resource.data.end is map &&
 
 						// request.resource.data.end.hours is int &&
@@ -262,6 +263,7 @@ service cloud.firestore {
 
 					allow read;
 					allow write: if (doctorID == request.auth.uid || isSecretary() || isOwner()) && isValidData();
+					allow delete: if (doctorID == request.auth.uid || isSecretary() || isOwner());
 				}
 			}
 

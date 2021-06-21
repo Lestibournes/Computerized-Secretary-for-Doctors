@@ -8,7 +8,7 @@ import { db, storage } from "../../init";
 import { RadioInput } from "../../Common/Components/RadioInput";
 import { PictureInput } from "../../Common/Components/PictureInput";
 
-export function UserEditForm({popupManager: popups, user, data, image, close, success}) {
+export function UserEditForm({popups, user, data, image, close, success}) {
 	const [selectedImage, setSelectedImage] = useState(image);
 	const [file, setFile] = useState(null);
 
@@ -119,9 +119,9 @@ export function UserEditForm({popupManager: popups, user, data, image, close, su
 	);
 }
 
-export function userEditPopup(popupManager, user, data, image, success) {
+export function userEditPopup(popups, user, data, image, success) {
 	const close = () => {
-		popupManager.remove(popup);
+		popups.remove(popup);
 	};
 
 	const popup = 
@@ -131,11 +131,11 @@ export function userEditPopup(popupManager, user, data, image, success) {
 		close={close}
 	>
 		<UserEditForm
-			popupManager={popupManager}
+			popups={popups}
 			success={success} close={close}
 			user={user} data={data} image={image}
 		/>
 	</Popup>;
 
-	popupManager.add(popup);
+	popups.add(popup);
 }

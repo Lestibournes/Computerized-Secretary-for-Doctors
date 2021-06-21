@@ -334,9 +334,9 @@ export function SetAppointmentPage() {
 	);
 }
 
-function ConfirmDeletePopup(popupManager, appointment, success) {
+function ConfirmDeletePopup(popups, appointment, success) {
 		const close = () => {
-			popupManager.remove(popup);
+			popups.remove(popup);
 		}
 
 		const popup = <Popup key="Confirm Appointment Deletion" title="Confirm Deletion" close={close}>
@@ -345,7 +345,7 @@ function ConfirmDeletePopup(popupManager, appointment, success) {
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
 					server.appointments.cancel({appointment: appointment}).then(response => {
-						if (!response.data.success) popupManager.error(capitalize(response.data.message))
+						if (!response.data.success) popups.error(capitalize(response.data.message))
 						else success();
 					});
 				}} />
@@ -353,5 +353,5 @@ function ConfirmDeletePopup(popupManager, appointment, success) {
 			</div>
 		</Popup>
 
-		popupManager.add(popup)
+		popups.add(popup)
 }

@@ -125,7 +125,7 @@ export function TypeDeleteForm({popups, clinic, doctor, type, cancel, deleted}) 
 			<Button label="Cancel" action={cancel} />
 			<Button type="cancel" label="Delete" action={() => {
 				setSaving(true);
-console.log(clinic, doctor, type.id);
+
 				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type.id).delete()
 				.then(deleted)
 				.catch(reason => popups.error(reason.code));

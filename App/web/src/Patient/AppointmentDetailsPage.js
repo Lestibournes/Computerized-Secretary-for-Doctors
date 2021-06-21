@@ -24,7 +24,7 @@ export function AppointmentDetailsPage() {
 
 	const [image, setImage] = useState(null); // The url of the doctor's profile picture.
 
-	const popupManager = usePopups();
+	const popups = usePopups();
 	
 	useEffect(() => {
 		if (appointment) {
@@ -47,7 +47,7 @@ export function AppointmentDetailsPage() {
 					});
 				}
 				else {
-					popupManager.error(results.data.message);
+					popups.error(results.data.message);
 				}
 			});
 		}

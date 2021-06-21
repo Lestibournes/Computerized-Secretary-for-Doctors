@@ -17,7 +17,7 @@ export function AppointmentSuccessPage() {
 	const [date, setDate] = useState();
 	const [time, setTime] = useState()
 
-	const popupManager = usePopups();
+	const popups = usePopups();
 
 	useEffect(() => {
 		server.appointments.get({id: appointment}).then(response => {
@@ -30,7 +30,7 @@ export function AppointmentSuccessPage() {
 				setClinic(data.clinic);
 			}
 			else {
-				popupManager.error(response.data.message)
+				popups.error(response.data.message)
 			}
 		});
   }, [appointment]);

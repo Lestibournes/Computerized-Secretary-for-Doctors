@@ -23,9 +23,11 @@ function useProvidePopups() {
 	useEffect(() => {
 		// Update the display of the popups:
 		const popup_array = [];
+
+		// console.log(popups);
 		
-		for (const entry of popups) {
-			popup_array.push(entry[1]);
+		for (const key of popups.keys()) {
+			popup_array.push(popups.get(key));
 		}
 
 		setPopupArray(popup_array);
@@ -33,17 +35,27 @@ function useProvidePopups() {
 
 	const add = (popup) => {
 		// Only allow 1 popup to be added per key. If the key is already used, don't add the popup.
-		if (!popups.has(popup.key)) {
-			const popup_map = new Map(popups);
-			popup_map.set(popup.key, popup);
-			setPopups(popup_map);
+		// if (!popups.has(popup.key)) {
+		// }
+
+		const popup_map = new Map();
+
+		for (const key of popups.keys()) {
+			if (key !== popup.key) popup_map.set(key, popups.get(key));
 		}
+
+		popup_map.set(popup.key, popup);
+		setPopups(popup_map);
 	}
 
 	const remove = (popup) => {
 		// Find the popup that has the specified key and remove it:
-		const popup_map = new Map(popups);
-		popup_map.delete(popup.key);
+		const popup_map = new Map();
+
+		for (const key of popups.keys()) {
+			if (key !== popup.key) popup_map.set(key, popup.key);
+		}
+
 		setPopups(popup_map);
 	}
 

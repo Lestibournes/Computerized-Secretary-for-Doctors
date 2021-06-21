@@ -1,3 +1,5 @@
+import { fb } from "../../init";
+
 /**
  * Represents an time in terms of hours and minutes.
  * Is supposed to be immutable.
@@ -20,9 +22,17 @@
 	static fromDate(date) {
 		return new Time(date.getHours(), date.getMinutes());
 	}
+
+	static fromTimestamp(timestamp) {
+		return Time.fromDate(fb.firestore.Timestamp.fromMillis(timestamp).toDate());
+	}
 	
 	toObject() {
 		return {hours: this.hours, minutes: this.minutes};
+	}
+
+	toDate() {
+		return new Date(2021, 0, 0, this.hours, this.minutes);
 	}
 
 	#hours;

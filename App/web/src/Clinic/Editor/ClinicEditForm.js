@@ -6,7 +6,7 @@ import { TextInput } from "../../Common/Components/TextInput";
 import { usePopups } from "../../Common/Popups";
 import { db } from "../../init";
 
-export function ClinicEditForm({popupManager, clinic, close, deleted}) {
+export function ClinicEditForm({clinic, close, deleted}) {
 	const popups = usePopups();
 
 	return (

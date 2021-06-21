@@ -141,7 +141,6 @@ async function getAvailable(clinic, doctor, date, type) {
 				let collides = false;
 
 				for (const appointment of appointments) {
-					console.log(current_slot, appointment)
 					if (current_slot.collides(appointment)) {
 						collides = true;
 						break;

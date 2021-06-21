@@ -1,9 +1,9 @@
 import { usePopups } from "../Popups";
 
 export function Popups() {
-	const popupManager = usePopups();
+	const popups = usePopups();
 
 	return (
-		<>{popupManager.popups}</>
+		<>{popups.popups}</>
 	);
 }
