@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Button } from "./Button";
 import "./Popup.css";
 
-export function Popup({title, children, popups, close}) {
+export function Popup({title, children, close}) {
 	return (
-		<>
 		<div className="Popup">
 			<div className="controls">
 				<div className="title">
@@ -18,7 +17,5 @@ export function Popup({title, children, popups, close}) {
 				{children}
 			</div>
 		</div>
-		{popups}
-		</>
 	);
 }

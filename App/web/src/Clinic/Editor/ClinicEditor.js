@@ -350,6 +350,7 @@ export function ClinicEditor() {
 								const popup =
 									<Popup key="Add Secretary" title="Add Secretary" close={close}>
 										<SelectSecretaryForm
+											clinic={clinic}
 											close={close}
 											success={
 												selected => {

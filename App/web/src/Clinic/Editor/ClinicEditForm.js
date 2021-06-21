@@ -1,4 +1,5 @@
 import { Form, Formik } from "formik";
+import { useState } from "react";
 import * as Yup from 'yup';
 import { Button } from "../../Common/Components/Button";
 import { Popup } from "../../Common/Components/Popup";
@@ -8,6 +9,8 @@ import { db } from "../../init";
 
 export function ClinicEditForm({clinic, close, deleted}) {
 	const popups = usePopups();
+
+	const [saving, setSaving] = useState(false);
 
 	return (
 		<Formik
@@ -26,9 +29,14 @@ export function ClinicEditForm({clinic, close, deleted}) {
 			})}
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
+				setSaving(true);
+
 				db.collection("clinics").doc(clinic.id).update({name: values.name, city: values.city, address: values.address})
 				.then(close)
-				.catch(reason => popups.error(reason.message));
+				.catch(reason => {
+					setSaving(false);
+					popups.error(reason.message);
+				});
 			}}
 		>
 			<Form>
@@ -51,6 +59,9 @@ export function ClinicEditForm({clinic, close, deleted}) {
 						type="text"
 						placeholder="13 Holy Square"
 					/>
+					{saving ?
+						<small>Saving...</small>
+					: ""}
 				</div>
 				<div className="buttonBar">
 					<Button type="cancel" label="Delete"

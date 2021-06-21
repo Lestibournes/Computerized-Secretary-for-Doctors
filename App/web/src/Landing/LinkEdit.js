@@ -28,6 +28,7 @@ export function LinkEditForm({link, type, id, close}) {
 			})}
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
+				setMessage("Saving...");
 				
 				db.collection("links").doc(name).set({
 					type: type,
@@ -35,7 +36,10 @@ export function LinkEditForm({link, type, id, close}) {
 					name: name
 				})
 				.then(close)
-				.catch(reason => popups.error(reason.message))
+				.catch(reason => {
+					setMessage("");
+					popups.error(reason.message)
+				})
 			}}
 		>
 			<Form>

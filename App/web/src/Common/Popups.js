@@ -24,8 +24,6 @@ function useProvidePopups() {
 		// Update the display of the popups:
 		const popup_array = [];
 
-		// console.log(popups);
-		
 		for (const key of popups.keys()) {
 			popup_array.push(popups.get(key));
 		}

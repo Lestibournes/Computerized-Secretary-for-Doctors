@@ -6,12 +6,16 @@ import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
 import { TextInput } from '../../Common/Components/TextInput';
 import { Popup } from '../../Common/Components/Popup';
+import { usePopups } from "../../Common/Popups";
 import { getPictureURL } from '../../Common/functions';
 import { server } from '../../Common/server';
 import { db } from '../../init';
 
-export function SelectSecretaryForm({close, success}) {
+export function SelectSecretaryForm({clinic, close, success}) {
+	const popups = usePopups();
 	const [cards, setCards] = useState([]);
+
+	const [message, setMessage] = useState("");
 	
 	return (
 		<Formik
@@ -31,18 +35,26 @@ export function SelectSecretaryForm({close, success}) {
 					for (const secretary of response.data) {
 						promises.push(
 							getPictureURL(secretary.id).then(url => {
-								secretary.image = url;
 								return {
 									data: secretary,
 									card:
 										<Card
 											key={secretary.id}
 											title={secretary.fullName}
-											image={secretary.image}
+											image={url}
 											altText={secretary.fullName + "'s portrait"}
 											action={() => {
-												success(secretary.id);
-												close();
+												setMessage("Saving...");
+
+												db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary.id).set({
+													user: secretary.id,
+													clinic: clinic
+												})
+												.then(close)
+												.catch(reason => {
+													setMessage("");
+													popups.error(reason.message)
+												});
 											}}
 										/>
 								};
@@ -75,6 +87,9 @@ export function SelectSecretaryForm({close, success}) {
 						placeholder="Yoni Robinson"
 					/>
 				</div>
+				{message ?
+					<small>{message}</small>
+				:""}
 				<div className="buttonBar">
 					<Button label="Cancel" action={close} />
 					<Button type="submit" label="Search" />
