@@ -14,9 +14,13 @@ import { Form, Formik } from 'formik';
 import { Button } from '../Common/Components/Button';
 import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
+import { db } from '../init';
+import { usePopups } from '../Common/Popups';
 
 export function ClinicAgendaPage() {
 	const root = useRoot();
+	const popups = usePopups();
+
 	const { clinic } = useParams(); //The ID of the doctor.
 	const [clinicData, setClinicData] = useState();
 	const [doctors, setDoctors] = useState([]);
@@ -34,65 +38,104 @@ export function ClinicAgendaPage() {
 	
 	useEffect(() => {
 		if (clinic) {
-			server.clinics.getAppointments({
-				clinic: clinic,
-				doctor: searchPrameters.doctor ? searchPrameters.doctor : null,
-				start: searchPrameters.start.toObject(),
-				end: searchPrameters.end.toObject()
-			}).then(response => {
-				setAppointments(response.data.data);
-			});
+			const promises = [];
 
-			server.clinics.get({id: clinic}).then(results => {
-				setClinicData(results.data);
-			});
+			// Fetch all of the requested appointments:
+			let query = db.collection("clinics").doc(clinic).collection("appointments")
+			.orderBy("start")
+			.where("start", ">=", searchPrameters.start.toDate().getTime())
+			.where("start", "<=", searchPrameters.end.toDate().getTime());
 
-			server.clinics.getAllDoctors({clinic: clinic}).then(response => {
-				setDoctors(response.data);
-			});
+			if (searchPrameters.doctor) query.where("doctor", "==", searchPrameters.doctor);
+
+			promises.push(
+
+				query.get().then(
+					app_snaps => {
+						const app_data = [];
+	
+						for (const app_snap of app_snaps.docs) {
+							if (app_snap.exists) {
+								const data = app_snap.data();
+								data.id = app_snap.id;
+								app_data.push(data);
+							}
+						}
+	
+						setAppointments(app_data);
+					}
+				)
+				.catch(error => popups.error(error.message))
+			);
+
+			// Fetch clinic data:
+			promises.push(
+				db.collection("clinics").doc(clinic).get().then(
+					clinic_snap => {
+						const clinic_data = clinic_snap.data();
+						clinic_data.id = clinic_snap.id;
+						setClinicData(clinic_data);
+					}
+				)
+			);
+
+			// Fetch all of the clinic's doctors:
+			promises.push(
+				db.collection("clinics").doc(clinic).collection("doctors").get().then(
+					doctor_snaps => {
+						const promises = [];
+	
+						for (const doctor_snap of doctor_snaps.docs) {
+							promises.push(
+								db.collection("users").doc(doctor_snap.id).get().then(
+									user_snap => {
+										const user_data = user_snap.data();
+										user_data.id = user_snap.id;
+										return user_data;
+									}
+								)
+							)
+						}
+	
+						Promise.all(promises).then(users => setDoctors(users));
+					}
+				)
+			);
 		}
   }, [clinic, searchPrameters]);
 
+	// Generate the list of appointments:
 	useEffect(() => {
 		if (appointments) {
-			// appointments.sort((a, b) => {
-			// 	const date_a = SimpleDate.fromObject(a.extra.date);
-			// 	const date_b = SimpleDate.fromObject(b.extra.date);
-
-			// 	const time_a = Time.fromObject(a.extra.time);
-			// 	const time_b = Time.fromObject(b.extra.time);
-				
-			// 	if (date_a.compare(date_b) === 0) {
-			// 		return time_a.compare(time_b);
-			// 	}
-
-			// 	return date_a.compare(date_b);
-			// });
-
-			// load the data and create the cards:
 			let promises = [];
-
+			
 			for (let appointment of appointments) {
-				let promise = getPictureURL(appointment.patient.id).then(url => {
-					appointment.image = url;
-
-					const date = SimpleDate.fromObject(appointment.extra.date);
-					const time = Time.fromObject(appointment.extra.time);
-
-					return (
-						<Card
-							key={appointment.appointment.id}
-							link={root.get() + "/clinic/appointments/view/" + appointment.appointment.id}
-							image={appointment.image}
-							altText={appointment.patient.fullName}
-							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}
-							body={<><b>Appointment Type:</b> {capitalizeAll(appointment.appointment.type)}</>}
-							footer={<><b>Doctor:</b> {appointment.doctor.user.fullName}</>}
-						/>
-					);
-				});
-				
-				promises.push(promise);
+				promises.push(
+					getPictureURL(appointment.patient).then(url => {
+						return db.collection("users").doc(appointment.patient).get().then(
+							patient_snap => {
+								return db.collection("users").doc(appointment.patient).get().then(
+									doctor_snap => {
+										const date = new SimpleDate(appointment.start.toDate());
+										const time = Time.fromDate(appointment.start.toDate());
+					
+										return (
+											<Card
+												key={appointment.id}
+												link={root.get() + "/clinic/appointments/view/" + appointment.id}
+												image={url}
+												altText={patient_snap.data().fullName}
+												title={date.toString() + " " + time.toString() + " - " + patient_snap.data().fullName}
+												body={<><b>Appointment Type:</b> {capitalizeAll(appointment.type)}</>}
+												footer={<><b>Doctor:</b> {doctor_snap.data().fullName}</>}
+											/>
+										);
+									}
+								);
+							}
+						)
+					})
+				);
 			}
 
 			Promise.all(promises).then(cards => {
@@ -102,6 +145,7 @@ export function ClinicAgendaPage() {
 		}
 	}, [appointments]);
 
+	// Build the page display:
 	let display;
 	let subtitle;
 	let title;
@@ -145,8 +189,8 @@ export function ClinicAgendaPage() {
 								options={
 									doctors.map(doctor => {
 										return {
-											value: doctor.doctor.id,
-											label: doctor.user.fullName
+											value: doctor.id,
+											label: doctor.fullName
 										}
 									})
 								}
