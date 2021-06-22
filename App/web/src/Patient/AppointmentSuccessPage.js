@@ -3,58 +3,64 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
-import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
 import { Loading } from '../Common/Components/Loading';
+import { db } from '../init';
 
 export function AppointmentSuccessPage() {
-	const { appointment } = useParams(); //The ID of the doctor and clinic.
-	
-	const [doctor_data, setDoctor] = useState(null);
-	const [clinic_data, setClinic] = useState(null);
-	const [appointment_data, setAppointment] = useState(null);
-	const [date, setDate] = useState();
-	const [time, setTime] = useState()
-
 	const popups = usePopups();
 
+	const { clinic, appointment } = useParams(); //The ID of the doctor and clinic.
+	
+	const [doctorData, setDoctorData] = useState();
+	const [clinicData, setClinicData] = useState();
+	const [appointmentData, setAppointmentData] = useState();
+
 	useEffect(() => {
-		server.appointments.get({id: appointment}).then(response => {
-			if (response.data.success) {
-				const data = response.data.data;
-				setAppointment(data.appointment);
-				setDate(SimpleDate.fromObject(data.extra.date));
-				setTime(Time.fromObject(data.extra.time));
-				setDoctor(data.doctor);
-				setClinic(data.clinic);
-			}
-			else {
-				popups.error(response.data.message)
-			}
-		});
-  }, [appointment]);
+		if (clinic && appointment) {
+			db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).get().then(
+				app_snap => {
+					const app_data = app_snap.data();
+					app_data.id = app_snap.id;
+					setAppointmentData(app_data);
+	
+					db.collection("users").doc(app_data.doctor).get().then(
+						doctor_snap => {
+							const doctor_data = doctor_snap.data();
+							doctor_data.id = doctor_snap.id;
+							// console.log(doctor_data);
+							setDoctorData(doctor_data);
+						}
+					)
+					.catch(reason => popups.error(reason.message));
+				}
+			)
+			.catch(reason => popups.error(reason.message));
+		}
+
+		if (clinic) {
+			db.collection("clinics").doc(clinic).get().then(
+				clinic_snap => {
+					const clinic_data = clinic_snap.data();
+					clinic_data.id = clinic_snap.id;
+					setClinicData(clinic_data);
+				}
+			)
+			.catch(reason => popups.error(reason.message));
+		}
+  }, [clinic, appointment]);
 
 	let display = <Loading />;
 
-	if (appointment_data && doctor_data && clinic_data && date) {
+	if (appointmentData && doctorData && clinicData) {
 		display =
-		<p>You have a <b>{appointment_data.type}</b> appointment with
-			<b>
-				{" Dr. " + doctor_data.user.firstName + " " + doctor_data.user.lastName}
-			</b>
-			{" at "}
-			<b>
-				{clinic_data.name + ", " + clinic_data.city}
-			</b>
-			{" on "}
-			<b>
-				{date.toString()}
-			</b>
-			{" at "}
-			<b>
-				{time.toString()}
-			</b>
+		<p>
+			You have a <b>{appointmentData.type}</b> appointment with Dr.
+			<b> {doctorData.fullName}</b> at
+			<b> {clinicData.name}, {clinicData.city}</b> on
+			<b> {new SimpleDate(new Date(appointmentData.start)).toString()}</b> at
+			<b> {Time.fromTimestamp(appointmentData.start).toString()}</b>
 		</p>
 	}
 

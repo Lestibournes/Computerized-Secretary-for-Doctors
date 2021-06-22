@@ -262,7 +262,6 @@ export function DoctorCalendarPage() {
 			}
 
 			Promise.all(schedule_promises).then(() => {
-				console.log(start, end);
 				if (start && end) setSchedule(new Slot(start, end));
 				else setSchedule(false);
 			});

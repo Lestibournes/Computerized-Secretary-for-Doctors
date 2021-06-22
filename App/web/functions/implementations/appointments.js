@@ -123,12 +123,11 @@ async function getAvailable(clinic, doctor, date, type) {
 		for (const shift_snap of shift_snaps.docs) {
 			if (shift_snap.data().day === simpleDate.weekday) {
 				day.push(new Slot(
-					Time.fromObject(shift_snap.data().start),
-					Time.fromObject(shift_snap.data().end)
+					Time.fromDate(shift_snap.data().start.toDate()),
+					Time.fromDate(shift_snap.data().end.toDate())
 				));
 			}
 		}
-
 		// Find all available time slots within each shift:
 		for (const shift of day) {
 			// The size of each time slot should be duration. The start time of the slots should be incremented by minimum.
@@ -147,7 +146,10 @@ async function getAvailable(clinic, doctor, date, type) {
 					}
 				}
 			
-				if (!collides) available.push(current_slot);
+				if (!collides) available.push({
+					start: current_slot.start.toTimestamp(),
+					end: current_slot.end.toTimestamp(),
+				});
 
 				// Increment both the start and end times by minimum to check the next time slot while keeping the size of the slot the same:
 				current_slot = new Slot(current_slot.start.incrementMinutes(minimum),

@@ -23,8 +23,13 @@ import { fb } from "../../init";
 		return new Time(date.getHours(), date.getMinutes());
 	}
 
+	/**
+	 * Convert a firestore timestamp to a Time object.
+	 * @param {fb.firestore.Timestamp} timestamp 
+	 * @returns {Time}
+	 */
 	static fromTimestamp(timestamp) {
-		return Time.fromDate(fb.firestore.Timestamp.fromMillis(timestamp).toDate());
+		return Time.fromDate(new Date(timestamp));
 	}
 	
 	toObject() {

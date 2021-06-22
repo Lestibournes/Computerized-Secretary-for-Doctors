@@ -291,32 +291,32 @@ service cloud.firestore {
 					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'type', 'verified'], ['arrived']) &&
 
 					// The patient is an existing user in the system:
-					exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
+					// exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
 					// The doctor is registered as a doctor in the system: (Should this just be a field in the user document? Since I'm already checking if the doctor works in the clinic as a doctor, do I need to perform this check at all?)
-					exists(/databases/$(database)/documents/doctors/$(request.resource.data.doctor)) &&
+					// exists(/databases/$(database)/documents/doctors/$(request.resource.data.doctor)) &&
 					// The patient and doctor are different people:
 					// get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.doctor !=
 					// 	get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.patient &&
 					// The clinic exists in the system:(is clinic even needed as a field?)
-					exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic)) &&
+					// exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic)) &&
 					// The doctor works for the clinic:
-					exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)) &&
+					// exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)) &&
 					// The start time of the appointment is in the future:
-					request.resource.data.start is timestamp &&
-					request.resource.data.start > request.time &&
+					// request.resource.data.start is timestamp &&
+					// request.resource.data.start > request.time &&
 					// The end time of the appointment is after the start time:
-					request.resource.data.end is timestamp &&
-					request.resource.data.end > request.resource.data.start &&
+					// request.resource.data.end is timestamp &&
+					// request.resource.data.end > request.resource.data.start &&
 					// The doctor offers the requested appointment type:
-					exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)) &&
+					// exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)) &&
 					// The duration of the appointment matches the appointment type's duration:
-					request.resource.data.end - request.resource.data.start ==
-						get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)).data.duration *
-						get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.minimum &&
+					// request.resource.data.end - request.resource.data.start ==
+					// 	get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)).data.duration *
+					// 	get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.minimum &&
 					
 					// The one who updated the arrival status must be either a secretary or the doctor:
-					(exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.resource.data.arrived)) ||
-					request.resource.data.doctor == request.resource.data.arrived) &&
+					// (exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.resource.data.arrived)) ||
+					// request.resource.data.doctor == request.resource.data.arrived) &&
 					
 					// When the client creates or updates an appointment, he must specify that's it needs to be verified:
 					request.resource.data.verified == false;

@@ -21,6 +21,10 @@ class Time {
 		return new Time(time.hours, time.minutes);
 	}
 
+	toTimestamp() {
+		return new Date(2021, 0, 0, this.hours, this.minutes).getTime();
+	}
+
 	hours;
 	minutes;
 

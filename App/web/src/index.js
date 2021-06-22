@@ -75,7 +75,7 @@ ReactDOM.render(
 							<Route path="/user/appointments/create/:clinic/:doctor">
 								<SetAppointmentPage />
 							</Route>
-							<Route path="/user/appointments/success/:appointment">
+							<Route path="/user/appointments/success/:clinic/:appointment">
 								<AppointmentSuccessPage />
 							</Route>
 							<Route path="/user/appointments/deleted">
@@ -188,7 +188,7 @@ ReactDOM.render(
 							<Route path="/:link/clinic/appointments/edit/:appointment">
 								<SetAppointmentPage />
 							</Route>
-							<Route path="/:link/user/appointments/success/:appointment">
+							<Route path="/:link/user/appointments/success/:clinic/:appointment">
 								<AppointmentSuccessPage />
 							</Route>
 							<Route path="/:link/user/appointments/deleted">

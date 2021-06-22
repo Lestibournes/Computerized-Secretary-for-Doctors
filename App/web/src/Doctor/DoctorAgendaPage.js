@@ -80,7 +80,6 @@ export function DoctorAgendaPage() {
 		// Get all of the doctor's clinics:
 		if (doctor) {
 			db.collectionGroup("doctors").where("user", "==", doctor.id).get().then(doctor_snaps => {
-				console.log(doctor_snaps.size);
 				for (const doctor_snap of doctor_snaps.docs) {
 					const clinicRef = doctor_snap.ref.parent.parent;
 					const promises = [];

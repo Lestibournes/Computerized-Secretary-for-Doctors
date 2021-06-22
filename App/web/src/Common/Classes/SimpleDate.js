@@ -89,7 +89,10 @@
 				this.#date = new Date(parts[0], parts[1] - 1, parts[2]);
 			}
 		};
-		if (args.length === 0) this.#date = new Date();
+		if (args.length === 0) {
+			const now = new Date();
+			this.#date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		}
 	}
 
 	/**

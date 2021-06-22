@@ -24,7 +24,7 @@ export function AppointmentListPage() {
 	const popups = usePopups();
 
 	const [appointments, setAppointments] = useState(null);
-	const [clinics, setClinics] = useState([]);
+	// const [clinics, setClinics] = useState([]);
 	const [results, setResults] = useState(null);
 	
 	const [searchPrameters, setSearchParameters] = useState({
@@ -86,8 +86,8 @@ export function AppointmentListPage() {
 								const spec_data = [];
 
 								for (const spec_snap of spec_snaps.docs) {
-									const data = spec_snaps.data();
-									data.id = spec_snaps.id;
+									const data = spec_snap.data();
+									data.id = spec_snap.id;
 									spec_data.push(data);
 								}
 
@@ -103,8 +103,8 @@ export function AppointmentListPage() {
 							}
 						);
 
-						const date = new SimpleDate(appointment.start.toDate());
-						const time = Time.fromDate(appointment.start.toDate());
+						const date = new SimpleDate(new Date(appointment.start));
+						const time = Time.fromTimestamp(appointment.start);
 		
 						/**
 						 * @todo sort by date and time.

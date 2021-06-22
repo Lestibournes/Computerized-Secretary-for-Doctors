@@ -17,26 +17,10 @@ import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
 import { db } from '../init';
 
-/**
- * @todo
- * I want to have the appointment set for the doctor and the clinic together,
- * so the search page should perhaps show a separate result for every doctor+
- * clinic combination.
- * Show the information about the doctor so that the user can see that the
- * appointment is being set for the correct doctor.
- * Show widgets for selecting appoingment type, date, and time. They should
- * only show what's available. What isn't available should be greyed out.
- * The server side should make the determination in order to protect patient
- * privacy, and also the server side should handle the setting of the
- * appointment, making sure that it's valid.
- */
 export function SetAppointmentPage() {
 	const auth = useAuth();
 	const popups = usePopups();
 	const root = useRoot();
-	
-	//The root of the site:
-	const { link } = useParams();
 
 	//The ID of the appointment:
 	const { appointment } = useParams();
@@ -54,7 +38,6 @@ export function SetAppointmentPage() {
 	
 	// Appointment types/durations:
 	const [minimum, setMinimum] = useState();
-	const [typesData, setTypesData] = useState([]);
 	const [typesOptions, setTypesOptions] = useState([]);
 	const [type, setType] = useState(null);
 
@@ -135,7 +118,6 @@ export function SetAppointmentPage() {
 	
 				// Refresh the types options list for the display:
 				types.sort(compareByName);
-				setTypesData(types);
 
 				const options = [];
 
@@ -152,19 +134,18 @@ export function SetAppointmentPage() {
 
 	useEffect(() => {
 		// Get the available times for setting appointments:
-		console.log(date.toDate().getTime());
 		if (date && type && (time || !appointment) && doctorID && clinicID) {
 			server.appointments.getAvailable({
 				clinic: clinicID,
 				doctor: doctorID,
-				date: date.toDate().getTime(),
+				date: date.toObject(),
 				type: type
 			})
 			.then(results => {
 				const list = [];
 
 				results.data.forEach(result => {
-					list.push(Time.fromObject(result.start));
+					list.push(Time.fromTimestamp(result.start));
 				});
 
 				// If the appointment already exists, add back it the time it is set to:
@@ -258,9 +239,10 @@ export function SetAppointmentPage() {
 								doctor: doctor,
 								clinic: clinic,
 								patient: auth.user.uid,
-								start: start,
-								end: end,
-								type: values.type
+								start: start.getTime(),
+								end: end.getTime(),
+								type: values.type,
+								verified: false
 							})
 							.then(app_ref => app_ref.get().then(app_snap => {
 								if (app_snap.exists) {
@@ -273,8 +255,7 @@ export function SetAppointmentPage() {
 								}
 							}))
 							.catch(reason => {
-								console.log(reason);
-								popups.error(reason.code);
+								popups.error(reason.message);
 							});
 						}
 					}}
@@ -324,7 +305,7 @@ export function SetAppointmentPage() {
 
 	return (
 		<div className="Page">
-			<Header link={link} />
+			<Header />
 			<h1>{appointment ? "Modify Appointment" : "Make an Appointment"}</h1>
 			<h2>{subtitle}</h2>
 			<main>
