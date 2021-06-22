@@ -19,12 +19,13 @@ export function SecretaryProfileFragment() {
 	const [clinics, setClinics] = useState();
 	const [clinicCards, setClinicCards] = useState();
 
-	useEffect(() => {
-		popups.clear();
-	}, []);
+	// Is this even needed? It's causeing a re-rendering problem.
+	// useEffect(() => {
+	// 	popups.clear();
+	// }, []);
 
 	useEffect(() => {
-		if (auth.user) {
+		if (auth?.user?.uid) {
 			return db.collectionGroup("secretaries")
 			.where('user', '==', auth.user.uid)
 			.onSnapshot(
@@ -52,10 +53,14 @@ export function SecretaryProfileFragment() {
 	}, [auth.user]);
 
 	useEffect(() => {
-		if (auth.user) {
+		if (auth?.user?.uid) {
 			return db.collection("users").doc(auth.user.uid).onSnapshot(
 				user_snap => {
-					if (user_snap.data().secretary) setSecretary(user_snap.data());
+					if (user_snap.data().secretary) {
+						const sec_data = user_snap.data();
+						sec_data.id = user_snap.id;
+						setSecretary(sec_data);
+					}
 					else {
 						const close = () => {popups.remove(popup)}
 		

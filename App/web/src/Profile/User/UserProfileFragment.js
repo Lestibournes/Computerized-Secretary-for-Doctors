@@ -14,7 +14,6 @@ export function UserProfileFragment({user}) {
 	const [userData, setUserData] = useState();
 	const [image, setImage] = useState();
 
-
 	useEffect(() => {
 		popups.clear();
 	}, []);

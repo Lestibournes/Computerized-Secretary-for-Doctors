@@ -15,6 +15,7 @@ import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
 import { db } from '../init';
+import { Loading } from "../Common/Components/Loading";
 
 export function DoctorAgendaPage() {
 	const root = useRoot();
@@ -31,7 +32,7 @@ export function DoctorAgendaPage() {
 	});
 
 	const [appointments, setAppointments] = useState(null);
-	const [results, setResults] = useState(null);
+	const [appointmentCards, setAppointmentCards] = useState(null);
 
 	const [searching, setSearching] = useState(true);
 
@@ -47,6 +48,8 @@ export function DoctorAgendaPage() {
 
 	useEffect(() => {
 		if (doctor && searchPrameters) {
+			setSearching(true);
+
 			let query = db;
 
 			if (searchPrameters.clinic) {
@@ -76,7 +79,8 @@ export function DoctorAgendaPage() {
 
 		// Get all of the doctor's clinics:
 		if (doctor) {
-			db.collectionGroup("doctors").where("doctor", "==", doctor.id).get().then(doctor_snaps => {
+			db.collectionGroup("doctors").where("user", "==", doctor.id).get().then(doctor_snaps => {
+				console.log(doctor_snaps.size);
 				for (const doctor_snap of doctor_snaps.docs) {
 					const clinicRef = doctor_snap.ref.parent.parent;
 					const promises = [];
@@ -106,20 +110,6 @@ export function DoctorAgendaPage() {
 
 	useEffect(() => {
 		if (appointments) {
-			// appointments.sort((a, b) => {
-			// 	const date_a = SimpleDate.fromObject(a.extra.date);
-			// 	const date_b = SimpleDate.fromObject(b.extra.date);
-
-			// 	const time_a = Time.fromObject(a.extra.time);
-			// 	const time_b = Time.fromObject(b.extra.time);
-				
-			// 	if (date_a.compare(date_b) === 0) {
-			// 		return time_a.compare(time_b);
-			// 	}
-
-			// 	return date_a.compare(date_b);
-			// });
-
 			// load the data and create the cards:
 			let promises = [];
 
@@ -148,19 +138,19 @@ export function DoctorAgendaPage() {
 			}
 
 			Promise.all(promises).then(cards => {
-				setResults(cards);
+				setAppointmentCards(cards);
 				setSearching(false);
 			});
 		}
 	}, [appointments]);
 
-	let display;
-	let subtitle;
-	let title;
+	let display = <Loading />;
 
 	if (doctor && clinics) {
 			display =
 			<>
+				<h1>{doctor.fullName}</h1>
+				<h2>Agenda</h2>
 				<Formik
 					initialValues={{
 						clinic: searchPrameters.clinic,
@@ -210,21 +200,15 @@ export function DoctorAgendaPage() {
 					</Form>
 				</Formik>
 				<div className="cardList">
-					{searching ? <h3>Searching...</h3> : results.length > 0 ? results : <h3>There are no appointments in the specified time range.</h3>}
+					{searching ? <h3>Searching...</h3> : appointmentCards.length > 0 ? appointmentCards : <h3>There are no appointments in the specified time range.</h3>}
 				</div>
 			</>;
-		title = doctor.user.fullName;
-		subtitle = "Agenda";
 	}
 
 	return (
 		<div className="Page">
 			<Header />
-			<h1>{title}</h1>
-			<h2>{subtitle}</h2>
-			<main>
-				{display}
-			</main>
+			{display}
 		</div>
 	);
 }

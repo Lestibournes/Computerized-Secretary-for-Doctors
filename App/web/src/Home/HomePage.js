@@ -8,7 +8,6 @@ import { DoctorHomeFragment } from "./DoctorHomeFragment";
 import { SecretaryProfileFragment } from "../Profile/Secretary/SecretaryProfileFragment";
 import { useEffect, useState } from "react";
 import { useAuth } from "../Common/Auth";
-import { server } from "../Common/server";
 import { Header } from "../Common/Components/Header";
 import { db } from "../init";
 import { usePopups } from "../Common/Popups";
@@ -20,18 +19,27 @@ const SECRETARY = "Secretary";
 export function HomePage() {
 	const auth = useAuth();
 	const popups = usePopups();
-	const [doctor, setDoctor] = useState();
-	const [secretary, setSecretary] = useState();
+
 	const [items, setItems] = useState();
 	const [defaultView, setDefaultView] = useState();
 
 	useEffect(() => {
-		if (auth.user) {
+		if (auth?.user?.uid) {
 			return db.collection("users").doc(auth.user.uid).onSnapshot(
 				user_snap => {
-					if (user_snap.data().secretary) setSecretary(auth.user.uid);
-					if (user_snap.data().doctor) setDoctor(auth.user.uid);
-					
+					// Build the "view as" menu:
+					const menuItems = [];
+
+					if (user_snap.data().doctor || user_snap.data().secretary) {
+						menuItems.push(<Link to="/home/patient">Patient</Link>);
+
+						if (user_snap.data().doctor) menuItems.push(<Link to="/home/doctor">Doctor</Link>);
+						if (user_snap.data().secretary) menuItems.push(<Link to="/home/secretary">Secretary</Link>)
+
+						setItems(menuItems);
+					}
+
+					// Set the default view:
 					if (user_snap.data().doctor) setDefaultView(DOCTOR);
 					else if (user_snap.data().secretary) setDefaultView(SECRETARY);
 					else setDefaultView(PATIENT);
@@ -39,19 +47,7 @@ export function HomePage() {
 				error => popups.error(error.message)
 			);
 		}
-	}, [auth]);
-
-	useEffect(() => {
-		const menuItems = [];
-
-		if (doctor || secretary) {
-			menuItems.push(<Link to="/home/patient">Patient</Link>);
-			if (doctor) menuItems.push(<Link to="/home/doctor">Doctor</Link>);
-			if (secretary) menuItems.push(<Link to="/home/secretary">Secretary</Link>)
-
-			setItems(menuItems);
-		}
-	}, [doctor, secretary])
+	}, [auth.user]);
 
 	return (
 		<div className="Page">
