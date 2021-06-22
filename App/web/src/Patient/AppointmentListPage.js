@@ -4,7 +4,7 @@ import { useAuth } from "../Common/Auth";
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
-import { getPictureURL } from '../Common/functions';
+import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { server } from '../Common/server';
 import { Header } from '../Common/Components/Header';
 import { Loading } from '../Common/Components/Loading';
@@ -15,10 +15,13 @@ import { Form, Formik } from 'formik';
 import { TextInput } from '../Common/Components/TextInput';
 import { Select } from '../Common/Components/Select';
 import { Button } from '../Common/Components/Button';
+import { db } from '../init';
+import { usePopups } from '../Common/Popups';
 
 export function AppointmentListPage() {
 	const auth = useAuth();
 	const root = useRoot();
+	const popups = usePopups();
 
 	const [appointments, setAppointments] = useState(null);
 	const [clinics, setClinics] = useState([]);
@@ -35,66 +38,103 @@ export function AppointmentListPage() {
 	useEffect(() => {
 		if (auth?.user?.uid) {
 			searchPrameters.user = auth.user.uid;
-			
-			server.appointments.getAll({
-				user: auth.user.uid,
-				clinic: searchPrameters.clinic ? searchPrameters.clinic : null,
-				start: searchPrameters.start ? searchPrameters.start.toObject() : null,
-				end: searchPrameters.end ? searchPrameters.end.toObject() : null}).then(response => {
-				if (response.data) setAppointments(response.data);
-			});
+
+			let query = db.collectionGroup("appointments")
+			.orderBy("start")
+			.where("patient", "==", searchPrameters.user);
+
+			if (searchPrameters.clinic) query = query.where("clinic", "==", searchPrameters.clinic);
+			if (searchPrameters.doctor) query = query.where("doctor", "==", searchPrameters.doctor);
+			if (searchPrameters.start) query = query.where("start", ">=", searchPrameters.start.toDate().getTime());
+			if (searchPrameters.end) query = query.where("start", "<=", searchPrameters.end.toDate().getTime());
+
+			query.get().then(
+				app_snaps => {
+					const app_data = [];
+
+					for (const app_snap of app_snaps.docs) {
+						const data = app_snap.data();
+						data.id = app_snap.id;
+						app_data.push(data);
+					}
+
+					setAppointments(app_data);
+				}
+			)
+			.catch(reason => popups.error(reason.message));
 		}
   }, [auth, searchPrameters]);
 
 	useEffect(() => {
 		if (appointments) {
-			appointments.sort((a, b) => {
-				const date_a = SimpleDate.fromObject(a.extra.date);
-				const date_b = SimpleDate.fromObject(b.extra.date);
-
-				const time_a = Time.fromObject(a.extra.time);
-				const time_b = Time.fromObject(b.extra.time);
-				
-				if (date_a.compare(date_b) === 0) {
-					return time_a.compare(time_b);
-				}
-
-				return date_a.compare(date_b);
-			});
-
 			// load the data and create the cards:
 			let promises = [];
 
 			for (let appointment of appointments) {
-				let promise = getPictureURL(appointment.doctor.user.id).then(url => {
-					appointment.image = url;
+				promises.push(
+					getPictureURL(appointment.doctor).then(async url => {
+						const doctor = await db.collection("users").doc(appointment.doctor).get().then(
+							doctor_snap => {
+								const doctor_data = doctor_snap.data();
+								doctor_data.id = doctor_snap.id;
+								return doctor_data;
+							}
+						);
 
-					const date = SimpleDate.fromObject(appointment.extra.date);
-					const time = Time.fromObject(appointment.extra.time);
-					const doctor = appointment.doctor;
-					const clinic = appointment.clinic;
-	
-					/**
-					 * @todo sort by date and time.
-					 */
-					return (
-						<Card
-							key={appointment.appointment.id}
-							link={root.get() + "/user/appointments/details/" + appointment.appointment.id}
-							image={appointment.image}
-							altText={(doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
-							title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.user.firstName + " " + doctor.user.lastName : null)}
-							body={doctor ? doctor.fields.map((field, index) => {return field.id + (index < doctor.fields.length - 1 ? " " : "")}) : null}
-							footer={clinic ? clinic.name + ", " + clinic.city : null}
-						/>
-					);
-				});
-				
-				promises.push(promise);
+						const specializations = await db.collection("users").doc(appointment.doctor).collection("specializations").get().then(
+							spec_snaps => {
+								const spec_data = [];
+
+								for (const spec_snap of spec_snaps.docs) {
+									const data = spec_snaps.data();
+									data.id = spec_snaps.id;
+									spec_data.push(data);
+								}
+
+								return spec_data;
+							}
+						);
+
+						const clinic = await db.collection("clinics").doc(appointment.clinic).get().then(
+							clinic_snap => {
+								const clinic_data = clinic_snap.data();
+								clinic_data.id = clinic_snap.id;
+								return clinic_data;
+							}
+						);
+
+						const date = new SimpleDate(appointment.start.toDate());
+						const time = Time.fromDate(appointment.start.toDate());
+		
+						/**
+						 * @todo sort by date and time.
+						 */
+						const data ={
+							data: appointment,
+							card: 
+								<Card
+									key={appointment.id}
+									link={root.get() + "/user/appointments/details/" + appointment.id}
+									image={url}
+									altText={(doctor ? doctor.fullName : "")}
+									title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.fullName : "")}
+									body={specializations ? specializations.map((specialization, index) => {return capitalizeAll(specialization.name) + (index < specializations.length - 1 ? ", " : "")}) : ""}
+									footer={clinic ? clinic.name + ", " + clinic.city : ""}
+								/>
+						}
+						return data;
+					})
+				);
 			}
 
 			Promise.all(promises).then(cards => {
-				setResults(cards);
+				cards.sort(
+					(a, b) => {
+						return a.data.start > b.data.start ? 1 : a.data.start < b.data.start ? -1 : 0;
+					}
+				);
+
+				setResults(cards.map(card => {return card.card}));
 				setSearching(false);
 			});
 		}
@@ -104,7 +144,8 @@ export function AppointmentListPage() {
 		<>
 			<Formik
 				initialValues={{
-					clinic: searchPrameters.clinic,
+					// clinic: searchPrameters.clinic,
+					// doctor: searchPrameters.doctor,
 					start: searchPrameters.start.toInputString(),
 					end: searchPrameters.end.toInputString()
 				}}
@@ -120,7 +161,8 @@ export function AppointmentListPage() {
 					const end = new SimpleDate(values.end);
 
 					setSearchParameters({
-						clinic: values.clinic,
+						// clinic: values.clinic,
+						// doctor: values.doctor,
 						start: start,
 						end: end
 					});
@@ -133,6 +175,12 @@ export function AppointmentListPage() {
 							name="clinic"
 							default={{label: "All", value: ""}}
 							options={clinics}
+						/> */}
+						{/* <Select
+							label="Doctor"
+							name="doctor"
+							default={{label: "All", value: ""}}
+							options={doctors}
 						/> */}
 						<TextInput
 							label="Start"
