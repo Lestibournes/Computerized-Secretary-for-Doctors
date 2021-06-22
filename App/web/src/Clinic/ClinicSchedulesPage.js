@@ -1,11 +1,13 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card } from "../Common/Components/Card"
+import { Loading } from "../Common/Components/Loading";
+import { Card } from "../Common/Components/Card";
 import { Header } from '../Common/Components/Header';
-import { getPictureURL } from "../Common/functions";
+import { capitalizeAll, getPictureURL } from "../Common/functions";
+import { usePopups } from '../Common/Popups';
 import { useRoot } from '../Common/Root';
-import { server } from '../Common/server';
+import { db } from '../init';
 
 /**
 @todo
@@ -18,21 +20,44 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 */
 export function ClinicSchedulesPage() {
 	const root = useRoot();
+	const popups = usePopups();
+
 	const { clinic } = useParams(); //The ID of clinic.
-	const [data, setData] = useState(null);
+	const [clinicData, setClinicData] = useState(null);
 
 	const [doctorsData, setDoctorsData] = useState();
 	const [doctorCards, setDoctorCards] = useState();
 
 	useEffect(() => {
 		if (clinic) {
-			server.clinics.get({id: clinic}).then(clinic_data => {
-				setData(clinic_data.data);
+			db.collection("clinics").doc(clinic).get().then(
+				clinic_snap => {
+					const clinic_data = clinic_snap.data();
+					clinic_data.id = clinic_snap.id;
+					setClinicData(clinic_data);
+				}
+			);
 
-				server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
-					setDoctorsData(doctors_data.data);
-				});
-			});
+			db.collection("clinics").doc(clinic).collection("doctors").get().then(
+				doctor_snaps => {
+					const promises = [];
+
+					for (const doctor_snap of doctor_snaps.docs) {
+						promises.push(
+							db.collection("users").doc(doctor_snap.id).get().then(
+								user_snap => {
+									const user_data = user_snap.data();
+									user_data.id = user_snap.id;
+									return user_data;
+								}
+							)
+							.catch(reason => popups.error(reason.message))
+						);
+					}
+
+					Promise.all(promises).then(data => setDoctorsData(data));
+				}
+			);
 		}
 	}, [clinic]);
 
@@ -42,57 +67,65 @@ export function ClinicSchedulesPage() {
 			const promises = [];
 
 			for (const doctor of doctorsData) {
-				promises.push(getPictureURL(doctor.user.id).then(url => {
-					doctor.image = url;
+				promises.push(
+					getPictureURL(doctor.id).then(url => {
+						return db.collection("users").doc(doctor.id).get().then(
+							doctor_snap => {
+								const doctor_data = doctor_snap.data();
+								doctor_data.id = doctor_snap.id;
 
-					const card = (<Card
-						key={doctor.doctor.id}
-						title={doctor.user.firstName + " " + doctor.user.lastName + (doctor.doctor.id === data.owner ? " (♚ owner)" : "")}
-						body=
-							{doctor.fields.length > 0 ?
-								doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-								: ""))
-							: "No specializations specified"}
-						footer={doctor.clinics.map(clinic => {return clinic.name + ", " + clinic.city + "; "})}
-						image={doctor.image}
-						link={root.get() + "/clinics/schedule/edit/" + clinic + "/" + doctor.doctor.id}
-					/>);
-	
-					return {
-						name: doctor.user.lastName + doctor.user.firstName,
-						id: doctor.doctor.id,
-						component: card
-					};
-				}));
+								return db.collection("users").doc(doctor.id).collection("specializations").get().then(
+									spec_snaps => {
+										const card = (<Card
+											key={doctor.id}
+											title={doctor_data.fullName + (doctor.id === clinicData.owner ? " (♚ owner)" : "")}
+											body=
+												{spec_snaps.size > 0 ?
+													spec_snaps.docs.map((spec, index) => capitalizeAll(spec.data().name) +
+													(index < spec_snaps.size - 1 ? ", " : ""))
+												: "No specializations specified"}
+											image={url}
+											link={root.get() + "/clinics/schedule/edit/" + clinic + "/" + doctor.id}
+										/>);
+						
+										return {
+											data: doctor_data,
+											card: card
+										};
+									}
+								)
+							}
+						)
+						.catch(reason => popups.error(reason.message));
+					})
+				);
 			}
 
 			Promise.all(promises).then(cards => {
 				cards.sort((a, b) => {
-					if (a.id === data.owner) {
-						return -1;
+					if (a.data.id === clinicData.owner) {
+						return 1;
 					};
 		
-					if (b.id === data.owner) {
-						return 1;
+					if (b.data.id === clinicData.owner) {
+						return -1;
 					};
 	
-					if (a.name === b.name) {
-						return 0;
-					}
-					else if (a.name < b.name) {
-						return -1;
-					}
-					else {
-						return 1;
-					}
+					if (a.data.lastName > b.data.lastName) return 1;
+					if (a.data.lastName < b.data.lastName) return -1;
+
+					if (a.data.firstName > b.data.firstName) return 1;
+					if (a.data.firstName < b.data.firstName) return -1;
+
+					return 0
 				});
 				
-				setDoctorCards(cards.map(card => card.component));
+				setDoctorCards(cards.map(card => card.card));
 			});
 		}
-	}, [doctorsData, data, clinic]);
+	}, [doctorsData, clinicData, clinic]);
 	
-	let display;
+	let display = <Loading />;
 	if (doctorCards) {
 		display = (
 			<>
@@ -106,7 +139,7 @@ export function ClinicSchedulesPage() {
 	return (
 		<div className="Page">
 			<Header />
-			<h1>{data?.name}</h1>
+			<h1>{clinicData?.name}</h1>
 			<h2>Schedules</h2>
 			<main>
 				{display}

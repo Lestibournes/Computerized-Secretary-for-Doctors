@@ -5,7 +5,6 @@ import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
-import { server } from '../Common/server';
 
 import * as Yup from 'yup';
 import { TextInput } from '../Common/Components/TextInput';
@@ -38,8 +37,6 @@ export function ClinicAgendaPage() {
 	
 	useEffect(() => {
 		if (clinic) {
-			const promises = [];
-
 			// Fetch all of the requested appointments:
 			let query = db.collection("clinics").doc(clinic).collection("appointments")
 			.orderBy("start")
@@ -48,59 +45,55 @@ export function ClinicAgendaPage() {
 
 			if (searchPrameters.doctor) query.where("doctor", "==", searchPrameters.doctor);
 
-			promises.push(
+			query.get().then(
+				app_snaps => {
+					const app_data = [];
 
-				query.get().then(
-					app_snaps => {
-						const app_data = [];
-	
-						for (const app_snap of app_snaps.docs) {
-							if (app_snap.exists) {
-								const data = app_snap.data();
-								data.id = app_snap.id;
-								app_data.push(data);
-							}
+					for (const app_snap of app_snaps.docs) {
+						if (app_snap.exists) {
+							const data = app_snap.data();
+							data.id = app_snap.id;
+							app_data.push(data);
 						}
-	
-						setAppointments(app_data);
 					}
-				)
-				.catch(error => popups.error(error.message))
-			);
+
+					setAppointments(app_data);
+				}
+			)
+			.catch(error => popups.error(error.message));
 
 			// Fetch clinic data:
-			promises.push(
-				db.collection("clinics").doc(clinic).get().then(
-					clinic_snap => {
-						const clinic_data = clinic_snap.data();
-						clinic_data.id = clinic_snap.id;
-						setClinicData(clinic_data);
-					}
-				)
-			);
+			db.collection("clinics").doc(clinic).get().then(
+				clinic_snap => {
+					const clinic_data = clinic_snap.data();
+					clinic_data.id = clinic_snap.id;
+					setClinicData(clinic_data);
+				}
+			)
+			.catch(reason => popups.error(reason.message));
 
 			// Fetch all of the clinic's doctors:
-			promises.push(
-				db.collection("clinics").doc(clinic).collection("doctors").get().then(
-					doctor_snaps => {
-						const promises = [];
-	
-						for (const doctor_snap of doctor_snaps.docs) {
-							promises.push(
-								db.collection("users").doc(doctor_snap.id).get().then(
-									user_snap => {
-										const user_data = user_snap.data();
-										user_data.id = user_snap.id;
-										return user_data;
-									}
-								)
+			db.collection("clinics").doc(clinic).collection("doctors").get().then(
+				doctor_snaps => {
+					const promises = [];
+
+					for (const doctor_snap of doctor_snaps.docs) {
+						promises.push(
+							db.collection("users").doc(doctor_snap.id).get().then(
+								user_snap => {
+									const user_data = user_snap.data();
+									user_data.id = user_snap.id;
+									return user_data;
+								}
 							)
-						}
-	
-						Promise.all(promises).then(users => setDoctors(users));
+							.catch(reason => popups.error(reason.message))
+						)
 					}
-				)
-			);
+
+					Promise.all(promises).then(users => setDoctors(users));
+				}
+			)
+			.catch(reason => popups.error(reason.message));
 		}
   }, [clinic, searchPrameters]);
 
@@ -114,7 +107,7 @@ export function ClinicAgendaPage() {
 					getPictureURL(appointment.patient).then(url => {
 						return db.collection("users").doc(appointment.patient).get().then(
 							patient_snap => {
-								return db.collection("users").doc(appointment.patient).get().then(
+								return db.collection("users").doc(appointment.doctor).get().then(
 									doctor_snap => {
 										const date = new SimpleDate(appointment.start.toDate());
 										const time = Time.fromDate(appointment.start.toDate());
@@ -131,9 +124,11 @@ export function ClinicAgendaPage() {
 											/>
 										);
 									}
-								);
+								)
+								.catch(reason => popups.error(reason.message));
 							}
 						)
+						.catch(reason => popups.error(reason.message));
 					})
 				);
 			}
