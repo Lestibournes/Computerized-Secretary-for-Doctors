@@ -18,7 +18,6 @@ import { HomePage } from './Home/HomePage';
 import { AppointmentSuccessPage } from './Patient/AppointmentSuccessPage';
 import { AppointmentListPage } from './Patient/AppointmentListPage';
 import { AppointmentDeletedPage } from './Patient/AppointmentDeletedPage';
-import { AppointmentCalendarPage } from './Calendar/AppointmentCalendarPage';
 import { DoctorCalendarPage } from "./Calendar/DoctorCalendarPage";
 import { ClinicCalendarPage } from "./Calendar/ClinicCalendarPage";
 import { ClinicEditor } from './Clinic/Editor/ClinicEditor';

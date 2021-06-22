@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from "../Common/Components/Card"
 import { Loading } from '../Common/Components/Loading';
+import { usePopups } from '../Common/Popups';
 import { useRoot } from '../Common/Root';
 import { server } from '../Common/server';
+import { db } from '../init';
 
 /**
 @todo
@@ -17,20 +19,61 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 
 export function DoctorLandingFragment({doctor}) {
 	const root = useRoot();
-	const [data, setData] = useState(null);
-	
+	const popups = usePopups();
+
+	const [doctorData, setDoctorData] = useState(null);
 	const [clinicsData, setClinicsData] = useState();
 	const [clinicCards, setClinicCards] = useState();
 
 	useEffect(() => {
 		if (doctor) {
-			server.doctors.getData({id: doctor}).then(doctor_data => {
-				setData(doctor_data.data);
+			db.collection("users").doc(doctor).get().then(
+				doctor_snap => {
+					const doctor_data = doctor_snap.data();
+					doctor_data.id = doctor_snap.id;
+					setDoctorData(doctor_data);
+				}
+			)
+			.catch(reason => popups.error(reason.message));
 
-				server.doctors.getAllClinics({doctor: doctor}).then(clinics_data => {
-					setClinicsData(clinics_data.data);
-				});
-			});
+			return db.collectionGroup("doctors").where("user", "==", doctor).onSnapshot(
+				doctor_snaps => {
+					const promises = [];
+					
+					for (const doctor_snap of doctor_snaps.docs) {
+						const clinicRef = doctor_snap.ref.parent.parent;
+
+						if (clinicRef) {
+							promises.push(
+								clinicRef.get()
+								.then(clinic_snap => {
+									if (clinic_snap.exists) {
+										const clinic = clinic_snap.data();
+										clinic.id = clinic_snap.id;
+										return clinic;
+									}
+									
+									return null;
+								})
+								.catch(reason => popups.error(reason.message))
+							)
+						}
+					}
+
+					Promise.all(promises).then(
+						clinic_data => {
+							const clinics = [];
+
+							for (const clinic of clinic_data) {
+								if (clinic) clinics.push(clinic);
+							}
+
+							setClinicsData(clinics);
+						}
+					);
+				},
+				error => popups.error(error.message)
+			);
 		}
 	}, [doctor]);
 
@@ -54,28 +97,18 @@ export function DoctorLandingFragment({doctor}) {
 				});
 			}
 
-			cards.sort((a, b) => {
-				if (a.name === b.name) {
-					return 0;
-				}
-				else if (a.name < b.name) {
-					return -1;
-				}
-				else {
-					return 1;
-				}
-			});
+			cards.sort((a, b) => {return a.name > b.name ? 1 : a.name < b.name ? -1 : 0});
 			
 			setClinicCards(cards.map(card => card.component));
 		}
-	}, [clinicsData, data, doctor]);
+	}, [clinicsData, doctorData, doctor]);
 
 	let display = <Loading />;
 
-	if (data && clinicCards) {
+	if (doctorData && clinicCards) {
 		display = (
 			<main>
-				<h1>{data ? "Make An Appointment With Dr. " + data.user.fullName : ""}</h1>
+				<h1>{doctorData ? "Make An Appointment With Dr. " + doctorData.fullName : ""}</h1>
 				<section>
 					<header>
 						<h2>My Clinics</h2>
