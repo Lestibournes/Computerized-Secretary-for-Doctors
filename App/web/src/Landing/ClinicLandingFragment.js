@@ -1,107 +1,148 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
 import { Card } from "../Common/Components/Card"
-import { Header } from '../Common/Components/Header';
 import { Loading } from '../Common/Components/Loading';
-import { getPictureURL } from '../Common/functions';
+import { capitalizeAll, getPictureURL } from '../Common/functions';
+import { usePopups } from '../Common/Popups';
 import { useRoot } from '../Common/Root';
-import { server } from '../Common/server';
+import { db } from '../init';
 
 /**
-@todo
-Edit clinic page:
-Can either be used to create a new clinic or edit an existing one. For an existing clinic it will show:
-* Options to modify the name and location.
-* A list of current members with the option to boot them.
-* A list of pending membership requests with the option to accept or reject them.
-* A button to go to a search page to find existing doctors and invite them to join the clinic.
-*/
-
+ * The clinic's home-page.
+ * @param {{clinic: string}} props
+ * @returns 
+ */
 export function ClinicLandingFragment({clinic}) {
 	const root = useRoot();
-	const [data, setData] = useState(null);
-	
+	const popups = usePopups();
+
+	const [clinicData, setClinicData] = useState(null);
 	const [doctorsData, setDoctorsData] = useState();
 	const [doctorCards, setDoctorCards] = useState();
 
+	// Get clinic data:
 	useEffect(() => {
 		if (clinic) {
-			server.clinics.get({id: clinic}).then(clinic_data => {
-				setData(clinic_data.data);
+			return db.collection("clinics").doc(clinic).onSnapshot(
+				clinic_snap => {
+					if (clinic_snap.exists) {
+						const data = clinic_snap.data();
+						data.id = clinic_snap.id;
+						setClinicData(data);
+					}
 
-				server.clinics.getAllDoctors({clinic: clinic}).then(doctors_data => {
-					setDoctorsData(doctors_data.data);
-				});
-			});
+					return null;
+				},
+				error => popups.error(error.message)
+			);
 		}
 	}, [clinic]);
 
+	// Get the doctors' data with their specializations:
+	useEffect(() => {
+		if (clinic) {
+			return db.collection("clinics").doc(clinic).collection("doctors").onSnapshot(
+				doctor_snaps => {
+					const promises = [];
+
+					for (const doctor_snap of doctor_snaps.docChanges()) {
+						promises.push(
+							db.collection("users").doc(doctor_snap.doc.id).get()
+							.then(user_snap => {
+								const data = user_snap.data();
+								data.id = user_snap.id;
+
+								return db.collection("users").doc(user_snap.id).collection("specializations").get()
+								.then(spec_snaps => {
+									data.specializations = [];
+
+									for (const spec_snap of spec_snaps.docs) {
+										const spec_data = spec_snap.data();
+										spec_data.id = spec_snap.id;
+										data.specializations.push(spec_data);
+									}
+
+									return data;
+								});
+							})
+							.catch(reason => popups.error(reason.message))
+						);
+					}
+
+					Promise.all(promises).then(user_data => {
+						user_data.sort(
+							(a, b) => {
+								if (a.lastName > b.lastName) return 1;
+								if (a.lastName < b.lastName) return -1;
+
+								if (a.firstName > b.firstName) return 1;
+								if (a.firstName < b.firstName) return -1;
+
+								return 0;
+							}
+						);
+
+						setDoctorsData(user_data);
+					})
+				},
+				error => popups.error(error.message)
+			);
+		}
+	}, [clinic]);
 
 	useEffect(() => {
 		if (doctorsData) {
 			const promises = [];
 
 			for (const doctor of doctorsData) {
-				promises.push(getPictureURL(doctor.user.id).then(url => {
-					doctor.image = url;
-
-					const card = (<Card
-						key={doctor.doctor.id}
-						title={doctor.user.firstName + " " + doctor.user.lastName}
-						body=
-							{doctor.fields.length > 0 ?
-								doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-								: ""))
-							: "No specializations specified"}
-						image={doctor.image}
-						link={root.get() + "/appointments/create/" + clinic + "/" + doctor.doctor.id}
-					/>);
-	
-					return {
-						name: doctor.user.lastName + doctor.user.firstName,
-						id: doctor.doctor.id,
-						component: card
+				promises.push(getPictureURL(doctor.id).then(url => {
+					const data = {
+						data: doctor,
+						card: 
+							<Card
+								key={doctor.id}
+								title={doctor.fullName}
+								body=
+									{doctor.specializations.length > 0 ?
+										doctor.specializations.map((specialization, index) => capitalizeAll(specialization.name) + (index < doctor.specializations.length - 1 ? ", "
+										: ""))
+									: "No specializations specified"}
+								image={url}
+								link={root.get() + "/appointments/create/" + clinic + "/" + doctor.id}
+							/>
 					};
+
+					return data;
 				}));
 			}
 
 			Promise.all(promises).then(cards => {
 				cards.sort((a, b) => {
-					if (a.id === data.owner) {
-						return -1;
-					};
-		
-					if (b.id === data.owner) {
-						return 1;
-					};
-	
-					if (a.name === b.name) {
-						return 0;
-					}
-					else if (a.name < b.name) {
-						return -1;
-					}
-					else {
-						return 1;
-					}
+					if (a.id === clinicData.owner) return 1;
+					if (b.id === clinicData.owner) return -1;
+
+					if (a.lastName > b.lastName) return 1;
+					if (a.lastName < b.lastName) return -1;
+					
+					if (a.firstName > b.firstName) return 1;
+					if (a.firstName < b.firstName) return -1;
+
+					return 0;
 				});
 				
-				setDoctorCards(cards.map(card => card.component));
+				setDoctorCards(cards.map(card => card.card));
 			});
 		}
-	}, [doctorsData, data, clinic]);
+	}, [doctorsData, clinicData, clinic]);
 
 	let display = <Loading />;
 	let title, subtitle;
 
-	if (data && doctorCards) {
-		title = "Welcome to " + data.name + " Clinic";
-		subtitle = "Located at " + data.address + ", " + data.city;
-
+	if (clinicData && doctorCards) {
 		display = (
 			<main>
-				<h1>{title}</h1>
-				<h2>{subtitle}</h2>
+				<h1>Welcome to {clinicData.name} Clinic</h1>
+				<h2>Located at {clinicData.address}, {clinicData.city}</h2>
 				<section>
 					<header>
 						<h2>Make An Appointment With Our Doctors</h2>

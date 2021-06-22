@@ -4,19 +4,13 @@ import { Card } from "../Common/Components/Card"
 import { Loading } from '../Common/Components/Loading';
 import { usePopups } from '../Common/Popups';
 import { useRoot } from '../Common/Root';
-import { server } from '../Common/server';
 import { db } from '../init';
 
 /**
-@todo
-Edit clinic page:
-Can either be used to create a new clinic or edit an existing one. For an existing clinic it will show:
-* Options to modify the name and location.
-* A list of current members with the option to boot them.
-* A list of pending membership requests with the option to accept or reject them.
-* A button to go to a search page to find existing doctors and invite them to join the clinic.
-*/
-
+ * The doctor's home page.
+ * @param {{doctor: string}} props
+ * @returns 
+ */
 export function DoctorLandingFragment({doctor}) {
 	const root = useRoot();
 	const popups = usePopups();

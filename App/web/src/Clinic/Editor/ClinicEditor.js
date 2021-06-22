@@ -1,6 +1,5 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
-import { useAuth } from "../../Common/Auth";
 import { Link, Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../Common/Components/Button";
 import { Card } from "../../Common/Components/Card"
@@ -27,7 +26,6 @@ Can either be used to create a new clinic or edit an existing one. For an existi
 
 export function ClinicEditor() {
 	// Contexts:
-	const auth = useAuth();
 	const root = useRoot();
 	const popups = usePopups();
 
