@@ -42,9 +42,6 @@ service cloud.firestore {
 				data.get("secretary", false) is bool &&
 				data.get("image", 1) is number &&
 
-				// Automatically maintained by Cloud Functions. Should never be modified or created manually by a user:
-				data.get("link", "") == resource.data.get("link", "") &&
-
 				data.firstName is string &&
 				data.firstName.size() > 1 &&
 				data.firstName.size() < 50 &&
@@ -53,13 +50,17 @@ service cloud.firestore {
 				data.lastName.size() > 1 &&
 				data.lastName.size() < 50 &&
 
-				data.sex in ["male", "female"] &&
-
-				data.fullName == resource.data.fullName;
+				data.sex in ["male", "female"];
 			}
 
 			allow read: if true;
-			allow create, update: if isTheUser() && isValidData(request.resource.data);
+			allow create: if
+				isTheUser() && isValidData(request.resource.data) &&
+				!request.resource.data.keys().hasAny(['link', 'fullName']);
+			allow update: if
+				isTheUser() && isValidData(request.resource.data) &&
+				request.resource.data.get("link", "") == resource.data.get("link", "") &&
+				request.resource.data.get("fullName", "") == resource.data.get("fullName", "");
 
 			match /specializations/{specID} {
 				// If the user is a doctor.

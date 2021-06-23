@@ -31,3 +31,5 @@ Service\ Account\ Key
 *.png
 *.pdf
 *.docx
+
+/testing

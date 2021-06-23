@@ -67,7 +67,7 @@ export function DoctorAgendaPage() {
 			.where("start", "<=", searchPrameters.end.toDate())
 			.get().then(app_snaps => {
 				const appointments = [];
-console.log(app_snaps.size);
+
 				for (const app_snap of app_snaps.docs) {
 					const data = app_snap.data();
 					data.id = app_snap.id;

@@ -6,6 +6,7 @@ import { useAuth } from "../Auth";
 import { DropdownMenu } from "./DropdownMenu";
 import { usePopups } from "../Popups";
 import { useRoot } from "../Root";
+import { db } from "../../init";
 
 export function Header({unprotected}) {
 	const auth = useAuth();
@@ -26,17 +27,20 @@ export function Header({unprotected}) {
 	}, [root, link]);
 
 	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (!unprotected && !status) setRedirect("/user/login");
-		});
-
-		return unsubscribe;
-	}, [auth, root, unprotected]);
+		if (!unprotected && !auth?.user?.uid) setRedirect("/user/login");
+	}, [auth.user, root, unprotected]);
 
 	useEffect(() => {
-		setName(auth?.name?.full);
+		if (auth?.user?.uid) {
+			return db.collection("users").doc(auth.user.uid).onSnapshot(
+				user_snap => {
+					setName(user_snap.data().fullName);
+				}
+			)
+		}
+		
 		setEmail(auth?.user?.email);
-	}, [auth]);
+	}, [auth.user]);
 
 	return (
 		<header className="main">

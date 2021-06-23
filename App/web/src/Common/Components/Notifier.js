@@ -20,7 +20,7 @@ export function Notifier() {
 		if (auth?.user?.uid) {
 			return db.collection("users").doc(auth.user.uid).onSnapshot(
 				user_snap => {
-					if (user_snap.data().doctor) {
+					if (user_snap.exists && user_snap.data().doctor) {
 						return events.doctors.appointments(user_snap.id, ((oldData, newData) => {
 							if (oldData.arrived !== newData.arrived) {
 								db.collection("users").doc(newData.patient).get()

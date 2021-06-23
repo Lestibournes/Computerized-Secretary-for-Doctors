@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { useAuth } from "./Auth";
 import { Link, Redirect, useParams } from 'react-router-dom';
 import { TextInput } from './Components/TextInput';
+import { RadioInput } from './Components/RadioInput';
 import { Button } from './Components/Button';
 import { Popup } from './Components/Popup';
 import { usePopups } from './Popups';
@@ -34,6 +35,8 @@ export function RegisterPage() {
 						.required("Required"),
 					lname: Yup.string()
 						.required("Required"),
+					sex: Yup.string()
+						.required("Required"),
 					email: Yup.string()
 						.email("Invalid email addresss")
 						.required("Required"),
@@ -50,7 +53,7 @@ export function RegisterPage() {
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
 
-					auth.register(values.fname, values.lname, values.email, values.password).then(response => {
+					auth.register(values.fname, values.lname, values.sex.toLowerCase(), values.email, values.password).then(response => {
 						if (response.success) setRedirect(true);
 						else {
 							popups.error(response.message);
@@ -87,6 +90,11 @@ export function RegisterPage() {
 							label="Verify Password"
 							name="vpassword"
 							type="password"
+						/>
+						<RadioInput
+							label="Sex"
+							name="sex"
+							options={["Male", "Female"]}
 						/>
 					</div>
 					<div className="buttonBar">

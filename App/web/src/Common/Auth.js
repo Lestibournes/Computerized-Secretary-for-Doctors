@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { db, fb } from "../init";
-import {server} from "./server";
 
 // User authentication services:
 
@@ -20,7 +19,6 @@ export const useAuth = () => {
 // The actual authentication services:
 function useProvideAuth() {
 	const [user, setUser] = useState(null);
-	const [name, setName] = useState({first: null, last: null, full: null});
 	
 	/**
 	 * Log the user in with email and password.
@@ -65,6 +63,7 @@ function useProvideAuth() {
 	 * @param {string} firstName 
 	 * @param {string} lastName 
 	 * @param {string} email Must be unique (no other user with the same exact email)
+	 * @param {string} sex
 	 * @param {string} password 
 	 * @returns {Promise<{
 	 * 	success: boolean,
@@ -72,7 +71,7 @@ function useProvideAuth() {
 	 * 	user: firebase.default.User
 	 * }>}
 	 */
-	const register = async (firstName, lastName, email, password) => {
+	const register = async (firstName, lastName, sex, email, password) => {
 		const result = {
 			success: false,
 			message: "",
@@ -81,8 +80,12 @@ function useProvideAuth() {
 
 		return fb.auth().createUserWithEmailAndPassword(email, password).then(create_response => {
 			result.user = create_response.user;
-			
-			return db.collection("users").doc(create_response.user.uid).set({user: create_response.user.uid, firstName: firstName, lastName: lastName})
+
+			return db.collection("users").doc(create_response.user.uid).set({
+				firstName: firstName,
+				lastName: lastName,
+				sex: sex.toLowerCase()
+			})
 			.then(userRef => {
 				return fb.auth().signOut().then(() => {
 					result.success = true;
@@ -130,22 +133,8 @@ function useProvideAuth() {
 	// Listen to changes in user login status and update the user and name states accordingly:
 	useEffect(() => {
 		const unsubscribe = fb.auth().onAuthStateChanged((user) => {
-			if (user) {
-				setUser(user);
-
-				return db.collection("users").doc(user.uid).onSnapshot(
-					user_snap => {
-						setName({
-							first: user_snap.data().firstName,
-							last: user_snap.data().lastName,
-							full: user_snap.data().fullName
-						});
-					}
-				);
-			}
-			else {
-				setUser(null);
-			}
+			if (user) setUser(user);
+			else setUser(null);
 		});
 		
 		return () => unsubscribe();
@@ -153,7 +142,6 @@ function useProvideAuth() {
 
 	return {
 		user,
-		name,
 		login,
 		logout,
 		register,

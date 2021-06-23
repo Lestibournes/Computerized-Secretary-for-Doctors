@@ -16,16 +16,12 @@ export function SecretaryEditor() {
 	const root = useRoot();
 	
 	useEffect(() => {
-		const unsubscribe = auth.isLoggedIn(status => {
-			if (auth.user) {
-				getPictureURL(auth.user.uid).then(url => {
-					setImage(url);
-				});
-			}
-		});
-
-		return unsubscribe;
-	}, [auth]);
+		if (auth?.user?.uid) {
+			getPictureURL(auth.user.uid).then(url => {
+				setImage(url);
+			});
+		}
+	}, [auth.user]);
 
 	const { clinic, secretary } = useParams(); //The ID of clinic and doctor
 
