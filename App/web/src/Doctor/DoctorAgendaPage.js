@@ -117,23 +117,48 @@ console.log(app_snaps.size);
 			let promises = [];
 
 			for (let appointment of appointments) {
-				let promise = getPictureURL(appointment.patient).then(url => {
-					const date = new SimpleDate(appointment.start.toDate());
-					const time = Time.fromDate(appointment.start.toDate());
-					const clinic = appointment.clinic;
+				let promise = getPictureURL(appointment.patient).then(
+					async url => {
+						const patient = await db.collection("users").doc(appointment.patient).get().then(
+							patient_snap => {
+								const patient_data = patient_snap.data();
+								patient_data.id = patient_snap.id;
+								return patient_data;
+							}
+						);
 
-					return (
-						<Card
-							key={appointment.appointment.id}
-							link={root.get() + "/doctor/appointments/details/" + appointment.id}
-							image={url}
-							altText={appointment.patient.fullName}
-							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}
-							body={capitalizeAll(appointment.appointment.type)}
-							footer={clinic.name}
-						/>
-					);
-				});
+						const doctor = await db.collection("users").doc(appointment.doctor).get().then(
+							doctor_snap => {
+								const doctor_data = doctor_snap.data();
+								doctor_data.id = doctor_snap.id;
+								return doctor_data;
+							}
+						);
+
+						const clinic = await db.collection("clinics").doc(appointment.clinic).get().then(
+							clinic_snap => {
+								const clinic_data = clinic_snap.data();
+								clinic_data.id = clinic_snap.id;
+								return clinic_data;
+							}
+						);
+
+						const date = new SimpleDate(appointment.start.toDate());
+						const time = Time.fromDate(appointment.start.toDate());
+
+						return (
+							<Card
+								key={appointment.id}
+								link={root.get() + "/doctor/appointments/details/" + appointment.id}
+								image={url}
+								altText={patient.fullName}
+								title={date.toString() + " " + time.toString() + " - " + patient.fullName}
+								body={capitalizeAll(appointment.type)}
+								footer={clinic.name}
+							/>
+						);
+					}
+				);
 				
 				promises.push(promise);
 			}
