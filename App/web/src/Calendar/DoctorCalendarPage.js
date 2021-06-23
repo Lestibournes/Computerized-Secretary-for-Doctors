@@ -228,7 +228,6 @@ export function DoctorCalendarPage() {
 								.then(patient_snap => {
 									// appointment duration in minutes:
 									const duration = (appointment.data().end - appointment.data().start) / 60;
-									console.log(appointment.data().start.toDate(), appointment.data().end.toDate());
 
 									// The color of the appointment:
 									const hue = (duration / max) * 360;

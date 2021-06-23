@@ -1,8 +1,5 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
-const { SimpleDate } = require('./implementations/SimpleDate');
-const { Slot } = require('./implementations/Slot');
-const { Time } = require('./implementations/Time');
 const db = admin.firestore();
 
 exports.modifyClinic = functions.firestore.document('clinics/{clinicID}').onWrite((change, context) => {
@@ -15,7 +12,7 @@ exports.modifyClinic = functions.firestore.document('clinics/{clinicID}').onWrit
 	const newDocument = change.after.exists ? change.after.data() : null;
 
 	// Update city index:
-	if (oldDocument.city !== newDocument.city) {
+	if (!oldDocument || (newDocument && oldDocument.city !== newDocument.city)) {
 		if (oldDocument) {
 			// remove the clinic from the old city index:
 			db.collection("cities").doc(oldDocument.city).collection("clinics").doc(context.params.clinicID).delete();
@@ -64,13 +61,11 @@ exports.modifyUser = functions.firestore.document('users/{userID}').onWrite((cha
 	// If the document does not exist, it has been deleted.
 	const newDocument = change.after.exists ? change.after.data() : null;
 
-	// Update city index:
-	if (oldDocument.firstName !== newDocument.firstName || oldDocument.lastName !== newDocument.lastName) {
+	// Update full name:
+	if (!oldDocument || (newDocument && (oldDocument.firstName !== newDocument.firstName || oldDocument.lastName !== newDocument.lastName))) {
 		// It's not a delete operation, meaning it's create or update:
-		if (newDocument) {
-			// Update the user's fullName property:
-			db.collection("users").doc(context.params.userID).update({fullName: newDocument.firstName + " " + newDocument.lastName});
-		}
+		// Update the user's fullName property:
+		db.collection("users").doc(context.params.userID).update({fullName: newDocument.firstName + " " + newDocument.lastName});
 	}
 });
 

@@ -212,7 +212,7 @@ exports.modifyAppointment = functions.firestore.document('clinics/{clinicID}/app
 	if (newDocument) {
 		// Check if the appointment is valid, meaning that it doesn't collide with any existing appointment.
 		// If it is invalid, delete the appointment.
-
+console.log(newDocument);
 		const simpleDate = new SimpleDate(newDocument.start);
 		
 		const slot = new Slot(

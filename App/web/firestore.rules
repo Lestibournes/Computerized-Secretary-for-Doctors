@@ -159,9 +159,10 @@ service cloud.firestore {
 			allow update: if 
 				isTheOwner() &&
 				isValidData(request.resource.data) &&
-				// If the owner isn't changed:
-				resource.data.owner == request.resource.data.owner &&
-				resource.data.link == request.resource.data.link;
+
+				// If the owner and link haven't changed:
+				request.resource.data.get("link", "") == resource.data.get("link", "") &&
+				request.resource.data.owner == resource.data.owner;
 			allow delete: if isTheOwner();
 
 			match /secretaries/{secID} {
@@ -291,34 +292,43 @@ service cloud.firestore {
 					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'offset', 'type', 'verified'], ['arrived']) &&
 
 					// The patient is an existing user in the system:
-					// exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
+					exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
+
 					// The doctor is registered as a doctor in the system: (Should this just be a field in the user document? Since I'm already checking if the doctor works in the clinic as a doctor, do I need to perform this check at all?)
-					// exists(/databases/$(database)/documents/doctors/$(request.resource.data.doctor)) &&
-					// The patient and doctor are different people:
+					get(/databases/$(database)/documents/users/$(request.resource.data.doctor)).data.doctor == true &&
+					
+					// The patient and doctor are different people: (disabled for testing purposes)
 					// get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.doctor !=
 					// 	get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(request.resource.data.appointment)).data.patient &&
-					// The clinic exists in the system:(is clinic even needed as a field?)
-					// exists(/databases/$(database)/documents/clinics/$(request.resource.data.clinic)) &&
+
 					// The doctor works for the clinic:
-					// exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)) &&
+					exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)) &&
+
 					// The start time of the appointment is in the future:
-					// request.resource.data.start is timestamp &&
-					// request.resource.data.start > request.time &&
+					request.resource.data.start is timestamp &&
+					request.resource.data.start > request.time &&
+
 					// The end time of the appointment is after the start time:
-					// request.resource.data.end is timestamp &&
-					// request.resource.data.end > request.resource.data.start &&
+					request.resource.data.end is timestamp &&
+					request.resource.data.end > request.resource.data.start &&
+
 					// The timezone offset:
-					// request.resource.data.offset is number &&
+					request.resource.data.offset is number &&
+
 					// The doctor offers the requested appointment type:
 					// exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)) &&
+
 					// The duration of the appointment matches the appointment type's duration:
 					// request.resource.data.end - request.resource.data.start ==
 					// 	get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)).data.duration *
 					// 	get(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)).data.minimum &&
 					
 					// The one who updated the arrival status must be either a secretary or the doctor:
-					// (exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.resource.data.arrived)) ||
-					// request.resource.data.doctor == request.resource.data.arrived) &&
+					// (
+					// 	request.resource.data.get("arrived", "") == "" ||
+					// 	exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.resource.data.arrived)) ||
+					// 	request.resource.data.doctor == request.resource.data.arrived
+					// ) &&
 					
 					// When the client creates or updates an appointment, he must specify that's it needs to be verified:
 					request.resource.data.verified == false;
@@ -327,34 +337,57 @@ service cloud.firestore {
 				// Only a secretary or the doctor who receives the patient should be allowed to modify the patient's arrival status:
 				function arrivalUnchanged() {
 					return
-					request.resource.data.arrived == resource.data.arrived;
+					request.resource.data.diff(resource.data).unchangedKeys().hasAll([
+						"arrived"
+					]);
 				}
 
 				//Appointments can only be modified if they haven't occured yet, but let's allow to delete appiontments where the patient didn't show up.
 				function isArchived() {
 					return
-					get(/databases/$(database)/documents/clinics/$(clinicID)/appointments/$(appointmentID)).data.end > request.time;
+					resource != null &&
+					resource.data.end > request.time;
 				}
 
 				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isASecretary();
-				allow write: if
-					(isPatient(appointmentID) && arrivalUnchanged() || isTheDoctor(appointmentID) || isASecretary()) &&
-					isValidData() &&
-					!isArchived();
-				allow write: if
-					// (
+
+				allow create: if
+					(
 						isPatient(appointmentID)
-						&& 
-					// arrivalUnchanged() 
-					// || 
-					// isTheDoctor(appointmentID) 
-					// || isASecretary()
-					// )
-					//  &&
-					isValidData()
-					//  &&
-					// !isArchived()
-					;
+						|| isTheDoctor(appointmentID)
+						|| isASecretary()
+					)
+					&& isValidData()
+					&& request.resource.data.get("arrived", false) == false
+					&& !isArchived();
+
+				allow update: if
+					(
+						(
+							isPatient(appointmentID)
+							&& arrivalUnchanged()
+						)
+						|| isTheDoctor(appointmentID)
+						|| isASecretary()
+					)
+					&& isValidData();
+
+				allow delete: if
+					(isPatient(appointmentID) || isTheDoctor(appointmentID) || isASecretary()) && !isArchived();
+				// allow write: if
+				// 	// (
+				// 		isPatient(appointmentID)
+				// 		&& 
+				// 	// arrivalUnchanged() 
+				// 	// || 
+				// 	// isTheDoctor(appointmentID) 
+				// 	// || isASecretary()
+				// 	// )
+				// 	//  &&
+				// 	isValidData()
+				// 	//  &&
+				// 	// !isArchived()
+				// 	;
 
 				match /messages/{messageID} {
 					// If I want to enforce correct timestamps on messages

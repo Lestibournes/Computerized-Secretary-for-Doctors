@@ -1,6 +1,7 @@
 import { db, storage } from "../init";
 
 export async function getPictureURL(user) {
+	console.log(user);
 	let location;
 
 	return db.collection("users").doc(user).get().then(user_snap => {

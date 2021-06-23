@@ -81,9 +81,8 @@ function useProvideAuth() {
 
 		return fb.auth().createUserWithEmailAndPassword(email, password).then(create_response => {
 			result.user = create_response.user;
-			setUser(result.user);
 			
-			db.collection("users").add({user: result.user.uid, firstName: firstName, lastName: lastName})
+			return db.collection("users").doc(create_response.user.uid).set({user: create_response.user.uid, firstName: firstName, lastName: lastName})
 			.then(userRef => {
 				return fb.auth().signOut().then(() => {
 					result.success = true;

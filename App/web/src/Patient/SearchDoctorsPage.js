@@ -68,21 +68,22 @@ export function SearchDoctorsPage() {
 				for (let doctor of doctors) {
 					for (let clinic of doctor.clinics) {
 						promises.push(
-							getPictureURL(doctor.user.id).then(url => {
-								doctor.image = url;
-	
+							getPictureURL(doctor.id).then(url => {
 								return (
 								<Card
-									key={doctor.doctor.id + ", " + clinic.id}
-									link={"/user/appointments/create/" + clinic.id +"/" + doctor.doctor.id}
-									title={doctor.user.firstName + " " + doctor.user.lastName}
+									key={doctor.id + ", " + clinic.id}
+									link={"/user/appointments/create/" + clinic.id +"/" + doctor.id}
+									title={doctor.fullName}
 									body=
-										{doctor.fields.length > 0 ?
-											doctor.fields.map((field, index) => field.id + (index < doctor.fields.length - 1 ? ", "
-											: ""))
+										{doctor.specializations.length > 0 ?
+											doctor.specializations.map(
+												(specialization, index) => {
+													return capitalizeAll(specialization.name) + (index < doctor.specializations.length - 1 ? ", " : "");
+												}
+											)
 										: null}
 									footer={clinic.name + ", " + clinic.city}
-									image={doctor.image}
+									image={url}
 								/>);
 							})
 						);
