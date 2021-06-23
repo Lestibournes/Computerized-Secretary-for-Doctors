@@ -43,25 +43,35 @@ async function getAvailable(clinic, doctor, simpleDate, type) {
 		return doctor_snap.data().minimum;
 	});
 
+	// // The different appointment types with their durations.
+	// /**
+	//  * @type {Map<string, number>}
+	//  */
+	// const types = await doctorRef.collection(TYPES).get().then(type_snaps => {
+	// 	const types = new Map();
+
+	// 	for (const type of type_snaps.docs) {
+	// 		if (type.data().name) types.set(type.data().name, type.data().duration);
+	// 	}
+
+	// 	return types;
+	// });
+
+	// /**
+	//  * The duration of the selected appointment type.
+	//  * @type {number}
+	//  */
+	// const duration = types.get(type) * minimum;
+
 	// The different appointment types with their durations.
 	/**
-	 * @type {Map<string, number>}
-	 */
-	const types = await doctorRef.collection(TYPES).get().then(type_snaps => {
-		const types = new Map();
-
-		for (const type of type_snaps.docs) {
-			if (type.data().name) types.set(type.data().name, type.data().duration);
-		}
-
-		return types;
-	});
-
-	/**
-	 * The duration of the selected appointment type.
 	 * @type {number}
 	 */
-	const duration = types.get(type) * minimum;
+	 const duration = await doctorRef.collection(TYPES).get().then(type_snaps => {
+		for (const type_snap of type_snaps.docs) {
+			if (type_snap.data().name === type) return type_snap.data().duration * minimum;
+		}
+	});
 
 	/**
 	 * The date for which available appoinetment slots are being fetched.
@@ -90,10 +100,15 @@ async function getAvailable(clinic, doctor, simpleDate, type) {
 			const start_datetime = appointment_snap.data().start.toDate();
 			start_datetime.setMinutes(start_datetime.getUTCMinutes() - appointment_snap.data().offset);
 
+			const end_datetime = appointment_snap.data().end.toDate();
+			end_datetime.setMinutes(end_datetime.getUTCMinutes() - appointment_snap.data().offset);
+			
 			const start_time = Time.fromDate(start_datetime);
-			const end_time = start_time.incrementMinutes(minimum * types.get(appointment_snap.data().type));
+			const end_time = Time.fromDate(end_datetime);
+			const slot = new Slot(start_time, end_time);
+			console.log(slot);
 
-			appointments.push(new Slot(start_time, end_time));
+			appointments.push(slot);
 		}
 
 		return appointments;
