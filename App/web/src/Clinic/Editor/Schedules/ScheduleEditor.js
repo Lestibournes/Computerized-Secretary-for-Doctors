@@ -147,8 +147,8 @@ export function ScheduleEditor() {
 				const temp_day = [];
 				
 				day.sort((a, b) => {
-					const time_a = Time.fromDate(a.start.toDate());
-					const time_b = Time.fromDate(b.start.toDate());
+					const time_a = Time.fromObject(a.start);
+					const time_b = Time.fromObject(b.start);
 					
 					return time_a.compare(time_b);
 				});
@@ -157,8 +157,8 @@ export function ScheduleEditor() {
 					temp_day.push(
 						<Card
 							key={shift.id}
-							title={Time.fromDate(shift.start.toDate()).toString() +
-							" - " + Time.fromDate(shift.end.toDate()).toString()}
+							title={Time.fromObject(shift.start).toString() +
+							" - " + Time.fromObject(shift.end).toString()}
 							action={() => {
 								const close = () => {popups.remove(popup)};
 

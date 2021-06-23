@@ -41,9 +41,11 @@ export function ClinicCalendarPage() {
 	const [date, setDate] = useState(new SimpleDate()); // Default date: today.
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState(null);
-	const [minimum, setMinimum] = useState(60);
+	const [minimum, setMinimum] = useState();
 	const [types, setTypes] = useState(new Map());
 	const [max, setMax] = useState(0); //Longest appointment. Used for automatically color-coding appointment types.
+
+	const gap = 60
 
 	// The dimentions of the display area. I really should have used CSS for this:
 	/**
@@ -70,10 +72,11 @@ export function ClinicCalendarPage() {
 		return () => window.removeEventListener('resize', debouncedHandleResize);
 	});
 
-	// If it's a clinic-wide appointment calendar, fetch the list of doctors in the clinic:
 	/**
 	 * @todo move all the data-fetching outside of the calendar component. The calendar should be a widget that displays events that are provided to it, nothing more.
 	 */
+
+	// Fetch the list of doctors in the clinic:
 	useEffect(() => {
 		if (clinic) {
 			db.collection("clinics").doc(clinic).collection("doctors").get().then(doctor_snaps => {
@@ -107,7 +110,7 @@ export function ClinicCalendarPage() {
 		}
 	}, [clinic]);
 
-	// Once a doctor and clinic combination is selected (for clinic calendars), load the appointment types:
+	// Fetch the appointment types:
 	useEffect(() => {
 		if (doctor && clinic) {
 			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor.id).collection("types").get()
@@ -129,11 +132,9 @@ export function ClinicCalendarPage() {
 		}
 	}, [doctor, clinic]);
 
-	// When a doctor and date are selected.
-	// Won't this just load all appointments for the given doctor across all clinics?
-	// What about per-clinic appointments?
+	// Fetch appointments
 	useEffect(() => {
-		if (clinic && doctor && date) {
+		if (clinic && doctor && date && minimum) {
 			// Load all the appointment data for the current time range:
 			const saturday = date.getSaturday();
 			
@@ -144,8 +145,8 @@ export function ClinicCalendarPage() {
 				appointment_promises.push(
 					db.collection("clinics").doc(clinic).collection("appointments")
 						.where("doctor", "==", doctor.id)
-						.where("start", "==", current.toDate())
-						.where("end", "==", current.getNextDay().toDate())
+						.where("start", ">=", current.toDate())
+						.where("start", "<", current.getNextDay().toDate())
 						.get()
 					.then(appointment_snaps => {
 						const today = {
@@ -160,16 +161,20 @@ export function ClinicCalendarPage() {
 							day_promises.push(
 								db.collection("users").doc(appointment.data().patient).get()
 								.then(patient_snap => {
-									const hue = (360 / max) * types.get(appointment.data().type);
-									
-									today.appointments.push({
+									// appointment duration in minutes:
+									const duration = (appointment.data().end - appointment.data().start) / 60;
+
+									// The color of the appointment:
+									const hue = (duration / (max * minimum)) * 360;
+
+									return {
 										color: "white",
 										background: "hsl(" + hue + ", 100%, 30%)",
-										duration: appointment.data().duration,
-										start: new Time(appointment.data().start),
+										duration: duration,
+										start: Time.fromDate(appointment.data().start.toDate()),
 										id: appointment.id,
 										name: patient_snap.data().fullName,
-									});
+									};
 								})
 								.catch(reason => popups.error(reason))
 							);
@@ -199,7 +204,7 @@ export function ClinicCalendarPage() {
 				setAppointments(calendar);
 			});
 		}
-	}, [clinic, doctor, date]);
+	}, [clinic, doctor, date, minimum]);
 
 	// Get the schedule paramaters.
 	// This is to sized and space the calendar.
@@ -211,8 +216,8 @@ export function ClinicCalendarPage() {
 				let end; //The latest ending time.
 
 				for (const shift_snap of shift_snaps.docs) {
-					const start_time = Time.fromDate(shift_snap.data().start.toDate());
-					const end_time = Time.fromDate(shift_snap.data().end.toDate());
+					const start_time = Time.fromObject(shift_snap.data().start);
+					const end_time = Time.fromObject(shift_snap.data().end);
 
 					if (!start || start_time.compare(start) < 0) start = start_time;
 					if (!end || end_time.compare(end) > 0) end = end_time;
@@ -221,6 +226,15 @@ export function ClinicCalendarPage() {
 				if (start && end) setSchedule(new Slot(start, end));
 				else setSchedule(false);
 			})
+			.catch(reason => popups.error(reason.message));
+		}
+	}, [clinic, doctor, date]);
+
+	// Fetch minimum appointment duration:
+	useEffect(() => {
+		if (clinic && doctor) {
+			db.collection("clinics").doc(clinic).collection("doctors").doc(doctor.id).get()
+			.then (doctor_snap => setMinimum(doctor_snap.data().minimum))
 			.catch(reason => popups.error(reason.message));
 		}
 	}, [clinic, doctor, date]);
@@ -303,7 +317,7 @@ export function ClinicCalendarPage() {
 						date={date}
 						appointments={appointments}
 						schedule={schedule}
-						minimum={minimum}
+						minimum={gap}
 						width={dimensions.width}
 						height={960}
 					/>

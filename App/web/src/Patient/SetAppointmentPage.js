@@ -15,7 +15,8 @@ import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
-import { db } from '../init';
+import { db, fb } from '../init';
+import { Loading } from '../Common/Components/Loading';
 
 export function SetAppointmentPage() {
 	const auth = useAuth();
@@ -38,6 +39,7 @@ export function SetAppointmentPage() {
 	
 	// Appointment types/durations:
 	const [minimum, setMinimum] = useState();
+	const [typesData, setTypesData] = useState();
 	const [typesOptions, setTypesOptions] = useState([]);
 	const [type, setType] = useState(null);
 
@@ -108,23 +110,25 @@ export function SetAppointmentPage() {
 			// Get the data of the different appointlment types:
 			doctorRef.collection("types").get()
 			.then(type_snaps => {
-				const types = [];
+				const typesMap = new Map();
+				const typesArray = [];
 	
 				for (const type of type_snaps.docs) {
 					if (type.data().name) {
-						types.push(type.data());
+						typesMap.set(type.data().name, type.data().duration);
+						typesArray.push(type.data());
 					}
 				}
 	
 				// Refresh the types options list for the display:
-				types.sort(compareByName);
 
 				const options = [];
 
-				for (const type of types) {
+				for (const type of typesArray) {
 					if (type.name) options.push(type.name);
 				}
 
+				setTypesData(typesMap);
 				setTypesOptions(options);
 			})
 			.catch(reason => popups.error(reason.code));
@@ -145,10 +149,10 @@ export function SetAppointmentPage() {
 				const list = [];
 
 				results.data.forEach(result => {
-					list.push(Time.fromTimestamp(result.start));
+					list.push(Time.fromObject(result.start));
 				});
 
-				// If the appointment already exists, add back it the time it is set to:
+				// If the appointment already exists, add back in the time it is set to:
 				if (time) {
 					for (let i = 0; i < list.length; i++) {
 						if (list[i].compare(time) === 0) {
@@ -170,9 +174,9 @@ export function SetAppointmentPage() {
 	// Build the display:
 
 	let subtitle;
-	let display;
+	let display = <Loading />;
 	
-	if ((data || !appointment) && doctorData && clinicData) {
+	if ((data || !appointment) && doctorData && clinicData && typesData && minimum) {
 		subtitle = 
 			"Appointment Details" + 
 			(doctorData ? " for Dr. " + doctorData.fullName : "") + 
@@ -212,13 +216,15 @@ export function SetAppointmentPage() {
 						setSubmitting(true);
 
 						const start = new Date(values.date.year, values.date.month, values.date.day, values.time.hours, values.time.minutes);
-						const end_time = values.time.incrementMinutes(minimum);
+						const end_time = values.time.incrementMinutes(typesData.get(values.type) * minimum);
 						const end = new Date(values.date.year, values.date.month, values.date.day, end_time.hours, end_time.minutes);
+
 						if (data) {
 							// If editing an existing appointment:
 							db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({
 								start: start,
 								end: end,
+								offset: start.getTimezoneOffset(),
 								type: values.type
 							})
 							.then(app_ref => app_ref.get().then(app_snap => {
@@ -239,8 +245,9 @@ export function SetAppointmentPage() {
 								doctor: doctor,
 								clinic: clinic,
 								patient: auth.user.uid,
-								start: start.getTime(),
-								end: end.getTime(),
+								start: start,
+								end: end,
+								offset: start.getTimezoneOffset(),
 								type: values.type,
 								verified: false
 							})

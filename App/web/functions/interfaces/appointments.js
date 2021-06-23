@@ -5,6 +5,5 @@ const appointments = require("../implementations/appointments");
 const { SimpleDate } = require('../implementations/SimpleDate');
 
 exports.getAvailable = functions.https.onCall((data, context) => {
-	const date = SimpleDate.fromObject(data.date).toDate();
-	return appointments.getAvailable(data.clinic, data.doctor, date, data.type);
+	return appointments.getAvailable(data.clinic, data.doctor, SimpleDate.fromObject(data.date), data.type);
 });

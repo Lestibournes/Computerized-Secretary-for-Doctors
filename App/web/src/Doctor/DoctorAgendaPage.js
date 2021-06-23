@@ -36,6 +36,7 @@ export function DoctorAgendaPage() {
 
 	const [searching, setSearching] = useState(true);
 
+	// Get the doctor's data:
 	useEffect(() => {
 		if (auth?.user?.uid) {
 			db.collection("users").doc(auth.user.uid).get().then(user_snap => {
@@ -46,6 +47,7 @@ export function DoctorAgendaPage() {
 		}
 	}, [auth]);
 
+	// Get the appointments data:
 	useEffect(() => {
 		if (doctor && searchPrameters) {
 			setSearching(true);
@@ -61,14 +63,14 @@ export function DoctorAgendaPage() {
 			
 			query
 			.where("doctor", "==", doctor.id)
-			.where("start", "==", searchPrameters.start.toDate().getTime())
-			.where("end", "==", searchPrameters.end.toDate().getTime())
-			.get().then(appt_snaps => {
+			.where("start", ">=", searchPrameters.start.toDate())
+			.where("start", "<=", searchPrameters.end.toDate())
+			.get().then(app_snaps => {
 				const appointments = [];
-
-				for (const appt_snap of appt_snaps.docs) {
-					const data = appt_snap.data();
-					data.id = appt_snap.id;
+console.log(app_snaps.size);
+				for (const app_snap of app_snaps.docs) {
+					const data = app_snap.data();
+					data.id = app_snap.id;
 					appointments.push(data);
 				}
 
@@ -84,15 +86,17 @@ export function DoctorAgendaPage() {
 					const clinicRef = doctor_snap.ref.parent.parent;
 					const promises = [];
 
-					clinicRef.get().then(clinic_snap => {
-						const data = clinic_snap.data();
-						data.id = clinic_snap.id;
-						return data;
-					})
+					promises.push(
+						clinicRef.get().then(clinic_snap => {
+							const data = clinic_snap.data();
+							data.id = clinic_snap.id;
+							return data;
+						})
+					);
 
 					Promise.all(promises).then(clinic_data => {
 						const clinics = [];
-	
+						
 						for (const clinic of clinic_data) {
 							if (clinic.id) clinics.push({
 								value: clinic.id,
@@ -113,18 +117,16 @@ export function DoctorAgendaPage() {
 			let promises = [];
 
 			for (let appointment of appointments) {
-				let promise = getPictureURL(appointment.patient.id).then(url => {
-					appointment.image = url;
-
-					const date = SimpleDate.fromObject(appointment.extra.date);
-					const time = Time.fromObject(appointment.extra.time);
+				let promise = getPictureURL(appointment.patient).then(url => {
+					const date = new SimpleDate(appointment.start.toDate());
+					const time = Time.fromDate(appointment.start.toDate());
 					const clinic = appointment.clinic;
 
 					return (
 						<Card
 							key={appointment.appointment.id}
-							link={root.get() + "/doctor/appointments/details/" + appointment.appointment.id}
-							image={appointment.image}
+							link={root.get() + "/doctor/appointments/details/" + appointment.id}
+							image={url}
 							altText={appointment.patient.fullName}
 							title={date.toString() + " " + time.toString() + " - " + appointment.patient.fullName}
 							body={capitalizeAll(appointment.appointment.type)}

@@ -45,8 +45,8 @@ export function AppointmentListPage() {
 
 			if (searchPrameters.clinic) query = query.where("clinic", "==", searchPrameters.clinic);
 			if (searchPrameters.doctor) query = query.where("doctor", "==", searchPrameters.doctor);
-			if (searchPrameters.start) query = query.where("start", ">=", searchPrameters.start.toDate().getTime());
-			if (searchPrameters.end) query = query.where("start", "<=", searchPrameters.end.toDate().getTime());
+			if (searchPrameters.start) query = query.where("start", ">=", searchPrameters.start.toDate());
+			if (searchPrameters.end) query = query.where("start", "<=", searchPrameters.end.toDate());
 
 			query.get().then(
 				app_snaps => {
@@ -103,8 +103,8 @@ export function AppointmentListPage() {
 							}
 						);
 
-						const date = new SimpleDate(new Date(appointment.start));
-						const time = Time.fromTimestamp(appointment.start);
+						const date = new SimpleDate(appointment.start.toDate());
+						const time = Time.fromDate(appointment.start.toDate());
 		
 						/**
 						 * @todo sort by date and time.

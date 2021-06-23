@@ -21,19 +21,6 @@ const Time = require("./Time").Time;
 const Slot = require("./Slot").Slot;
 const SimpleDate = require("./SimpleDate").SimpleDate;
 
-
-/**
- * Get all the time slots of all the appointments booked for the given doctor at the given clinic in the specified time range.
- * @param {string} clinic id of the clinic
- * @param {string} doctor id of the doctor
- * @param {fs.Timestamp} start the timestamp of the beginning of the time range
- * @param {fs.Timestamp} end the timestamp of the beginning of the time range
- * @returns {Promise<fs.DocumentData>}
- */
-async function getOccupied(clinic, doctor, start, end) {
-	
-}
-
 /**
  * Get all available time slots for a specified date.
  * If appointment type is specified then it will get only time slots that are big enough to accomodate it.
@@ -41,11 +28,11 @@ async function getOccupied(clinic, doctor, start, end) {
  * @todo use the Time, Slot, and SimpleDate classes and methods instead of ad-hoc objects and global functions.
  * @param {string} doctor The id of the doctor.
  * @param {string} clinic The id of the clinic.
- * @param {Date} date The date for which available appointments are being queried.
+ * @param {SimpleDate} simpleDate The date for which available appointments are being queried.
  * @param {string} type The type of appointment.
  * @return {Slot[]} An array of available time slots.
  */
-async function getAvailable(clinic, doctor, date, type) {
+async function getAvailable(clinic, doctor, simpleDate, type) {
 	const doctorRef = db.collection("clinics").doc(clinic).collection("doctors").doc(doctor);
 
 	/**
@@ -80,24 +67,30 @@ async function getAvailable(clinic, doctor, date, type) {
 	 * The date for which available appoinetment slots are being fetched.
 	 * @type {SimpleDate}
 	 */
-	const simpleDate = new SimpleDate(date);
+	// const simpleDate = new SimpleDate(simpleDate);
 
 	// Set the time range for the appointments to be exactly the day in question:
 	const start_day = fs.Timestamp.fromDate(simpleDate.toDate());
 	const end_day = fs.Timestamp.fromDate(simpleDate.getNextDay().toDate());
-	
+
 	// Get all of the booked time ranges:
 	const appointments = await db.collection(CLINICS).doc(clinic).collection(APPOINTMENTS)
 	.orderBy("start")
 	.where("start", ">=", start_day)
 	.where("start", "<", end_day)
 	.where("doctor", "==", doctor)
-	.where("verified", "==", true)
+	// .where("verified", "==", true)
 	.get().then(appointment_snaps => {
 		const appointments = [];
 
 		for (const appointment_snap of appointment_snaps.docs) {
-			const start_time = Time.fromDate(appointment_snap.data().start.toDate());
+			/**
+			 * @type {Date}
+			 */
+			const start_datetime = appointment_snap.data().start.toDate();
+			start_datetime.setMinutes(start_datetime.getUTCMinutes() - appointment_snap.data().offset);
+
+			const start_time = Time.fromDate(start_datetime);
 			const end_time = start_time.incrementMinutes(minimum * types.get(appointment_snap.data().type));
 
 			appointments.push(new Slot(start_time, end_time));
@@ -123,11 +116,12 @@ async function getAvailable(clinic, doctor, date, type) {
 		for (const shift_snap of shift_snaps.docs) {
 			if (shift_snap.data().day === simpleDate.weekday) {
 				day.push(new Slot(
-					Time.fromDate(shift_snap.data().start.toDate()),
-					Time.fromDate(shift_snap.data().end.toDate())
+					Time.fromObject(shift_snap.data().start),
+					Time.fromObject(shift_snap.data().end)
 				));
 			}
 		}
+
 		// Find all available time slots within each shift:
 		for (const shift of day) {
 			// The size of each time slot should be duration. The start time of the slots should be incremented by minimum.
@@ -146,10 +140,15 @@ async function getAvailable(clinic, doctor, date, type) {
 					}
 				}
 			
-				if (!collides) available.push({
-					start: current_slot.start.toTimestamp(),
-					end: current_slot.end.toTimestamp(),
-				});
+				if (!collides) {
+					available.push(
+						current_slot
+						// {
+						// 	start: new Date(simpleDate.year, simpleDate.month, simpleDate.day, current_slot.start.hours, current_slot.start.minutes).getTime(),
+						// 	end: new Date(simpleDate.year, simpleDate.month, simpleDate.day, current_slot.end.hours, current_slot.end.minutes).getTime(),
+						// }
+					);
+				}
 
 				// Increment both the start and end times by minimum to check the next time slot while keeping the size of the slot the same:
 				current_slot = new Slot(current_slot.start.incrementMinutes(minimum),

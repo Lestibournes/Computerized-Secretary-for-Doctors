@@ -29,7 +29,6 @@ export function AppointmentSuccessPage() {
 						doctor_snap => {
 							const doctor_data = doctor_snap.data();
 							doctor_data.id = doctor_snap.id;
-							// console.log(doctor_data);
 							setDoctorData(doctor_data);
 						}
 					)
@@ -59,8 +58,8 @@ export function AppointmentSuccessPage() {
 			You have a <b>{appointmentData.type}</b> appointment with Dr.
 			<b> {doctorData.fullName}</b> at
 			<b> {clinicData.name}, {clinicData.city}</b> on
-			<b> {new SimpleDate(new Date(appointmentData.start)).toString()}</b> at
-			<b> {Time.fromTimestamp(appointmentData.start).toString()}</b>
+			<b> {new SimpleDate(appointmentData.start.toDate()).toString()}</b> at
+			<b> {Time.fromDate(appointmentData.start.toDate()).toString()}</b>
 		</p>
 	}
 

@@ -141,7 +141,7 @@ export function AppointmentCalendarPage() {
 										date: new SimpleDate(appointment.data().start.toDate()),
 										start: Time.fromDate(appointment.data().start.toDate()),
 										end: Time.fromDate(appointment.data().end.toDate()),
-
+										
 										// Data:
 										label: patient_snap.data().fullName,
 										link: root.get() + "/clinic/appointments/details/" + appointment.id

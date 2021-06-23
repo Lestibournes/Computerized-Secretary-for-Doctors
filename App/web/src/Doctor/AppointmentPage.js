@@ -105,8 +105,8 @@ export function AppointmentPage() {
 					</div>
 					<div className="table tab-content">
 						<b>Start:</b> <span>{
-						SimpleDate.fromObject(appointmentData.extra.date).toString() + " " + 
-						Time.fromObject(appointmentData.extra.time).toString()
+						new SimpleDate(appointmentData.start.toDate()).toString() + " " + 
+						Time.fromDate(appointmentData.start.toDate()).toString()
 						}</span>
 						<b>Duration:</b> <span>{appointmentData.appointment.duration} minutes</span>
 						<b>Type:</b> <span>{capitalizeAll(appointmentData.appointment.type)}</span>

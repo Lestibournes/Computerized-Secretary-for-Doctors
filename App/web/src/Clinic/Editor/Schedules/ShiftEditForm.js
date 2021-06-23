@@ -17,8 +17,8 @@ export function ShiftEditForm({clinic, doctor, shift, close}) {
 	return (
 		<Formik
 			initialValues={{
-				start: (shift.start ? Time.fromDate(shift.start.toDate()).toString() : ""),
-				end: (shift.end ? Time.fromDate(shift.end.toDate()).toString() : ""),
+				start: (shift.start ? Time.fromObject(shift.start).toString() : ""),
+				end: (shift.end ? Time.fromObject(shift.end).toString() : ""),
 			}}
 			validationSchema={Yup.object({
 				
@@ -39,8 +39,8 @@ export function ShiftEditForm({clinic, doctor, shift, close}) {
 
 				const data = {
 					day: shift.day,
-					start: start.toDate(),
-					end: end.toDate(),
+					start: start.toObject(),
+					end: end.toObject(),
 				}
 
 				if (shift.id) {

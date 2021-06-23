@@ -25,6 +25,10 @@ class Time {
 		return new Date(2021, 0, 0, this.hours, this.minutes).getTime();
 	}
 
+	toDate() {
+		return new Date(2021, 0, 0, this.hours, this.minutes);
+	}
+
 	hours;
 	minutes;
 

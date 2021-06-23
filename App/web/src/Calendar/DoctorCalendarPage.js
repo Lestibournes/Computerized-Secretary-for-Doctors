@@ -40,10 +40,10 @@ export function DoctorCalendarPage() {
 	const [date, setDate] = useState(new SimpleDate()); // Default date: today.
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState(null);
-	const [minimum, setMinimum] = useState(60);
 	// const [types, setTypes] = useState(new Map());
-	// const [max, setMax] = useState(0); //Longest appointment. Used for automatically color-coding appointment types.
+	const [max, setMax] = useState(); //Longest appointment. Used for automatically color-coding appointment types.
 
+	const gap = 60
 	// The dimentions of the display area. I really should have used CSS for this:
 	/**
 	 * @todo use CSS for the layout of the calendar.
@@ -158,6 +158,43 @@ export function DoctorCalendarPage() {
 	// 	}
 	// }, [doctor, clinic]);
 
+	// Maximum appointment length, for coloring the appointments:
+	useEffect(() => {
+		if (doctor) {
+			db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(doctor_snaps => {
+				const promises = [];
+
+				for (const doctor_snap of doctor_snaps.docs) {
+					promises.push(
+						doctor_snap.ref.collection("types").get()
+						.then(type_snaps => {
+							let max = 0;
+
+							for (const type of type_snaps.docs) {
+								if (type.data().name) {
+									if (type.data().duration > max) max = type.data().duration;
+								}
+							}
+			
+							return max * doctor_snap.data().minimum;
+						})
+						.catch(reason => popups.error(reason))
+						)
+					}
+					
+					Promise.all(promises).then(durations => {
+						let max = 0;
+
+						for (const duration of durations) {
+							if (duration > max) max = duration;
+						}
+						
+						setMax(max);
+				})
+			});
+		}
+	}, [doctor, clinic]);
+
 	// When a doctor and date are selected.
 	// Won't this just load all appointments for the given doctor across all clinics?
 	// What about per-clinic appointments?
@@ -173,8 +210,8 @@ export function DoctorCalendarPage() {
 				appointment_promises.push(
 					db.collectionGroup("appointments")
 						.where("doctor", "==", doctor.id)
-						.where("start", "==", current.toDate())
-						.where("end", "==", current.getNextDay().toDate())
+						.where("start", ">=", current.toDate())
+						.where("start", "<", current.getNextDay().toDate())
 						.get()
 					.then(appointment_snaps => {
 						const today = {
@@ -189,18 +226,20 @@ export function DoctorCalendarPage() {
 							day_promises.push(
 								db.collection("users").doc(appointment.data().patient).get()
 								.then(patient_snap => {
-									// appointment duration in minutes (hopefully):
+									// appointment duration in minutes:
 									const duration = (appointment.data().end - appointment.data().start) / 60;
-									const hue = duration % 360;
-									
-									today.appointments.push({
+
+									// The color of the appointment:
+									const hue = (duration / max) * 360;
+
+									return {
 										color: "white",
 										background: "hsl(" + hue + ", 100%, 30%)",
 										duration: duration,
-										start: new Time(appointment.data().start),
+										start: Time.fromDate(appointment.data().start.toDate()),
 										id: appointment.id,
 										name: patient_snap.data().fullName,
-									});
+									};
 								})
 								.catch(reason => popups.error(reason))
 							);
@@ -249,8 +288,8 @@ export function DoctorCalendarPage() {
 						db.collection("clinics").doc(clinic.id).collection("doctors").doc(doctor.id).collection("shifts").get()
 						.then(shift_snaps => {
 							for (const shift_snap of shift_snaps.docs) {
-								const start_time = Time.fromDate(shift_snap.data().start.toDate());
-								const end_time = Time.fromDate(shift_snap.data().end.toDate());
+								const start_time = Time.fromObject(shift_snap.data().start);
+								const end_time = Time.fromObject(shift_snap.data().end);
 								
 								if (!start || start_time.compare(start) < 0) start = start_time;
 								if (!end || end_time.compare(end) > 0) end = end_time;
@@ -355,7 +394,7 @@ export function DoctorCalendarPage() {
 							date={date}
 							appointments={appointments}
 							schedule={schedule}
-							minimum={minimum}
+							minimum={gap}
 							width={dimensions.width}
 							height={960}
 						/>
