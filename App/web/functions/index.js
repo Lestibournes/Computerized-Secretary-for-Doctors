@@ -16,12 +16,12 @@ const fsdb = admin.firestore();
 
 // Public interface of server functions:
 
+exports.appointments = require('./interfaces/appointments');
 exports.clinics = require('./interfaces/clinics');
 exports.doctors = require('./interfaces/doctors');
-exports.appointments = require('./interfaces/appointments');
-exports.specializations = require('./interfaces/specializations');
-exports.schedules = require('./interfaces/schedules');
-exports.secretaries = require('./interfaces/secretaries');
 exports.links = require('./interfaces/links');
+exports.secretaries = require('./interfaces/secretaries');
+exports.specializations = require('./interfaces/specializations');
+exports.users = require('./interfaces/users');
 
-exports.events = require('./events');
+// exports.events = require('./events');

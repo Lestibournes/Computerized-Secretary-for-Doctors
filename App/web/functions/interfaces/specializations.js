@@ -1,16 +1,36 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const functions = require('firebase-functions');
 
-const specializations = require("../implementations/specializations");
+// The Firebase Admin SDK to access Cloud Firestore.
+const admin = require('firebase-admin');
 
-exports.search = functions.https.onCall((data, context) => {
-	return specializations.search(data.text);
-});
+/**
+ * Convenience global variable for accessing the Admin Firestore object.
+ */
+const db = admin.firestore();
 
-exports.create = functions.https.onCall((data, context) => {
-	return specializations.create(data.name);
-});
+async function updateSpecialization(change, context) {
+	// Get an object with the current document value.
+	// If the document does not exist, it has been deleted.
+	const newDocument = change.after.exists ? change.after.data() : null;
 
-exports.getAll = functions.https.onCall((data, context) => {
-	return specializations.getAll();
+	// Update spcializations index:
+	if (!newDocument) {
+		// remove the doctor from the old specialization index:
+		db.collection("specializations").doc(context.params.specID).collection("doctors").doc(context.params.userID).delete();
+		db.collection("specializations").doc(context.params.specID).collection("practitioners").doc(context.params.userID).delete();
+	}
+	
+	if (newDocument) {
+		// Add the document to the new specialization index:
+		db.collection("specializations").doc(context.params.specID).set({exists: true}).then(() => {
+			db.collection("specializations").doc(context.params.specID).collection("practitioners").doc(context.params.userID).set({
+				practitioner: context.params.userID
+			});
+		});
+	}
+}
+
+exports.updateSpecialization = functions.firestore.document('users/{userID}/specializations/{specID}').onWrite((change, context) => {
+	return updateSpecialization(change, context);
 });

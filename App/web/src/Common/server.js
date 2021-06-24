@@ -5,56 +5,15 @@ export const fn = fb.functions();
 
 export const server = {
 	appointments: {
-		// get: fn.httpsCallable("appointments-get"),
-		// getAll: fn.httpsCallable("appointments-getAll"),
 		getAvailable: fn.httpsCallable("appointments-getAvailable"),
-		// add: fn.httpsCallable("appointments-add"),
-		// edit: fn.httpsCallable("appointments-edit"),
-		// cancel: fn.httpsCallable("appointments-cancel"),
-		// arrived: fn.httpsCallable("appointments-arrived"),
-		// saveNote: fn.httpsCallable("appointments-saveNote"),
-	},
-
-	clinics: {
-		get: fn.httpsCallable("clinics-get"),
-		add: fn.httpsCallable("clinics-add"),
-		edit: fn.httpsCallable("clinics-edit"),
-		delete: fn.httpsCallable("clinics-delete"),
-
-		getAllDoctors: fn.httpsCallable("clinics-getAllDoctors"),
-		addDoctor: fn.httpsCallable("clinics-addDoctor"),
-		removeDoctor: fn.httpsCallable("clinics-removeDoctor"),
-		
-		getAllCities: fn.httpsCallable("clinics-getAllCities"),
-		getAppointments: fn.httpsCallable("clinics-getAppointments"),
 	},
 
 	doctors: {
-		getData: fn.httpsCallable("doctors-getData"),
-		getAllClinics: fn.httpsCallable("doctors-getAllClinics"),
-		create: fn.httpsCallable("doctors-create"),
 		search: fn.httpsCallable("doctors-search"),
-		getID: fn.httpsCallable("doctors-getID"),
-		addSpecialization: fn.httpsCallable("doctors-addSpecialization"),
-		removeSpecialization: fn.httpsCallable("doctors-removeSpecialization"),
-		getAppointments: fn.httpsCallable("doctors-getAppointments"),
 	},
 
 	secretaries: {
 		search: fn.httpsCallable("secretaries-search"),
-	},
-
-	specializations: {
-		search: fn.httpsCallable("specializations-search"),
-		create: fn.httpsCallable("specializations-create"),
-		getAll: fn.httpsCallable("specializations-getAll"),
-	},
-
-	links: {
-		getLink: fn.httpsCallable("links-getLink"),
-		getTarget: fn.httpsCallable("links-getTarget"),
-		register: fn.httpsCallable("links-register"),
-		isAvailable: fn.httpsCallable("links-isAvailable"),
 	},
 }
 
