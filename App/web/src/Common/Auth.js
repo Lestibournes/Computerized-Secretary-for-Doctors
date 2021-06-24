@@ -78,30 +78,27 @@ function useProvideAuth() {
 			user: null,
 		}
 
-		return fb.auth().createUserWithEmailAndPassword(email, password).then(create_response => {
-			result.user = create_response.user;
+		await fb.auth().signOut();
 
-			return db.collection("users").doc(create_response.user.uid).set({
+		await fb.auth().createUserWithEmailAndPassword(email, password)
+		.then(create_response => result.user = create_response.user)
+		.catch(reason => result.message = reason.message);
+		
+		if (result.user) {
+			await db.collection("users").doc(result.user.uid).set({
 				firstName: firstName,
 				lastName: lastName,
+				fullName: firstName + " " + lastName,
 				sex: sex.toLowerCase()
 			})
-			.then(userRef => {
-				return fb.auth().signOut().then(() => {
-					result.success = true;
-					return result;
-				});
-			})
-			.catch(reason => {
-				result.message = reason.message;
-				return result;
-			});
-		}).catch(reason => {
-			result.message = reason.message;
-			return result;
-		});
-	};
+			.then(() => result.success = true)
+			.catch(reason => result.message = reason.message);
+		}
 
+		result.success = true;
+		return result;
+	};
+	
 	/**
 	 * Send a verification email to the user's email address to ensure that user indeed receives emails at the specified address.
 	 */

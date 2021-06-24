@@ -20,6 +20,14 @@ export function RegisterPage() {
 
 	const [redirect, setRedirect] = useState(false);
 
+	useEffect(() => {
+		popups.clear();
+	}, []);
+
+	useEffect(() => {
+		if (link) root.set(link);
+	}, [root, link]);
+
 	const popup =
 		<Popup key="Register" title="Register">
 			<Formik
@@ -54,7 +62,11 @@ export function RegisterPage() {
 					setSubmitting(true);
 
 					auth.register(values.fname, values.lname, values.sex.toLowerCase(), values.email, values.password).then(response => {
-						if (response.success) setRedirect(true);
+						console.log("Got response");
+						if (response.success) {
+							console.log("Success!");
+							setRedirect(true);
+						}
 						else {
 							popups.error(response.message);
 						}
@@ -104,14 +116,6 @@ export function RegisterPage() {
 				</Form>
 			</Formik>
 		</Popup>;
-	
-	useEffect(() => {
-		popups.clear();
-	}, []);
-
-	useEffect(() => {
-		if (link) root.set(link);
-	}, [root, link]);
 
 	return (
 		<>

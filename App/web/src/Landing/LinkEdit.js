@@ -29,17 +29,28 @@ export function LinkEditForm({link, type, id, close}) {
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
 				setMessage("Saving...");
-				
-				db.collection("links").doc(name).set({
-					type: type,
-					id: id,
-					name: name
-				})
-				.then(close)
-				.catch(reason => {
-					setMessage("");
-					popups.error(reason.message)
-				})
+
+				db.collection("links").where("type", "==", type).where("id", "==", id).get().then(
+					old_links => {
+						const batch = db.batch();
+
+						for (const old_link of old_links.docs) batch.delete(old_link.ref);
+
+						batch.set(db.collection("links").doc(name), {
+							type: type,
+							id: id,
+							name: name
+						});
+
+						// if (type === "clinic") batch.update(db.collection("clinics").doc(id), {link: name});
+						// if (type === "doctor") batch.update(db.collection("users").doc(id), {link: name});
+
+						batch.commit()
+						.then(close)
+						.catch(reason => popups.error(reason.message))
+						.finally(() => setMessage(""));
+					}
+				);
 			}}
 		>
 			<Form>

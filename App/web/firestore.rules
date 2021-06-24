@@ -34,8 +34,7 @@ service cloud.firestore {
 			
 			function isValidData(data) {
 				return
-				verifyFields(['firstName', 'lastName', 'sex'], ['link', 'doctor', 'secretary', 'fullName', 'image']) &&
-				// exists(/databases/$(database)/documents/links/$(data.link)) &&
+				verifyFields(['firstName', 'lastName', 'fullName', 'sex'], ['doctor', 'secretary', 'image']) &&
 
 				// Optional properties:
 				data.get("doctor", false) is bool &&
@@ -50,17 +49,14 @@ service cloud.firestore {
 				data.lastName.size() > 1 &&
 				data.lastName.size() < 50 &&
 
+				data.fullName == data.firstName + " " + data.lastName &&
+
 				data.sex in ["male", "female"];
 			}
 
 			allow read: if true;
-			allow create: if
-				isTheUser() && isValidData(request.resource.data) &&
-				!request.resource.data.keys().hasAny(['link', 'fullName']);
-			allow update: if
-				isTheUser() && isValidData(request.resource.data) &&
-				request.resource.data.get("link", "") == resource.data.get("link", "") &&
-				request.resource.data.get("fullName", "") == resource.data.get("fullName", "");
+			allow create, update: if
+				isTheUser() && isValidData(request.resource.data);
 
 			match /specializations/{specID} {
 				// If the user is a doctor.
@@ -580,33 +576,37 @@ service cloud.firestore {
 			// * When a new link is created, find and delete all the old ones that have the same type and id combination.
 			// * Update the clinic/user document with the new link id/name
 			
-			function isTheOwner() {
+			function isTheOwner(data) {
 				return
-				(request.resource.data.type == "clinic" &&
-				get(/databases/$(database)/documents/clinics/$(request.resource.data.id)).data.owner == request.auth.uid)
+				(
+					data.type == "clinic" &&
+					get(/databases/$(database)/documents/clinics/$(data.id)).data.owner == request.auth.uid
+				)
 				||
-				(request.resource.data.type == "doctor" &&
-				request.resource.data.id == request.auth.uid);
+				(
+					data.type == "doctor" &&
+					data.id == request.auth.uid
+				);
 			}
 
-			function isValidData() {
+			function isValidData(data) {
 				return
 				verifyFields(['type', 'id', 'name'], []) &&
 
 				(
 					(
 						// Either type is clinic and the clinic exists,
-						request.resource.data.type == "clinic" &&
-						exists(/databases/$(database)/documents/clinics/$(request.resource.data.id))
+						data.type == "clinic" &&
+						exists(/databases/$(database)/documents/clinics/$(data.id))
 					)
 						||
 					(
 						// Or type is doctor and the doctor exists:
-						request.resource.data.type == "doctor" &&
-						exists(/databases/$(database)/documents/users/$(request.resource.data.id)) &&
+						data.type == "doctor" &&
+						exists(/databases/$(database)/documents/users/$(data.id)) &&
 
 						// And the user is a doctor:
-						get(/databases/$(database)/documents/users/$(request.resource.data.id)).data.doctor == true
+						get(/databases/$(database)/documents/users/$(data.id)).data.doctor == true
 					)
 				) &&
 
@@ -614,11 +614,12 @@ service cloud.firestore {
 				linkID.matches('^[a-zA-Z0-9_]+$') &&
 
 				// Convenience property for accessing the link text, which must match the id:
-				request.resource.data.name == linkID;
+				data.name == linkID;
 			}
 
 			allow read;
-			allow write: if isTheOwner() && isValidData();
+			allow create: if isTheOwner(request.resource.data) && isValidData(request.resource.data);
+			allow delete: if isTheOwner(resource.data);
 		}
 
 		// To enable using collectionGroup:

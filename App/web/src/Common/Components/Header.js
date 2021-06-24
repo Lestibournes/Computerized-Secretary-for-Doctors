@@ -32,14 +32,15 @@ export function Header({unprotected}) {
 
 	useEffect(() => {
 		if (auth?.user?.uid) {
+			setEmail(auth.user.email);
+			
 			return db.collection("users").doc(auth.user.uid).onSnapshot(
 				user_snap => {
-					setName(user_snap.data().fullName);
+					setName(user_snap.data().firstName + " " + user_snap.data().lastName);
 				}
 			)
 		}
 		
-		setEmail(auth?.user?.email);
 	}, [auth.user]);
 
 	return (

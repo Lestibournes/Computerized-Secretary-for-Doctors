@@ -172,6 +172,11 @@ async function getAvailable(clinic, doctor, simpleDate, type) {
 	});
 }
 
+/**
+ * 
+ * @param {functions.Change<functions.firestore.DocumentSnapshot>} change 
+ * @param {functions.EventContext} context 
+ */
 async function verifyAppointment(change, context) {
 	// Get an object with the previous document value (for update or delete)
 	// If the document does not exist, it has been created (?).
@@ -204,44 +209,61 @@ async function verifyAppointment(change, context) {
 	// Put in the security rules that create and update are only allowed if verified == false.
 
 	// I think I'll go with this last approach for now, since it's the simplest.
-
+	
 	// On create or update:
 	if (newDocument) {
-		// Check if the appointment is valid, meaning that it doesn't collide with any existing appointment.
-		// If it is invalid, delete the appointment.
-		const simpleDate = new SimpleDate(newDocument.start);
 		
-		const slot = new Slot(
-			Time.fromDate(newDocument.start),
-			Time.fromDate(newDocument.end)
-		);
-			
-		db.collection(CLINICS).doc(newDocument.clinic).collection(APPOINTMENTS)
-		.orderBy("start")
-		.where("start", ">=", fs.Timestamp.fromDate(simpleDate.toDate()))
-		.where("start", "<", fs.Timestamp.fromDate(simpleDate.getNextDay().toDate()))
-		.where("doctor", "==", newDocument.doctor)
-		.where("verified", "==", true)
-		.get().then(appointment_snaps => {		
-			for (const appointment of appointment_snaps.docs) {
-				// I don't need to check appointment.id !== context.params.appID because the security rules will require that verified == false, and the query requires verified == true.
+		if (!newDocument.verified) {
+			change.after.ref().update({
+				verified: true
+			});
+		}
 
-				// If the new appointment data causes a collision:
-				if (appointment.collides(slot)) {
+		// // Check if the appointment is valid, meaning that it doesn't collide with any existing appointment.
+		// // If it is invalid, delete the appointment.
+		// const simpleDate = new SimpleDate(newDocument.start.toDate());
+		// console.log("Date: ", simpleDate);
 
-					// If it's an update, revert the change:
-					if (oldDocument) {
-						const data = change.before.data();
-						data.verified = true;
-						change.before.ref.set();
-						return;
-					}
+		// const slot = new Slot(
+		// 	Time.fromDate(newDocument.start.toDate()),
+		// 	Time.fromDate(newDocument.end.toDate())
+		// );
+		
+		// console.log("Time Slot: ", slot);
 
-					// If it's a new appointment, revert the change by deleting it:
-					change.after.ref.delete();
-				}
-			}
-		});
+		// db.collection(CLINICS).doc(newDocument.clinic).collection(APPOINTMENTS)
+		// .orderBy("start")
+		// .where("start", ">=", fs.Timestamp.fromDate(simpleDate.toDate()))
+		// .where("start", "<", fs.Timestamp.fromDate(simpleDate.getNextDay().toDate()))
+		// .where("doctor", "==", newDocument.doctor)
+		// .where("verified", "==", true)
+		// .get().then(appointment_snaps => {
+		// 	console.log("Results: ", appointment_snaps.size);
+		// 	for (const appointment of appointment_snaps.docs) {
+		// 		const app_slot = new Slot(
+		// 			Time.fromDate(appointment.data().start.toDate()),
+		// 			Time.fromDate(appointment.data().end.toDate()),
+		// 		)
+		// 		console.log();
+		// 		// I don't need to check appointment.id !== context.params.appID because the security rules will require that verified == false, and the query requires verified == true.
+
+		// 		// If the new appointment data causes a collision:
+		// 		if (app_slot.collides(slot)) {
+
+		// 			// If it's an update, revert the change:
+		// 			if (oldDocument) {
+		// 				const data = change.before.data();
+		// 				data.verified = true;
+		// 				change.before.ref.set(data);
+		// 				return;
+		// 			}
+
+		// 			// If it's a new appointment, revert the change by deleting it:
+		// 			change.after.ref.delete();
+		// 			return;
+		// 		}
+		// 	}
+		// });
 
 
 		// let collides = false;
@@ -314,7 +336,8 @@ async function verifyAppointment(change, context) {
 	}
 }
 
-exports.verifyAppointment = functions.firestore.document('clinics/{clinicID}/appointments/{appID').onWrite((change, context) => {
+exports.verifyAppointment = functions.firestore.document(CLINICS + '/{clinicID}/' + APPOINTMENTS + '/{appID}').onWrite((change, context) => {
+	console.log("Triggered!")
 	return verifyAppointment(change, context);
 });
 

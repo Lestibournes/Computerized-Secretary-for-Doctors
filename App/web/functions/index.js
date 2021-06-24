@@ -9,19 +9,17 @@ admin.initializeApp(
 	// }
 );
 
-/**
- * Convenience global variable for accessing the Admin Firestore object.
- */
-const fsdb = admin.firestore();
-
 // Public interface of server functions:
 
 exports.appointments = require('./interfaces/appointments');
+
 exports.clinics = require('./interfaces/clinics');
 exports.doctors = require('./interfaces/doctors');
-exports.links = require('./interfaces/links');
 exports.secretaries = require('./interfaces/secretaries');
 exports.specializations = require('./interfaces/specializations');
-exports.users = require('./interfaces/users');
 
-// exports.events = require('./events');
+// Add another listener for when an appointment is deleted. Whene that happens, delete the arrival document.
+// Or is that even needed? Past appointments can't be deleted. An arrival document without an appointment document is meaningless.
+
+// Missing triggers:
+// Patient's index of treating doctors.

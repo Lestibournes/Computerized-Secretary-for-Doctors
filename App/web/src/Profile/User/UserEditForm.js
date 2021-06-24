@@ -60,6 +60,8 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 
 				if (values.lastName) updates.lastName = values.lastName;
 
+				if (values.firstName || values.lastName) updates.fullName = values.firstName + " " + values.lastName;
+
 				if (values.sex) updates.sex = values.sex.toLowerCase();
 
 				promises.push(

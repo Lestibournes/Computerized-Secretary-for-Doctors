@@ -60,7 +60,7 @@ export function DoctorProfileFragment() {
 
 	const [doctor, setDoctor] = useState(null);
 	const [specializations, setSpecializations] = useState();
-	const [link, setLink] = useState();
+	const [linkData, setLinkData] = useState();
 
 	const [owned, setOwned] = useState();
 	const [ownedCards, setOwnedCards] = useState(null);
@@ -105,6 +105,28 @@ export function DoctorProfileFragment() {
 				},
 				error => popups.error("Error fetching doctor data: " + error.message)
 			)
+		}
+	}, [doctor]);
+
+
+	// Get doctor link:
+	useEffect(() => {
+		if (doctor) {
+			return db.collection("links").where("type", "==", "doctor").where("id", "==", doctor).onSnapshot(
+				link_snaps => {
+					for (const link_snap of link_snaps.docs) {
+						if (link_snap.exists) {
+							const data = link_snap.data();
+							data.id = link_snap.id;
+							setLinkData(data);
+							return;
+						}
+					}
+
+					setLinkData(null);
+				},
+				error => popups.error(error.message)
+			);
 		}
 	}, [doctor]);
 
@@ -228,7 +250,7 @@ export function DoctorProfileFragment() {
 								const popup =
 									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
 										<LinkEditForm
-											link={doctor.link}
+											link={linkData?.name}
 											type={LINK_TYPES.DOCTOR}
 											id={doctor.id}
 											close={close}
@@ -239,9 +261,9 @@ export function DoctorProfileFragment() {
 							}}
 						/>
 					</header>
-						{doctor?.link ?
+						{linkData ?
 							<div className="table">
-								<b>Name:</b> <Link to={"/" + doctor.link} >{doctor.link}</Link>
+								<b>Name:</b> <Link to={"/" + linkData.name} >{linkData.name}</Link>
 							</div>
 							:
 							<div>

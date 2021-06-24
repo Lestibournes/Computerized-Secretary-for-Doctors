@@ -34,7 +34,8 @@ export function ClinicEditor() {
 
 	// Components runtime data (states):
 	const [clinicData, setClinicData] = useState(null); // The data of the clinic
-	
+	const [linkData, setLinkData] = useState();
+
 	const [doctorsData, setDoctorsData] = useState();
 	const [doctorCards, setDoctorCards] = useState();
 	
@@ -53,8 +54,27 @@ export function ClinicEditor() {
 						data.id = clinic_snap.id;
 						setClinicData(data);
 					}
+				},
+				error => popups.error(error.message)
+			);
+		}
+	}, [clinic]);
 
-					return null;
+	// Get clinic link:
+	useEffect(() => {
+		if (clinic) {
+			return db.collection("links").where("type", "==", "clinic").where("id", "==", clinic).onSnapshot(
+				link_snaps => {
+					for (const link_snap of link_snaps.docs) {
+						if (link_snap.exists) {
+							const data = link_snap.data();
+							data.id = link_snap.id;
+							setLinkData(data);
+							return;
+						}
+					}
+
+					setLinkData(null);
 				},
 				error => popups.error(error.message)
 			);
@@ -289,7 +309,7 @@ export function ClinicEditor() {
 								const popup =
 									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
 										<LinkEditForm
-											link={clinicData.link}
+											link={linkData.name}
 											type={LINK_TYPES.CLINIC}
 											id={clinic}
 											close={close}
@@ -300,9 +320,9 @@ export function ClinicEditor() {
 							}}
 						/>
 					</header>
-					{clinicData?.link ?
+					{linkData ?
 						<div className="table">
-							<><b>Name:</b> <Link to={"/" + clinicData.link} >{clinicData.link}</Link></>
+							<><b>Name:</b> <Link to={"/" + linkData.name} >{linkData.name}</Link></>
 						</div>
 						:
 						<div>
