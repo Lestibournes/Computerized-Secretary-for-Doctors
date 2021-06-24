@@ -149,7 +149,7 @@ export function DoctorAgendaPage() {
 						return (
 							<Card
 								key={appointment.id}
-								link={root.get() + "/doctor/appointments/details/" + appointment.id}
+								link={root.get() + "/doctor/appointments/details/" + appointment.clinic + "/" + appointment.id}
 								image={url}
 								altText={patient.fullName}
 								title={date.toString() + " " + time.toString() + " - " + patient.fullName}

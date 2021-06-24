@@ -10,6 +10,8 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 
 async function updateSpecialization(change, context) {
+	// Maybe the client can handle all of this directly with appropriate security rules.
+
 	// Get an object with the current document value.
 	// If the document does not exist, it has been deleted.
 	const newDocument = change.after.exists ? change.after.data() : null;

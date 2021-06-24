@@ -5,7 +5,7 @@ export function CalendarItem(props) {
 	const root = useRoot();
 
 	return (
-		<Link className="calendarItem" to={root.get() + "/doctor/appointments/details/" + props.data.appointment}
+		<Link className="calendarItem" to={root.get() + "/doctor/appointments/details/" + props.data.clinic + "/" + props.data.appointment}
 			style={{
 				color: props.display.color,
 				backgroundColor: props.display.background,

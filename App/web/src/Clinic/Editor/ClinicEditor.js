@@ -309,7 +309,7 @@ export function ClinicEditor() {
 								const popup =
 									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
 										<LinkEditForm
-											link={linkData.name}
+											link={linkData?.name}
 											type={LINK_TYPES.CLINIC}
 											id={clinic}
 											close={close}

@@ -15,13 +15,14 @@ import { useRoot } from '../Common/Root';
 
 import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
+import { db } from "../init";
 
 export function AppointmentPage() {
 	const root = useRoot();
 	/**
 	 * @type {{appointment: string}}
 	 */
-	const {appointment} = useParams();
+	const {clinic, appointment} = useParams();
 
 	const [appointmentData, setAppointmentData] = useState();
 	const [doctorData, setDoctorData] = useState();
@@ -38,36 +39,55 @@ export function AppointmentPage() {
 	const popups = usePopups();
 	
 	useEffect(() => {
-		if (appointment) {
-			return server.appointments.get({id: appointment}).then(results => {
-				if (results.data.success) {
-					const data = results.data.data;
+		if (clinic && appointment) {
+			db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).get()
+			.then(
+				app_snap => {
+					if (app_snap.exists) {
+						const app_data = app_snap.data();
+						app_data.id = app_snap.id;
 
-					setAppointmentData(data);
-	
-					server.doctors.getData({id: data.appointment.doctor}).then(doctor_results => {
-						setDoctorData(doctor_results.data);
-					});
-					
-					server.clinics.get({id: data.appointment.clinic}).then(clinic_results => {
-						setClinicData(clinic_results.data);
-					});
-	
-					getPictureURL(data.appointment.patient).then(url => {
-						setImage(url);
-					});
-					
-					setArrived(data.appointment.arrived);
-					setServerText(data.appointment.notes);
-					setClientText(data.appointment.notes);
+						setAppointmentData(app_data);
+						setArrived(app_data.arrived);
+						setServerText(app_data.notes);
+						setClientText(app_data.notes);
 
-					return events.clinics.appointment(appointmentData.clinic, appointment, (oldData, newData) => {
-						if (oldData.arrived !== newData.arrived && newData.arrived) setArrived(newData.arrived);
-					});
+						db.collection("users").doc(app_data.doctor).get()
+						.then(
+							doctor_snap => {
+								if (doctor_snap.exists) {
+									const doctor_data = doctor_snap.data();
+									doctor_data.id = doctor_snap.id;
+									setDoctorData(doctor_data);
+								}
+							}
+						)
+						.catch(reason => popups.error(reason.message));
+
+						getPictureURL(app_data.patient).then(
+							url => {
+								setImage(url);
+							}
+						)
+						.catch(reason => popups.error(reason.message));
+					}
 				}
-				else {
-					popups.error(results.data.message);
+			)
+			.catch(reason => popups.error(reason.message));
+
+			db.collection("clinics").doc(clinic).get()
+			.then(
+				clinic_snap => {
+					if (clinic_snap.exists) {
+						const clinic_data = clinic_snap.data();
+						clinic_data.id = clinic_snap.id;
+						setClinicData(clinic_data);
+					}
 				}
+			)
+			
+			return events.clinics.appointment(appointmentData.clinic, appointment, (oldData, newData) => {
+				if (oldData.arrived !== newData.arrived && newData.arrived) setArrived(newData.arrived);
 			});
 		}
 	}, [appointment]);
@@ -94,12 +114,8 @@ export function AppointmentPage() {
 							icon={arrived ? "fas fa-check-square" : "far fa-check-square"}
 							label="Arrived"
 							action={() => {
-								server.appointments.arrived({appointment: appointment}).then(response => {
-									if (!response.data.success) {
-										// Display error message popup.\
-										popups.error(response.data.message);
-									}
-								});
+								db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({arrived: !arrived})
+								.catch(reason => popups.error(reason.message));
 							}}
 						/>
 					</div>
@@ -147,10 +163,9 @@ export function AppointmentPage() {
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
 							
-							server.appointments.saveNote({id: appointment, text: clientText}).then(response => {
-								if (response.data.success) setServerText(response.data.text);
-								else popups.error(response.data.message);
-							});
+							db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({notes: clientText})
+							.then(() => setServerText(clientText))
+							.catch(reason => popups.error(reason.message));
 						}}
 					>
 						<Form>

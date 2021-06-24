@@ -42,6 +42,7 @@ export function CalendarDay(props) {
 						}}
 						data={{
 							appointment: appointment.id,
+							clinic: appointment.clinic,
 							name: appointment.name,
 							start: appointment.start
 						}}

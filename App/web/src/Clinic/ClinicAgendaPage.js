@@ -20,7 +20,7 @@ export function ClinicAgendaPage() {
 	const root = useRoot();
 	const popups = usePopups();
 
-	const { clinic } = useParams(); //The ID of the doctor.
+	const { clinic } = useParams(); //The ID of the clinic.
 	const [clinicData, setClinicData] = useState();
 	const [doctors, setDoctors] = useState([]);
 
@@ -115,7 +115,7 @@ export function ClinicAgendaPage() {
 										return (
 											<Card
 												key={appointment.id}
-												link={root.get() + "/clinic/appointments/view/" + appointment.id}
+												link={root.get() + "/clinic/appointments/view/" + clinic + "/" + appointment.id}
 												image={url}
 												altText={patient_snap.data().fullName}
 												title={date.toString() + " " + time.toString() + " - " + patient_snap.data().fullName}

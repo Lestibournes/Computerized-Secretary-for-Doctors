@@ -239,6 +239,7 @@ export function DoctorCalendarPage() {
 										duration: duration,
 										id: appointment.id,
 										name: patient_snap.data().fullName,
+										clinic: appointment.data().clinic
 									};
 								})
 								.catch(reason => popups.error(reason))

@@ -105,7 +105,7 @@ ReactDOM.render(
 							<Route path="/clinics/schedule/edit/:clinic/:doctor">
 								<ScheduleEditor />
 							</Route>
-							<Route path="/doctor/appointments/details/:appointment">
+							<Route path="/doctor/appointments/details/:clinic/:appointment">
 								<AppointmentPage />
 							</Route>
 
@@ -122,7 +122,7 @@ ReactDOM.render(
 							<Route path="/clinic/appointments/calendar/:clinic">
 								<ClinicCalendarPage />
 							</Route>
-							<Route path="/clinic/appointments/view/:appointment">
+							<Route path="/clinic/appointments/view/:clinic/:appointment">
 								<AppointmentPage />
 							</Route>
 							<Route path="/clinics/schedules/:clinic">
@@ -182,7 +182,7 @@ ReactDOM.render(
 							<Route path="/:link/clinics/secretary/edit/:clinic/:secretary">
 								<SecretaryEditor />
 							</Route>
-							<Route path="/:link/clinic/appointments/view/:appointment">
+							<Route path="/:link/clinic/appointments/view/:clinic/:appointment">
 								<AppointmentPage />
 							</Route>
 							<Route path="/:link/clinic/appointments/edit/:appointment">
@@ -194,10 +194,7 @@ ReactDOM.render(
 							<Route path="/:link/user/appointments/deleted">
 								<AppointmentDeletedPage />
 							</Route>
-							<Route path="/:link/doctor/appointments/details/:appointment">
-								<AppointmentPage />
-							</Route>
-							<Route path="/:link/doctor/appointments/details/:appointment">
+							<Route path="/:link/doctor/appointments/details/:clinic/:appointment">
 								<AppointmentPage />
 							</Route>
 						</Switch>

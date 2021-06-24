@@ -174,6 +174,7 @@ export function ClinicCalendarPage() {
 										start: Time.fromDate(appointment.data().start.toDate()),
 										id: appointment.id,
 										name: patient_snap.data().fullName,
+										clinic: appointment.data().clinic
 									};
 								})
 								.catch(reason => popups.error(reason))

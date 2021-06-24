@@ -30,7 +30,7 @@ export function Notifier() {
 										" has arrived for " + (patient_snap.data().sex === "male" ? "his " : "her ") +
 										new SimpleDate(newData.start).toString() + " " +
 										Time.fromDate(newData.start).toString() +
-										" appointment.", root.get() + "/doctor/appointments/details/" +newData.clinic + "/" + newData.id);
+										" appointment.", root.get() + "/doctor/appointments/details/" + newData.clinic + "/" + newData.id);
 									}).catch(reason => console.log(reason))
 							}
 						}))
