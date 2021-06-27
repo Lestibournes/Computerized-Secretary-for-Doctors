@@ -81,10 +81,10 @@ ReactDOM.render(
 							<Route path="/user/appointments/deleted">
 								<AppointmentDeletedPage />
 							</Route>
-							<Route path="/user/appointments/details/:appointment">
+							<Route path="/user/appointments/details/:clinic/:appointment">
 								<AppointmentDetailsPage />
 							</Route>
-							<Route path="/user/appointments/edit/:appointment">
+							<Route path="/user/appointments/edit/:clinic/:appointment">
 								<SetAppointmentPage />
 							</Route>
 							<Route path="/user/appointments/list">
@@ -132,7 +132,7 @@ ReactDOM.render(
 
 							{/* Secretaries */}
 
-							<Route path="/clinic/appointments/edit/:appointment">
+							<Route path="/clinic/appointments/edit/clinic/:appointment">
 								<SetAppointmentPage />
 							</Route>
 							<Route path="/clinics/secretary/edit/:clinic/:secretary">
@@ -158,7 +158,7 @@ ReactDOM.render(
 							<Route path="/:link/user/appointments/list">
 								<AppointmentListPage />
 							</Route>
-							<Route path="/:link/user/appointments/details/:appointment">
+							<Route path="/:link/user/appointments/details/:clinic/:appointment">
 								<AppointmentDetailsPage />
 							</Route>
 							<Route path="/:link/clinics/view/:clinic">

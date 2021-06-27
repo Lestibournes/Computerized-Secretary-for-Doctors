@@ -297,7 +297,7 @@ export function SetAppointmentPage() {
 								{appointment ? 
 									<Button
 										type="cancel"
-										action={() => ConfirmDeletePopup(popups, appointment, () => setDeleted(true))}
+										action={() => ConfirmDeletePopup(popups, clinicID, appointment, () => setDeleted(true))}
 									label="Delete" />
 								: ""}
 								<Button type="submit" label="Submit" />
@@ -322,7 +322,7 @@ export function SetAppointmentPage() {
 	);
 }
 
-function ConfirmDeletePopup(popups, appointment, success) {
+function ConfirmDeletePopup(popups, clinic, appointment, success) {
 		const close = () => {
 			popups.remove(popup);
 		}
@@ -332,10 +332,9 @@ function ConfirmDeletePopup(popups, appointment, success) {
 			<p>This action is permanent and cannot be undone.</p>
 			<div className="buttonBar">
 				<Button type="cancel" label="Yes" action={() => {
-					server.appointments.cancel({appointment: appointment}).then(response => {
-						if (!response.data.success) popups.error(capitalize(response.data.message))
-						else success();
-					});
+					db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).delete()
+					.then(() => success())
+					.catch(reason => popups.error(reason.message));
 				}} />
 				<Button type="okay" label="Cancel" action={close} />
 			</div>

@@ -114,7 +114,7 @@ export function AppointmentListPage() {
 							card: 
 								<Card
 									key={appointment.id}
-									link={root.get() + "/user/appointments/details/" + appointment.id}
+									link={root.get() + "/user/appointments/details/" + appointment.clinic + "/" + appointment.id}
 									image={url}
 									altText={(doctor ? doctor.fullName : "")}
 									title={date.toString() + " " + time.toString() + " - " + (doctor ? doctor.fullName : "")}

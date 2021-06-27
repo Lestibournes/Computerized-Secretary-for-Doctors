@@ -107,7 +107,7 @@ export function AppointmentPage() {
 						<Button
 							icon="fas fa-edit"
 							label="Edit"
-							link={root.get() + "/clinic/appointments/edit/" + appointment}
+							link={root.get() + "/clinic/appointments/edit/" + clinic + "/" + appointment}
 						/>
 						<Button
 							type={arrived ? "okay" : ""}
