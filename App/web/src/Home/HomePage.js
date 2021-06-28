@@ -11,7 +11,6 @@ import { useAuth } from "../Common/Auth";
 import { Header } from "../Common/Components/Header";
 import { db } from "../init";
 import { usePopups } from "../Common/Popups";
-import { getString } from "../Common/strings";
 
 const PATIENT = "Patient";
 const DOCTOR = "Doctor";

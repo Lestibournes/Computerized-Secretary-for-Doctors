@@ -132,7 +132,7 @@ ReactDOM.render(
 
 							{/* Secretaries */}
 
-							<Route path="/clinic/appointments/edit/clinic/:appointment">
+							<Route path="/clinic/appointments/edit/:clinic/:appointment">
 								<SetAppointmentPage />
 							</Route>
 							<Route path="/clinics/secretary/edit/:clinic/:secretary">
@@ -185,7 +185,7 @@ ReactDOM.render(
 							<Route path="/:link/clinic/appointments/view/:clinic/:appointment">
 								<AppointmentPage />
 							</Route>
-							<Route path="/:link/clinic/appointments/edit/:appointment">
+							<Route path="/:link/clinic/appointments/edit/:clinic/:appointment">
 								<SetAppointmentPage />
 							</Route>
 							<Route path="/:link/user/appointments/success/:clinic/:appointment">

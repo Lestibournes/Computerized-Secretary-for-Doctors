@@ -130,7 +130,7 @@ export function AppointmentCalendarPage() {
 										return data;
 									}
 								})
-								.catch(reason => popups.error("Fetch clinic " + doctor_snap.data().clinic + ": " + reason))
+								.catch(reason => popups.error(doctor_snap.data().clinic + ": " + reason))
 							);
 						}
 
@@ -138,7 +138,7 @@ export function AppointmentCalendarPage() {
 							setClinics(clinic_data);
 						})
 					})
-					.catch(reason => popups.error("Getting the doctor's clinics: " + reason));
+					.catch(reason => popups.error(reason));
 				}
 				else setDoctor(false);
 			});

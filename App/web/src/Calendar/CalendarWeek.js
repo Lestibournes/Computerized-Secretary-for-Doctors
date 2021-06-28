@@ -1,6 +1,7 @@
 import './Calendar.css';
 import { Time } from "../Common/Classes/Time";
 import { CalendarDay } from './CalendarDay';
+import { SimpleDate } from '../Common/Classes/SimpleDate';
 
 /*
 The plan:
@@ -48,13 +49,16 @@ export function CalendarWeek(props) {
 
 	const headers = [];
 	
+	/**
+	 * @type {SimpleDate}
+	 */
 	let date = props.date.getSunday().getPreviousDay();
 	const days = props.appointments.map((day, index) => {
 		date = date.getNextDay();
 
 		headers.push(
-			<div key={"header " + date.dayname} className="calendarDayHeader" style={{width: day_width, left: day_width * index}}>
-				<b>{date.dayname.substr(0, 3)}</b>
+			<div key={"header " + date.dayabbreviation} className="calendarDayHeader" style={{width: day_width, left: day_width * index}}>
+				<b>{date.dayabbreviation}</b>
 				<br />
 				<small>{date.day + "/" + (date.month + 1)}</small>
 			</div>

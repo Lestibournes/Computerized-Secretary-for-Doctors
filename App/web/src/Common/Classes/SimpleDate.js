@@ -1,7 +1,14 @@
+import { Strings } from "./strings";
+
 /**
  * A simple and immutable representation of a calendar date.
  */
- export class SimpleDate {
+export class SimpleDate {
+	/**
+	 * @type {Strings}
+	 */
+	static #strings;
+
 	/**
 	 * The names of the days of the week as used in the database, for easy conversion between how
 	 * it's stored in the database and how it's represented by the JS Date object.
@@ -79,6 +86,8 @@
 	 * @constructor
 	 */
 	constructor(...args) {
+		SimpleDate.#strings = new Strings();
+
 		if (args.length === 3 || args.length === 2) this.#date = new Date(...args);
 		if (args.length === 1) {
 			if (args[0] instanceof Date) {
@@ -127,13 +136,52 @@
 	 * @returns {string} The name of the day of the week, in lowercase.
 	 */
 	get dayname() {
-		return SimpleDate.day_names[this.weekday];
+		switch (this.weekday) {
+			case 0: return SimpleDate.#strings.getString(0).toLowerCase();
+			case 1: return SimpleDate.#strings.getString(1).toLowerCase();
+			case 2: return SimpleDate.#strings.getString(2).toLowerCase();
+			case 3: return SimpleDate.#strings.getString(3).toLowerCase();
+			case 4: return SimpleDate.#strings.getString(4).toLowerCase();
+			case 5: return SimpleDate.#strings.getString(5).toLowerCase();
+			case 6: return SimpleDate.#strings.getString(6).toLowerCase();
+		}
 	}
 
 	/**
-	 * @returns {string} The name of the day of the week, in lowercase.
+	 * @returns {string} The abbreviated name of the day of the week, in lowercase.
+	 */
+	 get dayabbreviation() {
+		switch (this.weekday) {
+			case 0: return SimpleDate.#strings.getString(7).toLowerCase();
+			case 1: return SimpleDate.#strings.getString(8).toLowerCase();
+			case 2: return SimpleDate.#strings.getString(9).toLowerCase();
+			case 3: return SimpleDate.#strings.getString(10).toLowerCase();
+			case 4: return SimpleDate.#strings.getString(11).toLowerCase();
+			case 5: return SimpleDate.#strings.getString(12).toLowerCase();
+			case 6: return SimpleDate.#strings.getString(13).toLowerCase();
+		}
+	}
+
+	/**
+	 * @returns {string} The name of the month.
 	 */
 	get monthname() {
+		switch (this.month) {
+			case 0: return SimpleDate.#strings.getString(14);
+			case 1: return SimpleDate.#strings.getString(15);
+			case 2: return SimpleDate.#strings.getString(16);
+			case 3: return SimpleDate.#strings.getString(17);
+			case 4: return SimpleDate.#strings.getString(18);
+			case 5: return SimpleDate.#strings.getString(19);
+			case 6: return SimpleDate.#strings.getString(20);
+			case 7: return SimpleDate.#strings.getString(21);
+			case 8: return SimpleDate.#strings.getString(22);
+			case 9: return SimpleDate.#strings.getString(23);
+			case 10: return SimpleDate.#strings.getString(24);
+			case 11: return SimpleDate.#strings.getString(25);
+			
+		}
+
 		return SimpleDate.month_names[this.month];
 	}
 
