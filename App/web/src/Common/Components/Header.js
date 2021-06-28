@@ -7,9 +7,10 @@ import { DropdownMenu } from "./DropdownMenu";
 import { usePopups } from "../Popups";
 import { useRoot } from "../Root";
 import { db } from "../../init";
+import { auth } from "../../init";
 
 export function Header({unprotected}) {
-	const auth = useAuth();
+	const authContext = useAuth();
 	const popups = usePopups()
 	const root = useRoot();
 
@@ -27,21 +28,25 @@ export function Header({unprotected}) {
 	}, [root, link]);
 
 	useEffect(() => {
-		if (!unprotected && !auth?.user?.uid) setRedirect("/user/login");
-	}, [auth.user, root, unprotected]);
+		auth.onAuthStateChanged(
+			state => {
+				if (!unprotected && !state?.uid) setRedirect("/user/login");
+			}
+		)
+	}, [root, unprotected]);
 
 	useEffect(() => {
-		if (auth?.user?.uid) {
-			setEmail(auth.user.email);
+		if (authContext?.user?.uid) {
+			setEmail(authContext.user.email);
 			
-			return db.collection("users").doc(auth.user.uid).onSnapshot(
+			return db.collection("users").doc(authContext.user.uid).onSnapshot(
 				user_snap => {
 					setName(user_snap.data().firstName + " " + user_snap.data().lastName);
 				}
 			)
 		}
 		
-	}, [auth.user]);
+	}, [authContext.user]);
 
 	return (
 		<header className="main">
@@ -55,7 +60,7 @@ export function Header({unprotected}) {
 						</div> */}
 						<Link to={root.get() + "/user/appointments/list"}>My Appointments</Link>
 						<Link to={root.get() + "/user/profile"}>Profile</Link>
-						<div onClick={auth.logout}>
+						<div onClick={authContext.logout}>
 							Log Out
 						</div>
 					</DropdownMenu>
