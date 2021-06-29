@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Redirect } from "react-router-dom";
+import { Strings } from "../../Common/Classes/strings";
 import { Button } from "../../Common/Components/Button";
 import { Popup } from "../../Common/Components/Popup";
 import { usePopups } from "../../Common/Popups";
 import { useRoot } from "../../Common/Root";
-import { server } from "../../Common/server";
 import { db } from "../../init";
 
 export function SecretaryCreateProfileForm({user, close}) {
@@ -16,9 +16,9 @@ export function SecretaryCreateProfileForm({user, close}) {
 	return (
 		<div className="center">
 			{no ? <Redirect to={root.get() + "/user/profile"} /> : ""}
-			<h2>Would you like to create a secretary profile?</h2>
+			<h2>{Strings.instance.get(41)}</h2>
 			<div className="buttonBar">
-				<Button action={() => {setNo(true)}} label="No" />
+				<Button action={() => {setNo(true)}} label={Strings.instance.get(43)} />
 				<Button
 					type="okay"
 					action={() => {
@@ -26,24 +26,9 @@ export function SecretaryCreateProfileForm({user, close}) {
 						.then(() => close())
 						.catch(reason => popups.error(reason.code));
 						}}
-					label="Yes"
+					label={Strings.instance.get(44)}
 				/>
 			</div>
 		</div>
 	);
-}
-
-export function secretaryCreateProfilePopup(popups, user, success) {
-	const close = () => {popups.remove(popup)}
-
-	const popup =
-		<Popup key="Create Secretary Profile" title="Create Secretary Profile" close={close}>
-			<SecretaryCreateProfileForm
-				user={user}
-				success={success}
-				close={close}
-			/>
-		</Popup>;
-
-	popups.add(popup);
 }

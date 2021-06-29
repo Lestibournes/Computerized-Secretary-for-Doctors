@@ -1,3 +1,5 @@
+import ReactHtmlParser from 'react-html-parser';
+
 export class Strings {
 	#language;
 	static #instance;
@@ -82,15 +84,13 @@ export class Strings {
 			let text = Strings.#strings[id].get(this.#language);
 	
 			if (values) {
-				const matches =  text.match(/\w+/);
-				
-				for (const match of matches) {
-					const pattern = new RegExp("\\$\\(" + match + "\\)");
-					text = text.replace(pattern, values.get(match));
+				for (const key of values.keys()) {
+					const pattern = new RegExp("\\$\\(" + key + "\\)");
+					text = text.replace(pattern, values.get(key));
 				}
 			}
 			
-			return text;
+			return ReactHtmlParser(text);
 		}
 
 		return null;

@@ -9,6 +9,7 @@ import { usePopups } from "../../Common/Popups";
 import { Loading } from "../../Common/Components/Loading";
 import { useRoot } from "../../Common/Root";
 import { db } from "../../init";
+import { Strings } from "../../Common/Classes/strings";
 
 export function SecretaryProfileFragment() {
 	const auth = useAuth();
@@ -19,11 +20,7 @@ export function SecretaryProfileFragment() {
 	const [clinics, setClinics] = useState();
 	const [clinicCards, setClinicCards] = useState();
 
-	// Is this even needed? It's causeing a re-rendering problem.
-	// useEffect(() => {
-	// 	popups.clear();
-	// }, []);
-
+	// Get all the clinics where the current user works as a secretary:
 	useEffect(() => {
 		if (auth?.user?.uid) {
 			return db.collectionGroup("secretaries")
@@ -41,17 +38,18 @@ export function SecretaryProfileFragment() {
 								data.id = clinic_snap.id;
 								return data;
 							})
-							.catch(reason => popups.error("It's here!", reason.message))
+							.catch(reason => popups.error(reason.message))
 						);
 					}
 
 					Promise.all(promises).then(data => setClinics(data));
 				},
-				error => popups.error("Fetching clinic data: " + error.message)
+				error => popups.error(error.message)
 			);
 		}
 	}, [auth.user]);
 
+	// Get the current user's user data:
 	useEffect(() => {
 		if (auth?.user?.uid) {
 			return db.collection("users").doc(auth.user.uid).onSnapshot(
@@ -62,10 +60,11 @@ export function SecretaryProfileFragment() {
 						setSecretary(sec_data);
 					}
 					else {
+						// If the user isn't a secretary, ask if he'd like to be one:
 						const close = () => {popups.remove(popup)}
 		
 						const popup =
-							<Popup key="Create Secretary Profile" title="Create Secretary Profile" close={close}>
+							<Popup key="Create Secretary Profile" title={Strings.instance.get(39)} close={close}>
 								<SecretaryCreateProfileForm
 									user={auth.user.uid}
 									close={close}
@@ -75,7 +74,7 @@ export function SecretaryProfileFragment() {
 						popups.add(popup);
 					}
 				},
-				error => popups.error("Fetching user data: " + error.message)
+				error => popups.error(error.message)
 			);
 		}
 	}, [auth.user]);
@@ -105,13 +104,13 @@ export function SecretaryProfileFragment() {
 	if (secretary && clinics !== null) {
 		display = (
 			<>
-				<h2>Secretary</h2>
+				<h2>{Strings.instance.get(30)}</h2>
 				<section>
 					<header>
-						<h3>Clinics</h3>
+						<h3>{Strings.instance.get(46)}</h3>
 					</header>
 					<div className="cardList">
-						{clinicCards ? clinicCards : "You are not currently employed in any clinic"}
+						{clinicCards ? clinicCards : Strings.instance.get(47)}
 					</div>
 				</section>
 			</>

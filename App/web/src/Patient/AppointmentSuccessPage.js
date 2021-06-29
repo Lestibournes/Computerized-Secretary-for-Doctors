@@ -7,9 +7,13 @@ import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
 import { Loading } from '../Common/Components/Loading';
 import { db } from '../init';
+import { Strings } from '../Common/Classes/strings';
+import { useRoot } from '../Common/Root';
+import { Button } from '../Common/Components/Button';
 
 export function AppointmentSuccessPage() {
 	const popups = usePopups();
+	const root = useRoot();
 
 	const { clinic, appointment } = useParams(); //The ID of the doctor and clinic.
 	
@@ -54,20 +58,27 @@ export function AppointmentSuccessPage() {
 
 	if (appointmentData && doctorData && clinicData) {
 		display =
-		<p>
-			You have a <b>{appointmentData.type}</b> appointment with Dr.
-			<b> {doctorData.fullName}</b> at
-			<b> {clinicData.name}, {clinicData.city}</b> on
-			<b> {new SimpleDate(appointmentData.start.toDate()).toString()}</b> at
-			<b> {Time.fromDate(appointmentData.start.toDate()).toString()}</b>
-		</p>
+		<>
+			<p>
+				{Strings.instance.get(55,
+				new Map([
+					["type", appointmentData.type],
+					["doctor", doctorData.fullName],
+					["clinic", clinicData.name],
+					["city", clinicData.city],
+					["date", new SimpleDate(appointmentData.start.toDate()).toString()],
+					["time", Time.fromDate(appointmentData.start.toDate()).toString()]])
+				)}
+			</p>
+			<p><Button link={root.get() + "/"} label={Strings.instance.get(54)} /></p>
+		</>
 	}
 
 	return (
 		<div className="Page">
 			<Header />
-			<h1>Make an Appointment</h1>
-			<h2>Success!</h2>
+			<h1>{Strings.instance.get(49)}</h1>
+			<h2>{Strings.instance.get(51)}</h2>
 			<main>
 				{display}
 			</main>

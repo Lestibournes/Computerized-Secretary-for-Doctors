@@ -5,7 +5,6 @@ import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
-import { events, server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { TabbedContainer } from '../Common/Components/TabbedContainer';
 import { Header } from '../Common/Components/Header';
@@ -74,7 +73,7 @@ export function AppointmentDetailsPage() {
 
 	if (appointmentData && doctorData && clinicData) {
 		title = clinicData.name;
-		subtitle = "Dr. " + doctorData.user.fullName + "'s Appointment";
+		subtitle = "Dr. " + doctorData.fullName + "'s Appointment";
 		display = 
 		<>
 			<TabbedContainer>
@@ -87,19 +86,19 @@ export function AppointmentDetailsPage() {
 					</div>
 					<div className="table tab-content">
 						<b>Start:</b> <span>{
-						SimpleDate.fromObject(appointmentData.extra.date).toString() + " " + 
-						Time.fromObject(appointmentData.extra.time).toString()
+						new SimpleDate(appointmentData.start.toDate()).toString() + " " + 
+						Time.fromDate(appointmentData.start.toDate()).toString()
 						}</span>
-						<b>Duration:</b> <span>{appointmentData.appointment.duration} minutes</span>
-						<b>Type:</b> <span>{capitalizeAll(appointmentData.appointment.type)}</span>
+						<b>Duration:</b> <span>{(appointmentData.end - appointmentData.start) / 60} minutes</span>
+						<b>Type:</b> <span>{capitalizeAll(appointmentData.type)}</span>
 					</div>
 				</div>
 
 				<div title="Doctor Information" icon="fa-info-circle">
 					<div className="table tab-content">
-						<b>Photo</b> <img src={image} alt={doctorData.user.fullName} />
-						<b>Name:</b> <span>{doctorData.user.fullName}</span>
-						<b>Sex:</b> <span>{doctorData.user.sex ? capitalizeAll(doctorData.user.sex) : "Not specified"}</span>
+						<b>Photo</b> <img src={image} alt={doctorData.fullName} />
+						<b>Name:</b> <span>{doctorData.fullName}</span>
+						<b>Sex:</b> <span>{doctorData.sex ? capitalizeAll(doctorData.sex) : "Not specified"}</span>
 					</div>
 				</div>
 				

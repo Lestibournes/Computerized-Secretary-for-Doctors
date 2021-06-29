@@ -142,6 +142,94 @@
 		{
 			"en": "View As...",
 			"he": "צפה בתור..."
+		},
+		{
+			"en": "View As...",
+			"he": "צפי בתור..."
+		},
+		{
+			"en": "Work Calendar",
+			"he": "יומן עבודה"
+		},
+		{
+			"en": "Work Agenda",
+			"he": "לו\"ז"
+		},
+		{
+			"en": "Profile",
+			"he": "פרופיל"
+		},
+		{
+			"en": "Create Secretary Profile",
+			"he": "צור פרופיל מזכיר"
+		},
+		{
+			"en": "Create Secretary Profile",
+			"he": "צרי פרופיל מזכירה"
+		},
+		{
+			"en": "Would you like to create a secretary profile?",
+			"he": "האם ברצונך ליצור פרופיל מזכיר?"
+		},
+		{
+			"en": "Would you like to create a secretary profile?",
+			"he": "האם ברצונך ליצור פרופיל מזכירה?"
+		},
+		{
+			"en": "No",
+			"he": "לא"
+		},
+		{
+			"en": "Yes",
+			"he": "כן"
+		},
+		{
+			"en": "Loading...",
+			"he": "טוען..."
+		},
+		{
+			"en": "Clinics",
+			"he": "מרפאות"
+		},
+		{
+			"en": "You are not currently employed in any clinic",
+			"he": "אתה לא מועסק כרגע באף מרפאה"
+		},
+		{
+			"en": "You are not currently employed in any clinic",
+			"he": "את לא מועסקת כרגע באף מרפאה"
+		},
+		{
+			"en": "Make an Appointment",
+			"he": "קביעת תור"
+		},
+		{
+			"en": "My Appointments",
+			"he": "התורים שלי"
+		},
+		{
+			"en": "Success!",
+			"he": "הצלחה!"
+		},
+		{
+			"en": "Your appointment has been successfully deleted.",
+			"he": "התור שלך בוטל בהצלחה"
+		},
+		{
+			"en": "Your appointment has been successfully deleted.",
+			"he": "התור שלך בוטל בהצלחה"
+		},
+		{
+			"en": "Home Page",
+			"he": "דף הבית"
+		},
+		{
+			"en": "You have a <b>$(type)</b> appointment with Dr. <b> $(doctor)</b> at <b> $(clinic), $(city)</b> on <b> $(date)</b> at <b> $(time)</b>",
+			"he": "יש לך תור <b>$(type)</b> עם ד\"ר <b>$(doctor)</b> ב-<b>$(clinic), $(city)</b> ביום <b>$(date)</b> בשעה <b>$(time)</b>"
+		},
+		{
+			"en": "",
+			"he": ""
 		}
 	]
 }
