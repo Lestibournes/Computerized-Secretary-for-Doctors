@@ -3,14 +3,11 @@ export class Strings {
 	static #instance
 	
 	constructor() {
-		console.log("In constructor");
 		if (!Strings.#instance) {
-			console.log("Creating new instance");
 			this.#language = "he";
 			Strings.#instance = this;
 		}
 
-		console.log("Returning instance");
 		return Strings.#instance;
 	}
 	

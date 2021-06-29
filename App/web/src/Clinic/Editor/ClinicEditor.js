@@ -305,7 +305,7 @@ export function ClinicEditor() {
 						<Button label="Edit"
 							action={() => {
 								const close = () => popups.remove(popup);
-							
+
 								const popup =
 									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
 										<LinkEditForm
@@ -315,7 +315,7 @@ export function ClinicEditor() {
 											close={close}
 										/>
 									</Popup>
-							
+
 								popups.add(popup);
 							}}
 						/>

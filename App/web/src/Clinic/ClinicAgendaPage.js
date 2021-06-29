@@ -34,14 +34,14 @@ export function ClinicAgendaPage() {
 	const [results, setResults] = useState(null);
 
 	const [searching, setSearching] = useState(true);
-	
+
 	useEffect(() => {
 		if (clinic) {
 			// Fetch all of the requested appointments:
 			let query = db.collection("clinics").doc(clinic).collection("appointments")
 			.orderBy("start")
-			.where("start", ">=", searchPrameters.start.toDate().getTime())
-			.where("start", "<=", searchPrameters.end.toDate().getTime());
+			.where("start", ">=", searchPrameters.start.toDate())
+			.where("start", "<", searchPrameters.end.toDate());
 
 			if (searchPrameters.doctor) query.where("doctor", "==", searchPrameters.doctor);
 
@@ -53,6 +53,7 @@ export function ClinicAgendaPage() {
 						if (app_snap.exists) {
 							const data = app_snap.data();
 							data.id = app_snap.id;
+							console.log(data.start);
 							app_data.push(data);
 						}
 					}

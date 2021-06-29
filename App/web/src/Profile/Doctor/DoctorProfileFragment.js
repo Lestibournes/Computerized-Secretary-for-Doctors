@@ -112,7 +112,7 @@ export function DoctorProfileFragment() {
 	// Get doctor link:
 	useEffect(() => {
 		if (doctor) {
-			return db.collection("links").where("type", "==", "doctor").where("id", "==", doctor).onSnapshot(
+			return db.collection("links").where("type", "==", "doctor").where("id", "==", doctor.id).onSnapshot(
 				link_snaps => {
 					for (const link_snap of link_snaps.docs) {
 						if (link_snap.exists) {
