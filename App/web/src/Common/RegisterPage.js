@@ -62,9 +62,7 @@ export function RegisterPage() {
 					setSubmitting(true);
 
 					auth.register(values.fname, values.lname, values.sex.toLowerCase(), values.email, values.password).then(response => {
-						console.log("Got response");
 						if (response.success) {
-							console.log("Success!");
 							setRedirect(true);
 						}
 						else {

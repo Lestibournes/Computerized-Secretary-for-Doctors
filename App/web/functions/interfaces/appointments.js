@@ -337,7 +337,6 @@ async function verifyAppointment(change, context) {
 }
 
 exports.verifyAppointment = functions.firestore.document(CLINICS + '/{clinicID}/' + APPOINTMENTS + '/{appID}').onWrite((change, context) => {
-	console.log("Triggered!")
 	return verifyAppointment(change, context);
 });
 

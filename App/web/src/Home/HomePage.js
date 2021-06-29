@@ -11,6 +11,7 @@ import { useAuth } from "../Common/Auth";
 import { Header } from "../Common/Components/Header";
 import { db } from "../init";
 import { usePopups } from "../Common/Popups";
+import { Strings } from "../Common/Classes/strings";
 
 const PATIENT = "Patient";
 const DOCTOR = "Doctor";
@@ -31,10 +32,10 @@ export function HomePage() {
 					const menuItems = [];
 
 					if (user_snap.data().doctor || user_snap.data().secretary) {
-						menuItems.push(<Link to="/home/patient">Patient</Link>);
+						menuItems.push(<Link to="/home/patient">{Strings.instance.get(26)}</Link>);
 
-						if (user_snap.data().doctor) menuItems.push(<Link to="/home/doctor">Doctor</Link>);
-						if (user_snap.data().secretary) menuItems.push(<Link to="/home/secretary">Secretary</Link>)
+						if (user_snap.data().doctor) menuItems.push(<Link to="/home/doctor">{Strings.instance.get(28)}</Link>);
+						if (user_snap.data().secretary) menuItems.push(<Link to="/home/secretary">{Strings.instance.get(30)}</Link>)
 
 						setItems(menuItems);
 					}
@@ -53,10 +54,10 @@ export function HomePage() {
 		<div className="Page">
 			<Header />
 			<header className="subtitle">
-				<h1>Welcome</h1>
+				<h1>{Strings.instance.get(32)}</h1>
 				<div>
 					{items ?
-					<DropdownMenu label="View As...">
+					<DropdownMenu label={Strings.instance.get(34)}>
 						{items}
 					</DropdownMenu>
 					: ""}

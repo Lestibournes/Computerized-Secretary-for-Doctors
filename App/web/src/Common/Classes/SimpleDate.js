@@ -86,8 +86,6 @@ export class SimpleDate {
 	 * @constructor
 	 */
 	constructor(...args) {
-		SimpleDate.#strings = new Strings();
-
 		if (args.length === 3 || args.length === 2) this.#date = new Date(...args);
 		if (args.length === 1) {
 			if (args[0] instanceof Date) {
@@ -137,13 +135,13 @@ export class SimpleDate {
 	 */
 	get dayname() {
 		switch (this.weekday) {
-			case 0: return SimpleDate.#strings.getString(0).toLowerCase();
-			case 1: return SimpleDate.#strings.getString(1).toLowerCase();
-			case 2: return SimpleDate.#strings.getString(2).toLowerCase();
-			case 3: return SimpleDate.#strings.getString(3).toLowerCase();
-			case 4: return SimpleDate.#strings.getString(4).toLowerCase();
-			case 5: return SimpleDate.#strings.getString(5).toLowerCase();
-			case 6: return SimpleDate.#strings.getString(6).toLowerCase();
+			case 0: return Strings.instance.get(0).toLowerCase();
+			case 1: return Strings.instance.get(1).toLowerCase();
+			case 2: return Strings.instance.get(2).toLowerCase();
+			case 3: return Strings.instance.get(3).toLowerCase();
+			case 4: return Strings.instance.get(4).toLowerCase();
+			case 5: return Strings.instance.get(5).toLowerCase();
+			case 6: return Strings.instance.get(6).toLowerCase();
 		}
 	}
 
@@ -152,13 +150,13 @@ export class SimpleDate {
 	 */
 	 get dayabbreviation() {
 		switch (this.weekday) {
-			case 0: return SimpleDate.#strings.getString(7).toLowerCase();
-			case 1: return SimpleDate.#strings.getString(8).toLowerCase();
-			case 2: return SimpleDate.#strings.getString(9).toLowerCase();
-			case 3: return SimpleDate.#strings.getString(10).toLowerCase();
-			case 4: return SimpleDate.#strings.getString(11).toLowerCase();
-			case 5: return SimpleDate.#strings.getString(12).toLowerCase();
-			case 6: return SimpleDate.#strings.getString(13).toLowerCase();
+			case 0: return Strings.instance.get(7).toLowerCase();
+			case 1: return Strings.instance.get(8).toLowerCase();
+			case 2: return Strings.instance.get(9).toLowerCase();
+			case 3: return Strings.instance.get(10).toLowerCase();
+			case 4: return Strings.instance.get(11).toLowerCase();
+			case 5: return Strings.instance.get(12).toLowerCase();
+			case 6: return Strings.instance.get(13).toLowerCase();
 		}
 	}
 
@@ -167,18 +165,18 @@ export class SimpleDate {
 	 */
 	get monthname() {
 		switch (this.month) {
-			case 0: return SimpleDate.#strings.getString(14);
-			case 1: return SimpleDate.#strings.getString(15);
-			case 2: return SimpleDate.#strings.getString(16);
-			case 3: return SimpleDate.#strings.getString(17);
-			case 4: return SimpleDate.#strings.getString(18);
-			case 5: return SimpleDate.#strings.getString(19);
-			case 6: return SimpleDate.#strings.getString(20);
-			case 7: return SimpleDate.#strings.getString(21);
-			case 8: return SimpleDate.#strings.getString(22);
-			case 9: return SimpleDate.#strings.getString(23);
-			case 10: return SimpleDate.#strings.getString(24);
-			case 11: return SimpleDate.#strings.getString(25);
+			case 0: return Strings.instance.get(14);
+			case 1: return Strings.instance.get(15);
+			case 2: return Strings.instance.get(16);
+			case 3: return Strings.instance.get(17);
+			case 4: return Strings.instance.get(18);
+			case 5: return Strings.instance.get(19);
+			case 6: return Strings.instance.get(20);
+			case 7: return Strings.instance.get(21);
+			case 8: return Strings.instance.get(22);
+			case 9: return Strings.instance.get(23);
+			case 10: return Strings.instance.get(24);
+			case 11: return Strings.instance.get(25);
 			
 		}
 

@@ -18,6 +18,6 @@ export const auth = firebase.auth();
 
 const fn = firebase.functions();
 
-// fn.useEmulator("localhost", 5001);
-// db.useEmulator("localhost", 8080);
-// auth.useEmulator("http://localhost:9099");
+fn.useEmulator("localhost", 5001);
+db.useEmulator("localhost", 8080);
+auth.useEmulator("http://localhost:9099");

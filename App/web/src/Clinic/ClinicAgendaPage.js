@@ -53,7 +53,6 @@ export function ClinicAgendaPage() {
 						if (app_snap.exists) {
 							const data = app_snap.data();
 							data.id = app_snap.id;
-							console.log(data.start);
 							app_data.push(data);
 						}
 					}

@@ -1,0 +1,147 @@
+{
+	"strings": [
+		{
+			"en": "Sunday",
+			"he": "ראשון"
+		},
+		{
+			"en": "Monday",
+			"he": "שני"
+		},
+		{
+			"en": "Tuesday",
+			"he": "שלישי"
+		},
+		{
+			"en": "Wednesday",
+			"he": "רביעי"
+		},
+		{
+			"en": "Thursday",
+			"he": "חמישי"
+		},
+		{
+			"en": "Friday",
+			"he": "שישי"
+		},
+		{
+			"en": "Saturday",
+			"he": "שבת"
+		},
+
+		{
+			"en": "Sun",
+			"he": "א"
+		},
+		{
+			"en": "Mon",
+			"he": "ב"
+		},
+		{
+			"en": "Tue",
+			"he": "ג"
+		},
+		{
+			"en": "Wed",
+			"he": "ד"
+		},
+		{
+			"en": "Thu",
+			"he": "ה"
+		},
+		{
+			"en": "Fri",
+			"he": "ו"
+		},
+		{
+			"en": "Sat",
+			"he": "ש"
+		},
+
+		{
+			"en": "January",
+			"he": "ינואר"
+		},
+		{
+			"en": "February",
+			"he": "פברואר"
+		},
+		{
+			"en": "March",
+			"he": "מרץ"
+		},
+		{
+			"en": "April",
+			"he": "אפריל"
+		},
+		{
+			"en": "May",
+			"he": "מאי"
+		},
+		{
+			"en": "June",
+			"he": "יוני"
+		},
+		{
+			"en": "July",
+			"he": "יולי"
+		},
+		{
+			"en": "August",
+			"he": "אוגוסט"
+		},
+		{
+			"en": "September",
+			"he": "ספטמבר"
+		},
+		{
+			"en": "October",
+			"he": "אוקטובר"
+		},
+		{
+			"en": "November",
+			"he": "נובמבר"
+		},
+		{
+			"en": "December",
+			"he": "דצמבר"
+		},
+
+		{
+			"en": "Patient",
+			"he": "מטופל"
+		},
+		{
+			"en": "Patient",
+			"he": "מטופלת"
+		},
+		{
+			"en": "Doctor",
+			"he": "רופא"
+		},
+		{
+			"en": "Doctor",
+			"he": "רופאה"
+		},
+		{
+			"en": "Secretary",
+			"he": "מזכיר"
+		},
+		{
+			"en": "Secretary",
+			"he": "מזכירה"
+		},
+		{
+			"en": "Welcome",
+			"he": "ברוך הבא"
+		},
+		{
+			"en": "Welcome",
+			"he": "ברוכה הבאה"
+		},
+		{
+			"en": "View As...",
+			"he": "צפה בתור..."
+		}
+	]
+}
