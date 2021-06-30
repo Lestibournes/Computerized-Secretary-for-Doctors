@@ -7,7 +7,7 @@ import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { capitalizeAll, getPictureURL } from '../Common/functions';
 import { useParams } from 'react-router-dom';
 import { Button } from '../Common/Components/Button';
-import { events, server } from '../Common/server';
+import { events } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { TabbedContainer } from '../Common/Components/TabbedContainer';
 import { Header } from '../Common/Components/Header';
@@ -16,6 +16,7 @@ import { useRoot } from '../Common/Root';
 import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
 import { db } from "../init";
+import { Strings } from "../Common/Classes/strings";
 
 export function AppointmentPage() {
 	const root = useRoot();
@@ -25,6 +26,7 @@ export function AppointmentPage() {
 	const {clinic, appointment} = useParams();
 
 	const [appointmentData, setAppointmentData] = useState();
+	const [patientData, setPatientData] = useState();
 	const [doctorData, setDoctorData] = useState();
 	const [clinicData, setClinicData] = useState();
 
@@ -64,6 +66,18 @@ export function AppointmentPage() {
 						)
 						.catch(reason => popups.error(reason.message));
 
+						db.collection("users").doc(app_data.patient).get()
+						.then(
+							patient_snap => {
+								if (patient_snap.exists) {
+									const patient_data = patient_snap.data();
+									patient_data.id = patient_snap.id;
+									setPatientData(patient_data);
+								}
+							}
+						)
+						.catch(reason => popups.error(reason.message));
+
 						getPictureURL(app_data.patient).then(
 							url => {
 								setImage(url);
@@ -86,33 +100,38 @@ export function AppointmentPage() {
 				}
 			)
 			
-			return events.clinics.appointment(appointmentData.clinic, appointment, (oldData, newData) => {
-				if (oldData.arrived !== newData.arrived && newData.arrived) setArrived(newData.arrived);
-			});
 		}
 	}, [appointment]);
+	
+	useEffect(() => {
+		if (appointment, appointmentData) {
+			return events.clinics.appointment(appointmentData.clinic, appointment, (oldData, newData) => {
+				if (newData) setArrived(newData.arrived);
+			});
+		}
+	}, [appointment, appointmentData]);
 
 	let display;
 	let subtitle;
 	let title;
 
-	if (appointmentData && doctorData && clinicData) {
+	if (appointmentData && patientData && doctorData && clinicData) {
 		title = clinicData.name;
-		subtitle = "Dr. " + doctorData.user.fullName + "'s Appointment";
+		subtitle = Strings.instance.get(93, new Map([["patient", patientData.fullName]]));
 		display = 
 		<>
 			<TabbedContainer>
-				<div key="Appointment Details" title="Appointment Details" icon="fa-calendar-alt">
+				<div key="Appointment Details" title={Strings.instance.get(62)} icon="fa-calendar-alt">
 					<div className="tab-controls">
 						<Button
 							icon="fas fa-edit"
-							label="Edit"
+							label={Strings.instance.get(57)}
 							link={root.get() + "/clinic/appointments/edit/" + clinic + "/" + appointment}
 						/>
 						<Button
 							type={arrived ? "okay" : ""}
 							icon={arrived ? "fas fa-check-square" : "far fa-check-square"}
-							label="Arrived"
+							label={Strings.instance.get(94)}
 							action={() => {
 								db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({arrived: !arrived})
 								.catch(reason => popups.error(reason.message));
@@ -120,36 +139,36 @@ export function AppointmentPage() {
 						/>
 					</div>
 					<div className="table tab-content">
-						<b>Start:</b> <span>{
+						<b>{Strings.instance.get(58)}:</b> <span>{
 						new SimpleDate(appointmentData.start.toDate()).toString() + " " + 
 						Time.fromDate(appointmentData.start.toDate()).toString()
 						}</span>
-						<b>Duration:</b> <span>{appointmentData.appointment.duration} minutes</span>
-						<b>Type:</b> <span>{capitalizeAll(appointmentData.appointment.type)}</span>
+						<b>{Strings.instance.get(59)}:</b> <span>{(appointmentData.end - appointmentData.start) / 60} minutes</span>
+						<b>{Strings.instance.get(61)}:</b> <span>{capitalizeAll(appointmentData.type)}</span>
 					</div>
 				</div>
 
-				<div key="Patient Information" title="Patient Information" icon="fa-info-circle">
+				<div key="Patient Information" title={Strings.instance.get(96)} icon="fa-info-circle">
 					<div className="table tab-content">
-						<b>Photo</b> <img src={image} alt={appointmentData.patient.fullName} />
-						<b>Name:</b> <span>{appointmentData.patient.fullName}</span>
-						<b>Sex:</b> <span>{appointmentData.patient.sex ? capitalizeAll(appointmentData.patient.sex) : "Not specified"}</span>
+						<b>{Strings.instance.get(65)}</b> <img src={image} alt={patientData.fullName} />
+						<b>{Strings.instance.get(66)}:</b> <span>{patientData.fullName}</span>
+						<b>{Strings.instance.get(67)}:</b> <span>{patientData.sex ? capitalizeAll(patientData.sex) : "Not specified"}</span>
 					</div>
 				</div>
 				
-				<div key="Documents" title="Documents" icon="fa-file-medical-alt">
+				<div key="Documents" title={Strings.instance.get(68)} icon="fa-file-medical-alt">
 					<div className="tab-content">
 						To Do
 					</div>
 				</div>
 
-				<div key="Chat" title="Chat" icon="fa-comment">
+				<div key="Chat" title={Strings.instance.get(69)} icon="fa-comment">
 					<div className="tab-content">
 						To Do
 					</div>
 				</div>
 
-				<div key="Visit Notes" title="Visit Notes" icon="fa-clipboard">
+				<div key="Visit Notes" title={Strings.instance.get(98)} icon="fa-clipboard">
 					<Formik
 						initialValues={{
 							notes: serverText,
@@ -171,7 +190,7 @@ export function AppointmentPage() {
 						<Form>
 							<div className="tab-controls">
 								<span className="controls-group">
-									<span>Text size:</span>
+									<span>{Strings.instance.get(99)}:</span>
 									<Button
 										icon="fas fa-minus"
 										action={() => {
@@ -201,7 +220,7 @@ export function AppointmentPage() {
 								<Button
 									type="submit"
 									icon={serverText === clientText ? "fas fa-save" : "far fa-save"}
-									label={serverText === clientText ? "Saved" : "Save"}
+									label={serverText === clientText ? Strings.instance.get(100) : Strings.instance.get(101)}
 								/>
 							</div>
 							<Field
@@ -210,7 +229,7 @@ export function AppointmentPage() {
 								name="notes"
 								as="textarea"
 								value={clientText}
-								placeholder="Write notes on the appointment here."
+								placeholder={Strings.instance.get(102)}
 								onChange={(e) => {
 									setClientText(e.target.value)
 								}}

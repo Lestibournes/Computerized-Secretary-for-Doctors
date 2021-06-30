@@ -289,7 +289,7 @@
 		},
 		{
 			"en": "Search",
-			"he": "חיפוש"
+			"he": "חפש"
 		},
 		{
 			"en": "Searching...",
@@ -372,44 +372,48 @@
 			"he": "בחר"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Clinic",
+			"he": "מרפאה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Appointment with $(patient)",
+			"he": "תור עם $(patient)"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Arrived",
+			"he": "הגיע"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Arrived",
+			"he": "הגיעה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Patient Information",
+			"he": "פרטי מטופל"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Patient Information",
+			"he": "פרטי מטופלת"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Visit Notes",
+			"he": "הערות ביקור"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Text size",
+			"he": "גודל כתב"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Saved",
+			"he": "שמור"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Save",
+			"he": "שמור"
+		},
+		{
+			"en": "Write notes on the appointment here.",
+			"he": "כתוב הערות על הביקור פה."
 		},
 		{
 			"en": "",

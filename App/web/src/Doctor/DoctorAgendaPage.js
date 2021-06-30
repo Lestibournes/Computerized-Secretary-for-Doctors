@@ -16,6 +16,7 @@ import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
 import { db } from '../init';
 import { Loading } from "../Common/Components/Loading";
+import { Strings } from '../Common/Classes/strings';
 
 export function DoctorAgendaPage() {
 	const root = useRoot();
@@ -176,7 +177,7 @@ export function DoctorAgendaPage() {
 			display =
 			<>
 				<h1>{doctor.fullName}</h1>
-				<h2>Agenda</h2>
+				<h2>{Strings.instance.get(37)}</h2>
 				<Formik
 					initialValues={{
 						clinic: searchPrameters.clinic,
@@ -204,29 +205,29 @@ export function DoctorAgendaPage() {
 					<Form>
 						<div className="searchBar">
 							<Select
-								label="Clinic"
+								label={Strings.instance.get(92)}
 								name="clinic"
 								default={{label: "All", value: ""}}
 								options={clinics}
 							/>
 							<TextInput
-								label="Start"
+								label={Strings.instance.get(58)}
 								name="start"
 								type="date"
 							/>
 							<TextInput
-								label="End"
+								label={Strings.instance.get(70)}
 								name="end"
 								type="date"
 							/>
 							<div className="buttonBar">
-								<Button type="submit" label="Search" />
+								<Button type="submit" label={Strings.instance.get(71)} />
 							</div>
 						</div>
 					</Form>
 				</Formik>
 				<div className="cardList">
-					{searching ? <h3>Searching...</h3> : appointmentCards.length > 0 ? appointmentCards : <h3>There are no appointments in the specified time range.</h3>}
+					{searching ? <h3>{Strings.instance.get(72)}</h3> : appointmentCards.length > 0 ? appointmentCards : <h3>{Strings.instance.get(73)}</h3>}
 				</div>
 			</>;
 	}

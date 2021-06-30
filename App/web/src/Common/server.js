@@ -26,7 +26,7 @@ export const events = {
 	 * @returns unsubscribe function.
 	 */
 		appointment: function(clinic, appointment, callback) {
-			if (!this.appointments.cache) this.appointments.cache = new Map();
+			if (!this.appointment.cache) this.appointment.cache = new Map();
 			
 			return db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).onSnapshot(
 				app_snap => {
@@ -35,15 +35,15 @@ export const events = {
 					newData.id = appointment;
 
 					if (app_snap.data()) {
-						if (!this.appointments.cache.has(key)) {
-							this.appointments.cache.set(key, newData);
+						if (!this.appointment.cache.has(key)) {
+							this.appointment.cache.set(key, newData);
 						}
 						
-						callback(this.appointments.cache.get(key), newData.arrived);
-						this.appointments.cache.set(key, newData);
+						callback(this.appointment.cache.get(key), newData.arrived);
+						this.appointment.cache.set(key, newData);
 					}
 					else {
-						this.appointments.cache.delete(key);
+						this.appointment.cache.delete(key);
 					}
 				}
 			);
