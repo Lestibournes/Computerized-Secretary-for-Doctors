@@ -13,6 +13,7 @@ import { server } from "../Common/server";
 import { Header } from "../Common/Components/Header";
 import { Loading } from "../Common/Components/Loading";
 import { db } from "../init";
+import { Strings } from "../Common/Classes/strings";
 
 export function SearchDoctorsPage() {
 	const [cities, setCities] = useState();
@@ -145,15 +146,15 @@ export function SearchDoctorsPage() {
 				<Form>
 					<div className="searchBar">
 						<TextInput
-							label="Name"
+							label={Strings.instance.get(66)}
 							name="name"
 							type="search"
 							placeholder="Yoni Robinson"
 						/>
-						<Select label="City" name="city" options={cities}/>
-						<Select label="Specialization" name="specialization" options={specializations}/>
+						<Select label={Strings.instance.get(75)} name="city" options={cities}/>
+						<Select label={Strings.instance.get(76)} name="specialization" options={specializations}/>
 						<div className="buttonBar">
-							<Button type="submit" label="Search" />
+							<Button type="submit" label={Strings.instance.get(71)} />
 						</div>
 					</div>
 				</Form>
@@ -165,8 +166,8 @@ export function SearchDoctorsPage() {
 	return (
 		<div className="Page">
 			<Header />
-			<h1>Make an Appointment</h1>
-			<h2>Find a Doctor</h2>
+			<h1>{Strings.instance.get(49)}</h1>
+			<h2>{Strings.instance.get(74)}</h2>
 			<main>
 				{display}
 			</main>

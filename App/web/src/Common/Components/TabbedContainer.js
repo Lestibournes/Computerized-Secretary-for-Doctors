@@ -7,7 +7,7 @@ export function TabbedContainer({children}) {
 
 	const tabs = [];
 
-	for (const index in children) {
+	for (let index = 0; index < children.length; index++) {
 		tabs.push(
 			<div
 				key={index}

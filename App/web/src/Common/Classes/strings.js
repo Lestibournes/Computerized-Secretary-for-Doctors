@@ -77,7 +77,6 @@ export class Strings {
 	 * Retrieve the requested string in the current UI language.
 	 * @param {number} id The id of the requested string (an index)
 	 * @param {Map} values the named variables to plug into the string
-	 * @returns 
 	 */
 	get(id, values) {
 		if (id < Strings.#strings.length) {
@@ -88,9 +87,11 @@ export class Strings {
 					const pattern = new RegExp("\\$\\(" + key + "\\)");
 					text = text.replace(pattern, values.get(key));
 				}
+
+				return ReactHtmlParser(text);
 			}
 			
-			return ReactHtmlParser(text);
+			return text;
 		}
 
 		return null;

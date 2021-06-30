@@ -17,6 +17,7 @@ import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
 import { db, fb } from '../init';
 import { Loading } from '../Common/Components/Loading';
+import { Strings } from '../Common/Classes/strings';
 
 export function SetAppointmentPage() {
 	const auth = useAuth();
@@ -58,17 +59,18 @@ export function SetAppointmentPage() {
 			db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).get()
 			.then(app_snap => {
 				if (app_snap.exists) {
+					console.log(app_snap.data());
 					setData(app_snap.data()); // Appointment data
 
 					setType(app_snap.data().type);
-					setDate(new SimpleDate(app_snap.data().start));
-					setTime(Time.fromDate(app_snap.data().start));
+					setDate(new SimpleDate(app_snap.data().start.toDate()));
+					setTime(Time.fromDate(app_snap.data().start.toDate()));
 
 					setDoctorID(app_snap.data().doctor); 
 					setClinicID(clinic);
 				}
 			})
-			.catch(reason => popups.error(reason.code));
+			.catch(reason => popups.error(reason.message));
 		}
 		else if (clinic && doctor) {
 			// If it's a new appointment:
@@ -177,21 +179,23 @@ export function SetAppointmentPage() {
 	let display = <Loading />;
 	
 	if ((data || !appointment) && doctorData && clinicData && typesData && minimum) {
-		subtitle = 
-			"Appointment Details" + 
-			(doctorData ? " for Dr. " + doctorData.fullName : "") + 
-			(clinicData ? " at " + clinicData.name + ", " + clinicData.city : "");
+		subtitle = Strings.instance.get(78, new Map([
+			["doctor", doctorData.fullName],
+			["clinic", clinicData.name],
+			["city", clinicData.city]
+		]));
 		
 		display = 
 			<>
 				{data ?
 					<>
-						<p>
-							Currently the appointment is a <b>{capitalizeAll(data.type)}</b> appointment
-							on <b>{new SimpleDate(data.start).toString()}</b>
-							at <b>{Time.fromDate(data.start).toString()}</b>.
+						<p>{Strings.instance.get(79, new Map([
+							["type", capitalizeAll(data.type)],
+							["date", new SimpleDate(data.start.toDate()).toString()],
+							["time", Time.fromDate(data.start.toDate()).toString()]
+						]))}
 						</p>
-						<p>You can change the time, data, and type of your appointment below, or cancel your appointment.</p>
+						<p>{Strings.instance.get(80)}</p>
 					</>
 				: ""}
 				<Formik
@@ -272,7 +276,7 @@ export function SetAppointmentPage() {
 						<div className="pickers">
 							<div className="widgets">
 								<SelectList
-									label="Appointment Type"
+									label={Strings.instance.get(81)}
 									name="type"
 									options={typesOptions}
 									selected={type}
@@ -286,7 +290,7 @@ export function SetAppointmentPage() {
 									}}
 								/>
 								<SelectList
-									label="Time Slot"
+									label={Strings.instance.get(82)}
 									name="time"
 									options={times}
 									selected={time}
@@ -298,9 +302,9 @@ export function SetAppointmentPage() {
 									<Button
 										type="cancel"
 										action={() => ConfirmDeletePopup(popups, clinicID, appointment, () => setDeleted(true))}
-									label="Delete" />
+									label={Strings.instance.get(84)} />
 								: ""}
-								<Button type="submit" label="Submit" />
+								<Button type="submit" label={Strings.instance.get(83)} />
 							</div>
 						</div>
 					</Form>
@@ -313,7 +317,7 @@ export function SetAppointmentPage() {
 	return (
 		<div className="Page">
 			<Header />
-			<h1>{appointment ? "Modify Appointment" : "Make an Appointment"}</h1>
+			<h1>{appointment ? Strings.instance.get(77) : Strings.instance.get(49)}</h1>
 			<h2>{subtitle}</h2>
 			<main>
 				{display}
@@ -327,16 +331,16 @@ function ConfirmDeletePopup(popups, clinic, appointment, success) {
 			popups.remove(popup);
 		}
 
-		const popup = <Popup key="Confirm Appointment Deletion" title="Confirm Deletion" close={close}>
-			<p>Are you sure you wish to delete this appointment?</p>
-			<p>This action is permanent and cannot be undone.</p>
+		const popup = <Popup key="Confirm Appointment Deletion" title={Strings.instance.get(85)} close={close}>
+			<p>{Strings.instance.get(86)}</p>
+			<p>{Strings.instance.get(88)}</p>
 			<div className="buttonBar">
-				<Button type="cancel" label="Yes" action={() => {
+				<Button type="cancel" label={Strings.instance.get(44)} action={() => {
 					db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).delete()
 					.then(() => success())
 					.catch(reason => popups.error(reason.message));
 				}} />
-				<Button type="okay" label="Cancel" action={close} />
+				<Button type="okay" label={Strings.instance.get(89)} action={close} />
 			</div>
 		</Popup>
 

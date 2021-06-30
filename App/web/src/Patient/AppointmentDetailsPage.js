@@ -10,6 +10,7 @@ import { TabbedContainer } from '../Common/Components/TabbedContainer';
 import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
 import { db } from '../init';
+import { Strings } from '../Common/Classes/strings';
 
 export function AppointmentDetailsPage() {
 	const root = useRoot();
@@ -36,6 +37,7 @@ export function AppointmentDetailsPage() {
 						app_data.id = app_snap.id;
 						setAppointmentData(app_data);
 			
+						// Fetch the doctor's data:
 						db.collection("users").doc(app_data.doctor).get().then(
 							doctor_snap => {
 								if (doctor_snap.exists) {
@@ -47,7 +49,7 @@ export function AppointmentDetailsPage() {
 						)
 						.catch(reason => popups.error(reason.message));
 						
-						
+						// Fetch the doctor's picture:
 						getPictureURL(app_data.doctor).then(url => {
 							setImage(url);
 						});
@@ -56,6 +58,7 @@ export function AppointmentDetailsPage() {
 				)
 				.catch(reason => popups.error(reason.message));
 
+				// Fetch the clinic data:
 				db.collection("clinics").doc(clinic).get().then(
 					clinic_snap => {
 						const clinic_data = clinic_snap.data();
@@ -73,42 +76,42 @@ export function AppointmentDetailsPage() {
 
 	if (appointmentData && doctorData && clinicData) {
 		title = clinicData.name;
-		subtitle = "Dr. " + doctorData.fullName + "'s Appointment";
+		subtitle = Strings.instance.get(56, new Map([["doctor", doctorData.fullName]]));
 		display = 
 		<>
 			<TabbedContainer>
-				<div title="Appointment Details" icon="fa-calendar-alt">
+				<div title={Strings.instance.get(62)} icon="fa-calendar-alt">
 					<div className="tab-controls">
 						<Button
-							label="Edit"
+							label={Strings.instance.get(57)}
 							link={root.get() + "/clinic/appointments/edit/" + clinic + "/" + appointment}
 						/>
 					</div>
 					<div className="table tab-content">
-						<b>Start:</b> <span>{
+						<b>{Strings.instance.get(58)}:</b> <span>{
 						new SimpleDate(appointmentData.start.toDate()).toString() + " " + 
 						Time.fromDate(appointmentData.start.toDate()).toString()
 						}</span>
-						<b>Duration:</b> <span>{(appointmentData.end - appointmentData.start) / 60} minutes</span>
-						<b>Type:</b> <span>{capitalizeAll(appointmentData.type)}</span>
+						<b>{Strings.instance.get(59)}:</b> <span>{Strings.instance.get(60, new Map([["duration", (appointmentData.end - appointmentData.start) / 60]]))}</span>
+						<b>{Strings.instance.get(61)}:</b> <span>{capitalizeAll(appointmentData.type)}</span>
 					</div>
 				</div>
 
-				<div title="Doctor Information" icon="fa-info-circle">
+				<div title={Strings.instance.get(63)} icon="fa-info-circle">
 					<div className="table tab-content">
-						<b>Photo</b> <img src={image} alt={doctorData.fullName} />
-						<b>Name:</b> <span>{doctorData.fullName}</span>
-						<b>Sex:</b> <span>{doctorData.sex ? capitalizeAll(doctorData.sex) : "Not specified"}</span>
+						<b>{Strings.instance.get(65)}</b> <img src={image} alt={doctorData.fullName} />
+						<b>{Strings.instance.get(66)}:</b> <span>{doctorData.fullName}</span>
+						<b>{Strings.instance.get(67)}:</b> <span>{doctorData.sex ? capitalizeAll(doctorData.sex) : "Not specified"}</span>
 					</div>
 				</div>
 				
-				<div title="Documents" icon="fa-file-medical-alt">
+				<div title={Strings.instance.get(68)} icon="fa-file-medical-alt">
 					<div>
 						<div className="tab-content">To Do</div>
 					</div>
 				</div>
 
-				<div title="Chat" icon="fa-comment">
+				<div title={Strings.instance.get(69)} icon="fa-comment">
 					<div className="tab-content">To Do</div>
 				</div>
 			</TabbedContainer>

@@ -42,10 +42,10 @@ import "./SelectDate.css";
 		// Create the component and add it to the array to be displayed:
 		days.push(
 			<div
-				key={SimpleDate.day_names[i]}
+				key={SimpleDate.dayabbreviations[i]}
 				className={"item weekday"}
 			>
-				{SimpleDate.day_names[i].substr(0, 3)}
+				{SimpleDate.dayabbreviations[i]}
 			</div>
 		)
 	}

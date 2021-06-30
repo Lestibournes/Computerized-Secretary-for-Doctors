@@ -228,6 +228,154 @@
 			"he": "יש לך תור <b>$(type)</b> עם ד\"ר <b>$(doctor)</b> ב-<b>$(clinic), $(city)</b> ביום <b>$(date)</b> בשעה <b>$(time)</b>"
 		},
 		{
+			"en": "Appointment with Dr. $(doctor)",
+			"he": "תור עם ד\"ר $(doctor)"
+		},
+		{
+			"en": "Edit",
+			"he": "עריכה"
+		},
+		{
+			"en": "Start",
+			"he": "התחלה"
+		},
+		{
+			"en": "Duration",
+			"he": "משך זמן"
+		},
+		{
+			"en": "$(duration) minutes",
+			"he": "$(duration) דקות"
+		},
+		{
+			"en": "Type",
+			"he": "סוג"
+		},
+		{
+			"en": "Appointment Details",
+			"he": "פרטי תור"
+		},
+		{
+			"en": "Doctor Information",
+			"he": "פרטי הרופא"
+		},
+		{
+			"en": "Doctor Information",
+			"he": "פרטי הרופאה"
+		},
+		{
+			"en": "Photo",
+			"he": "תמונה"
+		},
+		{
+			"en": "Name",
+			"he": "שם"
+		},
+		{
+			"en": "Sex",
+			"he": "מין"
+		},
+		{
+			"en": "Documents",
+			"he": "מסמכים"
+		},
+		{
+			"en": "Chat",
+			"he": "שיחה"
+		},
+		{
+			"en": "End",
+			"he": "סוף"
+		},
+		{
+			"en": "Search",
+			"he": "חיפוש"
+		},
+		{
+			"en": "Searching...",
+			"he": "מחפש..."
+		},
+		{
+			"en": "There are no appointments in the specified time range.",
+			"he": "אין תורים בטווח הזמן המצויין."
+		},
+		{
+			"en": "Find a Doctor",
+			"he": "מציאת רופא"
+		},
+		{
+			"en": "City",
+			"he": "עיר"
+		},
+		{
+			"en": "Specialization",
+			"he": "תחום התמחות"
+		},
+		{
+			"en": "Modify Appointment",
+			"he": "עריכת תור"
+		},
+		{
+			"en": "Appointment Details for Dr. $(doctor) at $(clinic), $(city)",
+			"he": "פרטי תור עבור ד\"ר $(doctor) ב-$(clinic), $(city)"
+		},
+		{
+			"en": "Currently the appointment is a <b>$(type)</b> appointment on <b>$(date)</b> at <b>$(time)</b>.",
+			"he": "כרגע התור הוא מסוג <b>$(type)</b> שיתקיים ביום <b>$(date)</b> בשעה <b>$(time)</b>."
+		},
+		{
+			"en": "You can change the time, date, and type of your appointment below, or cancel your appointment.",
+			"he": "אתה יכול לשנות את הזמן, התאריך, וסוג התור למטה או לבטל את התור."
+		},
+		{
+			"en": "Appointment Type",
+			"he": "סוג תור"
+		},
+		{
+			"en": "Time",
+			"he": "זמן"
+		},
+		{
+			"en": "Submit",
+			"he": "שלח"
+		},
+		{
+			"en": "Delete",
+			"he": "מחק"
+		},
+		{
+			"en": "Confirm Deletion",
+			"he": "אישור מחיקה"
+		},
+		{
+			"en": "Are you sure you wish to delete this appointment?",
+			"he": "האם אתה בטוח שברצונך למחוק את התור הזה?"
+		},
+		{
+			"en": "Are you sure you wish to delete this appointment?",
+			"he": "האם את בטוחה שברצונך למחוק את התור הזה?"
+		},
+		{
+			"en": "This action is permanent and cannot be undone.",
+			"he": "פעולה זו הינה קבועה ובלתי-ניתנת לביטול."
+		},
+		{
+			"en": "Cancel",
+			"he": "בטל"
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
 			"en": "",
 			"he": ""
 		}

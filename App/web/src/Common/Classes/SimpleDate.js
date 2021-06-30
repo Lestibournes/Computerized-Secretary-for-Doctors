@@ -10,10 +10,55 @@ export class SimpleDate {
 	static #strings;
 
 	/**
-	 * The names of the days of the week as used in the database, for easy conversion between how
-	 * it's stored in the database and how it's represented by the JS Date object.
+	 * @returns {string} The name of the day of the week, in lowercase.
 	 */
-	static day_names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+	static get daynames() {
+		return [
+			Strings.instance.get(0),
+			Strings.instance.get(1),
+			Strings.instance.get(2),
+			Strings.instance.get(3),
+			Strings.instance.get(4),
+			Strings.instance.get(5),
+			Strings.instance.get(6)
+		];
+	}
+
+	/**
+	 * @returns {string} The abbreviated name of the day of the week, in lowercase.
+	 */
+	static get dayabbreviations() {
+		return [
+			Strings.instance.get(7),
+			Strings.instance.get(8),
+			Strings.instance.get(9),
+			Strings.instance.get(10),
+			Strings.instance.get(11),
+			Strings.instance.get(12),
+			Strings.instance.get(13)
+		];
+	}
+
+
+	/**
+	 * @returns {string} The name of the month.
+	 */
+	static get monthnames() {
+		return [
+			Strings.instance.get(14),
+			Strings.instance.get(15),
+			Strings.instance.get(16),
+			Strings.instance.get(17),
+			Strings.instance.get(18),
+			Strings.instance.get(19),
+			Strings.instance.get(20),
+			Strings.instance.get(21),
+			Strings.instance.get(22),
+			Strings.instance.get(23),
+			Strings.instance.get(24),
+			Strings.instance.get(25)
+		];
+	}
 
 	/**
 	 * Display names for the months.

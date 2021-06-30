@@ -5,18 +5,16 @@ import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Card } from '../Common/Components/Card';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
-import { server } from '../Common/server';
 import { Header } from '../Common/Components/Header';
-import { Loading } from '../Common/Components/Loading';
 import { useRoot } from '../Common/Root';
 
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { TextInput } from '../Common/Components/TextInput';
-import { Select } from '../Common/Components/Select';
 import { Button } from '../Common/Components/Button';
 import { db } from '../init';
 import { usePopups } from '../Common/Popups';
+import { Strings } from '../Common/Classes/strings';
 
 export function AppointmentListPage() {
 	const auth = useAuth();
@@ -35,6 +33,7 @@ export function AppointmentListPage() {
 
 	const [searching, setSearching] = useState(true);
 
+	// Perform the search:
 	useEffect(() => {
 		if (auth?.user?.uid) {
 			searchPrameters.user = auth.user.uid;
@@ -46,7 +45,7 @@ export function AppointmentListPage() {
 			if (searchPrameters.clinic) query = query.where("clinic", "==", searchPrameters.clinic);
 			if (searchPrameters.doctor) query = query.where("doctor", "==", searchPrameters.doctor);
 			if (searchPrameters.start) query = query.where("start", ">=", searchPrameters.start.toDate());
-			if (searchPrameters.end) query = query.where("start", "<=", searchPrameters.end.toDate());
+			if (searchPrameters.end) query = query.where("start", "<", searchPrameters.end.getNextDay().toDate());
 
 			query.get().then(
 				app_snaps => {
@@ -183,23 +182,23 @@ export function AppointmentListPage() {
 							options={doctors}
 						/> */}
 						<TextInput
-							label="Start"
+							label={Strings.instance.get(58)}
 							name="start"
 							type="date"
 						/>
 						<TextInput
-							label="End"
+							label={Strings.instance.get(70)}
 							name="end"
 							type="date"
 						/>
 						<div className="buttonBar">
-							<Button type="submit" label="Search" />
+							<Button type="submit" label={Strings.instance.get(71)} />
 						</div>
 					</div>
 				</Form>
 			</Formik>
 			<div className="cardList">
-				{searching ? <h3>Searching...</h3> : results?.length > 0 ? results : <h3>There are no appointments in the specified time range.</h3>}
+				{searching ? <h3>{Strings.instance.get(72)}</h3> : results?.length > 0 ? results : <h3>{Strings.instance.get(73)}</h3>}
 			</div>
 		</>;
 
@@ -211,7 +210,7 @@ export function AppointmentListPage() {
 	return (
 		<div className="Page">
 			<Header />
-			<h1>My Appointments</h1>
+			<h1>{Strings.instance.get(50)}</h1>
 			<main>
 				{display}
 			</main>
