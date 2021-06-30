@@ -7,6 +7,7 @@ import { Time } from "../../../Common/Classes/Time";
 import { db } from "../../../init";
 import { useState } from "react";
 import { usePopups } from "../../../Common/Popups";
+import { Strings } from "../../../Common/Classes/strings";
 
 export function ShiftEditForm({clinic, doctor, shift, close}) {
 	const popups = usePopups();
@@ -63,24 +64,24 @@ export function ShiftEditForm({clinic, doctor, shift, close}) {
 		>
 			<Form>
 				<div className="widgets">
-					<TextInput label="Shift Start" type="time" name="start" />
-					<TextInput label="Shift End" type="time" name="end" />
+					<TextInput label={Strings.instance.get(170)} type="time" name="start" />
+					<TextInput label={Strings.instance.get(171)} type="time" name="end" />
 				{saving ?
-					<div>Saving...</div>
+					<div>{Strings.instance.get(122)}...</div>
 				: ""}
 				</div>
 				<div className="buttonBar">
 					{deletable ? 
 					<Button
 						type="cancel"
-						label="Delete"
+						label={Strings.instance.get(84)}
 						action={() => {
 							close();
 
 							const cancel = () => {popups.remove(popup)};
 
 							const popup =
-								<Popup key={"Confirm Shift Deletion" + shift.id} title="Confirm Deletion" close={cancel}>
+								<Popup key={"Confirm Shift Deletion" + shift.id} title={Strings.instance.get(85)} close={cancel}>
 									<ConfirmDeleteForm
 										clinic={clinic}
 										doctor={doctor}
@@ -93,8 +94,8 @@ export function ShiftEditForm({clinic, doctor, shift, close}) {
 						}}
 					/>
 					: ""}
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Save" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(101)} />
 				</div>
 			</Form>
 		</Formik>
@@ -109,14 +110,14 @@ function ConfirmDeleteForm({clinic, doctor, shift, close}) {
 	return (
 		<div>
 			<div>
-				<p>Are you sure you wish to delete this shift?</p>
-				<p>This action is permanent and cannot be undone.</p>
+				<p>{Strings.instance.get(172)}</p>
+				<p>{Strings.instance.get(88)}</p>
 				{saving ?
-				<small>Saving...</small>
+				<small>{Strings.instance.get(122)}...</small>
 				: ""}
 			</div>
 			<div className="buttonBar">
-				<Button type="cancel" label="Yes" action={() => {
+				<Button type="cancel" label={Strings.instance.get(44)} action={() => {
 					setSaving(true);
 					
 					db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").doc(shift.id).delete()
@@ -126,7 +127,7 @@ function ConfirmDeleteForm({clinic, doctor, shift, close}) {
 						popups.error(reason.message);
 					});
 				}} />
-				<Button type="okay" label="Cancel" action={close} />
+				<Button type="okay" label={Strings.instance.get(89)} action={close} />
 			</div>
 		</div>
 	);

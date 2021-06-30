@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Redirect } from "react-router-dom";
 import { Strings } from "../../Common/Classes/strings";
 import { Button } from "../../Common/Components/Button";
-import { Popup } from "../../Common/Components/Popup";
 import { usePopups } from "../../Common/Popups";
 import { useRoot } from "../../Common/Root";
 import { db } from "../../init";

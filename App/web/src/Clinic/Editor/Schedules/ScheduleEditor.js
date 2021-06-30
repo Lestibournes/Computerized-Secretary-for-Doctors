@@ -18,6 +18,7 @@ import { MinimumFormPopup } from './MinimumFormPopup';
 import { TypeEditForm } from './TypeFormPopup';
 import { usePopups } from '../../../Common/Popups';
 import { db, fb } from '../../../init';
+import { Strings } from '../../../Common/Classes/strings';
 
 export function ScheduleEditor() {
 	const auth = useAuth();
@@ -85,7 +86,7 @@ export function ScheduleEditor() {
 				shift_snaps => {
 					const days = [];
 					
-					for (let i = 0; i < SimpleDate.day_names.length; i++) {
+					for (let i = 0; i < SimpleDate.daynames.length; i++) {
 						days.push([]);
 					}
 
@@ -109,7 +110,7 @@ export function ScheduleEditor() {
 					<Card
 						key={type.id}
 						title={type.name}
-						body={type.duration * minimum + " Minutes"}
+						body={Strings.instance.get(60, new Map([["duration", type.duration * minimum]]))}
 						action={() => {
 							const close = () => {
 								popups.remove(popup);
@@ -163,7 +164,7 @@ export function ScheduleEditor() {
 								const close = () => {popups.remove(popup)};
 
 								const popup =
-									<Popup key={"Edit Shift" + shift.id} title="Edit Shift" close={close}>
+									<Popup key={"Edit Shift" + shift.id} title={Strings.instance.get(167)} close={close}>
 										<ShiftEditForm
 											clinic={clinic}
 											doctor={doctor}
@@ -189,25 +190,28 @@ export function ScheduleEditor() {
 	let display;
 
 	if (clinicData && doctorData && shiftCards) {
-		subtitle = doctorData.fullName +" at " + clinicData.name;
+		subtitle = Strings.instance.get(156, new Map([
+			["doctor", doctorData.fullName],
+			["clinic", clinicData.name]
+		]));
 
 		display = (
 			<>
 				<section>
 					<header>
-						<h3>Minimum duration</h3>
-						<Button label="Edit" action={() => {
+						<h3>{Strings.instance.get(157)}</h3>
+						<Button label={Strings.instance.get(57)} action={() => {
 							MinimumFormPopup(popups, clinic, doctor, minimum, minimum => setMinimum(minimum));
 						}} />
 					</header>
 					<div className="table">
-						<b>Amount:</b> {minimum} minutes
+						<b>{Strings.instance.get(160)}:</b> {Strings.instance.get(60, new Map([["duration", minimum]]))}
 					</div>
 				</section>
 
 				<section>
 					<header>
-						<h2>Appointment Types</h2>
+						<h2>{Strings.instance.get(161)}</h2>
 						<Button
 							label="+"
 							action={() => {
@@ -218,7 +222,7 @@ export function ScheduleEditor() {
 								const popup = 
 									<Popup
 										key={"NewAppointmentType"}
-										title={"Add Appointment Type"}
+										title={Strings.instance.get(162)}
 										close={close}
 									>
 										<TypeEditForm
@@ -240,9 +244,9 @@ export function ScheduleEditor() {
 				</section>
 
 				<main>
-					<h2>Shift Schedule</h2>
+					<h2>{Strings.instance.get(168)}</h2>
 					{
-						SimpleDate.day_names.map((name, number) => {
+						SimpleDate.daynames.map((name, number) => {
 							return (
 								<section key={name}>
 									<header>
@@ -253,7 +257,7 @@ export function ScheduleEditor() {
 												const close = () => {popups.remove(popup)};
 
 												const popup =
-													<Popup key="Create New Shift" title="Create New Shift" close={close}>
+													<Popup key="Create New Shift" title={Strings.instance.get(169)} close={close}>
 														<ShiftEditForm
 															clinic={clinic}
 															doctor={doctor}
@@ -281,7 +285,7 @@ export function ScheduleEditor() {
 	return (
 		<div className="Page">
 			<Header />
-			<h1>Edit Schedule</h1>
+			<h1>{Strings.instance.get(155)}</h1>
 			<h2>{subtitle}</h2>
 			<main>
 				{display}

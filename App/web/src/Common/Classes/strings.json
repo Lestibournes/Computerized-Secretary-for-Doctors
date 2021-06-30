@@ -624,6 +624,118 @@
 			"he": "יצירת פרופיל רופאה"
 		},
 		{
+			"en": "Edit Schedule",
+			"he": "עריכת לו\"ז"
+		},
+		{
+			"en": "$(doctor) at the $(clinic) clinic",
+			"he": "$(doctor) במרפאת $(clinic)"
+		},
+		{
+			"en": "Minimum duration",
+			"he": "אורך מינימלי"
+		},
+		{
+			"en": "Set Minimum",
+			"he": "קביעת מינימום"
+		},
+		{
+			"en": "Minimum Duration (in minutes)",
+			"he": "אורך מינימלי (בדקות)"
+		},
+		{
+			"en": "Amount",
+			"he": "כמות"
+		},
+		{
+			"en": "Appointment Types",
+			"he": "סוגי תורים"
+		},
+		{
+			"en": "Add Appointment Type",
+			"he": "הוספת סוג תור"
+		},
+		{
+			"en": "Duration (as a multiple of the minimum)",
+			"he": "משך תור (כמרפלה של המינימום)"
+		},
+		{
+			"en": "Delete Appointment Type",
+			"he": "מחיקת סוג תור"
+		},
+		{
+			"en": "Are you sure you wish to delete $(name) ($(duration))?",
+			"he": "האם אתה בטוח שברצונך למחוק את $(name) ($(duration))?"
+		},
+		{
+			"en": "Are you sure you wish to delete $(name) ($(duration))?",
+			"he": "האם את בטוחה שברצונך למחוק את $(name) ($(duration))?"
+		},
+		{
+			"en": "Edit Shift",
+			"he": "עריכת משמרת"
+		},
+		{
+			"en": "Shift Schedule",
+			"he": "לו\"ז משמרות"
+		},
+		{
+			"en": "Create New Shift",
+			"he": "יצירת משמרת חדשה"
+		},
+		{
+			"en": "Shift Start",
+			"he": "תחילת משמרת"
+		},
+		{
+			"en": "Shift End",
+			"he": "סוף משמרת"
+		},
+		{
+			"en": "Are you sure you wish to delete this shift?",
+			"he": "האם אתה בטוח שברצונך למחוק את המשמרת הזו?"
+		},
+		{
+			"en": "Are you sure you wish to delete this shift?",
+			"he": "האם את בטוחה שברצונך למחוק את המשמרת הזו?"
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
 			"en": "",
 			"he": ""
 		},

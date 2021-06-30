@@ -5,6 +5,7 @@ import { Popup } from "../../../Common/Components/Popup";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { db } from "../../../init";
 import { useState } from "react";
+import { Strings } from "../../../Common/Classes/strings";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -58,16 +59,16 @@ export function TypeEditForm({popups, clinic, doctor, type, close}) {
 		>
 			<Form>
 				<div className="widgets">
-					<TextInput label="Name" name="name" />
-					<TextInput label="Duration (as a multiple of the minimum)" type="number" name="duration" min="1" />
+					<TextInput label={Strings.instance.get(66)} name="name" />
+					<TextInput label={Strings.instance.get(163)} type="number" name="duration" min="1" />
 					
 					{saving ? 
-						<div>Saving...</div>
+						<div>{Strings.instance.get(122)}...</div>
 					: ""}
 				</div>
 				<div className="buttonBar">
 					{type ? 
-						<Button type="cancel" label="Delete" action={() => {
+						<Button type="cancel" label={Strings.instance.get(84)} action={() => {
 							const cancel = () => {
 								popups.remove(popup);
 							};
@@ -75,7 +76,7 @@ export function TypeEditForm({popups, clinic, doctor, type, close}) {
 							const popup = 
 							<Popup
 								key="DeleteAppointmentType"
-								title="Delete Appointment Type"
+								title={Strings.instance.get(84)}
 								close={cancel}
 							>
 								<TypeDeleteForm
@@ -116,14 +117,17 @@ export function TypeDeleteForm({popups, clinic, doctor, type, cancel, deleted}) 
 
 	return (<>
 		<div className="widgets">
-			Are you sure you wish to delete {type.name} ({type.duration})?
+			{Strings.instance.get(165, new Map([
+				["name", type.name],
+				["duration", type.duration]
+			]))}
 		</div>
 		{saving ? 
-			<div>Saving...</div>
+			<div>{Strings.instance.get(122)}...</div>
 		: ""}
 		<div className="buttonBar">
-			<Button label="Cancel" action={cancel} />
-			<Button type="cancel" label="Delete" action={() => {
+			<Button label={Strings.instance.get(89)} action={cancel} />
+			<Button type="cancel" label={Strings.instance.get(84)} action={() => {
 				setSaving(true);
 
 				db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("types").doc(type.id).delete()

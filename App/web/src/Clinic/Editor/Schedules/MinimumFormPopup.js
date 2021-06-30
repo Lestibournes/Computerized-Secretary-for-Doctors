@@ -5,6 +5,7 @@ import { Popup } from "../../../Common/Components/Popup";
 import { server } from "../../../Common/server";
 import { TextInput } from "../../../Common/Components/TextInput";
 import { db } from "../../../init";
+import { Strings } from "../../../Common/Classes/strings";
 
 /**
  * Popup window for setting the minimum appointment duration.
@@ -23,7 +24,7 @@ import { db } from "../../../init";
 	const popup = 
 	<Popup
 		key="MinimumForm"
-		title="Set Minimum"
+		title={Strings.instance.get(158)}
 		close={close}
 	>
 		<Formik
@@ -46,11 +47,11 @@ import { db } from "../../../init";
 		>
 			<Form>
 				<div className="widgets">
-					<TextInput label="Minimum Duration (in minutes)" type="number" name="minimum" min="0" />
+					<TextInput label={Strings.instance.get(159)} type="number" name="minimum" min="0" />
 				</div>
 				<div className="buttonBar">
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Save" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(101)} />
 				</div>
 			</Form>
 		</Formik>
