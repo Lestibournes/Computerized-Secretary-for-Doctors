@@ -10,6 +10,7 @@ import { usePopups } from "../../Common/Popups";
 import { getPictureURL } from '../../Common/functions';
 import { server } from '../../Common/server';
 import { db } from '../../init';
+import { Strings } from '../../Common/Classes/strings';
 
 export function SelectSecretaryForm({clinic, close, success}) {
 	const popups = usePopups();
@@ -42,9 +43,9 @@ export function SelectSecretaryForm({clinic, close, success}) {
 											key={secretary.id}
 											title={secretary.fullName}
 											image={url}
-											altText={secretary.fullName + "'s portrait"}
+											altText={secretary.fullName}
 											action={() => {
-												setMessage("Saving...");
+												setMessage(Strings.instance.get(122) + "...");
 
 												db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary.id).set({
 													user: secretary.id,
@@ -81,18 +82,18 @@ export function SelectSecretaryForm({clinic, close, success}) {
 			<Form>
 				<div className="widgets">
 					<TextInput
-						label="Name"
+						label={Strings.instance.get(66)}
 						name="name"
 						type="text"
-						placeholder="Yoni Robinson"
+						placeholder={Strings.instance.get(179)}
 					/>
 				</div>
 				{message ?
 					<small>{message}</small>
 				:""}
 				<div className="buttonBar">
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Search" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(71)} />
 				</div>
 				<div className="cardList">
 					{cards}
@@ -105,7 +106,7 @@ export function SelectSecretaryForm({clinic, close, success}) {
 export function selectSecretaryPopup(popups, success) {
 	const close = () => {popups.remove(popup)};
 	const popup =
-		<Popup key="Add Secretary" title="Add Secretary" close={close}>
+		<Popup key="Add Secretary" title={Strings.instance.get(182)} close={close}>
 			<SelectSecretaryForm close={close} success={success} />
 		</Popup>;
 	popups.add(popup);

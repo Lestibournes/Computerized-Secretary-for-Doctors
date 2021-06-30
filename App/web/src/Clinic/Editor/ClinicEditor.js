@@ -14,6 +14,7 @@ import { Loading } from '../../Common/Components/Loading';
 import { useRoot } from '../../Common/Root';
 import { Popup } from '../../Common/Components/Popup';
 import { db } from '../../init';
+import { Strings } from '../../Common/Classes/strings';
 /**
 @todo
 Edit clinic page:
@@ -189,7 +190,7 @@ export function ClinicEditor() {
 									{doctor.specializations.length > 0 ?
 										doctor.specializations.map((specialization, index) => specialization.id + (index < doctor.specializations.length - 1 ? ", "
 										: ""))
-									: "No specializations specified"}
+									: Strings.instance.get(142)}
 								image={url}
 								link={root.get() + "/clinics/schedule/edit/" + clinic + "/" + doctor.id}
 							/>;
@@ -272,13 +273,13 @@ export function ClinicEditor() {
 				{/* Clinic data: */}
 				<section>
 					<header>
-						<h2>Details</h2>
-						<Button label="Edit"
+						<h2>{Strings.instance.get(112)}</h2>
+						<Button label={Strings.instance.get(57)}
 							action={() => {
 								const close = () => {popups.remove(popup)};
 
 								const popup =
-									<Popup key="Edit Details" title="Edit Details" close={close}>
+									<Popup key="Edit Clinic Details" title={Strings.instance.get(174)} close={close}>
 										<ClinicEditForm
 											clinic={clinicData}
 											close={close}
@@ -290,24 +291,22 @@ export function ClinicEditor() {
 							}}
 						/>
 					</header>
-					{clinicData ?
 						<div className="table">
-							<b>Name:</b> <span>{clinicData.name}</span>
-							<b>Address:</b> <span>{clinicData.city}, {clinicData.address}</span>
+							<b>{Strings.instance.get(66)}:</b> <span>{clinicData.name}</span>
+							<b>{Strings.instance.get(146)}:</b> <span>{clinicData.city}, {clinicData.address}</span>
 						</div>
-					: "Loading..."}
 				</section>
 
 				{/* Clinic direct link: */}
 				<section>
 					<header>
-						<h2>Link</h2>
-						<Button label="Edit"
+						<h2>{Strings.instance.get(120)}</h2>
+						<Button label={Strings.instance.get(57)}
 							action={() => {
 								const close = () => popups.remove(popup);
 
 								const popup =
-									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
+									<Popup key={"Edit Link"} title={Strings.instance.get(121)} close={close}>
 										<LinkEditForm
 											link={linkData?.name}
 											type={LINK_TYPES.CLINIC}
@@ -322,15 +321,15 @@ export function ClinicEditor() {
 					</header>
 					{linkData ?
 						<div className="table">
-							<><b>Name:</b> <Link to={"/" + linkData.name} >{linkData.name}</Link></>
+							<><b>{Strings.instance.get(66)}:</b> <Link to={"/" + linkData.name} >{linkData.name}</Link></>
 						</div>
 						:
 						<div>
 							<p>
-								Create a custom direct link to share with your patients.
+							{Strings.instance.get(126)}
 							</p>
 							<p>
-								A direct link lets patients make appointments with you directly.
+							{Strings.instance.get(128)}
 							</p>
 						</div>
 					}
@@ -339,13 +338,13 @@ export function ClinicEditor() {
 				{/* Doctor list: */}
 				<section>
 					<header>
-						<h2>Doctors</h2>
+						<h2>{Strings.instance.get(177)}</h2>
 						<Button label="+"
 							action={() => {
 								const close = () => {popups.remove(popup)};
 
 								const popup =
-									<Popup key="Add Doctor" title="Add Doctor" close={close}>
+									<Popup key="Add Doctor" title={Strings.instance.get(178)} close={close}>
 										<SelectDoctorForm clinic={clinicData} close={close} />
 									</Popup>;
 
@@ -360,13 +359,13 @@ export function ClinicEditor() {
 				{/* Secretary list: */}
 				<section>
 					<header>
-						<h2>Secretaries</h2>
+						<h2>{Strings.instance.get(180)}</h2>
 						<Button label="+"
 							action={() => {
 								const close = () => {popups.remove(popup)};
 								
 								const popup =
-									<Popup key="Add Secretary" title="Add Secretary" close={close}>
+									<Popup key="Add Secretary" title={Strings.instance.get(182)} close={close}>
 										<SelectSecretaryForm
 											clinic={clinic}
 											close={close}
@@ -395,7 +394,7 @@ export function ClinicEditor() {
 	return (
 		<div className="Page">
 			<Header />
-			<h1>Edit Clinic</h1>
+			<h1>{Strings.instance.get(184)}</h1>
 			<main>
 				{display}
 			</main>

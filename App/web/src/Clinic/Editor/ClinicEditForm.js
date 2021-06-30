@@ -1,6 +1,7 @@
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from 'yup';
+import { Strings } from "../../Common/Classes/strings";
 import { Button } from "../../Common/Components/Button";
 import { Popup } from "../../Common/Components/Popup";
 import { TextInput } from "../../Common/Components/TextInput";
@@ -42,34 +43,34 @@ export function ClinicEditForm({clinic, close, deleted}) {
 			<Form>
 				<div className="widgets">
 					<TextInput
-						label="Clinic Name"
+						label={Strings.instance.get(145)}
 						name="name"
 						type="text"
-						placeholder="Eden"
+						placeholder={Strings.instance.get(147)}
 					/>
 					<TextInput
-						label="City"
+						label={Strings.instance.get(75)}
 						name="city"
 						type="text"
-						placeholder="Jerusalem"
+						placeholder={Strings.instance.get(148)}
 					/>
 					<TextInput
-						label="Address"
+						label={Strings.instance.get(146)}
 						name="address"
 						type="text"
-						placeholder="13 Holy Square"
+						placeholder={Strings.instance.get(149)}
 					/>
 					{saving ?
-						<small>Saving...</small>
+						<small>{Strings.instance.get(122)}...</small>
 					: ""}
 				</div>
 				<div className="buttonBar">
-					<Button type="cancel" label="Delete"
+					<Button type="cancel" label={Strings.instance.get(84)}
 						action={() => {
 							const close = () => {popups.remove(popup)};
 	
 							const popup =
-								<Popup key="Confirm Clinic Deletion" title="Confirm Deletion" close={close}>
+								<Popup key="Confirm Clinic Deletion" title={Strings.instance.get(85)} close={close}>
 									<ClinicDeleteForm
 										clinic={clinic}
 										close={close}
@@ -80,8 +81,8 @@ export function ClinicEditForm({clinic, close, deleted}) {
 							popups.add(popup);
 						}}
 					/>
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Save" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(101)} />
 				</div>
 			</Form>
 		</Formik>
@@ -93,10 +94,10 @@ export function ClinicDeleteForm({clinic, close, deleted}) {
 	
 	return (
 		<div>
-			<p>Are you sure you wish to delete this clinic?</p>
-			<p>This action is permanent and cannot be undone.</p>
+			<p>{Strings.instance.get(175)}</p>
+			<p>{Strings.instance.get(88)}</p>
 			<div className="buttonBar">
-				<Button type="cancel" label="Yes" action={() => {
+				<Button type="cancel" label={Strings.instance.get(44)} action={() => {
 					db.collection("clinics").doc(clinic.id).delete()
 					.then(() => {
 						deleted();
@@ -104,7 +105,7 @@ export function ClinicDeleteForm({clinic, close, deleted}) {
 					})
 					.catch(reason => popups.error(reason));
 				}} />
-				<Button type="okay" label="Cancel" action={close} />
+				<Button type="okay" label={Strings.instance.get(89)} action={close} />
 			</div>
 		</div>
 	);

@@ -700,52 +700,76 @@
 			"he": "האם את בטוחה שברצונך למחוק את המשמרת הזו?"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Edit Clinic Details",
+			"he": "עריכת פרטי מרפאה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Are you sure you wish to delete this clinic?",
+			"he": "האם אתה בטוח שברצונך למחוק את המרפאה הזו?"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Are you sure you wish to delete this clinic?",
+			"he": "האם את בטוחה שברצונך למחוק את המרפאה הזו?"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Doctors",
+			"he": "רופאים"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Add Doctor",
+			"he": "הוספת רופא"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "John Smith",
+			"he": "פלוני אלמוני"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Secretaries",
+			"he": "מזכירים"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Secretaries",
+			"he": "מזכירות"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Add Secretary",
+			"he": "הוספת מזכיר"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Add Secretary",
+			"he": "הוספת מזכירה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Edit Clinic",
+			"he": "עריכת מרפאה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Edit Secretary",
+			"he": "עריכת מזכיר"
+		},
+		{
+			"en": "Edit Secretary",
+			"he": "עריכת מזכירה"
+		},
+		{
+			"en": "Remove",
+			"he": "הסר"
+		},
+		{
+			"en": "Remove Secretary",
+			"he": "הסרת מזכיר"
+		},
+		{
+			"en": "Remove Secretary",
+			"he": "הסרת מזכירה"
+		},
+		{
+			"en": "Are you sure you want to remove $(name) from your clinic?",
+			"he": "האם אתה בטוח שברצונך להסיר את $(name) מהמרפאה שלך?"
+		},
+		{
+			"en": "Are you sure you want to remove $(name) from your clinic?",
+			"he": "האם את בטוחה שברצונך להסיר את $(name) מהמרפאה שלך?"
 		},
 		{
 			"en": "",

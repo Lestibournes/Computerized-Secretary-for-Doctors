@@ -64,7 +64,7 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 				if (values.firstName || values.lastName) updates.fullName = values.firstName + " " + values.lastName;
 
 				if (values.sex) updates.sex = values?.sex?.toLowerCase() === Strings.instance.get(103).toLowerCase() ? "male" : "female";
-				console.log(updates);
+
 				promises.push(
 					db.collection("users").doc(user).update(updates)
 					.catch(reason => popups.error(reason.message))

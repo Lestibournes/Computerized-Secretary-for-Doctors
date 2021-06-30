@@ -9,6 +9,7 @@ import { capitalizeAll, getPictureURL } from '../../Common/functions';
 import { server } from '../../Common/server';
 import { db } from '../../init';
 import { usePopups } from '../../Common/Popups';
+import { Strings } from '../../Common/Classes/strings';
 
 export function SelectDoctorForm({clinic, close}) {
 	const popups = usePopups();
@@ -31,7 +32,13 @@ export function SelectDoctorForm({clinic, close}) {
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
 
-				server.doctors.search({name: values.name, city: values.city, specialization: values.specialization})
+				const data = {}
+
+				if (values.name) data.name = values.name;
+				if (values.city) data.city = values.city;
+				if (values.specialization) data.specialization = values.specialization;
+
+				server.doctors.search(data)
 				.then(response => {
 					const promises = [];
 
@@ -91,30 +98,30 @@ export function SelectDoctorForm({clinic, close}) {
 			<Form>
 				<div className="widgets">
 					<TextInput
-						label="Name"
+						label={Strings.instance.get(66)}
 						name="name"
 						type="text"
-						placeholder="Yoni Robinson"
+						placeholder={Strings.instance.get(179)}
 					/>
 					<TextInput
-						label="City"
+						label={Strings.instance.get(75)}
 						name="city"
 						type="text"
-						placeholder="Jerusalem"
+						placeholder={Strings.instance.get(148)}
 					/>
 					<TextInput
-						label="Specialization"
+						label={Strings.instance.get(76)}
 						name="specialization"
 						type="text"
-						placeholder="Pediatrician"
+						placeholder={Strings.instance.get(136)}
 					/>
 					{saving ?
-						<small>Saving...</small>
+						<small>{Strings.instance.get(122)}...</small>
 					: ""}
 				</div>
 				<div className="buttonBar">
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Search" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(71)} />
 				</div>
 				<div className="cardList">
 					{cards}

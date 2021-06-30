@@ -4,7 +4,7 @@ import { useAuth } from "../../Common/Auth";
 import { Redirect, useParams } from 'react-router-dom';
 import { Button } from "../../Common/Components/Button";
 
-import { capitalize, getPictureURL } from '../../Common/functions';
+import { getPictureURL } from '../../Common/functions';
 import { Popup } from '../../Common/Components/Popup';
 import { usePopups } from '../../Common/Popups';
 import { Header } from '../../Common/Components/Header';
@@ -58,14 +58,17 @@ export function SecretaryEditor() {
 	
 	if (clinicData && secretaryData) {
 		subtitle = secretaryData.fullName +" at " + clinicData.name;
-
+		subtitle = Strings.instance.get(156, new Map([
+			["doctor", secretaryData.fullName],
+			["clinic", clinicData.name],
+		]))
 		display = (
 			<>
 				{redirect ? <Redirect to={root.get() + redirect} /> : ""}
 				<section>
 					<header>
-						<h2>Details</h2>
-						<Button label="Remove" action={() => {
+						<h2>{Strings.instance.get(112)}</h2>
+						<Button label={Strings.instance.get(187)} action={() => {
 							const close = () => {
 								popups.remove(popup);
 							};
@@ -73,15 +76,15 @@ export function SecretaryEditor() {
 							const popup = 
 							<Popup
 								key="RemoveSecretary"
-								title="Remove Secretary"
+								title={Strings.instance.get(188)}
 								close={close}
 							>
 								<div>
-									Are you sure you want to remove {secretaryData.fullName} from your clinic?
+									{Strings.instance.get(190, new Map([["name", secretaryData.fullName]]))}
 								</div>
 								<div className="buttonBar">
-									<Button label="Cancel" type="okay" action={close} />
-									<Button label="Yes" type="cancel" action={() => {
+									<Button label={Strings.instance.get(89)} type="okay" action={close} />
+									<Button label={Strings.instance.get(44)} type="cancel" action={() => {
 										db.collection("clinics").doc(clinic).collection("secretaries").doc(secretary).delete()
 										.then(() => setRedirect("/clinics/edit/" + clinic))
 										.catch(reason => popups.error(reason.code));
@@ -93,9 +96,9 @@ export function SecretaryEditor() {
 						}} />
 					</header>
 					<div className="table">
-						<b>Photo</b> <img src={image} alt={secretaryData.fullName} />
-						<b>Name:</b> <span>{secretaryData.fullName}</span>
-						<b>Sex:</b> <span>
+						<b>{Strings.instance.get(65)}:</b> <img src={image} alt={secretaryData.fullName} />
+						<b>{Strings.instance.get(66)}:</b> <span>{secretaryData.fullName}</span>
+						<b>{Strings.instance.get(67)}:</b> <span>
 							{
 								secretaryData.sex === "male" ? Strings.instance.get(103) :
 								secretaryData.sex === "female" ? Strings.instance.get(104) :
@@ -111,7 +114,7 @@ export function SecretaryEditor() {
 	return (
 		<div className="Page">
 			<Header />
-			<h1>Edit Secretary</h1>
+			<h1>{Strings.instance.get(185)}</h1>
 			<h2>{subtitle}</h2>
 			<main>
 				{display}

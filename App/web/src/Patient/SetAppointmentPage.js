@@ -59,7 +59,6 @@ export function SetAppointmentPage() {
 			db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).get()
 			.then(app_snap => {
 				if (app_snap.exists) {
-					console.log(app_snap.data());
 					setData(app_snap.data()); // Appointment data
 
 					setType(app_snap.data().type);
