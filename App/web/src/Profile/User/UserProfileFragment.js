@@ -44,19 +44,19 @@ export function UserProfileFragment({user}) {
 
 	if (userData) {
 		return (<>
-			<h2>User Profile</h2>
+			<h2>{Strings.instance.get(110)}</h2>
 			<section>
 				<header>
-					<h3>Details</h3>
+					<h3>{Strings.instance.get(112)}</h3>
 					<Button
-						label="Edit"
+						label={Strings.instance.get(57)}
 						action={() => userEditPopup(popups, userData.id, userData, image)}
 					/>
 				</header>
 				<div className="table">
-					<b>Photo</b> <img src={image} alt={userData.fullName} />
-					<b>Name:</b> <span>{userData.fullName}</span>
-					<b>Sex:</b>
+					<b>{Strings.instance.get(65)}</b> <img src={image} alt={userData.fullName} />
+					<b>{Strings.instance.get(66)}:</b> <span>{userData.fullName}</span>
+					<b>{Strings.instance.get(67)}:</b>
 					<span>
 						{
 							userData.sex === "male" ? Strings.instance.get(103) :

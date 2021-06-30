@@ -10,6 +10,7 @@ import { capitalizeAll } from '../../Common/functions';
 import { server } from '../../Common/server';
 import { db } from '../../init';
 import { usePopups } from '../../Common/Popups';
+import { Strings } from '../../Common/Classes/strings';
 
 export function SelectSpecializationForm({doctor, close}) {
 	const popups = usePopups();
@@ -71,7 +72,7 @@ export function SelectSpecializationForm({doctor, close}) {
 				specialization_cards.push(<Card
 					key={specialization.id}
 					title={capitalizeAll(specialization.id)}
-					body={specialization.hasSpecialization ? "Already specified" : ""}
+					body={specialization.hasSpecialization ? Strings.instance.get(132) : ""}
 					action={() => {
 						setSaving(true);
 						
@@ -99,7 +100,7 @@ export function SelectSpecializationForm({doctor, close}) {
 					const close = () => {popups.remove(popup)};
 
 					const popup =
-						<Popup key="Create Specialization" title="Create New Specialization" close={close}>
+						<Popup key="Create Specialization" title={Strings.instance.get(133)} close={close}>
 							<CreateSpecializationForm
 								doctor={doctor}
 								specialization={search}
@@ -112,21 +113,21 @@ export function SelectSpecializationForm({doctor, close}) {
 				<Form>
 					<div className="widgets">
 						<TextInput
-							label="Specialization"
+							label={Strings.instance.get(135)}
 							name="specialization"
 							type="text"
-							placeholder="Pediatrician"
+							placeholder={Strings.instance.get(136)}
 							value={search}
 							onChange={(event) => setSearch(event.target.value)}
 						/>
 
 						{saving ?
-							<div>Saving...</div>
+							<div>{Strings.instance.get(122)}...</div>
 						: ""}
 					</div>
 					<div className="buttonBar">
-						<Button label="Close" action={close} />
-						<Button type="submit" label="Create" />
+						<Button label={Strings.instance.get(138)} action={close} />
+						<Button type="submit" label={Strings.instance.get(137)} />
 					</div>
 				</Form>
 			</Formik>
@@ -161,22 +162,22 @@ function CreateSpecializationForm({doctor, specialization, close}) {
 			>
 				<Form>
 					<div className="widgets">
-						<p>Please go back and check carefully and only create a new specialization if it doesn't already exist.</p>
+						<p>{Strings.instance.get(134)}</p>
 						<TextInput
-							label="Specialization"
+							label={Strings.instance.get(135)}
 							name="specialization"
 							type="text"
-							placeholder="Pediatrician"
+							placeholder={Strings.instance.get(136)}
 						/>
 
 						{saving ?
-							<div>Saving...</div>
+							<div>{Strings.instance.get(122)}...</div>
 						: ""}
 					</div>
 
 					<div className="buttonBar">
-						<Button type="cancel" label="Cancel" action={close} />
-						<Button type="submit" label="Create" />
+						<Button type="cancel" label={Strings.instance.get(89)} action={close} />
+						<Button type="submit" label={Strings.instance.get(137)} />
 					</div>
 				</Form>
 			</Formik>

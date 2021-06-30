@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card } from "../../Common/Components/Card";
 import { Button } from "../../Common/Components/Button";
 
-import { ClinicCreateForm, clinicCreatePopup } from "./ClinicCreateForm";
+import { ClinicCreateForm } from "./ClinicCreateForm";
 import { createProfilePopup } from "./CreateDoctorProfile";
 import { capitalizeAll } from "../../Common/functions";
 import { SelectSpecializationForm } from "./SelectSpecialization";
@@ -15,6 +15,7 @@ import { useRoot } from "../../Common/Root";
 import { Popup } from "../../Common/Components/Popup";
 import { Loading } from "../../Common/Components/Loading";
 import { db } from "../../init";
+import { Strings } from "../../Common/Classes/strings";
 
 /**
 @todo
@@ -79,7 +80,7 @@ export function DoctorProfileFragment() {
 					if (user.doctor) setDoctor(user);
 					else createProfilePopup(popups, auth.user.uid);
 				},
-				error => popups.error("Error fetching user data: " + error.message)
+				error => popups.error(error.message)
 			)
 		}
 	}, [auth.user, popups]);
@@ -103,7 +104,7 @@ export function DoctorProfileFragment() {
 
 					setOwned(clinics);
 				},
-				error => popups.error("Error fetching doctor data: " + error.message)
+				error => popups.error(error.message)
 			)
 		}
 	}, [doctor]);
@@ -154,14 +155,14 @@ export function DoctorProfileFragment() {
 									
 									return null;
 								})
-								.catch(reason => popups.error("Error fetching clinic data: " + reason))
+								.catch(reason => popups.error(reason.message))
 							)
 						}
 					}
 
 					Promise.all(promises).then(clinics => setClinics(clinics));
 				},
-				error => popups.error("Error fetching doctor data: " + error.message)
+				error => popups.error(error.message)
 			)
 		}
 	}, [doctor]);
@@ -181,7 +182,7 @@ export function DoctorProfileFragment() {
 
 					setSpecializations(specializations);
 				},
-				error => popups.error("Error fetching specialization data: " + doctor.id + ", " + error.message)
+				error => popups.error(error.message)
 			)
 		}
 	}, [doctor]);
@@ -237,18 +238,18 @@ export function DoctorProfileFragment() {
 	if (doctor && clinicCards) {
 		display = (
 			<>
-				<h2>Doctor Profile</h2>
+				<h2>{Strings.instance.get(118)}</h2>
 
 				{/* The doctor's direct link: */}
 				<section>
 					<header>
-						<h3>Link</h3>
-						<Button label="Edit"
+						<h3>{Strings.instance.get(120)}</h3>
+						<Button label={Strings.instance.get(57)}
 							action={() => {
 								const close = () => popups.remove(popup);
 							
 								const popup =
-									<Popup key={"Edit Link"} title={"Edit Link"} close={close}>
+									<Popup key={"Edit Link"} title={Strings.instance.get(121)} close={close}>
 										<LinkEditForm
 											link={linkData?.name}
 											type={LINK_TYPES.DOCTOR}
@@ -263,15 +264,15 @@ export function DoctorProfileFragment() {
 					</header>
 						{linkData ?
 							<div className="table">
-								<b>Name:</b> <Link to={"/" + linkData.name} >{linkData.name}</Link>
+								<b>{Strings.instance.get(66)}:</b> <Link to={"/" + linkData.name} >{linkData.name}</Link>
 							</div>
 							:
 							<div>
 								<p>
-									Create a custom direct link to share with your patients.
+									{Strings.instance.get(126)}
 								</p>
 								<p>
-									A direct link lets patients make appointments with you directly.
+									{Strings.instance.get(128)}
 								</p>
 							</div>
 						}
@@ -280,13 +281,13 @@ export function DoctorProfileFragment() {
 				{/* The doctor's specializations: */}
 				<section>
 					<header>
-						<h3>Specializations</h3>
+						<h3>{Strings.instance.get(130)}</h3>
 						<Button label="+"
 							action={() => {
 								const close = () => {popups.remove(popup)};
 
 								const popup =
-									<Popup key="Select Specialization" title="Add Specialization" close={close}>
+									<Popup key="Select Specialization" title={Strings.instance.get(131)} close={close}>
 										<SelectSpecializationForm doctor={doctor.id} close={close} />
 									</Popup>;
 
@@ -308,15 +309,15 @@ export function DoctorProfileFragment() {
 											const close = () => {popups.remove(popup)}
 
 											const popup = 
-												<Popup key="Remove Specialization" title="Please Confirm" close={close}>
+												<Popup key="Remove Specialization" title={Strings.instance.get(139)} close={close}>
 													<p>
-														Are you sure you wish to remove the specialization {capitalizeAll(specialization.id)}?
+														{Strings.instance.get(140, new Map([["specialization", capitalizeAll(specialization.id)]]))}
 													</p>
 													<div className="buttonBar">
-														<Button type="okay" label="Cancel" action={close} />
+														<Button type="okay" label={Strings.instance.get(89)} action={close} />
 														<Button
 															type="cancel"
-															label="Yes"
+															label={Strings.instance.get(44)}
 															action={() => {
 																db.collection("users").doc(doctor.id).collection("specializations").doc(specialization.id).delete()
 																.then(close)
@@ -332,7 +333,7 @@ export function DoctorProfileFragment() {
 									<span>{capitalizeAll(specialization.id)}</span>
 								</div>)
 								:
-								"No specializations specified"
+								Strings.instance.get(142)
 						}
 					</div>
 				</section>
@@ -340,13 +341,13 @@ export function DoctorProfileFragment() {
 				{/* The doctor's owned clinics: */}
 				<section>
 					<header>
-						<h3>Clinics I Own</h3>
+						<h3>{Strings.instance.get(143)}</h3>
 						<Button
 							label="+"
 							action={() => {
 								const close = () => {popups.remove(popup)};
 								const popup =
-									<Popup key="Create New Clinic" title="Create New Clinic" close={close}>
+									<Popup key="Create New Clinic" title={Strings.instance.get(144)} close={close}>
 										<ClinicCreateForm
 											doctor={doctor.id}
 											close={close}
@@ -364,7 +365,7 @@ export function DoctorProfileFragment() {
 				{/* Other clinics where the doctor works: */}
 				<section>
 					<header>
-						<h3>Clinics Where I Work</h3>
+						<h3>{Strings.instance.get(150)}</h3>
 					</header>
 					<div className="cardList">
 						{clinicCards}

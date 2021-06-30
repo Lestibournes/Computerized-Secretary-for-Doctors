@@ -1,6 +1,7 @@
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from 'yup';
+import { Strings } from "../Common/Classes/strings";
 import { Button } from "../Common/Components/Button";
 
 import { TextInput } from '../Common/Components/TextInput';
@@ -28,7 +29,7 @@ export function LinkEditForm({link, type, id, close}) {
 			})}
 			onSubmit={async (values, { setSubmitting }) => {
 				setSubmitting(true);
-				setMessage("Saving...");
+				setMessage(Strings.instance.get(122) + "...");
 
 				db.collection("links").where("type", "==", type).where("id", "==", id).get().then(
 					old_links => {
@@ -56,7 +57,7 @@ export function LinkEditForm({link, type, id, close}) {
 			<Form>
 				<div className="widgets">
 					<TextInput
-						label="Link Name"
+						label={Strings.instance.get(123)}
 						name="name"
 						type="text"
 						value={name}
@@ -68,8 +69,8 @@ export function LinkEditForm({link, type, id, close}) {
 							if (name) {
 								db.collection("links").doc(name).get()
 								.then(link_snap => {
-									if (link_snap.exists) setMessage("Name is already taken");
-									else setMessage("Name available");
+									if (link_snap.exists) setMessage(Strings.instance.get(124));
+									else setMessage(Strings.instance.get(125));
 								})
 								.catch(reason => popups.error(reason.message));
 							}
@@ -79,8 +80,8 @@ export function LinkEditForm({link, type, id, close}) {
 				</div>
 
 				<div className="buttonBar">
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Save" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(101)} />
 				</div>
 			</Form>
 		</Formik>

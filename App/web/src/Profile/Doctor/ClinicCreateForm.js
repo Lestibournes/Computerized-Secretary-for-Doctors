@@ -4,9 +4,9 @@ import { Popup } from "../../Common/Components/Popup";
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { TextInput } from '../../Common/Components/TextInput';
-import { server } from "../../Common/server";
 import { db } from "../../init";
 import { usePopups } from "../../Common/Popups";
+import { Strings } from "../../Common/Classes/strings";
 
 export function ClinicCreateForm({doctor, close}) {
 	const popups = usePopups();
@@ -41,27 +41,27 @@ export function ClinicCreateForm({doctor, close}) {
 			<Form>
 				<div className="widgets">
 					<TextInput
-						label="Clinic Name"
+						label={Strings.instance.get(145)}
 						name="name"
 						type="text"
-						placeholder="Eden"
+						placeholder={Strings.instance.get(147)}
 					/>
 					<TextInput
-						label="City"
+						label={Strings.instance.get(75)}
 						name="city"
 						type="text"
-						placeholder="Jerusalem"
+						placeholder={Strings.instance.get(148)}
 					/>
 					<TextInput
-						label="Address"
+						label={Strings.instance.get(146)}
 						name="address"
 						type="text"
-						placeholder="13 Holy Square"
+						placeholder={Strings.instance.get(149)}
 					/>
 				</div>
 				<div className="buttonBar">
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Save" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(101)} />
 				</div>
 			</Form>
 		</Formik>

@@ -22,6 +22,7 @@ export async function getPictureURL(user) {
 
 /**
  * Capitalize the first letter of every word in the given text.
+ * @todo support hyphenation
  * @param {string} text 
  * @returns {string}
  */
@@ -29,8 +30,9 @@ export function capitalizeAll(text) {
 	const words = text.split(/\s+/);
 	let result = "";
 
-	for (const word of words) {
-		result += " " + word[0].toUpperCase() + word.substr(1).toLowerCase();
+	for (let i = 0; i < words.length; i++) {
+		result += words[i][0].toUpperCase() + words[i].substr(1).toLowerCase();
+		if (i < words.length - 1) result += " ";
 	}
 
 	return result;

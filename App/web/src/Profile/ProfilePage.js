@@ -6,6 +6,7 @@ import { DropdownMenu } from "../Common/Components/DropdownMenu";
 import { Link } from "react-router-dom";
 import { Header } from "../Common/Components/Header";
 import { useRoot } from "../Common/Root";
+import { Strings } from "../Common/Classes/strings";
 
 export function ProfilePage() {
 	const root = useRoot();
@@ -14,12 +15,12 @@ export function ProfilePage() {
 		<div className="Page">
 			<Header />
 			<header className="subtitle">
-				<h1>Edit Profile</h1>
+				<h1>{Strings.instance.get(106)}</h1>
 				<div>
-					<DropdownMenu label="Select Profile">
-						<Link to={root.get() + "/user/profile/user"}>User</Link>
-						<Link to={root.get() + "/user/profile/doctor"}>Doctor</Link>
-						<Link to={root.get() + "/user/profile/secretary"}>Secretary</Link>
+					<DropdownMenu label={Strings.instance.get(107)}>
+						<Link to={root.get() + "/user/profile/user"}>{Strings.instance.get(108)}</Link>
+						<Link to={root.get() + "/user/profile/doctor"}>{Strings.instance.get(28)}</Link>
+						<Link to={root.get() + "/user/profile/secretary"}>{Strings.instance.get(30)}</Link>
 					</DropdownMenu>
 				</div>
 			</header>

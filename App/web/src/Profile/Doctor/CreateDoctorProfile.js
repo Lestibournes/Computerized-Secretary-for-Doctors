@@ -1,3 +1,4 @@
+import { Strings } from "../../Common/Classes/strings";
 import { Button } from "../../Common/Components/Button";
 import { Popup } from "../../Common/Components/Popup";
 import { server } from "../../Common/server";
@@ -7,11 +8,11 @@ export function createProfilePopup(popups, user) {
 	const close = () => popups.remove(popup);
 	
 	const popup =
-		<Popup key="Create Doctor Profile" title="Create Doctor Profile" close={close}>
+		<Popup key="Create Doctor Profile" title={Strings.instance.get(153)} close={close}>
 			<div className="center">
-				<h2>Would you like to create a doctor profile?</h2>
+				<h2>{Strings.instance.get(151)}</h2>
 				<div className="buttonBar">
-					<Button action={close} label="No" />
+					<Button action={close} label={Strings.instance.get(43)} />
 					<Button
 						type="okay"
 						action={() => {
@@ -19,7 +20,7 @@ export function createProfilePopup(popups, user) {
 							.then(close)
 							.catch(reason => popups.error(reason.code));
 						}}
-						label="Yes"
+						label={Strings.instance.get(44)}
 					/>
 				</div>
 			</div>

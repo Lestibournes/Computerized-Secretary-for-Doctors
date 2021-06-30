@@ -76,27 +76,27 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 			<Form>
 				<div className="widgets">
 					<TextInput
-						label="First Name"
+						label={Strings.instance.get(113)}
 						name="firstName"
 						type="text"
 						placeholder="Jane"
 					/>
 
 					<TextInput
-						label="Last Name"
+						label={Strings.instance.get(114)}
 						name="lastName"
 						type="text"
 						placeholder="Doe"
 					/>
 
 					<RadioInput
-						label="Sex"
+						label={Strings.instance.get(67) + ":"}
 						name="sex"
 						options={[Strings.instance.get(103), Strings.instance.get(104)]}
 					/>
 
 					<PictureInput
-						label="Profile Picture:"
+						label={Strings.instance.get(115) + ":"}
 						src={selectedImage}
 						alt="Selected"
 						name="photo"
@@ -119,8 +119,8 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 				</div>
 
 				<div className="buttonBar">
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Save" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(101)} />
 				</div>
 			</Form>
 		</Formik>
@@ -135,7 +135,7 @@ export function userEditPopup(popups, user, data, image, success) {
 	const popup = 
 	<Popup
 		key="Edit User Profile"
-		title="Edit User Profile"
+		title={Strings.instance.get(116)}
 		close={close}
 	>
 		<UserEditForm

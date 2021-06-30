@@ -428,28 +428,200 @@
 			"he": "כתבי הערות על הביקור פה."
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Edit Profile",
+			"he": "עריכת פרופיל"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Select Profile",
+			"he": "בחירת פרופיל"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "User",
+			"he": "משתמש"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "User",
+			"he": "משתמשת"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "User Profile",
+			"he": "פרופיל משתמש"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "User Profile",
+			"he": "פרופיל משתמשת"
+		},
+		{
+			"en": "Details",
+			"he": "פרטים"
+		},
+		{
+			"en": "First Name",
+			"he": "שם פרטי"
+		},
+		{
+			"en": "Last Name",
+			"he": "שם משפחה"
+		},
+		{
+			"en": "Profile Picture",
+			"he": "תמונת פרופיל"
+		},
+		{
+			"en": "Edit User Profile",
+			"he": "עריכת פרופיל משתמש"
+		},
+		{
+			"en": "Edit User Profile",
+			"he": "עריכת פרופיל משתמשת"
+		},
+		{
+			"en": "Doctor Profile",
+			"he": "פרופיל רופא"
+		},
+		{
+			"en": "Doctor Profile",
+			"he": "פרופיל רופאה"
+		},
+		{
+			"en": "Link",
+			"he": "קישור"
+		},
+		{
+			"en": "Edit Link",
+			"he": "עריכת קישור"
+		},
+		{
+			"en": "Saving",
+			"he": "שומר"
+		},
+		{
+			"en": "Link Name",
+			"he": "שם הקישור"
+		},
+		{
+			"en": "Name is already taken",
+			"he": "השם כבר תפוס"
+		},
+		{
+			"en": "Name available",
+			"he": "השם פנוי"
+		},
+		{
+			"en": "Create a custom direct link to share with your patients.",
+			"he": "צור קישור ישיר לשיתוף עם מטופלים."
+		},
+		{
+			"en": "Create a custom direct link to share with your patients.",
+			"he": "צרי קישור ישיר לשיתוף עם מטופלים."
+		},
+		{
+			"en": "A direct link lets patients make appointments with you directly.",
+			"he": "קישור ישיר מאפשר למטופלים לקבוע תורים איתך ישירות."
+		},
+		{
+			"en": "A direct link lets patients make appointments with you directly.",
+			"he": "קישור ישיר מאפשר למטופלים לקבוע תורים איתך ישירות."
+		},
+		{
+			"en": "Specializations",
+			"he": "התמחויות"
+		},
+		{
+			"en": "Add Specialization",
+			"he": "הוספת התמחות"
+		},
+		{
+			"en": "Already specified",
+			"he": "כבר נבחר"
+		},
+		{
+			"en": "Create New Specialization",
+			"he": "יצירת התמחות חדשה"
+		},
+		{
+			"en": "Please go back and check carefully and only create a new specialization if it doesn't already exist.",
+			"he": "נא לחזור ולבדוק בזהירות וליצור התמחות חדשה רק אם היא אינה קיימת עדיין."
+		},
+		{
+			"en": "Specialization",
+			"he": "התמחות"
+		},
+		{
+			"en": "Pediatrics",
+			"he": "רפואת ילדים"
+		},
+		{
+			"en": "Create",
+			"he": "צור"
+		},
+		{
+			"en": "Close",
+			"he": "סגור"
+		},
+		{
+			"en": "Please Confirm",
+			"he": "נא לאשר"
+		},
+		{
+			"en": "Are you sure you wish to remove the specialization '$(specialization)'?",
+			"he": "האם אתה בטוח שברצונך להסיר את ההתמחות '$(specialization)'?"
+		},
+		{
+			"en": "Are you sure you wish to remove the specialization '$(specialization)'?",
+			"he": "האם את בטוחה שברצונך להסיר את ההתמחות '$(specialization)'?"
+		},
+		{
+			"en": "No specializations specified",
+			"he": "לא צויינו התמחויות"
+		},
+		{
+			"en": "Clinics I Own",
+			"he": "מרפאות בבעלותי"
+		},
+		{
+			"en": "Create New Clinic",
+			"he": "יצירת מרפאה חדשה"
+		},
+		{
+			"en": "Clinic Name",
+			"he": "שם המרפאה"
+		},
+		{
+			"en": "Address",
+			"he": "כתובת"
+		},
+		{
+			"en": "Smiles",
+			"he": "חיוכים"
+		},
+		{
+			"en": "Jerusalem",
+			"he": "ירושלים"
+		},
+		{
+			"en": "613 Jaffa Street",
+			"he": "רחוב יפו 613"
+		},
+		{
+			"en": "Clinics Where I Work",
+			"he": "מרפאות שבהן אני עובד"
+		},
+		{
+			"en": "Would you like to create a doctor profile?",
+			"he": "האם ברצונך ליצור פרופיל רופא?"
+		},
+		{
+			"en": "Would you like to create a doctor profile?",
+			"he": "האם ברצונך ליצור פרופיל רופאה?"
+		},
+		{
+			"en": "Create Doctor Profile",
+			"he": "יצירת פרופיל רופא"
+		},
+		{
+			"en": "Create Doctor Profile",
+			"he": "יצירת פרופיל רופאה"
 		},
 		{
 			"en": "",
