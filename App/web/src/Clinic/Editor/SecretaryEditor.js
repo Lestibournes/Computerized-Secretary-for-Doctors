@@ -10,6 +10,7 @@ import { usePopups } from '../../Common/Popups';
 import { Header } from '../../Common/Components/Header';
 import { useRoot } from '../../Common/Root';
 import { db } from '../../init';
+import { Strings } from '../../Common/Classes/strings';
 
 export function SecretaryEditor() {
 	const auth = useAuth();
@@ -94,7 +95,13 @@ export function SecretaryEditor() {
 					<div className="table">
 						<b>Photo</b> <img src={image} alt={secretaryData.fullName} />
 						<b>Name:</b> <span>{secretaryData.fullName}</span>
-						<b>Sex:</b> <span>{secretaryData.sex ? capitalize(secretaryData.sex) : "Not specified"}</span>
+						<b>Sex:</b> <span>
+							{
+								secretaryData.sex === "male" ? Strings.instance.get(103) :
+								secretaryData.sex === "female" ? Strings.instance.get(104) :
+								"Not specified"
+							}
+						</span>
 					</div>
 				</section>
 			</>

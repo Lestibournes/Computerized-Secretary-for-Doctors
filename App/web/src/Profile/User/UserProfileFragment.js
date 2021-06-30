@@ -5,6 +5,7 @@ import { capitalizeAll, getPictureURL } from "../../Common/functions";
 import { userEditPopup } from "./UserEditForm";
 import { usePopups } from "../../Common/Popups";
 import { db, storage } from "../../init";
+import { Strings } from "../../Common/Classes/strings";
 
 export function UserProfileFragment({user}) {
 	const auth = useAuth();
@@ -55,7 +56,14 @@ export function UserProfileFragment({user}) {
 				<div className="table">
 					<b>Photo</b> <img src={image} alt={userData.fullName} />
 					<b>Name:</b> <span>{userData.fullName}</span>
-					<b>Sex:</b> <span>{userData.sex ? capitalizeAll(userData.sex) : "Not specified"}</span>
+					<b>Sex:</b>
+					<span>
+						{
+							userData.sex === "male" ? Strings.instance.get(103) :
+							userData.sex === "female" ? Strings.instance.get(104) :
+							"Not specified"
+						}
+					</span>
 				</div>
 			</section>
 		</>);

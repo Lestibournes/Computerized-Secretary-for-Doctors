@@ -143,7 +143,7 @@ export function AppointmentPage() {
 						new SimpleDate(appointmentData.start.toDate()).toString() + " " + 
 						Time.fromDate(appointmentData.start.toDate()).toString()
 						}</span>
-						<b>{Strings.instance.get(59)}:</b> <span>{(appointmentData.end - appointmentData.start) / 60} minutes</span>
+						<b>{Strings.instance.get(59)}:</b> <span>{Strings.instance.get(60, new Map([["duration", (appointmentData.end - appointmentData.start) / 60]]))}</span>
 						<b>{Strings.instance.get(61)}:</b> <span>{capitalizeAll(appointmentData.type)}</span>
 					</div>
 				</div>
@@ -152,7 +152,14 @@ export function AppointmentPage() {
 					<div className="table tab-content">
 						<b>{Strings.instance.get(65)}</b> <img src={image} alt={patientData.fullName} />
 						<b>{Strings.instance.get(66)}:</b> <span>{patientData.fullName}</span>
-						<b>{Strings.instance.get(67)}:</b> <span>{patientData.sex ? capitalizeAll(patientData.sex) : "Not specified"}</span>
+						<b>{Strings.instance.get(67)}:</b>
+						<span>
+							{
+								patientData.sex === "male" ? Strings.instance.get(103) :
+								patientData.sex === "female" ? Strings.instance.get(104) :
+								"Not specified"
+							}
+						</span>
 					</div>
 				</div>
 				

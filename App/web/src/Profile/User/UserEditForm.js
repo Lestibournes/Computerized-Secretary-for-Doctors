@@ -7,6 +7,7 @@ import { TextInput } from "../../Common/Components/TextInput";
 import { db, storage } from "../../init";
 import { RadioInput } from "../../Common/Components/RadioInput";
 import { PictureInput } from "../../Common/Components/PictureInput";
+import { Strings } from "../../Common/Classes/strings";
 
 export function UserEditForm({popups, user, data, image, close, success}) {
 	const [selectedImage, setSelectedImage] = useState(image);
@@ -18,7 +19,7 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 			initialValues={{
 				firstName: data.firstName,
 				lastName: data.lastName,
-				sex: String((data.sex && data.sex.toLowerCase() === "male") ? "Male" : "Female")
+				sex: data?.sex?.toLowerCase() === "male" ? Strings.instance.get(103) : Strings.instance.get(104)
 			}}
 			validationSchema={Yup.object({
 				firstName: Yup.string(),
@@ -62,8 +63,8 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 
 				if (values.firstName || values.lastName) updates.fullName = values.firstName + " " + values.lastName;
 
-				if (values.sex) updates.sex = values.sex.toLowerCase();
-
+				if (values.sex) updates.sex = values?.sex?.toLowerCase() === Strings.instance.get(103).toLowerCase() ? "male" : "female";
+				console.log(updates);
 				promises.push(
 					db.collection("users").doc(user).update(updates)
 					.catch(reason => popups.error(reason.message))
@@ -91,7 +92,7 @@ export function UserEditForm({popups, user, data, image, close, success}) {
 					<RadioInput
 						label="Sex"
 						name="sex"
-						options={["Male", "Female"]}
+						options={[Strings.instance.get(103), Strings.instance.get(104)]}
 					/>
 
 					<PictureInput

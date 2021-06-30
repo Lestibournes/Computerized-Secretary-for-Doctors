@@ -101,7 +101,14 @@ export function AppointmentDetailsPage() {
 					<div className="table tab-content">
 						<b>{Strings.instance.get(65)}</b> <img src={image} alt={doctorData.fullName} />
 						<b>{Strings.instance.get(66)}:</b> <span>{doctorData.fullName}</span>
-						<b>{Strings.instance.get(67)}:</b> <span>{doctorData.sex ? capitalizeAll(doctorData.sex) : "Not specified"}</span>
+						<b>{Strings.instance.get(67)}:</b>
+						<span>
+							{
+								doctorData.sex === "male" ? Strings.instance.get(103) :
+								doctorData.sex === "female" ? Strings.instance.get(104) :
+								"Not specified"
+							}
+						</span>
 					</div>
 				</div>
 				
