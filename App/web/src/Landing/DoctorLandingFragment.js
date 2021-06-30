@@ -1,5 +1,6 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
+import { Strings } from '../Common/Classes/strings';
 import { Card } from "../Common/Components/Card"
 import { Loading } from '../Common/Components/Loading';
 import { usePopups } from '../Common/Popups';
@@ -102,10 +103,10 @@ export function DoctorLandingFragment({doctor}) {
 	if (doctorData && clinicCards) {
 		display = (
 			<main>
-				<h1>{doctorData ? "Make An Appointment With Dr. " + doctorData.fullName : ""}</h1>
+				<h1>{doctorData ? Strings.instance.get(200, new Map([["name", doctorData.fullName]])) : ""}</h1>
 				<section>
 					<header>
-						<h2>My Clinics</h2>
+						<h2>{Strings.instance.get(46)}</h2>
 					</header>
 					<div className="cardList">
 						{clinicCards}

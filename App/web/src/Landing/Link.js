@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router"
+import { Strings } from "../Common/Classes/strings";
 import { Header } from "../Common/Components/Header";
 import { Loading } from "../Common/Components/Loading";
 import { usePopups } from "../Common/Popups";
@@ -29,7 +30,7 @@ export function Link() {
 						setTarget(link_data);
 						root.set(link);
 					}
-					else popups.error("Page doesn't exist");
+					else popups.error(Strings.instance.get(199));
 				}
 			)
 			.catch(reason => popups.error(reason.message));

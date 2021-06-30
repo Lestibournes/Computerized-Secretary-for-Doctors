@@ -142,11 +142,18 @@ export function ClinicLandingFragment({clinic}) {
 	if (clinicData && doctorCards) {
 		display = (
 			<main>
-				<h1>Welcome to {clinicData.name} Clinic</h1>
-				<h2>Located at {clinicData.address}, {clinicData.city}</h2>
+				<h1>{Strings.instance.get(202, new Map([["clinic", clinicData.name]]))}</h1>
+				<h2>
+					{
+					Strings.instance.get(204, new Map([
+						["address", clinicData.address],
+						["city", clinicData.city]
+					]))
+					}
+				</h2>
 				<section>
 					<header>
-						<h2>Make An Appointment With Our Doctors</h2>
+						<h2>{Strings.instance.get(205)}</h2>
 					</header>
 					<div className="cardList">
 						{doctorCards}
