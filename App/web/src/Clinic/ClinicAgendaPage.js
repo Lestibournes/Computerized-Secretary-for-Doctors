@@ -15,6 +15,7 @@ import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
 import { db } from '../init';
 import { usePopups } from '../Common/Popups';
+import { Strings } from '../Common/Classes/strings';
 
 export function ClinicAgendaPage() {
 	const root = useRoot();
@@ -119,8 +120,8 @@ export function ClinicAgendaPage() {
 												image={url}
 												altText={patient_snap.data().fullName}
 												title={date.toString() + " " + time.toString() + " - " + patient_snap.data().fullName}
-												body={<><b>Appointment Type:</b> {capitalizeAll(appointment.type)}</>}
-												footer={<><b>Doctor:</b> {doctor_snap.data().fullName}</>}
+												body={<><b>{Strings.instance.get(81)}:</b> {capitalizeAll(appointment.type)}</>}
+												footer={<><b>{Strings.instance.get(28)}:</b> {doctor_snap.data().fullName}</>}
 											/>
 										);
 									}
@@ -175,11 +176,11 @@ export function ClinicAgendaPage() {
 					<Form>
 						<div className="searchBar">
 							<Select
-								label="Doctor"
+								label={Strings.instance.get(28)}
 								name="doctor"
 								default={{
 									value: "",
-									label: "All"
+									label: Strings.instance.get(197)
 								}}
 								options={
 									doctors.map(doctor => {
@@ -191,27 +192,27 @@ export function ClinicAgendaPage() {
 								}
 							/>
 							<TextInput
-								label="Start"
+								label={Strings.instance.get(58)}
 								name="start"
 								type="date"
 							/>
 							<TextInput
-								label="End"
+								label={Strings.instance.get(70)}
 								name="end"
 								type="date"
 							/>
 							<div className="buttonBar">
-								<Button type="submit" label="Search" />
+								<Button type="submit" label={Strings.instance.get(71)} />
 							</div>
 						</div>
 					</Form>
 				</Formik>
 				<div className="cardList">
-					{searching ? <h3>Searching...</h3> : results.length > 0 ? results : <h3>There are no appointments in the specified time range.</h3>}
+					{searching ? <h3>{Strings.instance.get(72)}...</h3> : results.length > 0 ? results : <h3>{Strings.instance.get(73)}</h3>}
 				</div>
 			</>;
 		title = clinicData.name;
-		subtitle = "Agenda";
+		subtitle = Strings.instance.get(195);
 	}
 
 	return (

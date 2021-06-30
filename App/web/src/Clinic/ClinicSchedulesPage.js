@@ -8,6 +8,7 @@ import { capitalizeAll, getPictureURL } from "../Common/functions";
 import { usePopups } from '../Common/Popups';
 import { useRoot } from '../Common/Root';
 import { db } from '../init';
+import { Strings } from '../Common/Classes/strings';
 
 /**
 @todo
@@ -83,7 +84,7 @@ export function ClinicSchedulesPage() {
 												{spec_snaps.size > 0 ?
 													spec_snaps.docs.map((spec, index) => capitalizeAll(spec.data().name) +
 													(index < spec_snaps.size - 1 ? ", " : ""))
-												: "No specializations specified"}
+												: Strings.instance.get(142)}
 											image={url}
 											link={root.get() + "/clinics/schedule/edit/" + clinic + "/" + doctor.id}
 										/>);
@@ -140,7 +141,7 @@ export function ClinicSchedulesPage() {
 		<div className="Page">
 			<Header />
 			<h1>{clinicData?.name}</h1>
-			<h2>Schedules</h2>
+			<h2>{Strings.instance.get(198)}</h2>
 			<main>
 				{display}
 			</main>

@@ -1,5 +1,6 @@
 //Reactjs:
 import React, { useEffect, useState } from 'react';
+import { Strings } from '../Common/Classes/strings';
 import { Card } from "../Common/Components/Card"
 import { Loading } from '../Common/Components/Loading';
 import { capitalizeAll, getPictureURL } from '../Common/functions';
@@ -106,7 +107,7 @@ export function ClinicLandingFragment({clinic}) {
 									{doctor.specializations.length > 0 ?
 										doctor.specializations.map((specialization, index) => capitalizeAll(specialization.name) + (index < doctor.specializations.length - 1 ? ", "
 										: ""))
-									: "No specializations specified"}
+									: Strings.instance.get(142)}
 								image={url}
 								link={root.get() + "/appointments/create/" + clinic + "/" + doctor.id}
 							/>

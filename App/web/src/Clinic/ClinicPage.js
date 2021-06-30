@@ -7,6 +7,7 @@ import { usePopups } from '../Common/Popups';
 import { useRoot } from '../Common/Root';
 import { Loading } from '../Common/Components/Loading';
 import { db } from '../init';
+import { Strings } from '../Common/Classes/strings';
 
 /**
 @todo
@@ -46,13 +47,13 @@ export function ClinicPage() {
 	if (data) {
 		display = (
 			<>
-				<h1>{data?.name + " Clinic"}</h1>
-				<h2>Management</h2>
+				<h1>{Strings.instance.get(192, new Map([["clinic", data.name]]))}</h1>
+				<h2>{Strings.instance.get(193)}</h2>
 				<main>
 					<div className="Home buttonGrid">
-						<Button label="Appointment Calendar" link={root.get() + "/clinic/appointments/calendar/" + clinic} />
-						<Button label="Appointment List" link={root.get() + "/clinics/appointments/agenda/" + clinic} />
-						<Button label="Work Schedules" link={root.get() + "/clinics/schedules/" + clinic} />
+						<Button label={Strings.instance.get(194)} link={root.get() + "/clinic/appointments/calendar/" + clinic} />
+						<Button label={Strings.instance.get(195)} link={root.get() + "/clinics/appointments/agenda/" + clinic} />
+						<Button label={Strings.instance.get(196)} link={root.get() + "/clinics/schedules/" + clinic} />
 					</div>
 				</main>
 			</>

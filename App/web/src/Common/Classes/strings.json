@@ -772,32 +772,32 @@
 			"he": "האם את בטוחה שברצונך להסיר את $(name) מהמרפאה שלך?"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "$(clinic) Clinic",
+			"he": "מרפאת $(clinic)"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Management",
+			"he": "ניהול"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Appointment Calendar",
+			"he": "יומן תורים"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Appointment List",
+			"he": "רשימת תורים"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Work Schedules",
+			"he": "לו\"ז עבודה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "All",
+			"he": "כולם"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Schedules",
+			"he": "לוחות זמנים"
 		},
 		{
 			"en": "",
