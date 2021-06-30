@@ -6,7 +6,7 @@
 }
 
 .calendarHeader {
-	left: 50px;
+	right: 50px;
 	height: 3em;
 }
 
@@ -37,11 +37,11 @@
 .calendarLine, .calendarTimeLabel {
 	position: absolute;
 	display: grid;
-	place-content: center left;
+	place-content: center right;
 	height: 1px;
 	background-color: var(--control-background);
 	font-size: var(--font-size-f);
-	text-align: right;
+	text-align: left;
 }
 
 .calendarTimeLabel {

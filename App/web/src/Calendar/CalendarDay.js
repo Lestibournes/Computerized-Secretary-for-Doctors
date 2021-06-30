@@ -1,3 +1,4 @@
+import { Strings } from "../Common/Classes/strings";
 import { Time } from "../Common/Classes/Time";
 import { CalendarItem } from "./CalendarItem";
 
@@ -22,7 +23,8 @@ export function CalendarDay(props) {
 			style={{
 				width: props.global.width,
 				height: props.global.height,
-				left: props.global.day * props.global.width + props.global.left
+				left: (Strings.instance.direction === "ltr" ? props.global.day * props.global.width + props.global.offset : ""),
+				right: (Strings.instance.direction === "rtl" ? props.global.day * props.global.width + props.global.offset : "")
 			}}
 		>
 			{lines}

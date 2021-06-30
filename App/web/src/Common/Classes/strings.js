@@ -73,6 +73,11 @@ export class Strings {
 		return this.#language;
 	}
 
+	get direction() {
+		if (this.language === "en") return "ltr";
+		else return "rtl";
+	}
+
 	/**
 	 * Retrieve the requested string in the current UI language.
 	 * @param {number} id The id of the requested string (an index)

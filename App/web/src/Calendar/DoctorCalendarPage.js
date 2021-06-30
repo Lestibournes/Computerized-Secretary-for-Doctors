@@ -10,12 +10,11 @@ import { CalendarWeek } from "./CalendarWeek";
 import { Button } from '../Common/Components/Button';
 import { Popup } from "../Common/Components/Popup";
 import { useParams } from "react-router";
-import { Select } from "../Common/Components/Select";
-import { Form, Formik } from "formik";
-import * as Yup from 'yup';
 import { usePopups } from "../Common/Popups";
 import { Header } from "../Common/Components/Header";
 import { db } from "../init";
+import { Loading } from "../Common/Components/Loading";
+import { Strings } from "../Common/Classes/strings";
 
 function debounce(fn, ms) {
   let timer
@@ -35,8 +34,6 @@ export function DoctorCalendarPage() {
 	const { clinic } = useParams();
 	const [clinics, setClinics] = useState([]);
 	const [doctor, setDoctor] = useState(null);
-	const [doctors, setDoctors] = useState([]);
-	const [options, setOptions] = useState();
 	const [date, setDate] = useState(new SimpleDate()); // Default date: today.
 	const [appointments, setAppointments] = useState([[], [], [], [], [], [], []]);
 	const [schedule, setSchedule] = useState(null);
@@ -114,6 +111,7 @@ export function DoctorCalendarPage() {
 	}, [auth.user, doctor]);
 
 	// // Once a doctor is selected, load the appointment types:
+	// // I will want this for later when color is set manually.
 	// useEffect(() => {
 	// 	if (doctor) {
 	// 		db.collectionGroup("doctors").where("user", "==", auth.user.uid).get().then(doctor_snaps => {
@@ -199,7 +197,7 @@ export function DoctorCalendarPage() {
 	// Won't this just load all appointments for the given doctor across all clinics?
 	// What about per-clinic appointments?
 	useEffect(() => {
-		if (doctor && date) {
+		if (doctor && date && max) {
 			// Load all the appointment data for the current time range:
 			const saturday = date.getSaturday();
 			
@@ -267,10 +265,11 @@ export function DoctorCalendarPage() {
 					if (day) calendar.push(day.appointments);
 					else calendar.push([]);
 				}
+
 				setAppointments(calendar);
 			});
 		}
-	}, [doctor, date]);
+	}, [doctor, date, max]);
 
 
 
@@ -331,82 +330,40 @@ export function DoctorCalendarPage() {
 	}, [doctor]);
 
 
-	let display;
+	let display = <Loading />;
 	
+	if (appointments && schedule) {
 		display = 
 			<>
-				{clinic && options ?
-					<Formik
-						initialValues={{
-							doctor: doctor ? doctor : ""
-						}}
-						validationSchema={Yup.object({
-						})}
-						onSubmit={async (values, { setSubmitting }) => {
-							setSubmitting(true);
-							
-							// If the user has selected a doctor, find the doctor data for that doctor and set it:
-							if (values.doctor) {
-								for (const doc of doctors) {
-									if (doc.doctor.id === values.doctor) {
-										setDoctor(doc);
-										break;
-									}
-								}
-							}
-							else {
-								setDoctor(null);
-							}
-						}}
-					>
-						<Form>
-							<div className="searchBar">
-								<Select
-									label="Doctor"
-									name="doctor"
-									default={{
-										value: "",
-										label: ""
-									}}
-									options={options}
-								/>
-								<div className="buttonBar">
-									<Button type="submit" label="Select" />
-								</div>
-							</div>
-						</Form>
-					</Formik>
-				: ""}
-				{schedule ?
-					<div className="Calendar" id="display">
-						<div className="buttonBar">
+				<div className="Calendar" id="display">
+					<div className="buttonBar">
+					<Button action={() => {
+							setDate(new SimpleDate());
+							}} label={Strings.instance.get(90)} />
 						<Button action={() => {
-								setDate(new SimpleDate());
-								}} label="Today" />
-							<Button action={() => {
-								setDate(date.getPreviousWeek());
-								}} label="<" />
-							<Button action={() => {
-								setDate(date.getNextWeek());
-								}} label=">" />
-							<h3>{date.monthname + " " + date.year}</h3>
-						</div>
-						<CalendarWeek
-							date={date}
-							appointments={appointments}
-							schedule={schedule}
-							minimum={gap}
-							width={dimensions.width}
-							height={960}
-						/>
+							setDate(date.getPreviousWeek());
+							}} label="<" />
+						<Button action={() => {
+							setDate(date.getNextWeek());
+							}} label=">" />
+						<h3>{date.monthname + " " + date.year}</h3>
 					</div>
-				: ""}
+					<CalendarWeek
+						date={date}
+						appointments={appointments}
+						schedule={schedule}
+						minimum={gap}
+						width={dimensions.width}
+						height={960}
+					/>
+				</div>
 			</>;
+	}
 
 	return (
 		<div className="Page">
 			<Header />
-			<h1>Work Calendar</h1>
+			<h1>{Strings.instance.get(36)}</h1>
 			{display}
 		</div>
 	);

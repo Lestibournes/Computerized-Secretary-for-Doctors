@@ -2,6 +2,7 @@ import './Calendar.css';
 import { Time } from "../Common/Classes/Time";
 import { CalendarDay } from './CalendarDay';
 import { SimpleDate } from '../Common/Classes/SimpleDate';
+import { Strings } from '../Common/Classes/strings';
 
 /*
 The plan:
@@ -57,7 +58,11 @@ export function CalendarWeek(props) {
 		date = date.getNextDay();
 
 		headers.push(
-			<div key={"header " + date.dayabbreviation} className="calendarDayHeader" style={{width: day_width, left: day_width * index}}>
+			<div key={"header " + date.dayabbreviation} className="calendarDayHeader" style={{
+				width: day_width,
+				left: (Strings.instance.direction === "ltr" ? day_width * index : ""),
+				right: (Strings.instance.direction === "rtl" ? day_width * index : "")
+				}}>
 				<b>{date.dayabbreviation}</b>
 				<br />
 				<small>{date.day + "/" + (date.month + 1)}</small>
@@ -73,7 +78,7 @@ export function CalendarWeek(props) {
 				width: day_width,
 				height: props.height,
 				day: index,
-				left: 50
+				offset: 50
 			}}
 
 			appointments={day}
@@ -90,7 +95,8 @@ export function CalendarWeek(props) {
 					style={{
 						width: time_label_width,
 						height: props.height,
-						left: 0,
+						left: (Strings.instance.direction === "ltr" ? 0 : ""),
+						right: (Strings.instance.direction === "rtl" ? 0 : "")
 					}}
 				>
 					{lines}

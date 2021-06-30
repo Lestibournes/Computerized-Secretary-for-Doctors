@@ -17,6 +17,7 @@ import { usePopups } from "../Common/Popups";
 import { Header } from "../Common/Components/Header";
 import { db } from "../init";
 import { Loading } from "../Common/Components/Loading";
+import { Strings } from "../Common/Classes/strings";
 
 function debounce(fn, ms) {
   let timer
@@ -134,7 +135,7 @@ export function ClinicCalendarPage() {
 
 	// Fetch appointments
 	useEffect(() => {
-		if (clinic && doctor && date && minimum) {
+		if (clinic && doctor && date && minimum && max) {
 			// Load all the appointment data for the current time range:
 			const saturday = date.getSaturday();
 			
@@ -205,7 +206,7 @@ export function ClinicCalendarPage() {
 				setAppointments(calendar);
 			});
 		}
-	}, [clinic, doctor, date, minimum]);
+	}, [clinic, doctor, date, minimum, max]);
 
 	// Get the schedule paramaters.
 	// This is to sized and space the calendar.
@@ -285,7 +286,7 @@ export function ClinicCalendarPage() {
 					<Form>
 						<div className="searchBar">
 							<Select
-								label="Doctor"
+								label={Strings.instance.get(28)}
 								name="doctor"
 								default={{
 									value: "",
@@ -294,7 +295,7 @@ export function ClinicCalendarPage() {
 								options={options}
 							/>
 							<div className="buttonBar">
-								<Button type="submit" label="Select" />
+								<Button type="submit" label={Strings.instance.get(91)} />
 							</div>
 						</div>
 					</Form>
@@ -305,7 +306,7 @@ export function ClinicCalendarPage() {
 					<div className="buttonBar">
 					<Button action={() => {
 							setDate(new SimpleDate());
-							}} label="Today" />
+							}} label={Strings.instance.get(90)} />
 						<Button action={() => {
 							setDate(date.getPreviousWeek());
 							}} label="<" />
@@ -329,7 +330,7 @@ export function ClinicCalendarPage() {
 	return (
 		<div className="Page">
 			<Header />
-			<h1>Work Calendar</h1>
+			<h1>{Strings.instance.get(36)}</h1>
 			{display}
 		</div>
 	);
