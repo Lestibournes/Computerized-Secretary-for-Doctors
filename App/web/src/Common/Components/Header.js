@@ -49,24 +49,43 @@ export function Header({unprotected}) {
 		
 	}, [authContext.user]);
 
-	return (
-		<header className="main">
-			{redirect ? <Redirect to={root.get() + redirect} /> : null }
-			<Link to={root.get()} className="title">{Strings.instance.get(216)}</Link>
-			{name && email ?
-				<div>
-					<DropdownMenu label={name + " <" + email + ">"}>
-						{/* <div>
-							Notifications
-						</div> */}
-						<Link to={root.get() + "/user/appointments/list"}>{Strings.instance.get(50)}</Link>
-						<Link to={root.get() + "/user/profile"}>{Strings.instance.get(38)}</Link>
-						<div onClick={authContext.logout}>
-							{Strings.instance.get(215)}
-						</div>
-					</DropdownMenu>
-				</div>
-			: ""}
-		</header>
-	)
+	let display = <>{redirect ? <Redirect to={root.get() + redirect} /> : null }</>;
+
+	if (email) {
+		display =
+			<header className="main">
+				{redirect ? <Redirect to={root.get() + redirect} /> : null }
+				<Link to={root.get()} className="title">{Strings.instance.get(216)}</Link>
+				{name && email ?
+					<div>
+						<DropdownMenu label={Strings.instance.get(224)}>
+							<div onClick={
+								() => {
+									db.collection("users").doc(authContext.user.uid).update({language: "he"})
+								}}>{Strings.instance.get(221, "he")}</div>
+							<div onClick={
+								() => {
+									db.collection("users").doc(authContext.user.uid).update({language: "ar"})
+								}}>{Strings.instance.get(220, "ar")}</div>
+							<div onClick={
+								() => {
+									db.collection("users").doc(authContext.user.uid).update({language: "en"})
+								}}>{Strings.instance.get(222, "en")}</div>
+						</DropdownMenu>
+						<DropdownMenu label={name + " <" + email + ">"}>
+							{/* <div>
+								Notifications
+							</div> */}
+							<Link to={root.get() + "/user/appointments/list"}>{Strings.instance.get(50)}</Link>
+							<Link to={root.get() + "/user/profile"}>{Strings.instance.get(38)}</Link>
+							<div onClick={authContext.logout}>
+								{Strings.instance.get(215)}
+							</div>
+						</DropdownMenu>
+					</div>
+				: ""}
+			</header>;
+	}
+
+	return display;
 }

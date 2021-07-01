@@ -93,6 +93,12 @@ header.main {
 	padding: 0;
 }
 
+header.main > div {
+	display: flex;
+	flex-direction: column;
+	gap: var(--margin-small);
+}
+
 header.main, header.subtitle {
 	margin: 0;
 	flex-direction: column;
@@ -112,6 +118,7 @@ header.main, header.subtitle {
 	
 	header.main > div {
 		display: flex;
+		flex-direction: row;
 		place-content: flex-end;
 	}
 

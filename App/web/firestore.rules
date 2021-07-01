@@ -34,12 +34,13 @@ service cloud.firestore {
 			
 			function isValidData(data) {
 				return
-				verifyFields(['firstName', 'lastName', 'fullName', 'sex'], ['doctor', 'secretary', 'image']) &&
+				verifyFields(['firstName', 'lastName', 'fullName', 'sex'], ['doctor', 'secretary', 'image', 'language']) &&
 
 				// Optional properties:
 				data.get("doctor", false) is bool &&
 				data.get("secretary", false) is bool &&
 				data.get("image", 1) is number &&
+				data.get("language", "he") in ["he", "ar", "en"] &&
 
 				data.firstName is string &&
 				data.firstName.size() > 1 &&
@@ -128,7 +129,9 @@ service cloud.firestore {
 
 			function isValidData(data) {
 				return
-				verifyFields(['owner', 'name', 'city', 'address'], ['language', 'link']) &&
+				verifyFields(['owner', 'name', 'city', 'address'], ['language']) &&
+
+				data.get('language', 'he') in ['he', 'ar', 'he'] &&
 
 				// The name of the clinic must be of a short string:
 				data.name is string &&
@@ -156,9 +159,6 @@ service cloud.firestore {
 			allow update: if 
 				isTheOwner() &&
 				isValidData(request.resource.data) &&
-
-				// If the owner and link haven't changed:
-				request.resource.data.get("link", "") == resource.data.get("link", "") &&
 				request.resource.data.owner == resource.data.owner;
 			allow delete: if isTheOwner();
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { db } from "../../init";
 import { useAuth } from "../Auth";
 import { SimpleDate } from "../Classes/SimpleDate";
+import { Strings } from "../Classes/strings";
 import { Time } from "../Classes/Time";
 import { notify } from "../functions";
 import { usePopups } from "../Popups";

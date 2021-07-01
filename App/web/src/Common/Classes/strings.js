@@ -1,4 +1,5 @@
 import ReactHtmlParser from 'react-html-parser';
+import { auth, db } from '../../init';
 
 export class Strings {
 	#language;
@@ -11,6 +12,17 @@ export class Strings {
 	
 	constructor() {
 		if (!Strings.#instance) {
+			// Get the user's language setting:
+			auth.onAuthStateChanged(
+				state => {
+					if (state) {
+						return db.collection("users").doc(state.uid).onSnapshot(
+							user_snap => {if (user_snap.exists && user_snap.data().language) this.language = user_snap.data().language}
+						);
+					}
+				}
+			)
+
 			// Fetch language strings:
 			const strings = require("./strings.json").strings;
 			Strings.#strings = [];
@@ -20,7 +32,7 @@ export class Strings {
 
 				if (entry?.en) entries.set("en", entry.en);
 				if (entry?.he) entries.set("he", entry.he);
-				if (entry?.ar) entries.set("he", entry.ar);
+				if (entry?.ar) entries.set("ar", entry.ar);
 
 				Strings.#strings.push(entries);
 			}
@@ -59,7 +71,7 @@ export class Strings {
 	set language(language) {
 		switch (language) {
 			case "en":
-				case "he":
+			case "he":
 			case "ar":
 				this.#language = language;
 				return true;
@@ -83,9 +95,9 @@ export class Strings {
 	 * @param {number} id The id of the requested string (an index)
 	 * @param {Map} values the named variables to plug into the string
 	 */
-	get(id, values) {
+	get(id, language = this.language, values) {
 		if (id < Strings.#strings.length) {
-			let text = Strings.#strings[id].get(this.#language);
+			let text = Strings.#strings[id].get(language);
 	
 			if (values) {
 				for (const key of values.keys()) {
@@ -95,6 +107,7 @@ export class Strings {
 
 				return ReactHtmlParser(text);
 			}
+
 			
 			return text;
 		}
