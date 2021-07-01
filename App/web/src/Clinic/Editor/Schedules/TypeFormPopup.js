@@ -95,8 +95,8 @@ export function TypeEditForm({popups, clinic, doctor, type, close}) {
 							popups.add(popup);
 						}} />
 					: ""}
-					<Button label="Cancel" action={close} />
-					<Button type="submit" label="Save" />
+					<Button label={Strings.instance.get(89)} action={close} />
+					<Button type="submit" label={Strings.instance.get(101)} />
 				</div>
 			</Form>
 		</Formik>);

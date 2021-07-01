@@ -117,7 +117,7 @@ export function AppointmentPage() {
 
 	if (appointmentData && patientData && doctorData && clinicData) {
 		title = clinicData.name;
-		subtitle = Strings.instance.get(93, new Map([["patient", patientData.fullName]]));
+		subtitle = Strings.instance.get(93, new Map([["name", patientData.fullName]]));
 		display = 
 		<>
 			<TabbedContainer>

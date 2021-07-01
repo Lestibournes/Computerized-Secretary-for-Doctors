@@ -59,7 +59,7 @@ export function SecretaryEditor() {
 	if (clinicData && secretaryData) {
 		subtitle = secretaryData.fullName +" at " + clinicData.name;
 		subtitle = Strings.instance.get(156, new Map([
-			["doctor", secretaryData.fullName],
+			["name", secretaryData.fullName],
 			["clinic", clinicData.name],
 		]))
 		display = (

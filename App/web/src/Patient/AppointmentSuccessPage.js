@@ -63,7 +63,7 @@ export function AppointmentSuccessPage() {
 				{Strings.instance.get(55,
 				new Map([
 					["type", appointmentData.type],
-					["doctor", doctorData.fullName],
+					["name", doctorData.fullName],
 					["clinic", clinicData.name],
 					["city", clinicData.city],
 					["date", new SimpleDate(appointmentData.start.toDate()).toString()],

@@ -7,7 +7,7 @@ export function DropdownMenu({label, children}) {
 	return (
 		<div className={"dropdown" + (open ? " open" : "")} onClick={() => setOpen(!open)}>
 			<div className={"label"}>
-				{label}<span>a</span>
+				{label}
 			</div>
 			<div className={"menu"}>
 				{children}

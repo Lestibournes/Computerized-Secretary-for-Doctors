@@ -119,7 +119,7 @@ export function ScheduleEditor() {
 							const popup = 
 								<Popup
 									key={"EditAppointmentType" + type}
-									title={"Edit Appointment Type"}
+									title={Strings.instance.get(223)}
 									close={close}
 								>
 									<TypeEditForm
@@ -191,7 +191,7 @@ export function ScheduleEditor() {
 
 	if (clinicData && doctorData && shiftCards) {
 		subtitle = Strings.instance.get(156, new Map([
-			["doctor", doctorData.fullName],
+			["name", doctorData.fullName],
 			["clinic", clinicData.name]
 		]));
 

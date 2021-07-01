@@ -89,9 +89,13 @@ export function DoctorAgendaPage() {
 
 					promises.push(
 						clinicRef.get().then(clinic_snap => {
-							const data = clinic_snap.data();
-							data.id = clinic_snap.id;
-							return data;
+							if (clinic_snap.exists) {
+								const data = clinic_snap.data();
+								data.id = clinic_snap.id;
+								return data;
+							}
+
+							return null;
 						})
 					);
 
@@ -99,7 +103,7 @@ export function DoctorAgendaPage() {
 						const clinics = [];
 						
 						for (const clinic of clinic_data) {
-							if (clinic.id) clinics.push({
+							if (clinic?.id) clinics.push({
 								value: clinic.id,
 								label: clinic.name
 							});

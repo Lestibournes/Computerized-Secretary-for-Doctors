@@ -179,7 +179,7 @@ export function SetAppointmentPage() {
 	
 	if ((data || !appointment) && doctorData && clinicData && typesData && minimum) {
 		subtitle = Strings.instance.get(78, new Map([
-			["doctor", doctorData.fullName],
+			["name", doctorData.fullName],
 			["clinic", clinicData.name],
 			["city", clinicData.city]
 		]));

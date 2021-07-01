@@ -224,12 +224,12 @@
 			"he": "דף הבית"
 		},
 		{
-			"en": "You have a <b>$(type)</b> appointment with Dr. <b> $(doctor)</b> at <b> $(clinic), $(city)</b> on <b> $(date)</b> at <b> $(time)</b>",
-			"he": "יש לך תור <b>$(type)</b> עם ד\"ר <b>$(doctor)</b> ב-<b>$(clinic), $(city)</b> ביום <b>$(date)</b> בשעה <b>$(time)</b>"
+			"en": "You have a <b>$(type)</b> appointment with Dr. <b> $(name)</b> at <b> $(clinic), $(city)</b> on <b> $(date)</b> at <b> $(time)</b>",
+			"he": "יש לך תור <b>$(type)</b> עם ד\"ר <b>$(name)</b> ב-<b>$(clinic), $(city)</b> ביום <b>$(date)</b> בשעה <b>$(time)</b>"
 		},
 		{
-			"en": "Appointment with Dr. $(doctor)",
-			"he": "תור עם ד\"ר $(doctor)"
+			"en": "Appointment with Dr. $(name)",
+			"he": "תור עם ד\"ר $(name)"
 		},
 		{
 			"en": "Edit",
@@ -316,8 +316,8 @@
 			"he": "עריכת תור"
 		},
 		{
-			"en": "Appointment Details for Dr. $(doctor) at $(clinic), $(city)",
-			"he": "פרטי תור עבור ד\"ר $(doctor) ב-$(clinic), $(city)"
+			"en": "Appointment Details for Dr. $(name) at $(clinic), $(city)",
+			"he": "פרטי תור עבור ד\"ר $(name) ב-$(clinic), $(city)"
 		},
 		{
 			"en": "Currently the appointment is a <b>$(type)</b> appointment on <b>$(date)</b> at <b>$(time)</b>.",
@@ -376,8 +376,8 @@
 			"he": "מרפאה"
 		},
 		{
-			"en": "Appointment with $(patient)",
-			"he": "תור עם $(patient)"
+			"en": "Appointment with $(name)",
+			"he": "תור עם $(name)"
 		},
 		{
 			"en": "Arrived",
@@ -628,8 +628,8 @@
 			"he": "עריכת לו\"ז"
 		},
 		{
-			"en": "$(doctor) at the $(clinic) clinic",
-			"he": "$(doctor) במרפאת $(clinic)"
+			"en": "$(name) at the $(clinic) clinic",
+			"he": "$(name) במרפאת $(clinic)"
 		},
 		{
 			"en": "Minimum duration",
@@ -882,6 +882,34 @@
 		{
 			"en": "All",
 			"he": "כולן"
+		},
+		{
+			"en": "Arabic",
+			"he": "ערבית"
+		},
+		{
+			"en": "Hebrew",
+			"he": "עברית"
+		},
+		{
+			"en": "English",
+			"he": "אנגלית"
+		},
+		{
+			"en": "Edit Appointment Type",
+			"he": "עריכת סוג תור"
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
+		},
+		{
+			"en": "",
+			"he": ""
 		}
 	]
 }
