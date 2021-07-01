@@ -25,13 +25,16 @@ export function Notifier() {
 							if (oldData.arrived !== newData.arrived) {
 								db.collection("users").doc(newData.patient).get()
 								.then(patient_snap => {
+									const params = new Map([
+										["name", patient_snap.data().fullName],
+										["date", new SimpleDate(newData.start.toDate()).toString()],
+										["time", Time.fromDate(newData.start.toDate()).toString()]
+									])
 									notify(
-										"Patient " + patient_snap.data().fullName +
-										" has arrived for " + (patient_snap.data().sex === "male" ? "his " : "her ") +
-										new SimpleDate(newData.start).toString() + " " +
-										Time.fromDate(newData.start).toString() +
-										" appointment.", root.get() + "/doctor/appointments/details/" + newData.clinic + "/" + newData.id);
-									}).catch(reason => console.log(reason))
+										(patient_snap.data().sex === "male" ? Strings.instance.get(217, params) : Strings.instance.get(218, params)),
+										root.get() + "/doctor/appointments/details/" + newData.clinic + "/" + newData.id
+									);
+								}).catch(reason => console.log(reason))
 							}
 						}))
 					}

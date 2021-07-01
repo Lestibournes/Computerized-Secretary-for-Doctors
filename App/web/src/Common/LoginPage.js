@@ -9,6 +9,7 @@ import { Button } from './Components/Button';
 import { Popup } from './Components/Popup';
 import { usePopups } from './Popups';
 import { useRoot } from './Root';
+import { Strings } from './Classes/strings';
 
 export function LoginPage() {
 	const auth = useAuth();
@@ -18,7 +19,7 @@ export function LoginPage() {
 	const {link} = useParams();
 
 	const popup = 
-		<Popup key="Login" title="Login">
+		<Popup key="Login" title={Strings.instance.get(208)}>
 			<Formik
 				initialValues={{
 					email: "",
@@ -43,20 +44,20 @@ export function LoginPage() {
 				<Form>
 					<div className="widgets">
 						<TextInput
-							label="Email Address"
+							label={Strings.instance.get(209)}
 							name="email"
 							type="email"
 							placeholder="john.doe@csfpd.com"
 						/>
 						<TextInput
-							label="Password"
+							label={Strings.instance.get(210)}
 							name="password"
 							type="password"
 						/>
 					</div>
 					<div className="buttonBar">
-						<Button link={root.get() + "/user/register"} label="Register" />
-						<Button type="submit" label="Login" />
+						<Button link={root.get() + "/user/register"} label={Strings.instance.get(211)} />
+						<Button type="submit" label={Strings.instance.get(208)} />
 					</div>
 				</Form>
 			</Formik>
@@ -74,7 +75,7 @@ export function LoginPage() {
 		<>
 			{auth.user ? <Redirect to={root.get()} /> : null }
 			<header className="main">
-				<Link to={root.get()} className="title">CSFPD</Link>
+				<Link to={root.get()} className="title">{Strings.instance.get(216)}</Link>
 			</header>
 			{popup}
 			{popups.popups}

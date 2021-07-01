@@ -10,6 +10,7 @@ import { Button } from './Components/Button';
 import { Popup } from './Components/Popup';
 import { usePopups } from './Popups';
 import { useRoot } from './Root';
+import { Strings } from './Classes/strings';
 
 export function RegisterPage() {
 	const auth = useAuth();
@@ -29,7 +30,7 @@ export function RegisterPage() {
 	}, [root, link]);
 
 	const popup =
-		<Popup key="Register" title="Register">
+		<Popup key="Register" title={Strings.instance.get(211)}>
 			<Formik
 				initialValues={{
 					fname: "",
@@ -61,7 +62,7 @@ export function RegisterPage() {
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
 
-					auth.register(values.fname, values.lname, values.sex.toLowerCase(), values.email, values.password).then(response => {
+					auth.register(values.fname, values.lname, values?.sex?.toLowerCase() === Strings.instance.get(103).toLowerCase() ? "male" : "female", values.email, values.password).then(response => {
 						if (response.success) {
 							setRedirect(true);
 						}
@@ -74,42 +75,42 @@ export function RegisterPage() {
 				<Form>
 					<div className="widgets">
 						<TextInput
-							label="First Name"
+							label={Strings.instance.get(113)}
 							name="fname"
 							type="text"
-							placeholder="John"
+							placeholder={Strings.instance.get(212)}
 						/>
 						<TextInput
-							label="Last Name"
+							label={Strings.instance.get(114)}
 							name="lname"
 							type="text"
-							placeholder="Doe"
+							placeholder={Strings.instance.get(213)}
 						/>
 						<TextInput
-							label="Email Address"
+							label={Strings.instance.get(209)}
 							name="email"
 							type="email"
 							placeholder="john.doe@csfpd.com"
 						/>
 						<TextInput
-							label="Password"
+							label={Strings.instance.get(210)}
 							name="password"
 							type="password"
 						/>
 						<TextInput
-							label="Verify Password"
+							label={Strings.instance.get(214)}
 							name="vpassword"
 							type="password"
 						/>
 						<RadioInput
-							label="Sex"
+							label={Strings.instance.get(67) + ":"}
 							name="sex"
-							options={["Male", "Female"]}
+							options={[Strings.instance.get(103), Strings.instance.get(104)]}
 						/>
 					</div>
 					<div className="buttonBar">
-						<Button link={root.get() + "/user/login"} label="Login" />
-						<Button type="submit" label="Register" />
+						<Button link={root.get() + "/user/login"} label={Strings.instance.get(208)} />
+						<Button type="submit" label={Strings.instance.get(211)} />
 					</div>
 				</Form>
 			</Formik>
@@ -119,7 +120,7 @@ export function RegisterPage() {
 		<>
 			{redirect ? <Redirect to={root.get()} /> : null }
 			<header className="main">
-				<Link to={root.get()} className="title">CSFPD</Link>
+				<Link to={root.get()} className="title">{Strings.instance.get(216)}</Link>
 			</header>
 			{popup}
 			{popups.popups}

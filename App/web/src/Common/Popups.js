@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { Strings } from "./Classes/strings";
 import { Button } from "./Components/Button";
 import { Popup } from "./Components/Popup";
 
@@ -65,37 +66,18 @@ function useProvidePopups() {
 	 * Show an error message.
 	 * @param {*} body JSX of the Popup body.
 	 */
-	 const create = (title, body) => {
-		const close = () => remove(popup);
-	
-		const popup = 
-		<Popup
-			key={title}
-			title={title}
-			close={close}
-		>
-			{body}
-		</Popup>;
-	
-		add(popup);
-	}
-
-	/**
-	 * Show an error message.
-	 * @param {*} body JSX of the Popup body.
-	 */
 	const error = body => {
 		const close = () => remove(popup);
 
 		const popup = 
 		<Popup
 			key={"Error"}
-			title="Error"
+			title={Strings.instance.get(207)}
 			close={close}
 		>
 			{body}
 			<div className="buttonBar">
-				<Button label="Close" action={close} />
+				<Button label={Strings.instance.get(138)} action={close} />
 			</div>
 		</Popup>;
 
@@ -107,7 +89,6 @@ function useProvidePopups() {
 		add,
 		remove,
 		clear,
-		create,
 		error
 	};
 }

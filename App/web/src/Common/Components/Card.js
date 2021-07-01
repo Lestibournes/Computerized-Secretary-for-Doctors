@@ -8,8 +8,8 @@ export function Card({title, body, footer, link, action, image, altText}) {
 				{image ? <img alt={altText} src={image} /> : null}
 				<div className="body">
 					<div><big>{title}</big></div>
-					<div><small>{body}</small></div>
-					<div><small>{footer}</small></div>
+					<div>{body}</div>
+					<div>{footer}</div>
 				</div>
 			</Link>
 		);
@@ -20,8 +20,8 @@ export function Card({title, body, footer, link, action, image, altText}) {
 			{image ? <img alt={altText} src={image} /> : null}
 			<div className="body">
 				<div><big>{title}</big></div>
-				<div><small>{body}</small></div>
-				<div><small>{footer}</small></div>
+				<div>{body}</div>
+				<div>{footer}</div>
 			</div>
 		</div>
 	);

@@ -720,7 +720,7 @@
 			"he": "הוספת רופא"
 		},
 		{
-			"en": "John Smith",
+			"en": "John Doe",
 			"he": "פלוני אלמוני"
 		},
 		{
@@ -832,48 +832,56 @@
 			"he": "קבעי תור עם הרופאים שלנו"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Error",
+			"he": "בעיה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Login",
+			"he": "כניסה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Email Address",
+			"he": "כתובת מייל"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Password",
+			"he": "סיסמה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Register",
+			"he": "הרשמה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "John",
+			"he": "פלוני"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Doe",
+			"he": "אלמוני"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Verify Password",
+			"he": "אימות סיסמה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Log Out",
+			"he": "יציאה"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "CSFPD",
+			"he": "פרתור"
 		},
 		{
-			"en": "",
-			"he": ""
+			"en": "Patient $(name) has arrived for his $(date) $(time) appointment.",
+			"he": "המטופל $(name) הגיע עבור התור שלו ב-$(date) $(time)."
+		},
+		{
+			"en": "Patient $(name) has arrived for her $(date) $(time) appointment.",
+			"he": "המטופלת $(name) הגיעה עבור התור שלה ב-$(date) $(time)."
+		},
+		{
+			"en": "All",
+			"he": "כולן"
 		}
 	]
 }

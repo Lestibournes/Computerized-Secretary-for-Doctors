@@ -8,6 +8,7 @@ import { usePopups } from "../Popups";
 import { useRoot } from "../Root";
 import { db } from "../../init";
 import { auth } from "../../init";
+import { Strings } from "../Classes/strings";
 
 export function Header({unprotected}) {
 	const authContext = useAuth();
@@ -51,17 +52,17 @@ export function Header({unprotected}) {
 	return (
 		<header className="main">
 			{redirect ? <Redirect to={root.get() + redirect} /> : null }
-			<Link to={root.get()} className="title">CSFPD</Link>
+			<Link to={root.get()} className="title">{Strings.instance.get(216)}</Link>
 			{name && email ?
 				<div>
 					<DropdownMenu label={name + " <" + email + ">"}>
 						{/* <div>
 							Notifications
 						</div> */}
-						<Link to={root.get() + "/user/appointments/list"}>My Appointments</Link>
-						<Link to={root.get() + "/user/profile"}>Profile</Link>
+						<Link to={root.get() + "/user/appointments/list"}>{Strings.instance.get(50)}</Link>
+						<Link to={root.get() + "/user/profile"}>{Strings.instance.get(38)}</Link>
 						<div onClick={authContext.logout}>
-							Log Out
+							{Strings.instance.get(215)}
 						</div>
 					</DropdownMenu>
 				</div>

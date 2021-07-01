@@ -14,14 +14,20 @@
 	border-radius: inherit;
 }
 
+.dropdown .label > *:last-child {
+	opacity: 0;
+	width: 0px;
+	overflow: hidden;
+}
+
 .dropdown.open .label {
 	border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .dropdown .label::after {
-	content: " ⏷";
-	float: right;
-	margin-left: var(--margin-small);
+	content: "⏷";
+	float: left;
+	margin-right: var(--margin-small);
 }
 
 .dropdown.open .label::after {

@@ -25,9 +25,9 @@
 	flex-direction: column;
 	gap: var(--margin);
 
-	border-radius: var(--radius) 0 0 var(--radius);
+	border-radius: 0 var(--radius) var(--radius) 0;
 	border: 0.1rem solid var(--control-background-pressed);
-	border-right: none;
+	border-left: none;
 }
 
 .tab.selected {
@@ -48,7 +48,7 @@
 	
 	padding: 0;
 
-	border-radius: 0 var(--radius) var(--radius) var(--radius);
+	border-radius: var(--radius) 0 var(--radius) var(--radius);
 	border: 3px solid var(--control-background);
 }
 

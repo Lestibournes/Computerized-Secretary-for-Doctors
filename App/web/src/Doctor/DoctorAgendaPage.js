@@ -154,8 +154,8 @@ export function DoctorAgendaPage() {
 								image={url}
 								altText={patient.fullName}
 								title={date.toString() + " " + time.toString() + " - " + patient.fullName}
-								body={capitalizeAll(appointment.type)}
-								footer={clinic.name}
+								body={<span><b>{Strings.instance.get(81)}:</b> {capitalizeAll(appointment.type)}</span>}
+								footer={<span><b>{Strings.instance.get(92)}:</b> {clinic.name}</span>}
 							/>
 						);
 					}
@@ -207,7 +207,7 @@ export function DoctorAgendaPage() {
 							<Select
 								label={Strings.instance.get(92)}
 								name="clinic"
-								default={{label: "All", value: ""}}
+								default={{label: Strings.instance.get(219), value: ""}}
 								options={clinics}
 							/>
 							<TextInput

@@ -13,7 +13,7 @@
 	padding: var(--control-padding);
 	max-height: 100%;
 	height: min-content;
-	width: min-content;
+	width: max-content;
 	box-sizing: border-box;
 	
 	place-items: center;
