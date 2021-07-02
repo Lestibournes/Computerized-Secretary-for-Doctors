@@ -95,7 +95,6 @@ function useProvideAuth() {
 			.catch(reason => result.message = reason.message);
 		}
 
-		result.success = true;
 		return result;
 	};
 	
