@@ -22,6 +22,135 @@ const thisClinicData = {
 	owner: thisAuth.uid
 }
 
+const thisShiftData = [
+	{
+		day: 0,
+		start: {
+			hours: 9,
+			minutes: 0
+		},
+		end: {
+			hours: 13,
+			minutes: 0
+		}
+	},
+	{
+		day: 0,
+		start: {
+			hours: 14,
+			minutes: 0
+		},
+		end: {
+			hours: 18,
+			minutes: 30
+		}
+	},
+
+	{
+		day: 1,
+		start: {
+			hours: 8,
+			minutes: 30
+		},
+		end: {
+			hours: 12,
+			minutes: 30
+		}
+	},
+	{
+		day: 1,
+		start: {
+			hours: 13,
+			minutes: 0
+		},
+		end: {
+			hours: 18,
+			minutes: 0
+		}
+	},
+	
+	{
+		day: 2,
+		start: {
+			hours: 9,
+			minutes: 0
+		},
+		end: {
+			hours: 13,
+			minutes: 0
+		}
+	},
+	{
+		day: 2,
+		start: {
+			hours: 14,
+			minutes: 0
+		},
+		end: {
+			hours: 18,
+			minutes: 30
+		}
+	},
+
+	{
+		day: 3,
+		start: {
+			hours: 8,
+			minutes: 30
+		},
+		end: {
+			hours: 12,
+			minutes: 30
+		}
+	},
+	{
+		day: 3,
+		start: {
+			hours: 13,
+			minutes: 0
+		},
+		end: {
+			hours: 18,
+			minutes: 0
+		}
+	},
+	
+	{
+		day: 4,
+		start: {
+			hours: 9,
+			minutes: 0
+		},
+		end: {
+			hours: 13,
+			minutes: 0
+		}
+	},
+	{
+		day: 4,
+		start: {
+			hours: 14,
+			minutes: 0
+		},
+		end: {
+			hours: 18,
+			minutes: 30
+		}
+	},
+
+	{
+		day: 5,
+		start: {
+			hours: 8,
+			minutes: 30
+		},
+		end: {
+			hours: 12,
+			minutes: 30
+		}
+	},
+]
+
 // Represents another random user that is not the current user, and her data:
 const otherAuth = {
 	email: "jane.smith@csfpd.com",
@@ -42,6 +171,134 @@ const otherClinicData = {
 	owner: otherAuth.uid
 }
 
+const otherShiftData = [
+	{
+		day: 0,
+		start: {
+			hours: 10,
+			minutes: 30
+		},
+		end: {
+			hours: 14,
+			minutes: 30
+		}
+	},
+	{
+		day: 0,
+		start: {
+			hours: 15,
+			minutes: 30
+		},
+		end: {
+			hours: 19,
+			minutes: 45
+		}
+	},
+	
+	{
+		day: 1,
+		start: {
+			hours: 9,
+			minutes: 20
+		},
+		end: {
+			hours: 12,
+			minutes: 50
+		}
+	},
+	{
+		day: 1,
+		start: {
+			hours: 13,
+			minutes: 45
+		},
+		end: {
+			hours: 18,
+			minutes: 45
+		}
+	},
+	
+	{
+		day: 2,
+		start: {
+			hours: 10,
+			minutes: 30
+		},
+		end: {
+			hours: 14,
+			minutes: 30
+		}
+	},
+	{
+		day: 2,
+		start: {
+			hours: 15,
+			minutes: 30
+		},
+		end: {
+			hours: 19,
+			minutes: 45
+		}
+	},
+	
+	{
+		day: 3,
+		start: {
+			hours: 9,
+			minutes: 20
+		},
+		end: {
+			hours: 12,
+			minutes: 50
+		}
+	},
+	{
+		day: 3,
+		start: {
+			hours: 13,
+			minutes: 45
+		},
+		end: {
+			hours: 18,
+			minutes: 45
+		}
+	},
+	
+	{
+		day: 4,
+		start: {
+			hours: 10,
+			minutes: 30
+		},
+		end: {
+			hours: 14,
+			minutes: 30
+		}
+	},
+	{
+		day: 4,
+		start: {
+			hours: 15,
+			minutes: 30
+		},
+		end: {
+			hours: 19,
+			minutes: 45
+		}
+	},
+	
+	{
+		day: 5,
+		start: {
+			hours: 8,
+			minutes: 10
+		},
+		end: {
+			hours: 13,
+			minutes: 25
+		}
+	},
+]
 
 /**
  * Get a testing instance of the firestore with the provided fake user auth object as the signed-in user.
@@ -65,10 +322,12 @@ exports.projectId = projectId;
 exports.thisAuth = thisAuth;
 exports.thisUserData = thisUserData;
 exports.thisClinicData = thisClinicData;
+exports.thisShiftData = thisShiftData;
 
 exports.otherAuth = otherAuth;
 exports.otherUserData = otherUserData;
 exports.otherClinicData = otherClinicData;
+exports.otherShiftData = otherShiftData;
 
 exports.getFirestore = getFirestore;
 exports.getAdminFirestore = getAdminFirestore;
