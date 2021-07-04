@@ -193,6 +193,7 @@ service cloud.firestore {
 					// The doctor must be an existing user and match the document id:
 					request.resource.data.user == doctorID &&
 					exists(/databases/$(database)/documents/users/$(doctorID)) &&
+					get(/databases/$(database)/documents/users/$(doctorID)).data.doctor == true &&
 
 					// The clinic must match the clinic this document is in:
 					request.resource.data.clinic == clinicID &&
@@ -209,6 +210,7 @@ service cloud.firestore {
 
 				allow read;
 				allow write: if (isTheOwner() || isTheDoctor()) && isValidData();
+				allow delete: if (isTheOwner() || isTheDoctor());
 
 				match /types/{typeID} {
 					function isValidData() {

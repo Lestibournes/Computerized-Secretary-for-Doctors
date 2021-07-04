@@ -151,7 +151,7 @@ describe("Being a doctor", () => {
 		const userSnap = await getFirestore(thisAuth).collection("users").doc(otherAuth.uid).get();
 
 		// Performing the test:
-		expect(userSnap.data().doctor).toBeFalsy();
+		expect(userSnap?.data()?.doctor).toBeFalsy();
 	});
 
 	test("Making the current user a doctor", async () => {
