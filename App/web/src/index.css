@@ -1,7 +1,14 @@
 @import "./globals.css";
 
-* {
+.ltr {
+	direction: ltr;
+}
+
+.rtl {
 	direction: rtl;
+}
+
+* {
 	box-sizing: border-box;
 	margin: 0;
 }
@@ -9,7 +16,6 @@
 html {
 	font-size: 16px;
 }
-
 
 body {
 	margin: 0;

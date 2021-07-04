@@ -20,7 +20,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+		"jest": "jest"
   },
   "eslintConfig": {
     "extends": [
@@ -39,5 +40,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@firebase/testing": "^0.20.11",
+    "jest-environment-node": "^27.0.6"
+  },
+  "jest": {
+    "testEnvironment": "./__test-utils__/custom-jest-environment.js"
   }
 }
