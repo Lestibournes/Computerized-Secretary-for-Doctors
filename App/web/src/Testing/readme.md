@@ -1,9 +1,19 @@
 # References
-Relevant documentation for tesing Firestore Security Rules:
+## Official Documentation
+
 https://firebase.google.com/docs/rules/unit-tests
 
-https://www.youtube.com/watch?v=VDulvfBpzZE (uses Mocha instead of JEST, but it's just as relevant)
-https://www.youtube.com/watch?v=Rx4pVS1vPGY (uses and older version of firebase tools, but still has some relevant info)
+## Tutorial from Firebase
+
+(uses Mocha instead of JEST, but it's just as relevant)
+
+https://www.youtube.com/watch?v=VDulvfBpzZE
+
+## Tutorial from Fireship
+
+(uses an older version of firebase tools, but still has some relevant info)
+
+https://www.youtube.com/watch?v=Rx4pVS1vPGY
 
 # Setup
 1. Installing these should be covered by `npm install` when setting up the project, but if not then:
