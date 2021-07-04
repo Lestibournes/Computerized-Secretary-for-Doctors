@@ -209,7 +209,8 @@ service cloud.firestore {
 				}
 
 				allow read;
-				allow write: if (isTheOwner() || isTheDoctor()) && isValidData();
+				allow create: if isTheOwner() && isValidData();
+				allow update: if (isTheOwner() || isTheDoctor()) && isValidData();
 				allow delete: if (isTheOwner() || isTheDoctor());
 
 				match /types/{typeID} {
