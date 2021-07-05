@@ -289,7 +289,7 @@ service cloud.firestore {
 				// Even though writing the data (create, update) is entirely up to Cloud Functions I still want to specify the requirements.
 				function isValidData() {
 					return
-					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'offset', 'type', 'verified'], ['arrived', 'notes']) &&
+					verifyFields(['patient', 'doctor', 'clinic', 'start', 'end', 'offset', 'type'], ['arrived', 'notes']) &&
 
 					// The patient is an existing user in the system:
 					exists(/databases/$(database)/documents/users/$(request.resource.data.patient)) &&
@@ -313,7 +313,7 @@ service cloud.firestore {
 					request.resource.data.end > request.resource.data.start &&
 
 					// The timezone offset:
-					request.resource.data.offset is number &&
+					request.resource.data.offset is number;
 
 					// The doctor offers the requested appointment type:
 					// exists(/databases/$(database)/documents/clinics/$(clinicID)/doctors/$(request.resource.data.doctor)/types/$(request.resource.data.type)) &&
@@ -329,9 +329,6 @@ service cloud.firestore {
 					// 	exists(/databases/$(database)/documents/clinics/$(clinicID)/secretaries/$(request.resource.data.arrived)) ||
 					// 	request.resource.data.doctor == request.resource.data.arrived
 					// ) &&
-					
-					// When the client creates or updates an appointment, he must specify that's it needs to be verified:
-					request.resource.data.verified == false;
 				}
 
 				// Only a secretary or the doctor who receives the patient should be allowed to modify the patient's arrival status:
@@ -359,32 +356,32 @@ service cloud.firestore {
 
 				allow read: if isPatient(appointmentID) || isTheDoctor(appointmentID) || isASecretary();
 
-				allow create: if
-					(
-						isPatient(appointmentID)
-						|| isTheDoctor(appointmentID)
-						|| isASecretary()
-					)
-					&& isValidData()
-					&& request.resource.data.get("arrived", false) == false
-					&& request.resource.data.get("notes", "") == ""
-					&& !isArchived();
+				// allow create: if
+				// 	(
+				// 		isPatient(appointmentID)
+				// 		|| isTheDoctor(appointmentID)
+				// 		|| isASecretary()
+				// 	)
+				// 	&& isValidData()
+				// 	&& request.resource.data.get("arrived", false) == false
+				// 	&& request.resource.data.get("notes", "") == ""
+				// 	&& !isArchived();
 
-				allow update: if
-					(
-						(
-							isPatient(appointmentID)
-							&& arrivalUnchanged()
-							&& notesUnchanged()
-						)
-						|| isTheDoctor(appointmentID)
-						||
-						(
-							isASecretary()
-							&& notesUnchanged()
-						)
-					)
-					&& isValidData();
+				// allow update: if
+				// 	(
+				// 		(
+				// 			isPatient(appointmentID)
+				// 			&& arrivalUnchanged()
+				// 			&& notesUnchanged()
+				// 		)
+				// 		|| isTheDoctor(appointmentID)
+				// 		||
+				// 		(
+				// 			isASecretary()
+				// 			&& notesUnchanged()
+				// 		)
+				// 	)
+				// 	&& isValidData();
 
 				allow delete: if
 					(isPatient(appointmentID) || isTheDoctor(appointmentID) || isASecretary()) && !isArchived();

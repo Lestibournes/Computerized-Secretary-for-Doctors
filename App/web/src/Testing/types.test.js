@@ -1,7 +1,7 @@
 const firebase = require('@firebase/testing');
-const { projectId, thisAuth, thisClinicData, otherClinicData, getFirestore, getAdminFirestore, thisUserData, otherAuth, otherUserData, thisShiftData, otherShiftData } = require('./shared');
+const { projectId, thisAuth, thisClinicData, otherClinicData, getFirestore, getAdminFirestore, thisUserData, otherAuth, otherUserData, thisTypesData, otherTypesData } = require('./shared');
 
-async function popuplateShiftDatabase() {
+async function popuplateTypesDatabase() {
 	// Create the clinic:
 	const thisClinicID = (await getAdminFirestore().collection("clinics").add(thisClinicData)).id;
 	const otherClinicID = (await getAdminFirestore().collection("clinics").add(otherClinicData)).id;
@@ -23,17 +23,17 @@ async function popuplateShiftDatabase() {
 		minimum: 15
 	});
 
-	const thisScheduleRef1 = getAdminFirestore().collection("clinics").doc(thisClinicID).collection("doctors").doc(thisAuth.uid).collection("shifts");
-	const thisScheduleRef2 = getAdminFirestore().collection("clinics").doc(otherClinicID).collection("doctors").doc(thisAuth.uid).collection("shifts");
+	const thisTypesRef1 = getAdminFirestore().collection("clinics").doc(thisClinicID).collection("doctors").doc(thisAuth.uid).collection("types");
+	const thisTypesRef2 = getAdminFirestore().collection("clinics").doc(otherClinicID).collection("doctors").doc(thisAuth.uid).collection("types");
 
-	for (const shiftData of thisShiftData) {
-		thisScheduleRef1.add(shiftData);
-		thisScheduleRef2.add(shiftData);
+	for (const TypeData of thisTypesData) {
+		thisTypesRef1.add(TypeData);
+		thisTypesRef2.add(TypeData);
 	}
 
-	for (const shiftData of otherShiftData) {
-		thisScheduleRef1.add(shiftData);
-		thisScheduleRef2.add(shiftData);
+	for (const typeData of otherTypesData) {
+		thisTypesRef1.add(typeData);
+		thisTypesRef2.add(typeData);
 	}
 
 	// Setting up the doctor with his shifts in both clinics:
@@ -53,17 +53,17 @@ async function popuplateShiftDatabase() {
 		minimum: 15
 	});
 
-	const otherScheduleRef1 = getAdminFirestore().collection("clinics").doc(thisClinicID).collection("doctors").doc(otherAuth.uid).collection("shifts");
-	const otherScheduleRef2 = getAdminFirestore().collection("clinics").doc(otherClinicID).collection("doctors").doc(otherAuth.uid).collection("shifts");
+	const otherTypesRef1 = getAdminFirestore().collection("clinics").doc(thisClinicID).collection("doctors").doc(otherAuth.uid).collection("types");
+	const otherTypesRef2 = getAdminFirestore().collection("clinics").doc(otherClinicID).collection("doctors").doc(otherAuth.uid).collection("types");
 
-	for (const shiftData of thisShiftData) {
-		otherScheduleRef1.add(shiftData);
-		otherScheduleRef2.add(shiftData);
+	for (const typeData of thisTypesData) {
+		otherTypesRef1.add(typeData);
+		otherTypesRef2.add(typeData);
 	}
 
-	for (const shiftData of otherShiftData) {
-		otherScheduleRef1.add(shiftData);
-		otherScheduleRef2.add(shiftData);
+	for (const typeData of otherTypesData) {
+		otherTypesRef1.add(typeData);
+		otherTypesRef2.add(typeData);
 	}
 }
 
@@ -77,8 +77,8 @@ beforeEach(() => {
 // 	return firebase.clearFirestoreData({projectId: projectId});
 // });
 
-describe("Creating shifts", () => {
-	test("Create shift in the current user's clinic", async () => {
+describe("Creating types", () => {
+	test("Create type in the current user's clinic", async () => {
 		// Setting up the test:
 
 		// Create the clinic:
@@ -95,7 +95,7 @@ describe("Creating shifts", () => {
 			minimum: 15
 		});
 
-		const thisScheduleRef = clinicRef.collection("doctors").doc(thisAuth.uid).collection("shifts");
+		const thisTypesRef = clinicRef.collection("doctors").doc(thisAuth.uid).collection("types");
 
 		// Setting up the other doctor:
 		const otherUserRef = getAdminFirestore().collection("users").doc(otherAuth.uid);
@@ -108,21 +108,21 @@ describe("Creating shifts", () => {
 			minimum: 15
 		});
 
-		const otherScheduleRef = clinicRef.collection("doctors").doc(otherAuth.uid).collection("shifts");
+		const otherTypesRef = clinicRef.collection("doctors").doc(otherAuth.uid).collection("types");
 	
 		// Performing the test:
-		for (const shiftData of thisShiftData) {
-			expect(await firebase.assertSucceeds(thisScheduleRef.add(shiftData)));
-			expect(await firebase.assertSucceeds(otherScheduleRef.add(shiftData)));
+		for (const typeData of thisTypesData) {
+			expect(await firebase.assertSucceeds(thisTypesRef.add(typeData)));
+			expect(await firebase.assertSucceeds(otherTypesRef.add(typeData)));
 		}
 
-		for (const shiftData of otherShiftData) {
-			expect(await firebase.assertSucceeds(thisScheduleRef.add(shiftData)));
-			expect(await firebase.assertSucceeds(otherScheduleRef.add(shiftData)));
+		for (const typeData of otherTypesData) {
+			expect(await firebase.assertSucceeds(thisTypesRef.add(typeData)));
+			expect(await firebase.assertSucceeds(otherTypesRef.add(typeData)));
 		}
 	})
 
-	test("Create a shift for another doctor in another user's clinic", async () => {
+	test("Create a type for another doctor in another user's clinic", async () => {
 		// Setting up the test:
 
 		// Set up the clinic:
@@ -138,20 +138,20 @@ describe("Creating shifts", () => {
 			minimum: 15
 		});
 
-		// Get a reference to the other doctor's shift as the current user:
-		const scheduleRef = getFirestore(thisAuth).collection("clinics").doc(clinicID).collection("doctors").doc(otherAuth.uid).collection("shifts");
+		// Get a reference to the other doctor's type as the current user:
+		const typesRef = getFirestore(thisAuth).collection("clinics").doc(clinicID).collection("doctors").doc(otherAuth.uid).collection("types");
 	
 		// Performing the test:
-		for (const shiftData of thisShiftData) {
-			expect(await firebase.assertFails(scheduleRef.add(shiftData)));
+		for (const typeData of thisTypesData) {
+			expect(await firebase.assertFails(typesRef.add(typeData)));
 		}
 
-		for (const shiftData of otherShiftData) {
-			expect(await firebase.assertFails(scheduleRef.add(shiftData)));
+		for (const typeData of otherTypesData) {
+			expect(await firebase.assertFails(typesRef.add(typeData)));
 		}
 	})
 
-	test("Create a shift for the current user in another user's clinic", async () => {
+	test("Create a type for the current user in another user's clinic", async () => {
 		// Setting up the test:
 
 		// Create the clinic:
@@ -168,72 +168,58 @@ describe("Creating shifts", () => {
 			minimum: 15
 		});
 
-		const thisScheduleRef = getFirestore(thisAuth).collection("clinics").doc(clinicID).collection("doctors").doc(thisAuth.uid).collection("shifts");
+		const thisTypesRef = getFirestore(thisAuth).collection("clinics").doc(clinicID).collection("doctors").doc(thisAuth.uid).collection("types");
 	
 		// Performing the test:
-		for (const shiftData of thisShiftData) {
-			expect(await firebase.assertSucceeds(thisScheduleRef.add(shiftData)));
+		for (const typeData of thisTypesData) {
+			expect(await firebase.assertSucceeds(thisTypesRef.add(typeData)));
 		}
 
-		for (const shiftData of otherShiftData) {
-			expect(await firebase.assertSucceeds(thisScheduleRef.add(shiftData)));
+		for (const typeData of otherTypesData) {
+			expect(await firebase.assertSucceeds(thisTypesRef.add(typeData)));
 		}
 	});
 });
 
-describe("Reading, updating, and deleting shifts", () => {
+describe("Reading, updating, and deleting types", () => {
 	beforeEach(async () => {
-		await popuplateShiftDatabase();
+		await popuplateTypesDatabase();
 	});
 	
-	test("Read all the shifts", async () => {
-		// Fetch all the shifts of all the doctors in all the clinics:
+	test("Read all the types", async () => {
+		// Fetch all the types of all the doctors in all the clinics:
 		const clinicSnaps = await getFirestore(thisAuth).collection("clinics").get();
 
 		for (const clinicSnap of clinicSnaps.docs) {
 			const doctorSnaps = await clinicSnap.ref.collection("doctors").get();
 
 			for (const doctorSnap of doctorSnaps.docs) {
-				expect(await firebase.assertSucceeds(doctorSnap.ref.collection("shifts").get()));
+				expect(await firebase.assertSucceeds(doctorSnap.ref.collection("types").get()));
 			}
 		}
 	});
 
-	test("Update shifts", async () => {
-		// Fetch all the shifts of all the doctors in all the clinics:
+	test("Update types", async () => {
+		// Fetch all the types of all the doctors in all the clinics:
 		const clinicSnaps = await getFirestore(thisAuth).collection("clinics").get();
 
 		for (const clinicSnap of clinicSnaps.docs) {
 			const doctorSnaps = await clinicSnap.ref.collection("doctors").get();
 
 			for (const doctorSnap of doctorSnaps.docs) {
-				const shiftSnaps = await doctorSnap.ref.collection("shifts").get();
+				const typeSnaps = await doctorSnap.ref.collection("types").get();
 
-				for (const shiftSnap of shiftSnaps.docs) {
+				for (const typeSnap of typeSnaps.docs) {
 					if (clinicSnap.data().owner === thisAuth.uid || doctorSnap.id === thisAuth.uid) {
-						expect(await firebase.assertSucceeds(shiftSnap.ref.update({
-							day: 6,
-							start: {
-								hours: 7,
-								minutes: 30
-							},
-							end: {
-								hours: 23,
-								minutes: 15
-							}
+						expect(await firebase.assertSucceeds(typeSnap.ref.update({
+							name: "Zooloo",
+							duration: 1000
 						})));
 					}
 					else {
-						expect(await firebase.assertFails(shiftSnap.ref.update({
-							day: 6,
-							start: {
-								hours: 7,
-								minutes: 30
-							},
-							end: {
-								hours: 23,
-								minutes: 15
-							}
+						expect(await firebase.assertFails(typeSnap.ref.update({
+							name: "Zooloo",
+							duration: 1000
 						})));
 					}
 				}
@@ -241,22 +227,22 @@ describe("Reading, updating, and deleting shifts", () => {
 		}
 	});
 
-	test("Delete shifts", async () => {
-		// Fetch all the shifts of all the doctors in all the clinics:
+	test("Delete types", async () => {
+		// Fetch all the types of all the doctors in all the clinics:
 		const clinicSnaps = await getFirestore(thisAuth).collection("clinics").get();
 
 		for (const clinicSnap of clinicSnaps.docs) {
 			const doctorSnaps = await clinicSnap.ref.collection("doctors").get();
 
 			for (const doctorSnap of doctorSnaps.docs) {
-				const shiftSnaps = await doctorSnap.ref.collection("shifts").get();
+				const typeSnaps = await doctorSnap.ref.collection("types").get();
 
-				for (const shiftSnap of shiftSnaps.docs) {
+				for (const typeSnap of typeSnaps.docs) {
 					if (clinicSnap.data().owner === thisAuth.uid || doctorSnap.id === thisAuth.uid) {
-						expect(await firebase.assertSucceeds(shiftSnap.ref.delete()));
+						expect(await firebase.assertSucceeds(typeSnap.ref.delete()));
 					}
 					else {
-						expect(await firebase.assertFails(shiftSnap.ref.delete()));
+						expect(await firebase.assertFails(typeSnap.ref.delete()));
 					}
 				}
 			}

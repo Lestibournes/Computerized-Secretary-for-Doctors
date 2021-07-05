@@ -65,7 +65,6 @@ export const login = (email, password) => {
 		return result;
 	})
 	.catch(error => {
-		console.log("boo");
 		result.message = error.message;
 		return result;
 	})

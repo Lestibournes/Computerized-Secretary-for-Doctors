@@ -22,6 +22,21 @@ const thisClinicData = {
 	owner: thisAuth.uid
 }
 
+const thisTypesData = [
+	{
+		duration: 1,
+		name: "Follow Up"
+	},
+	{
+		duration: 2,
+		name: "Regular"
+	},
+	{
+		duration: 3,
+		name: "New Patient"
+	},
+]
+
 const thisShiftData = [
 	{
 		day: 0,
@@ -171,6 +186,21 @@ const otherClinicData = {
 	owner: otherAuth.uid
 }
 
+const otherTypesData = [
+	{
+		duration: 1,
+		name: "עוקב"
+	},
+	{
+		duration: 2,
+		name: "רגיל"
+	},
+	{
+		duration: 3,
+		name: "ראשון"
+	},
+]
+
 const otherShiftData = [
 	{
 		day: 0,
@@ -317,17 +347,38 @@ function getAdminFirestore() {
 	return firebase.initializeAdminApp({projectId: projectId}).firestore();
 }
 
+/**
+ * Get a testing instance of Cloud Functions with the provided fake user auth object as the signed-in user.
+ * @param {{uid: string}} auth The auth data for the current user. Most importantly must contain some uid.
+ * @returns {globalThis.firebase.functions.Functions}
+ */
+ function getFunctions(auth) {
+	return firebase.initializeTestApp({projectId: projectId, auth: auth}).functions();
+}
+
+/**
+ * Get a testing admin instance of the Cloud Functions.
+ * @returns {globalThis.firebase.functions.Functions}
+ */
+ function getAdminFunctions() {
+	return firebase.initializeAdminApp({projectId: projectId}).functions();
+}
+
 exports.projectId = projectId;
 
 exports.thisAuth = thisAuth;
 exports.thisUserData = thisUserData;
 exports.thisClinicData = thisClinicData;
+exports.thisTypesData = thisTypesData;
 exports.thisShiftData = thisShiftData;
 
 exports.otherAuth = otherAuth;
 exports.otherUserData = otherUserData;
 exports.otherClinicData = otherClinicData;
+exports.otherTypesData = otherTypesData;
 exports.otherShiftData = otherShiftData;
 
 exports.getFirestore = getFirestore;
 exports.getAdminFirestore = getAdminFirestore;
+exports.getFunctions = getFunctions;
+exports.getAdminFunctions = getAdminFunctions;
