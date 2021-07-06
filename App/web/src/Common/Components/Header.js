@@ -61,11 +61,11 @@ export function Header({unprotected}) {
 						<DropdownMenu label={Strings.instance.get(224)}>
 							<div onClick={
 								() => {
-									db.collection("users").doc(authContext.user.uid).update({language: "he"}).then(() => {window.location.reload()})
+									db.collection("users").doc(authContext.user.uid).update({language: "he"})
 								}}>{Strings.instance.get(221, null, "he")}</div>
 							<div onClick={
 								() => {
-									db.collection("users").doc(authContext.user.uid).update({language: "ar"}).then(() => {window.location.reload()})
+									db.collection("users").doc(authContext.user.uid).update({language: "ar"})
 								}}>{Strings.instance.get(220, null, "ar")}</div>
 						</DropdownMenu>
 						<DropdownMenu label={name + " <" + email + ">"}>
@@ -79,7 +79,15 @@ export function Header({unprotected}) {
 							</div>
 						</DropdownMenu>
 					</div>
-				: ""}
+				: 
+					<div>
+						<DropdownMenu label="...">
+							<div onClick={authContext.logout}>
+								{Strings.instance.get(215)}
+							</div>
+						</DropdownMenu>
+					</div>
+				}
 			</header>;
 	}
 

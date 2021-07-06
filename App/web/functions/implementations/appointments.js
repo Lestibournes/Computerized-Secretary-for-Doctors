@@ -391,28 +391,29 @@ async function addAppointment(env, strings, params) {
 	const time = Time.fromDate(params.time.toDate());
 	const localTime = time.incrementMinutes(-params.offset);
 	const requestedSlot = new Slot(localTime, localTime.incrementMinutes(duration));
+	const start = new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes);
+	const endTime = time.incrementMinutes(duration);
 
+	if (start.getTime() > new Date().getTime()) {
+		for (const slot of available) {
+			if (slot.start.compare(requestedSlot.start) === 0 && slot.end.compare(requestedSlot.end) === 0) {
+				// If the requested appointment time slot is available and aligns with the spacing of the time slots in the schedule:
+
+				const app_ref = await env.admin.firestore()
+				.collection(strings.CLINICS).doc(params.clinic)
+				.collection(strings.APPOINTMENTS)
+				.add({
+					patient: params.patient,
+					doctor: params.doctor,
+					clinic: params.clinic,
+					start: new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes),
+					end: new Date(params.date.year, params.date.month, params.date.day, endTime.hours, endTime.minutes),
+					offset: params.offset,
+					type: params.type
+				});
 	
-	for (const slot of available) {
-		if (slot.start.compare(requestedSlot.start) === 0 && slot.end.compare(requestedSlot.end) === 0) {
-			// If the requested appointment time slot is available and aligns with the spacing of the time slots in the schedule:
-			
-			const endTime = time.incrementMinutes(duration);
-
-			const app_ref = await env.admin.firestore()
-			.collection(strings.CLINICS).doc(params.clinic)
-			.collection(strings.APPOINTMENTS)
-			.add({
-				patient: params.patient,
-				doctor: params.doctor,
-				clinic: params.clinic,
-				start: new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes),
-				end: new Date(params.date.year, params.date.month, params.date.day, endTime.hours, endTime.minutes),
-				offset: params.offset,
-				type: params.type
-			});
-
-			return app_ref.id;
+				return app_ref.id;
+			}
 		}
 	}
 }
@@ -456,27 +457,30 @@ async function addAppointment(env, strings, params) {
 	const time = Time.fromDate(params.time.toDate());
 	const localTime = time.incrementMinutes(-params.offset);
 	const requestedSlot = new Slot(localTime, localTime.incrementMinutes(duration));
+	const start = new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes);
+	const endTime = time.incrementMinutes(duration);
 
+	if (start.getTime() > new Date().getTime()) {
+		for (const slot of available) {
+			if (slot.start.compare(requestedSlot.start) === 0 && slot.end.compare(requestedSlot.end) === 0) {
+				// If the requested appointment time slot is available and aligns with the spacing of the time slots in the schedule:
+				
 	
-	for (const slot of available) {
-		if (slot.start.compare(requestedSlot.start) === 0 && slot.end.compare(requestedSlot.end) === 0) {
-			// If the requested appointment time slot is available and aligns with the spacing of the time slots in the schedule:
-			
-			const endTime = time.incrementMinutes(duration);
-
-			const app_ref = await env.admin.firestore()
-			.collection(strings.CLINICS).doc(params.clinic)
-			.collection(strings.APPOINTMENTS).doc(appointment)
-			.update({
-				start: new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes),
-				end: new Date(params.date.year, params.date.month, params.date.day, endTime.hours, endTime.minutes),
-				offset: params.offset,
-				type: params.type
-			});
-
-			return app_ref.id;
+				const app_ref = await env.admin.firestore()
+				.collection(strings.CLINICS).doc(params.clinic)
+				.collection(strings.APPOINTMENTS).doc(appointment)
+				.update({
+					start: new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes),
+					end: new Date(params.date.year, params.date.month, params.date.day, endTime.hours, endTime.minutes),
+					offset: params.offset,
+					type: params.type
+				});
+	
+				return app_ref.id;
+			}
 		}
 	}
+	
 }
 
 exports.getAvailable = getAvailable;

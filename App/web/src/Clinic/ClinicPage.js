@@ -59,6 +59,7 @@ export function ClinicPage() {
 			</>
 		);
 	}
+	
 	return (
 		<div className="Page">
 			<Header />

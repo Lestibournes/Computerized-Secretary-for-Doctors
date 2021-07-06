@@ -234,41 +234,27 @@ export function SetAppointmentPage() {
 								type: values.type
 							})
 							.then(result => {
-								db.collection("clinics").doc(clinic)
-								.collection("appointments").doc(result.data)
-								.get().then(app_snap => {
-									if (app_snap.exists) {
-										const app_data = app_snap.data();
-										app_data.id = app_snap.id;
-										setSuccess(app_data);
-									}
-									else {
-										popups.error("Modifying the appointment failed");
-									}
-								})
+								if (result.data) {
+									db.collection("clinics").doc(clinic)
+									.collection("appointments").doc(result.data)
+									.get().then(app_snap => {
+										if (app_snap.exists) {
+											const app_data = app_snap.data();
+											app_data.id = app_snap.id;
+											setSuccess(app_data);
+										}
+										else {
+											popups.error("Modifying the appointment failed");
+										}
+									})
+								}
+								else {
+									popups.error("Modifying the appointment failed");
+								}
 							})
 							.catch(reason => {
 								popups.error(reason.message);
 							});
-
-							// // If editing an existing appointment:
-							// db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({
-							// 	start: start,
-							// 	end: end,
-							// 	offset: start.getTimezoneOffset(),
-							// 	type: values.type
-							// })
-							// .then(app_ref => app_ref.get().then(app_snap => {
-							// 	if (app_snap.exists) {
-							// 		const app_data = app_snap.data();
-							// 		app_data.id = app_snap.id;
-							// 		setSuccess(app_data);
-							// 	}
-							// 	else {
-							// 		popups.error("Modifying the appointment failed");
-							// 	}
-							// }))
-							// .catch(reason => popups.error(reason.code));
 						}
 						else {
 							// If creating a new appointment:
@@ -281,18 +267,21 @@ export function SetAppointmentPage() {
 								type: values.type
 							})
 							.then(result => {
-								db.collection("clinics").doc(clinic)
-								.collection("appointments").doc(result.data)
-								.get().then(app_snap => {
-									if (app_snap.exists) {
-										const app_data = app_snap.data();
-										app_data.id = app_snap.id;
-										setSuccess(app_data);
-									}
-									else {
-										popups.error("Creating the appointment failed");
-									}
-								})
+								if (result.data) {
+									db.collection("clinics").doc(clinic)
+									.collection("appointments").doc(result.data)
+									.get().then(app_snap => {
+										if (app_snap.exists) {
+											const app_data = app_snap.data();
+											app_data.id = app_snap.id;
+											setSuccess(app_data);
+										}
+										else {
+											popups.error("Creating the appointment failed");
+										}
+									})
+								}
+								else popups.error("Creating the appointment failed");
 							})
 							.catch(reason => {
 								popups.error(reason.message);

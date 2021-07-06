@@ -34,15 +34,25 @@ export function SecretaryProfileFragment() {
 
 						promises.push(
 							clinicRef.get().then(clinic_snap => {
-								const data = clinic_snap.data();
-								data.id = clinic_snap.id;
-								return data;
+								if (clinic_snap.exists) {
+									const data = clinic_snap.data();
+									data.id = clinic_snap.id;
+									return data;
+								}
 							})
 							.catch(reason => popups.error(reason.message))
 						);
 					}
 
-					Promise.all(promises).then(data => setClinics(data));
+					Promise.all(promises).then(data => {
+						const clinics = [];
+
+						for (const clinic of data) {
+							if (clinic) clinics.push(clinic);
+						}
+
+						setClinics(clinics);
+					});
 				},
 				error => popups.error(error.message)
 			);
