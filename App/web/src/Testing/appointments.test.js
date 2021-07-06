@@ -4,9 +4,9 @@ const { projectId, thisAuth, thisClinicData, otherClinicData, getFirestore, getA
 
 const appointments = require('../../functions/implementations/appointments');
 
+const { strings } = require('../../functions/globals');
 const { Slot } = require('../../functions/utilities/Slot');
 const { Time } = require('../../functions/utilities/Time');
-const { globals } = require('../../functions');
 const { SimpleDate } = require('../../functions/utilities/SimpleDate');
 
 async function popuplateDatabase() {
@@ -160,7 +160,7 @@ describe("Appointment Functions", () => {
 	// 			type: typeSnap.data().name
 	// 		}
 
-	// 		const available = await appointments.getAvailable(env, globals, params);
+	// 		const available = await appointments.getAvailable(env, strings, params);
 
 	// 		for (const shiftSnap of shiftSnaps.docs) {
 	// 			if (shiftSnap.data().day === date.weekday) {
@@ -218,7 +218,7 @@ describe("Appointment Functions", () => {
 						type: typeSnap.data().name
 					}
 
-					const available = await appointments.getAvailable(env, globals, params);
+					const available = await appointments.getAvailable(env, strings, params);
 
 					for (const shiftSnap of shiftSnaps.docs) {
 						if (shiftSnap.data().day === date.weekday) {

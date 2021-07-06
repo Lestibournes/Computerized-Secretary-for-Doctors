@@ -6,6 +6,8 @@ export const fn = fb.functions();
 export const server = {
 	appointments: {
 		getAvailable: fn.httpsCallable("appointments-getAvailable"),
+		addAppointment: fn.httpsCallable("appointments-addAppointment"),
+		updateAppointment: fn.httpsCallable("appointments-updateAppointment"),
 	},
 
 	doctors: {

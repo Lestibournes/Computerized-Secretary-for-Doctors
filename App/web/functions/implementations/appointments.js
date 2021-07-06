@@ -12,13 +12,13 @@ const { Slot } = require('../utilities/Slot');
 //  * This is one of the few functions that has to be on Cloud Functions to make sure that appointments are only made at correct times.
 //  * @todo use the Time, Slot, and SimpleDate classes and methods instead of ad-hoc objects and global functions.
 //  * @param {{admin: *}} env
-//  * @param {{CLINICS: string, APPOINTMENTS: string, TYPES: string}} globals
+//  * @param {{CLINICS: string, APPOINTMENTS: string, TYPES: string}} strings
 //  * @param {{clinic: string, doctor: string, date: {year: number, month: number, day: number}, type: string}} params
 //  * @return {Promise<Slot[]>} An array of available time slots.
 //  */
-// async function getAvailable(env, globals, params) {
+// async function getAvailable(env, strings, params) {
 // 	const db = env.admin.firestore();
-// 	const {CLINICS, APPOINTMENTS, TYPES} = {...globals};
+// 	const {CLINICS, APPOINTMENTS, TYPES} = {...strings};
 // 	const {clinic, doctor, date, type} = {...params};
 
 // 	const simpleDate = SimpleDate.fromObject(date);
@@ -168,15 +168,15 @@ const { Slot } = require('../utilities/Slot');
 /**
  * Get the minimum appointment duration for the given doctor at the given clinic in minutes.
  * @param {{admin: *}} env
- * @param {{CLINICS: string, DOCTORS: string}} globals
+ * @param {{CLINICS: string, DOCTORS: string}} strings
  * @param {{clinic: string, doctor: string}} params
  * @returns {number}
  */
-async function getMinimum(env, globals, params) {
+async function getMinimum(env, strings, params) {
 	return await
 	env.admin.firestore()
-	.collection(globals.CLINICS).doc(params.clinic)
-	.collection(globals.DOCTORS).doc(params.doctor)
+	.collection(strings.CLINICS).doc(params.clinic)
+	.collection(strings.DOCTORS).doc(params.doctor)
 	.get().then(doctor_snap => {
 		return doctor_snap.data().minimum;
 	});
@@ -185,16 +185,16 @@ async function getMinimum(env, globals, params) {
 /**
  * The requested appointment duration in minutes.
  * @param {{admin: *}} env
- * @param {{CLINICS: string, DOCTORS: string, TYPES: string}} globals
+ * @param {{CLINICS: string, DOCTORS: string, TYPES: string}} strings
  * @param {{clinic: string, doctor: string, type: string, minimum: number}} params
  * @returns {number}
  */
-async function getDuration(env, globals, params) {
+async function getDuration(env, strings, params) {
 	return await 
 	env.admin.firestore()
-	.collection(globals.CLINICS).doc(params.clinic)
-	.collection(globals.DOCTORS).doc(params.doctor)
-	.collection(globals.TYPES)
+	.collection(strings.CLINICS).doc(params.clinic)
+	.collection(strings.DOCTORS).doc(params.doctor)
+	.collection(strings.TYPES)
 	.get().then(type_snaps => {
 		for (const type_snap of type_snaps.docs) {
 			if (type_snap.data().name === params.type) return type_snap.data().duration * params.minimum;
@@ -205,17 +205,17 @@ async function getDuration(env, globals, params) {
 /**
  * Get all of the booked time ranges for the requested date
  * @param {{admin: *}} env
- * @param {{CLINICS: string, APPOINTMENTS: string}} globals
+ * @param {{CLINICS: string, APPOINTMENTS: string}} strings
  * @param {{clinic: string, doctor: string}} params
  * @returns {Slot[]}
  */
-async function getOccupiedSlots(env, globals, params) {
+async function getOccupiedSlots(env, strings, params) {
 	const simpleDate = SimpleDate.fromObject(params.date);
 
 	return await 
 	env.admin.firestore()
-	.collection(globals.CLINICS).doc(params.clinic)
-	.collection(globals.APPOINTMENTS)
+	.collection(strings.CLINICS).doc(params.clinic)
+	.collection(strings.APPOINTMENTS)
 	.orderBy("start")
 	.where("start", ">=", simpleDate.toDate())
 	.where("start", "<", simpleDate.getNextDay().toDate())
@@ -250,18 +250,18 @@ async function getOccupiedSlots(env, globals, params) {
 /**
  * Get the shifts for the selected day of the week.
  * @param {{admin: *}} env
- * @param {{CLINICS: string, DOCTORS: string, SHIFTS: string}} globals
+ * @param {{CLINICS: string, DOCTORS: string, SHIFTS: string}} strings
  * @param {{clinic: string, doctor: string, date: {year: number, month: number, day: number}}} params
  * @returns {Slot[]}
  */
-async function getShiftSlots(env, globals, params) {
+async function getShiftSlots(env, strings, params) {
 	const simpleDate = SimpleDate.fromObject(params.date);
 
 	return await 
 	env.admin.firestore()
-	.collection(globals.CLINICS).doc(params.clinic)
-	.collection(globals.DOCTORS).doc(params.doctor)
-	.collection(globals.SHIFTS)
+	.collection(strings.CLINICS).doc(params.clinic)
+	.collection(strings.DOCTORS).doc(params.doctor)
+	.collection(strings.SHIFTS)
 	.where("day", "==", simpleDate.weekday)
 	.get().then(shift_snaps => {
 		return shift_snaps.docs.map(shift_snap => {
@@ -322,67 +322,66 @@ function getAvailableSlots(shifts, occupied, minimum, duration) {
  * Get all available time slots for the specified appointment type on a specified date.
  * This is one of the few functions that has to be on Cloud Functions to make sure that appointments are only made at correct times.
  * @param {{admin: *}} env
- * @param {{CLINICS: string, DOCTORS: string, APPOINTMENTS: string, TYPES: string, SHIFTS: string}} globals
+ * @param {{CLINICS: string, DOCTORS: string, APPOINTMENTS: string, TYPES: string, SHIFTS: string}} strings
  * @param {{clinic: string, doctor: string, date: {year: number, month: number, day: number}, type: string}} params
  * @return {Promise<Slot[]>} An array of available time slots.
  */
-async function getAvailable(env, globals, params) {
+async function getAvailable(env, strings, params) {
 	/**
 	 * The minimum appointment duration in minutes.
 	 */
-	const minimum = await getMinimum(env, globals, params);
+	const minimum = await getMinimum(env, strings, params);
 
 	params.minimum = minimum;
 
 	/**
 	 * The requested appointment duration in minutes.
 	 */
-	const duration = await getDuration(env, globals, params);
+	const duration = await getDuration(env, strings, params);
 
 	/**
 	 * Unavailable time slots.
 	 */
-	const occupied = await getOccupiedSlots(env, globals, params);
+	const occupied = await getOccupiedSlots(env, strings, params);
 
 	/**
 	 * The shifts for the selected day of the week.
 	 */
-	const shifts = await getShiftSlots(env, globals, params);
+	const shifts = await getShiftSlots(env, strings, params);
 
 	return getAvailableSlots(shifts, occupied, minimum, duration);
 }
 
-
 /**
- * Get all available time slots for the specified appointment type on a specified date.
+ * Create a new appointment for the given user (should be the current user in production)
  * This is one of the few functions that has to be on Cloud Functions to make sure that appointments are only made at correct times.
  * @param {{admin: *}} env
- * @param {{CLINICS: string, DOCTORS: string, APPOINTMENTS: string, TYPES: string, SHIFTS: string}} globals
- * @param {{clinic: string, doctor: string, patient: string, date: {year: number, month: number, day: number}, time: firebase.firestore.Timestamp, timezoneOffset: number, type: string}} params
- * @return {Promise<Slot[]>} An array of available time slots.
+ * @param {{CLINICS: string, DOCTORS: string, APPOINTMENTS: string, TYPES: string, SHIFTS: string}} strings
+ * @param {{clinic: string, doctor: string, patient: string, date: {year: number, month: number, day: number}, time: firebase.firestore.Timestamp, offset: number, type: string}} params
+ * @return {Promise<string>}
  */
-async function addAppointment(env, globals, params) {
+async function addAppointment(env, strings, params) {
 	/**
 	 * The minimum appointment duration in minutes.
 	 */
-	const minimum = await getMinimum(env, globals, params);
+	const minimum = await getMinimum(env, strings, params);
 
 	params.minimum = minimum;
 
 	/**
 	 * The requested appointment duration in minutes.
 	 */
-	const duration = await getDuration(env, globals, params);
+	const duration = await getDuration(env, strings, params);
 
 	/**
 	 * Unavailable time slots.
 	 */
-	const occupied = await getOccupiedSlots(env, globals, params);
+	const occupied = await getOccupiedSlots(env, strings, params);
 
 	/**
 	 * The shifts for the selected day of the week.
 	 */
-	const shifts = await getShiftSlots(env, globals, params);
+	const shifts = await getShiftSlots(env, strings, params);
 
 	/**
 	 * The available time slots for making an appointment.
@@ -390,191 +389,96 @@ async function addAppointment(env, globals, params) {
 	const available = getAvailableSlots(shifts, occupied, minimum, duration);
 
 	const time = Time.fromDate(params.time.toDate());
-	const requestedSlot = new Slot(time, time.incrementMinutes(duration));
+	const localTime = time.incrementMinutes(-params.offset);
+	const requestedSlot = new Slot(localTime, localTime.incrementMinutes(duration));
 
+	
 	for (const slot of available) {
 		if (slot.start.compare(requestedSlot.start) === 0 && slot.end.compare(requestedSlot.end) === 0) {
 			// If the requested appointment time slot is available and aligns with the spacing of the time slots in the schedule:
+			
+			const endTime = time.incrementMinutes(duration);
 
-			return env.admin.firestore()
-			.collection(globals.CLINICS).doc(params.clinic)
-			.collection(globals.APPOINTMENTS)
+			const app_ref = await env.admin.firestore()
+			.collection(strings.CLINICS).doc(params.clinic)
+			.collection(strings.APPOINTMENTS)
 			.add({
 				patient: params.patient,
 				doctor: params.doctor,
 				clinic: params.clinic,
-				start: requestedSlot.start.toDate(),
-				end: requestedSlot.end.toDate(),
-				offset: params.timezoneOffset,
+				start: new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes),
+				end: new Date(params.date.year, params.date.month, params.date.day, endTime.hours, endTime.minutes),
+				offset: params.offset,
 				type: params.type
 			});
+
+			return app_ref.id;
 		}
 	}
 }
 
 /**
- * 
- * @param {functions.Change<functions.firestore.DocumentSnapshot>} change 
- * @param {functions.EventContext} context 
+ * Create a new appointment for the given user (should be the current user in production)
+ * This is one of the few functions that has to be on Cloud Functions to make sure that appointments are only made at correct times.
+ * @param {{admin: *}} env
+ * @param {{CLINICS: string, DOCTORS: string, APPOINTMENTS: string, TYPES: string, SHIFTS: string}} strings
+ * @param {{clinic: string, doctor: string, patient: string, appointment: string, date: {year: number, month: number, day: number}, time: firebase.firestore.Timestamp, offset: number, type: string}} params
+ * @return {Promise<string>}
  */
-async function verifyAppointment(change, context) {
-	// Get an object with the previous document value (for update or delete)
-	// If the document does not exist, it has been created (?).
-	const oldDocument = change.before.exists ? change.before.data() : null;
+ async function updateAppointment(env, strings, params) {
+	/**
+	 * The minimum appointment duration in minutes.
+	 */
+	const minimum = await getMinimum(env, strings, params);
 
-	// Get an object with the current document value.
-	// If the document does not exist, it has been deleted.
-	const newDocument = change.after.exists ? change.after.data() : null;
+	params.minimum = minimum;
 
-	// On create: delete the appointment.
-	// On update: revert the change.
+	/**
+	 * The requested appointment duration in minutes.
+	 */
+	const duration = await getDuration(env, strings, params);
 
-	// There should be 3 verification statuses: 'new', 'updating', 'verified'.
+	/**
+	 * Unavailable time slots.
+	 */
+	const occupied = await getOccupiedSlots(env, strings, params);
 
-	// Whenever an appointment is created it should be marked as "verified: 'new'".
-	// Whenever an appointment is updated it should be marked as "verified: 'updating'".
-	// If this function finds no problems then it should change the marking to "verified: 'verified'".
+	/**
+	 * The shifts for the selected day of the week.
+	 */
+	const shifts = await getShiftSlots(env, strings, params);
 
-	// When the verification status is "new" then the appointment should not be considered booked.
-	// When the verification status is "updating" then the appointment should be considered booked, but only on the old slot.
-	// When the verification status is "verified" then the appointment should be considered booked.
+	/**
+	 * The available time slots for making an appointment.
+	 */
+	const available = getAvailableSlots(shifts, occupied, minimum, duration);
 
-	// So ideally new appointments would go to the appointments collection with a status of verified: false.
-	// Then after verification it should change to verified: true.
-	// For existing appointments updates would go to a staging collection and the document would have a status of verified: true, updating: true.
-	// After verification the updated data would be written to the appointment and the status would be updated to updating: false.
+	const time = Time.fromDate(params.time.toDate());
+	const localTime = time.incrementMinutes(-params.offset);
+	const requestedSlot = new Slot(localTime, localTime.incrementMinutes(duration));
 
-	// Or when an update happens verify the new document, then revert the write if it fails verification.
-	// Then the verified property would refer only to whether the data in the current document is verified.
-	// Put in the security rules that create and update are only allowed if verified == false.
-
-	// I think I'll go with this last approach for now, since it's the simplest.
 	
-	// On create or update:
-	if (newDocument) {
-		
-		if (!newDocument.verified) {
-			change.after.ref().update({
-				verified: true
+	for (const slot of available) {
+		if (slot.start.compare(requestedSlot.start) === 0 && slot.end.compare(requestedSlot.end) === 0) {
+			// If the requested appointment time slot is available and aligns with the spacing of the time slots in the schedule:
+			
+			const endTime = time.incrementMinutes(duration);
+
+			const app_ref = await env.admin.firestore()
+			.collection(strings.CLINICS).doc(params.clinic)
+			.collection(strings.APPOINTMENTS).doc(appointment)
+			.update({
+				start: new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes),
+				end: new Date(params.date.year, params.date.month, params.date.day, endTime.hours, endTime.minutes),
+				offset: params.offset,
+				type: params.type
 			});
+
+			return app_ref.id;
 		}
-
-		// // Check if the appointment is valid, meaning that it doesn't collide with any existing appointment.
-		// // If it is invalid, delete the appointment.
-		// const simpleDate = new SimpleDate(newDocument.start.toDate());
-		// console.log("Date: ", simpleDate);
-
-		// const slot = new Slot(
-		// 	Time.fromDate(newDocument.start.toDate()),
-		// 	Time.fromDate(newDocument.end.toDate())
-		// );
-		
-		// console.log("Time Slot: ", slot);
-
-		// db.collection(CLINICS).doc(newDocument.clinic).collection(APPOINTMENTS)
-		// .orderBy("start")
-		// .where("start", ">=", fs.Timestamp.fromDate(simpleDate.toDate()))
-		// .where("start", "<", fs.Timestamp.fromDate(simpleDate.getNextDay().toDate()))
-		// .where("doctor", "==", newDocument.doctor)
-		// .where("verified", "==", true)
-		// .get().then(appointment_snaps => {
-		// 	console.log("Results: ", appointment_snaps.size);
-		// 	for (const appointment of appointment_snaps.docs) {
-		// 		const app_slot = new Slot(
-		// 			Time.fromDate(appointment.data().start.toDate()),
-		// 			Time.fromDate(appointment.data().end.toDate()),
-		// 		)
-		// 		console.log();
-		// 		// I don't need to check appointment.id !== context.params.appID because the security rules will require that verified == false, and the query requires verified == true.
-
-		// 		// If the new appointment data causes a collision:
-		// 		if (app_slot.collides(slot)) {
-
-		// 			// If it's an update, revert the change:
-		// 			if (oldDocument) {
-		// 				const data = change.before.data();
-		// 				data.verified = true;
-		// 				change.before.ref.set(data);
-		// 				return;
-		// 			}
-
-		// 			// If it's a new appointment, revert the change by deleting it:
-		// 			change.after.ref.delete();
-		// 			return;
-		// 		}
-		// 	}
-		// });
-
-
-		// let collides = false;
-
-		// // Convenience variables:
-		// const doctor = newDocument.doctor;
-		// const clinic = newDocument.clinic;
-		// const date = newDocument.start;
-		// const simpleDate = SimpleDate.fromObject(date);
-		// const slot = new Slot(
-		// 	Time.fromDate(newDocument.start),
-		// 	Time.fromDate(newDocument.end)
-		// )
-
-		// // Set the time range for the appointments to be exactly the day in question:
-		// const start_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day));
-		// const end_day = fs.Timestamp.fromDate(new Date(date.year, date.month, date.day + 1));
-
-		// // Get all the appointments in the clinic on the selected day:
-		// return db.collection("clinic").doc(clinic).collection("appointments").orderBy("start")
-		// .where("start", ">=", start_day)
-		// .where("start", "<", end_day)
-		// .where("doctor", "==", doctor)
-		// .get().then(appointment_snaps => {
-		// 	// Check for collisions with other appointments:
-		// 	for (const appointment_snap of appointment_snaps.docs) {
-		// 		// Exclude this appointment, since we don't care if the new time collides with the old time, only if it collides with other appointments:
-		// 		if (appointment_snap.id !== context.params.appId) {
-		// 			const other_slot = new Slot(
-		// 				Time.fromDate(appointment_snap.data().start.toDate()),
-		// 				Time.fromDate(appointment_snap.data().end.toDate())
-		// 			);
-
-		// 			if (other_slot.collides(slot)) {
-		// 				collides = true;
-		// 				break;
-		// 			}
-		// 		}
-		// 	}
-
-		// 	let inside = false;
-
-		// 	// Get all the shifts during this day:
-		// 	db.collection("clinics").doc(clinic).collection("doctors").doc(doctor).collection("shifts").get()
-		// 	.then(shift_snaps => {
-		// 		const day = [];
-
-		// 		for (const shift_snap of shift_snaps.docs) {
-		// 			if (shift_snap.data().day === simpleDate.weekday) {
-		// 				day.push(new Slot(
-		// 					Time.fromObject(shift_snap.data().start),
-		// 					Time.fromObject(shift_snap.data().end)
-		// 				))
-		// 			}
-		// 		}
-
-		// 		for (const shift of day) {
-		// 			// Check that this appointment is within the shift:
-		// 			if (shift.contains(slot)) {
-		// 				inside = true;
-		// 				break;
-		// 			}
-		// 		}
-
-		// 		if (collides || !inside) {
-		// 			change.after.ref.delete()
-		// 		}
-		// 	});
-		// });
 	}
 }
 
-exports.verifyAppointment = verifyAppointment;
 exports.getAvailable = getAvailable;
+exports.addAppointment = addAppointment;
+exports.updateAppointment = updateAppointment;

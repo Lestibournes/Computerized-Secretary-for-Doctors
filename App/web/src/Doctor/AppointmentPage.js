@@ -105,9 +105,9 @@ export function AppointmentPage() {
 	
 	useEffect(() => {
 		if (appointment, appointmentData) {
-			return events.clinics.appointment(appointmentData.clinic, appointment, (oldData, newData) => {
-				if (newData) setArrived(newData.arrived);
-			});
+			return db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).onSnapshot(
+				app_snap => setArrived(app_snap.data().arrived)
+			);
 		}
 	}, [appointment, appointmentData]);
 
@@ -162,18 +162,6 @@ export function AppointmentPage() {
 						</span>
 					</div>
 				</div>
-				
-				<div key="Documents" title={Strings.instance.get(68)} icon="fa-file-medical-alt">
-					<div className="tab-content">
-						To Do
-					</div>
-				</div>
-
-				<div key="Chat" title={Strings.instance.get(69)} icon="fa-comment">
-					<div className="tab-content">
-						To Do
-					</div>
-				</div>
 
 				<div key="Visit Notes" title={Strings.instance.get(98)} icon="fa-clipboard">
 					<Formik
@@ -188,10 +176,6 @@ export function AppointmentPage() {
 						})}
 						onSubmit={async (values, { setSubmitting }) => {
 							setSubmitting(true);
-							
-							db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({notes: clientText})
-							.then(() => setServerText(clientText))
-							.catch(reason => popups.error(reason.message));
 						}}
 					>
 						<Form>
@@ -225,6 +209,11 @@ export function AppointmentPage() {
 									/>
 								</span>
 								<Button
+									action={() => {
+										db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({notes: clientText})
+										.then(() => setServerText(clientText))
+										.catch(reason => popups.error(reason.message));
+									}}
 									type="submit"
 									icon={serverText === clientText ? "fas fa-save" : "far fa-save"}
 									label={serverText === clientText ? Strings.instance.get(100) : Strings.instance.get(101)}

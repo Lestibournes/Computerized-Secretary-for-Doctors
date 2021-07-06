@@ -111,16 +111,6 @@ export function AppointmentDetailsPage() {
 						</span>
 					</div>
 				</div>
-				
-				<div title={Strings.instance.get(68)} icon="fa-file-medical-alt">
-					<div>
-						<div className="tab-content">To Do</div>
-					</div>
-				</div>
-
-				<div title={Strings.instance.get(69)} icon="fa-comment">
-					<div className="tab-content">To Do</div>
-				</div>
 			</TabbedContainer>
 		</>;
 	}

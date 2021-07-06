@@ -10,12 +10,12 @@ import { SelectDate } from "../Common/Components/SelectDate";
 import { Time } from "../Common/Classes/Time";
 import { SimpleDate } from "../Common/Classes/SimpleDate";
 import { Popup } from '../Common/Components/Popup';
-import { capitalizeAll, capitalize, compareByName } from '../Common/functions';
+import { capitalizeAll } from '../Common/functions';
 import { server } from '../Common/server';
 import { usePopups } from '../Common/Popups';
 import { Header } from '../Common/Components/Header';
 import { useRoot } from '../Common/Root';
-import { db, fb } from '../init';
+import { db } from '../init';
 import { Loading } from '../Common/Components/Loading';
 import { Strings } from '../Common/Classes/strings';
 
@@ -223,47 +223,77 @@ export function SetAppointmentPage() {
 						const end = new Date(values.date.year, values.date.month, values.date.day, end_time.hours, end_time.minutes);
 
 						if (data) {
-							// If editing an existing appointment:
-							db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({
-								start: start,
-								end: end,
+							// If creating a new appointment:
+							server.appointments.updateAppointment({
+								clinic: clinicID,
+								doctor: doctorID,
+								appointment: appointment,
+								date: date.toObject(),
+								time: start.getTime(),
 								offset: start.getTimezoneOffset(),
 								type: values.type
 							})
-							.then(app_ref => app_ref.get().then(app_snap => {
-								if (app_snap.exists) {
-									const app_data = app_snap.data();
-									app_data.id = app_snap.id;
-									setSuccess(app_data);
-								}
-								else {
-									popups.error("Modifying the appointment failed");
-								}
-							}))
-							.catch(reason => popups.error(reason.code));
+							.then(result => {
+								db.collection("clinics").doc(clinic)
+								.collection("appointments").doc(result.data)
+								.get().then(app_snap => {
+									if (app_snap.exists) {
+										const app_data = app_snap.data();
+										app_data.id = app_snap.id;
+										setSuccess(app_data);
+									}
+									else {
+										popups.error("Modifying the appointment failed");
+									}
+								})
+							})
+							.catch(reason => {
+								popups.error(reason.message);
+							});
+
+							// // If editing an existing appointment:
+							// db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).update({
+							// 	start: start,
+							// 	end: end,
+							// 	offset: start.getTimezoneOffset(),
+							// 	type: values.type
+							// })
+							// .then(app_ref => app_ref.get().then(app_snap => {
+							// 	if (app_snap.exists) {
+							// 		const app_data = app_snap.data();
+							// 		app_data.id = app_snap.id;
+							// 		setSuccess(app_data);
+							// 	}
+							// 	else {
+							// 		popups.error("Modifying the appointment failed");
+							// 	}
+							// }))
+							// .catch(reason => popups.error(reason.code));
 						}
 						else {
 							// If creating a new appointment:
-							db.collection("clinics").doc(clinic).collection("appointments").add({
-								doctor: doctor,
-								clinic: clinic,
-								patient: auth.user.uid,
-								start: start,
-								end: end,
+							server.appointments.addAppointment({
+								clinic: clinicID,
+								doctor: doctorID,
+								date: date.toObject(),
+								time: start.getTime(),
 								offset: start.getTimezoneOffset(),
-								type: values.type,
-								verified: false
+								type: values.type
 							})
-							.then(app_ref => app_ref.get().then(app_snap => {
-								if (app_snap.exists) {
-									const app_data = app_snap.data();
-									app_data.id = app_snap.id;
-									setSuccess(app_data);
-								}
-								else {
-									popups.error("Creating the appointment failed");
-								}
-							}))
+							.then(result => {
+								db.collection("clinics").doc(clinic)
+								.collection("appointments").doc(result.data)
+								.get().then(app_snap => {
+									if (app_snap.exists) {
+										const app_data = app_snap.data();
+										app_data.id = app_snap.id;
+										setSuccess(app_data);
+									}
+									else {
+										popups.error("Creating the appointment failed");
+									}
+								})
+							})
 							.catch(reason => {
 								popups.error(reason.message);
 							});

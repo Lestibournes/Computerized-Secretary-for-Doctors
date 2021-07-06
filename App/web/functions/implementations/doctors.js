@@ -94,10 +94,10 @@ async function getUser(user, specialization, city) {
 	// Get all the user documents:
 	return db.collection("users").get().then(user_snaps => {
 		const promises = [];
-
+		
 		for (const user_snap of user_snaps.docs) {
 			// Filter by whether the user is a doctor and whether the name is a match:
-			if (user_snap.exists && user_snap.data().doctor && (!name || stringContains(user_snap.data().fullName, name))) {
+			if (user_snap.exists && user_snap.data().doctor && (!name || user_snap.data().fullName.toLowerCase().includes(name.toLowerCase()))) {
 				const user_data = user_snap.data();
 				user_data.id = user_snap.id;
 				promises.push(getUser(user_data, specialization, city));

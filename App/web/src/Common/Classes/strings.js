@@ -37,15 +37,15 @@ export class Strings {
 				Strings.#strings.push(entries);
 			}
 
-			// Print the strings cheat sheet:
-			for (let i = 0; i < Strings.#strings.length; i++) {
-				console.log(
-					i + 
-					(Strings.#strings[i].has("en") ? "\t" + Strings.#strings[i].get("en") : "") + 
-					(Strings.#strings[i].has("he") ? "\t" + Strings.#strings[i].get("he") : "") + 
-					(Strings.#strings[i].has("ar") ? "\t" + Strings.#strings[i].get("ar") : "")
-					);
-			}
+			// // Print the strings cheat sheet:
+			// for (let i = 0; i < Strings.#strings.length; i++) {
+			// 	console.log(
+			// 		i + 
+			// 		(Strings.#strings[i].has("en") ? "\t" + Strings.#strings[i].get("en") : "") + 
+			// 		(Strings.#strings[i].has("he") ? "\t" + Strings.#strings[i].get("he") : "") + 
+			// 		(Strings.#strings[i].has("ar") ? "\t" + Strings.#strings[i].get("ar") : "")
+			// 		);
+			// }
 
 			// Set default language:
 			this.#language = "he";
@@ -95,7 +95,7 @@ export class Strings {
 	 * @param {number} id The id of the requested string (an index)
 	 * @param {Map} values the named variables to plug into the string
 	 */
-	get(id, language = this.language, values) {
+	get(id, values, language = this.language) {
 		if (id < Strings.#strings.length) {
 			let text = Strings.#strings[id].get(language);
 	

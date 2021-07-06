@@ -61,16 +61,12 @@ export function Header({unprotected}) {
 						<DropdownMenu label={Strings.instance.get(224)}>
 							<div onClick={
 								() => {
-									db.collection("users").doc(authContext.user.uid).update({language: "he"})
-								}}>{Strings.instance.get(221, "he")}</div>
+									db.collection("users").doc(authContext.user.uid).update({language: "he"}).then(() => {window.location.reload()})
+								}}>{Strings.instance.get(221, null, "he")}</div>
 							<div onClick={
 								() => {
-									db.collection("users").doc(authContext.user.uid).update({language: "ar"})
-								}}>{Strings.instance.get(220, "ar")}</div>
-							<div onClick={
-								() => {
-									db.collection("users").doc(authContext.user.uid).update({language: "en"})
-								}}>{Strings.instance.get(222, "en")}</div>
+									db.collection("users").doc(authContext.user.uid).update({language: "ar"}).then(() => {window.location.reload()})
+								}}>{Strings.instance.get(220, null, "ar")}</div>
 						</DropdownMenu>
 						<DropdownMenu label={name + " <" + email + ">"}>
 							{/* <div>

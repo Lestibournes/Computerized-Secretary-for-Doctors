@@ -15,6 +15,10 @@ const thisUserData = {
 	sex: "male"
 }
 
+const thisDoctorSpecializations = [
+	"General Practitioner"
+]
+
 const thisClinicData = {
 	name: "Smiles",
 	city: "Jerusalem",
@@ -178,6 +182,10 @@ const otherUserData = {
 	fullName: "Jane Smith",
 	sex: "female"
 }
+
+const otherDoctorSpecializations = [
+	"רפואת ילדים"
+]
 
 const otherClinicData = {
 	name: "חיוכים",
@@ -368,12 +376,14 @@ exports.projectId = projectId;
 
 exports.thisAuth = thisAuth;
 exports.thisUserData = thisUserData;
+exports.thisDoctorSpecializations = thisDoctorSpecializations;
 exports.thisClinicData = thisClinicData;
 exports.thisTypesData = thisTypesData;
 exports.thisShiftData = thisShiftData;
 
 exports.otherAuth = otherAuth;
 exports.otherUserData = otherUserData;
+exports.otherDoctorSpecializations = otherDoctorSpecializations;
 exports.otherClinicData = otherClinicData;
 exports.otherTypesData = otherTypesData;
 exports.otherShiftData = otherShiftData;
