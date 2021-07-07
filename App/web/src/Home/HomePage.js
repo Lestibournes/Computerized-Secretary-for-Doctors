@@ -63,6 +63,7 @@ export function HomePage() {
 					: ""}
 				</div>
 			</header>
+
 			{defaultView ?
 				<Route
 					component={({ match }) =>

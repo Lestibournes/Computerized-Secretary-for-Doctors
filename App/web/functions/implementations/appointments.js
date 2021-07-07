@@ -459,24 +459,25 @@ async function addAppointment(env, strings, params) {
 	const requestedSlot = new Slot(localTime, localTime.incrementMinutes(duration));
 	const start = new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes);
 	const endTime = time.incrementMinutes(duration);
+	
+	const data = {
+		start: new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes),
+		end: new Date(params.date.year, params.date.month, params.date.day, endTime.hours, endTime.minutes),
+		offset: params.offset,
+		type: params.type
+	}
 
 	if (start.getTime() > new Date().getTime()) {
 		for (const slot of available) {
 			if (slot.start.compare(requestedSlot.start) === 0 && slot.end.compare(requestedSlot.end) === 0) {
 				// If the requested appointment time slot is available and aligns with the spacing of the time slots in the schedule:
-				
-	
-				const app_ref = await env.admin.firestore()
+
+				await env.admin.firestore()
 				.collection(strings.CLINICS).doc(params.clinic)
-				.collection(strings.APPOINTMENTS).doc(appointment)
-				.update({
-					start: new Date(params.date.year, params.date.month, params.date.day, time.hours, time.minutes),
-					end: new Date(params.date.year, params.date.month, params.date.day, endTime.hours, endTime.minutes),
-					offset: params.offset,
-					type: params.type
-				});
+				.collection(strings.APPOINTMENTS).doc(params.appointment)
+				.update(data);
 	
-				return app_ref.id;
+				return params.appointment;
 			}
 		}
 	}

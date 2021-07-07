@@ -1,5 +1,5 @@
 //Reactjs:
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from "./Auth";
@@ -10,17 +10,20 @@ import { Popup } from './Components/Popup';
 import { usePopups } from './Popups';
 import { useRoot } from './Root';
 import { Strings } from './Classes/strings';
+import { auth } from '../init';
 
 export function LoginPage() {
-	const auth = useAuth();
+	const authContext = useAuth();
 	const popups = usePopups();
 	const root = useRoot();
+	const ref = useRef(null);
 
 	const {link} = useParams();
 
 	const popup = 
 		<Popup key="Login" title={Strings.instance.get(208)}>
 			<Formik
+				innerRef={ref}
 				initialValues={{
 					email: "",
 					password: ""
@@ -36,7 +39,8 @@ export function LoginPage() {
 				})}
 				onSubmit={async (values, { setSubmitting }) => {
 					setSubmitting(true);
-					auth.login(values.email, values.password).then(response => {
+
+					authContext.login(values.email, values.password).then(response => {
 						if (!response.success) popups.error(response.message);
 					});
 				}}
@@ -47,6 +51,9 @@ export function LoginPage() {
 							label={Strings.instance.get(209)}
 							name="email"
 							type="email"
+							onChange={(e) => {
+								ref.current.values.email = e.target.value;
+							}}
 							placeholder="john.doe@csfpd.com"
 						/>
 						<TextInput
@@ -54,6 +61,21 @@ export function LoginPage() {
 							name="password"
 							type="password"
 						/>
+						<Link onClick={() => {
+							auth.sendPasswordResetEmail(ref.current.values.email).then(() => {
+								const close = () => popups.remove(popup);
+
+								const popup =
+									<Popup key="Sending Password Reset Email" title={Strings.instance.get(225)} close={close}>
+										<p>
+											{Strings.instance.get(226)}
+										</p>
+										<Button action={close} label={Strings.instance.get(138)} />
+									</Popup>
+
+								popups.add(popup);
+							})
+						}}>{Strings.instance.get(227)}</Link>
 					</div>
 					<div className="buttonBar">
 						<Button link={root.get() + "/user/register"} label={Strings.instance.get(211)} />
@@ -73,7 +95,7 @@ export function LoginPage() {
 
 	return (
 		<>
-			{auth.user ? <Redirect to={root.get()} /> : null }
+			{authContext.user ? <Redirect to={root.get()} /> : null }
 			<header className="main">
 				<Link to={root.get()} className="title">{Strings.instance.get(216)}</Link>
 			</header>

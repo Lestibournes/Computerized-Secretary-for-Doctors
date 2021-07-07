@@ -1124,6 +1124,18 @@
 			"en": "Language",
 			"he": "שפה",
 			"ar": "اللغة"
+		},
+		{
+			"en": "Sending Password Reset Email",
+			"he": "שליחת מייל לשינוי סיסמה"
+		},
+		{
+			"en": "If the specified email address belongs to an existing user in our system, then a password reset email has been sent to it.",
+			"he": "אם כתובת המייל שצויינה שייכת למשתמש שקיים במערכת, אז מייל לשינוי סיסמה נשלך לכתובת זו."
+		},
+		{
+			"en": "Reset Password",
+			"he": "איפוס סיסמה"
 		}
 	]
 }

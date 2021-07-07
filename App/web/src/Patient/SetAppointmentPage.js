@@ -235,7 +235,7 @@ export function SetAppointmentPage() {
 							})
 							.then(result => {
 								if (result.data) {
-									db.collection("clinics").doc(clinic)
+									db.collection("clinics").doc(clinicID)
 									.collection("appointments").doc(result.data)
 									.get().then(app_snap => {
 										if (app_snap.exists) {
@@ -244,7 +244,7 @@ export function SetAppointmentPage() {
 											setSuccess(app_data);
 										}
 										else {
-											popups.error("Modifying the appointment failed");
+											popups.error("The appointment doesn't exist");
 										}
 									})
 								}

@@ -22,5 +22,5 @@ exports.addAppointment = functions.https.onCall((data, context) => {
 exports.updateAppointment = functions.https.onCall((data, context) => {
 	data.patient = context.auth.uid;
 	data.time = firebase.Timestamp.fromMillis(data.time);
-	return appointments.addAppointment(environment, globals, data);
+	return appointments.updateAppointment(environment, globals, data);
 });

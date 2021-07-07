@@ -1,5 +1,5 @@
 import ReactHtmlParser from 'react-html-parser';
-import { auth, db } from '../../init';
+import { auth, db, debug } from '../../init';
 
 export class Strings {
 	#language;
@@ -37,15 +37,17 @@ export class Strings {
 				Strings.#strings.push(entries);
 			}
 
-			// // Print the strings cheat sheet:
-			// for (let i = 0; i < Strings.#strings.length; i++) {
-			// 	console.log(
-			// 		i + 
-			// 		(Strings.#strings[i].has("en") ? "\t" + Strings.#strings[i].get("en") : "") + 
-			// 		(Strings.#strings[i].has("he") ? "\t" + Strings.#strings[i].get("he") : "") + 
-			// 		(Strings.#strings[i].has("ar") ? "\t" + Strings.#strings[i].get("ar") : "")
-			// 		);
-			// }
+			// Print the strings cheat sheet:
+			if (debug) {
+				for (let i = 0; i < Strings.#strings.length; i++) {
+					console.log(
+						i + 
+						(Strings.#strings[i].has("en") ? "\t" + Strings.#strings[i].get("en") : "") + 
+						(Strings.#strings[i].has("he") ? "\t" + Strings.#strings[i].get("he") : "") + 
+						(Strings.#strings[i].has("ar") ? "\t" + Strings.#strings[i].get("ar") : "")
+						);
+				}
+			}
 
 			// Set default language:
 			this.#language = "he";
