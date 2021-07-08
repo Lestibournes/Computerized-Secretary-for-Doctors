@@ -51,9 +51,6 @@ export function LoginPage() {
 							label={Strings.instance.get(209)}
 							name="email"
 							type="email"
-							onChange={(e) => {
-								ref.current.values.email = e.target.value;
-							}}
 							placeholder="john.doe@csfpd.com"
 						/>
 						<TextInput
