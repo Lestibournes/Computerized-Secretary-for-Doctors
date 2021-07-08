@@ -17,7 +17,7 @@ export const storage = firebase.storage().ref();
 export const auth = firebase.auth();
 export const fn = firebase.functions();
 
-fn.useEmulator("localhost", 5001);
+// fn.useEmulator("localhost", 5001);
 // db.useEmulator("localhost", 8080);
 // auth.useEmulator("http://localhost:9099");
 

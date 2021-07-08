@@ -20,38 +20,6 @@ export const server = {
 }
 
 export const events = {
-	clinics: {
-		/**
-	 * For watching changes in the patient arrival status for one specific appointment.
-	 * @param {string} appointment the id of the appointment.
-	 * @param {(oldData: firebase.firestore.DocumentData, newData: firebase.firestore.DocumentData) => {}} callback Includes the id of the appointment and all the data of the appoinemnt document.
-	 * @returns unsubscribe function.
-	 */
-		appointment: function(clinic, appointment, callback) {
-			if (!this.appointment.cache) this.appointment.cache = new Map();
-			
-			return db.collection("clinics").doc(clinic).collection("appointments").doc(appointment).onSnapshot(
-				app_snap => {
-					const key = clinic + "/" + appointment;
-					const newData = app_snap.data();
-					newData.id = appointment;
-
-					if (app_snap.data()) {
-						if (!this.appointment.cache.has(key)) {
-							this.appointment.cache.set(key, newData);
-						}
-						
-						callback(this.appointment.cache.get(key), newData.arrived);
-						this.appointment.cache.set(key, newData);
-					}
-					else {
-						this.appointment.cache.delete(key);
-					}
-				}
-			);
-		}
-	},
-
 	doctors: {
 		appointments: function(doctor, callback) {
 			if (!this.appointments.cache) this.appointments.cache = new Map();

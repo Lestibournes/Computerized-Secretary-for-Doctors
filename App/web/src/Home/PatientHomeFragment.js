@@ -8,7 +8,7 @@ export function PatientHomeFragment() {
 		<>
 			<h2>{Strings.instance.get(26)}</h2>
 			<div className="Home buttonGrid">
-				<Button link={root.get() + "/user/doctors/search"} label={Strings.instance.get(49)} />
+				{/* <Button link={root.get() + "/user/doctors/search"} label={Strings.instance.get(49)} /> */}
 				<Button link={root.get() + "/user/appointments/list"} label={Strings.instance.get(50)} />
 				<Button link={root.get() + "/user/profile"} label={Strings.instance.get(38)} />
 			</div>
